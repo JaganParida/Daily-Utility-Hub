@@ -1,65 +1,167 @@
-import { useState, useRef, useEffect } from 'react';
-import { LayoutGrid, Download, RefreshCw, Settings2, Trash2, Move, ZoomIn, Check } from 'lucide-react';
-import DropzoneComponent from '../../components/DropzoneComponent';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { LayoutGrid, Download, RefreshCw, Settings2, Trash2, Plus, Image as ImageIcon } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { toast } from 'react-hot-toast';
 
+const TEMPLATES = [
+  { id: 'split-v', name: 'Split Vertical', slots: 2, gridClass: 'grid-cols-2 grid-rows-1', slotClasses: ['',''] },
+  { id: 'split-h', name: 'Split Horizontal', slots: 2, gridClass: 'grid-cols-1 grid-rows-2', slotClasses: ['',''] },
+  { id: 'large-left', name: 'Large Left', slots: 3, gridClass: 'grid-cols-2 grid-rows-2', slotClasses: ['row-span-2', '', ''] },
+  { id: 'large-top', name: 'Large Top', slots: 3, gridClass: 'grid-cols-2 grid-rows-2', slotClasses: ['col-span-2', '', ''] },
+  { id: 'grid-4', name: 'Grid 2x2', slots: 4, gridClass: 'grid-cols-2 grid-rows-2', slotClasses: ['','','',''] },
+  { id: 'grid-6', name: 'Grid 3x2', slots: 6, gridClass: 'grid-cols-3 grid-rows-2', slotClasses: ['','','','','',''] },
+  { id: 'grid-9', name: 'Grid 3x3', slots: 9, gridClass: 'grid-cols-3 grid-rows-3', slotClasses: ['','','','','','','','',''] },
+];
+
 const ImageCollage = () => {
-  const [images, setImages] = useState([]); // { id, url, scale, x, y }
-  const [layout, setLayout] = useState('default');
+  const [template, setTemplate] = useState(TEMPLATES[0]);
+  const [images, setImages] = useState({}); // { [slotIndex]: { url, x, y, scale } }
   const [gap, setGap] = useState(10);
   const [bgColor, setBgColor] = useState('#ffffff');
   const [isGenerating, setIsGenerating] = useState(false);
-  const [activeIndex, setActiveIndex] = useState(null);
   
   const collageRef = useRef(null);
+  const fileInputRef = useRef(null);
+  const [activeUploadSlot, setActiveUploadSlot] = useState(null);
 
-  const handleFilesAccepted = (files) => {
-    if (files.length === 0) return;
-    const newImages = Array.from(files).map((file, i) => ({
-      id: Date.now() + i,
-      url: URL.createObjectURL(file),
-      scale: 1,
-      x: 50, // percentage 0-100 (50 is center)
-      y: 50
+  // Drag State
+  const [draggingSlot, setDraggingSlot] = useState(null);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [initialPos, setInitialPos] = useState({ x: 50, y: 50 });
+
+  const handleTemplateSelect = (tmpl) => {
+    setTemplate(tmpl);
+    // Keep existing images that fit in new template, discard others
+    const newImages = {};
+    for (let i = 0; i < tmpl.slots; i++) {
+      if (images[i]) newImages[i] = images[i];
+    }
+    // Cleanup revoked URLs
+    Object.keys(images).forEach(key => {
+      if (Number(key) >= tmpl.slots) URL.revokeObjectURL(images[key].url);
+    });
+    setImages(newImages);
+  };
+
+  const triggerUpload = (slotIndex) => {
+    setActiveUploadSlot(slotIndex);
+    fileInputRef.current.click();
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file || activeUploadSlot === null) return;
+    
+    // Revoke old URL if exists
+    if (images[activeUploadSlot]) {
+      URL.revokeObjectURL(images[activeUploadSlot].url);
+    }
+
+    const url = URL.createObjectURL(file);
+    setImages(prev => ({
+      ...prev,
+      [activeUploadSlot]: { url, x: 50, y: 50, scale: 1 }
     }));
     
-    setImages(prev => {
-      const combined = [...prev, ...newImages].slice(0, 9);
-      return combined;
-    });
-    setLayout('default'); // reset layout on add
-    setActiveIndex(null);
+    // Reset file input
+    e.target.value = '';
+    setActiveUploadSlot(null);
   };
 
-  const removeImage = (index) => {
+  const removeImage = (slotIndex, e) => {
+    e.stopPropagation();
+    if (!images[slotIndex]) return;
+    URL.revokeObjectURL(images[slotIndex].url);
     setImages(prev => {
-      const newImgs = [...prev];
-      URL.revokeObjectURL(newImgs[index].url);
-      newImgs.splice(index, 1);
+      const newImgs = { ...prev };
+      delete newImgs[slotIndex];
       return newImgs;
     });
-    if (activeIndex === index) setActiveIndex(null);
   };
 
-  const updateActiveImage = (key, value) => {
-    if (activeIndex === null) return;
+  // --- Drag to Pan Logic ---
+  const onPointerDown = (e, slotIndex) => {
+    if (!images[slotIndex]) return;
+    e.preventDefault(); // prevent text selection
+    setDraggingSlot(slotIndex);
+    setDragStart({ x: e.clientX || e.touches[0].clientX, y: e.clientY || e.touches[0].clientY });
+    setInitialPos({ x: images[slotIndex].x, y: images[slotIndex].y });
+  };
+
+  const onPointerMove = useCallback((e) => {
+    if (draggingSlot === null || !images[draggingSlot]) return;
+    
+    const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+    const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+    
+    const deltaX = clientX - dragStart.x;
+    const deltaY = clientY - dragStart.y;
+
+    // Convert pixels to percentage roughly (depends on container size, but this gives a good feel)
+    // We multiply by a sensitivity factor, e.g., 0.2
+    const sensitivity = 0.2 / images[draggingSlot].scale; 
+    
+    let newX = initialPos.x + (deltaX * sensitivity);
+    let newY = initialPos.y + (deltaY * sensitivity);
+
+    // Optional: clamp between 0 and 100
+    // newX = Math.max(0, Math.min(100, newX));
+    // newY = Math.max(0, Math.min(100, newY));
+
+    setImages(prev => ({
+      ...prev,
+      [draggingSlot]: {
+        ...prev[draggingSlot],
+        x: newX,
+        y: newY
+      }
+    }));
+  }, [draggingSlot, dragStart, initialPos, images]);
+
+  const onPointerUp = useCallback(() => {
+    setDraggingSlot(null);
+  }, []);
+
+  useEffect(() => {
+    if (draggingSlot !== null) {
+      window.addEventListener('mousemove', onPointerMove);
+      window.addEventListener('mouseup', onPointerUp);
+      window.addEventListener('touchmove', onPointerMove, { passive: false });
+      window.addEventListener('touchend', onPointerUp);
+    } else {
+      window.removeEventListener('mousemove', onPointerMove);
+      window.removeEventListener('mouseup', onPointerUp);
+      window.removeEventListener('touchmove', onPointerMove);
+      window.removeEventListener('touchend', onPointerUp);
+    }
+    return () => {
+      window.removeEventListener('mousemove', onPointerMove);
+      window.removeEventListener('mouseup', onPointerUp);
+      window.removeEventListener('touchmove', onPointerMove);
+      window.removeEventListener('touchend', onPointerUp);
+    };
+  }, [draggingSlot, onPointerMove, onPointerUp]);
+  // -------------------------
+
+  const handleWheel = (e, slotIndex) => {
+    if (!images[slotIndex]) return;
+    e.preventDefault();
+    const zoomFactor = -e.deltaY * 0.005;
     setImages(prev => {
-      const newImgs = [...prev];
-      newImgs[activeIndex] = { ...newImgs[activeIndex], [key]: value };
-      return newImgs;
+      const currentScale = prev[slotIndex].scale;
+      const newScale = Math.max(0.5, Math.min(5, currentScale + zoomFactor));
+      return {
+        ...prev,
+        [slotIndex]: { ...prev[slotIndex], scale: newScale }
+      };
     });
   };
 
   const generateDownload = async () => {
-    if (!collageRef.current || images.length === 0) return;
+    if (!collageRef.current) return;
     setIsGenerating(true);
     
-    // Deselect before taking screenshot to hide selection borders
-    const previousActive = activeIndex;
-    setActiveIndex(null);
-    
-    // Give state time to update and remove borders
+    // Give state time to update
     await new Promise(res => setTimeout(res, 100));
 
     try {
@@ -81,202 +183,145 @@ const ImageCollage = () => {
       console.error('Failed to generate collage', error);
       toast.error('Failed to generate collage');
     } finally {
-      setActiveIndex(previousActive);
       setIsGenerating(false);
     }
   };
 
   const clear = () => {
-    images.forEach(img => URL.revokeObjectURL(img.url));
-    setImages([]);
-    setActiveIndex(null);
-  };
-
-  // Dynamic layout engine
-  const getLayoutGridClass = () => {
-    const len = images.length;
-    if (len === 1) return 'grid-cols-1';
-    if (len === 2) return layout === 'horizontal' ? 'grid-rows-2' : 'grid-cols-2';
-    if (len === 3) return layout === 'large-left' ? 'grid-cols-2 grid-rows-2' : (layout === 'row' ? 'grid-rows-3' : 'grid-cols-3');
-    if (len === 4) return layout === 'row' ? 'grid-rows-4' : 'grid-cols-2 grid-rows-2';
-    if (len > 4 && len <= 6) return 'grid-cols-3 grid-rows-2';
-    if (len > 6) return 'grid-cols-3 grid-rows-3';
-    return 'grid-cols-2';
-  };
-
-  const getCellClass = (index, total) => {
-    if (total === 3 && layout === 'large-left') {
-      if (index === 0) return 'row-span-2 col-span-1';
-      return 'col-span-1 row-span-1';
-    }
-    return '';
+    Object.values(images).forEach(img => URL.revokeObjectURL(img.url));
+    setImages({});
   };
 
   return (
     <div className="max-w-6xl mx-auto">
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        onChange={handleFileChange} 
+        accept="image/*" 
+        className="hidden" 
+      />
+
       <div className="mb-6 flex items-center gap-3">
         <div className="p-2 bg-yellow-500/10 text-yellow-500 rounded-lg shadow-sm">
           <LayoutGrid size={28} />
         </div>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Advanced Collage Maker</h1>
-          <p className="text-muted-foreground mt-1 text-sm">Interactive templates. Click any photo to adjust pan and zoom.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Ultimate Collage Maker</h1>
+          <p className="text-muted-foreground mt-1 text-sm">Choose a template, click a slot to add photos, and swipe to adjust!</p>
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-[1fr_380px] gap-6">
+      <div className="grid lg:grid-cols-[1fr_350px] gap-6">
         
         {/* Main Preview Area */}
-        <div className="bg-card border border-border p-6 rounded-2xl shadow-sm flex flex-col space-y-6 min-h-[600px]">
+        <div className="bg-card border border-border p-6 rounded-2xl shadow-sm flex flex-col min-h-[600px]">
           
-          {images.length === 0 ? (
-            <div className="flex-1 flex flex-col justify-center">
-              <DropzoneComponent 
-                onFilesAccepted={handleFilesAccepted} 
-                accept={{ 'image/*': ['.jpeg', '.jpg', '.png', '.webp'] }} 
-                maxFiles={9}
-                title="Drag & drop up to 9 images"
-              />
-            </div>
-          ) : (
-            <>
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Interactive Preview</h3>
-                <span className="text-xs font-bold bg-muted px-2 py-1 rounded-md">{images.length}/9 Images</span>
-              </div>
-              
-              <div className="flex-1 w-full bg-muted/10 rounded-xl border border-border/50 flex flex-col items-center justify-center p-4 overflow-hidden relative">
-                
-                {/* The actual Collage DOM Node to be screenshotted */}
+          <div className="flex-1 w-full bg-muted/10 rounded-xl border border-border/50 flex flex-col items-center justify-center p-4 overflow-hidden relative">
+            
+            {/* The actual Collage DOM Node to be screenshotted */}
+            <div 
+              ref={collageRef}
+              className={`grid w-full aspect-square md:aspect-[4/3] overflow-hidden ${template.gridClass}`}
+              style={{ gap: `${gap}px`, backgroundColor: bgColor, padding: `${gap}px` }}
+            >
+              {Array.from({ length: template.slots }).map((_, idx) => (
                 <div 
-                  ref={collageRef}
-                  className={`grid w-full aspect-square md:aspect-[4/3] overflow-hidden ${getLayoutGridClass()}`}
-                  style={{ gap: `${gap}px`, backgroundColor: bgColor, padding: `${gap}px` }}
+                  key={idx}
+                  className={`relative overflow-hidden group border-2 border-dashed ${images[idx] ? 'border-transparent' : 'border-border hover:border-primary hover:bg-primary/5'} transition-all cursor-grab active:cursor-grabbing ${template.slotClasses[idx]}`}
+                  onMouseDown={(e) => onPointerDown(e, idx)}
+                  onTouchStart={(e) => onPointerDown(e, idx)}
+                  onWheel={(e) => handleWheel(e, idx)}
+                  onClick={() => !images[idx] && triggerUpload(idx)}
                 >
-                  {images.map((img, idx) => (
-                    <div 
-                      key={img.id}
-                      onClick={() => setActiveIndex(idx)}
-                      className={`relative overflow-hidden cursor-pointer group ${getCellClass(idx, images.length)} ${activeIndex === idx ? 'ring-4 ring-primary ring-inset z-10' : ''}`}
-                    >
+                  {images[idx] ? (
+                    <>
                       <img 
-                        src={img.url} 
+                        src={images[idx].url} 
                         alt="collage piece"
-                        className="w-full h-full object-cover transition-transform origin-center pointer-events-none"
+                        className="w-full h-full object-cover origin-center pointer-events-none"
                         style={{
-                          transform: `scale(${img.scale}) translate(${(img.x - 50)}%, ${(img.y - 50)}%)`,
-                          // object position acts as a base offset
-                          objectPosition: 'center', 
+                          transform: `scale(${images[idx].scale})`,
+                          objectPosition: `${images[idx].x}% ${images[idx].y}%`, 
                         }}
                       />
-                      {/* Overlay on hover for discoverability */}
-                      {activeIndex !== idx && (
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                          <Move size={32} className="text-white opacity-0 group-hover:opacity-100 drop-shadow-md" />
-                        </div>
+                      {/* Delete Button */}
+                      <button 
+                        onClick={(e) => removeImage(idx, e)}
+                        className="absolute top-2 right-2 bg-red-500 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-sm z-20"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                      
+                      {/* Helper hint */}
+                      {draggingSlot !== idx && (
+                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 pointer-events-none">
+                            <span className="text-white text-xs font-bold drop-shadow-md">Drag to Pan • Scroll to Zoom</span>
+                         </div>
                       )}
+                    </>
+                  ) : (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground group-hover:text-primary transition-colors">
+                      <div className="w-12 h-12 rounded-full bg-background border border-border shadow-sm flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                        <Plus size={24} />
+                      </div>
+                      <span className="text-sm font-medium">Click to add</span>
                     </div>
-                  ))}
+                  )}
                 </div>
-
-                {isGenerating && (
-                  <div className="absolute inset-0 bg-background/80 flex flex-col items-center justify-center z-50">
-                    <RefreshCw size={32} className="animate-spin text-primary mb-4" />
-                    <p className="font-bold text-foreground">Rendering High-Res Image...</p>
-                  </div>
-                )}
-              </div>
-            </>
-          )}
-
-          {/* Thumbnails to manage images */}
-          {images.length > 0 && (
-            <div className="pt-4 border-t border-border">
-              <div className="flex gap-2 overflow-x-auto pb-2">
-                {images.map((img, idx) => (
-                  <div 
-                    key={img.id} 
-                    className={`relative group shrink-0 cursor-pointer rounded-md border-2 transition-colors ${activeIndex === idx ? 'border-primary' : 'border-border'}`}
-                    onClick={() => setActiveIndex(idx)}
-                  >
-                    <img src={img.url} className="w-14 h-14 object-cover rounded-sm shadow-sm" />
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); removeImage(idx); }}
-                      className="absolute -top-2 -right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-sm z-20"
-                    >
-                      <Trash2 size={12} />
-                    </button>
-                  </div>
-                ))}
-                {images.length < 9 && (
-                  <label className="w-14 h-14 shrink-0 border-2 border-dashed border-border rounded-md flex items-center justify-center text-muted-foreground hover:bg-muted transition-colors cursor-pointer">
-                    <span className="text-2xl font-light">+</span>
-                    <input type="file" multiple accept="image/*" onChange={(e) => handleFilesAccepted(e.target.files)} className="hidden" />
-                  </label>
-                )}
-              </div>
+              ))}
             </div>
-          )}
+
+            {isGenerating && (
+              <div className="absolute inset-0 bg-background/80 flex flex-col items-center justify-center z-50">
+                <RefreshCw size={32} className="animate-spin text-primary mb-4" />
+                <p className="font-bold text-foreground">Rendering High-Res Image...</p>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Controls Sidebar */}
-        <div className="space-y-6">
-          <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6">
+        <div className="space-y-6 flex flex-col">
+          
+          <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6 flex-1">
             
+            {/* Templates Selector */}
+            <div>
+              <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4 flex items-center gap-2 border-b border-border pb-3">
+                <LayoutGrid size={16} /> Choose Layout
+              </h3>
+              
+              <div className="grid grid-cols-2 gap-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                {TEMPLATES.map(tmpl => (
+                  <button
+                    key={tmpl.id}
+                    onClick={() => handleTemplateSelect(tmpl)}
+                    className={`p-3 border rounded-xl flex flex-col items-center gap-3 transition-all ${template.id === tmpl.id ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-border bg-muted/30 hover:border-primary/50'}`}
+                  >
+                    {/* Visual representation of grid */}
+                    <div className={`w-16 h-12 grid gap-1 ${tmpl.gridClass}`}>
+                      {Array.from({ length: tmpl.slots }).map((_, i) => (
+                        <div key={i} className={`bg-muted-foreground/30 rounded-sm ${tmpl.slotClasses[i]}`}></div>
+                      ))}
+                    </div>
+                    <span className="text-xs font-semibold text-foreground text-center">{tmpl.name}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* Global Settings */}
             <div>
               <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4 flex items-center gap-2 border-b border-border pb-3">
-                <Settings2 size={16} /> Global Settings
+                <Settings2 size={16} /> Spacing & Color
               </h3>
               
               <div className="space-y-5">
-                
-                {/* Smart Layouts */}
-                {images.length >= 2 && (
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">Template Layout</label>
-                    <div className="grid grid-cols-2 gap-2 p-1 bg-muted/50 rounded-lg border border-border">
-                      <button 
-                        onClick={() => setLayout('default')}
-                        className={`py-2 text-sm font-medium rounded-md transition-all ${layout === 'default' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
-                      >
-                        Default Grid
-                      </button>
-                      
-                      {images.length === 2 && (
-                        <button 
-                          onClick={() => setLayout('horizontal')}
-                          className={`py-2 text-sm font-medium rounded-md transition-all ${layout === 'horizontal' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
-                        >
-                          Split Horizontal
-                        </button>
-                      )}
-
-                      {images.length === 3 && (
-                        <button 
-                          onClick={() => setLayout('large-left')}
-                          className={`py-2 text-sm font-medium rounded-md transition-all ${layout === 'large-left' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
-                        >
-                          Large Left
-                        </button>
-                      )}
-
-                      {(images.length === 3 || images.length === 4) && (
-                        <button 
-                          onClick={() => setLayout('row')}
-                          className={`py-2 text-sm font-medium rounded-md transition-all ${layout === 'row' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
-                        >
-                          Rows
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                )}
-
                 {/* Gap Slider */}
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <label className="text-sm font-medium text-foreground">Border Gap</label>
+                    <label className="text-sm font-medium text-foreground">Border Thickness</label>
                     <span className="text-xs font-bold bg-primary/10 text-primary px-2 py-0.5 rounded-md">{gap}px</span>
                   </div>
                   <input 
@@ -291,7 +336,7 @@ const ImageCollage = () => {
 
                 {/* Background Color */}
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground">Background Color</label>
+                  <label className="text-sm font-medium text-foreground">Frame Color</label>
                   <div className="flex items-center gap-2 bg-muted/50 p-1.5 rounded-lg border border-border">
                     <input 
                       type="color" 
@@ -310,94 +355,23 @@ const ImageCollage = () => {
               </div>
             </div>
 
-            {/* Individual Image Adjustment */}
-            <div className={`transition-opacity duration-300 ${activeIndex !== null ? 'opacity-100' : 'opacity-30 pointer-events-none'}`}>
-              <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4 flex items-center justify-between border-b border-border pb-3">
-                <span className="flex items-center gap-2"><ZoomIn size={16} /> Adjust Photo</span>
-                {activeIndex !== null && <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-md">Selected</span>}
-              </h3>
-              
-              {activeIndex !== null ? (
-                <div className="space-y-5 animate-in fade-in">
-                  
-                  {/* Scale */}
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <label className="text-sm font-medium text-foreground">Zoom (Scale)</label>
-                      <span className="text-xs font-bold text-muted-foreground">{images[activeIndex].scale.toFixed(1)}x</span>
-                    </div>
-                    <input 
-                      type="range" 
-                      min="1" 
-                      max="3" 
-                      step="0.1"
-                      value={images[activeIndex].scale}
-                      onChange={(e) => updateActiveImage('scale', Number(e.target.value))}
-                      className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
-                    />
-                  </div>
-
-                  {/* Pan X */}
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <label className="text-sm font-medium text-foreground">Pan Horizontal</label>
-                    </div>
-                    <input 
-                      type="range" 
-                      min="0" 
-                      max="100" 
-                      value={images[activeIndex].x}
-                      onChange={(e) => updateActiveImage('x', Number(e.target.value))}
-                      className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
-                    />
-                  </div>
-
-                  {/* Pan Y */}
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <label className="text-sm font-medium text-foreground">Pan Vertical</label>
-                    </div>
-                    <input 
-                      type="range" 
-                      min="0" 
-                      max="100" 
-                      value={images[activeIndex].y}
-                      onChange={(e) => updateActiveImage('y', Number(e.target.value))}
-                      className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
-                    />
-                  </div>
-                  
-                  <button 
-                    onClick={() => setActiveIndex(null)}
-                    className="w-full py-2 bg-muted text-foreground font-medium rounded-md hover:bg-border transition-colors flex items-center justify-center gap-2 text-sm"
-                  >
-                    <Check size={16} /> Done Adjusting
-                  </button>
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground text-center py-4">
-                  Click on any photo in the collage to adjust its position and zoom.
-                </p>
-              )}
-            </div>
-
           </div>
 
           <div className="space-y-3">
             <button 
               onClick={generateDownload}
-              disabled={images.length === 0 || isGenerating}
+              disabled={Object.keys(images).length === 0 || isGenerating}
               className="w-full py-3 bg-yellow-500 text-white font-medium rounded-xl hover:bg-yellow-600 transition-colors flex items-center justify-center gap-2 shadow-sm shadow-yellow-500/20 disabled:opacity-50"
             >
-              <Download size={18} /> Download High-Res Collage
+              <Download size={18} /> Export Collage
             </button>
             
             <button 
               onClick={clear}
-              disabled={images.length === 0 || isGenerating}
+              disabled={Object.keys(images).length === 0 || isGenerating}
               className="w-full py-3 bg-background border border-border text-foreground font-medium rounded-xl hover:bg-muted transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
             >
-              <RefreshCw size={18} /> Start Over
+              <RefreshCw size={18} /> Clear All Photos
             </button>
           </div>
         </div>
