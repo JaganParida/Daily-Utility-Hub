@@ -13,6 +13,7 @@ import FindAndReplace from './pages/tools/FindAndReplace';
 import JwtDecoder from './pages/tools/JwtDecoder';
 import RegexTester from './pages/tools/RegexTester';
 import ColorPicker from './pages/tools/ColorPicker';
+import GradientGenerator from './pages/tools/GradientGenerator';
 import ImageCompressor from './pages/tools/ImageCompressor';
 import ImageResizer from './pages/tools/ImageResizer';
 import ImageCropper from './pages/tools/ImageCropper';
@@ -44,6 +45,7 @@ function AnimatedRoutes() {
           <Route path="tools/jwt-decoder" element={<JwtDecoder />} />
           <Route path="tools/regex-tester" element={<RegexTester />} />
           <Route path="tools/color-picker" element={<ColorPicker />} />
+          <Route path="tools/gradient-generator" element={<GradientGenerator />} />
           <Route path="tools/image-compressor" element={<ImageCompressor />} />
           <Route path="tools/image-resizer" element={<ImageResizer />} />
           <Route path="tools/image-cropper" element={<ImageCropper />} />

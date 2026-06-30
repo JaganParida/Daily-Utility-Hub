@@ -115,6 +115,13 @@ const Dashboard = () => {
       icon: Layers,
       to: '/tools/color-picker',
       color: 'bg-pink-500/10 text-pink-500',
+    },
+    {
+      name: 'Gradient Generator',
+      description: 'Create and copy beautiful CSS gradients.',
+      icon: Layers,
+      to: '/tools/gradient-generator',
+      color: 'bg-pink-500/10 text-pink-500',
     }
   ];
 

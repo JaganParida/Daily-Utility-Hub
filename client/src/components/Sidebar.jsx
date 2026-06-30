@@ -39,6 +39,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         { name: 'JWT Decoder', to: '/tools/jwt-decoder', icon: Hash },
         { name: 'Regex Tester', to: '/tools/regex-tester', icon: Type },
         { name: 'Color Picker', to: '/tools/color-picker', icon: Layers },
+        { name: 'Gradient Generator', to: '/tools/gradient-generator', icon: Layers },
       ]
     }
   ];
