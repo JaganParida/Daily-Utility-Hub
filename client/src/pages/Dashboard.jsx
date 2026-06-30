@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Type, Hash, Key, Layers, AlignLeft, Image as ImageIcon, Expand, Crop, ArrowRightLeft } from 'lucide-react';
+import { Type, Hash, Key, Layers, AlignLeft, Image as ImageIcon, Expand, Crop, ArrowRightLeft, LayoutGrid, FileText } from 'lucide-react';
 import PageTransition from '../components/PageTransition';
 
 const Dashboard = () => {
@@ -31,6 +31,20 @@ const Dashboard = () => {
       icon: ArrowRightLeft,
       to: '/tools/image-converter',
       color: 'bg-orange-500/10 text-orange-500',
+    },
+    {
+      name: 'Image Collage',
+      description: 'Combine multiple images into stunning grid collages.',
+      icon: LayoutGrid,
+      to: '/tools/image-collage',
+      color: 'bg-yellow-500/10 text-yellow-500',
+    },
+    {
+      name: 'Image to PDF',
+      description: 'Convert multiple images into a multi-page PDF.',
+      icon: FileText,
+      to: '/tools/image-to-pdf',
+      color: 'bg-red-500/10 text-red-500',
     },
     {
       name: 'Word Counter',

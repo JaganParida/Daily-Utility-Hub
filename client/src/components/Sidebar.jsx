@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { Home, Type, Hash, Key, Layers, AlignLeft, ChevronRight, X, Image as ImageIcon, Expand, Crop, ArrowRightLeft } from 'lucide-react';
+import { Home, Type, Hash, Key, Layers, AlignLeft, ChevronRight, X, Image as ImageIcon, Expand, Crop, ArrowRightLeft, LayoutGrid, FileText } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
@@ -17,6 +17,8 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         { name: 'Image Resizer', to: '/tools/image-resizer', icon: Expand },
         { name: 'Image Cropper', to: '/tools/image-cropper', icon: Crop },
         { name: 'Image Converter', to: '/tools/image-converter', icon: ArrowRightLeft },
+        { name: 'Image Collage', to: '/tools/image-collage', icon: LayoutGrid },
+        { name: 'Image to PDF', to: '/tools/image-to-pdf', icon: FileText },
       ]
     },
     {

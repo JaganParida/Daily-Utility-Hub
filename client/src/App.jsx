@@ -18,6 +18,8 @@ import ImageCompressor from './pages/tools/ImageCompressor';
 import ImageResizer from './pages/tools/ImageResizer';
 import ImageCropper from './pages/tools/ImageCropper';
 import ImageConverter from './pages/tools/ImageConverter';
+import ImageCollage from './pages/tools/ImageCollage';
+import ImageToPdf from './pages/tools/ImageToPdf';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import { Toaster } from 'react-hot-toast';
@@ -50,6 +52,8 @@ function AnimatedRoutes() {
           <Route path="tools/image-resizer" element={<ImageResizer />} />
           <Route path="tools/image-cropper" element={<ImageCropper />} />
           <Route path="tools/image-converter" element={<ImageConverter />} />
+          <Route path="tools/image-collage" element={<ImageCollage />} />
+          <Route path="tools/image-to-pdf" element={<ImageToPdf />} />
         </Route>
       </Routes>
     </AnimatePresence>

@@ -10,6 +10,8 @@ const ALL_TOOLS = [
   { name: 'Image Resizer', to: '/tools/image-resizer' },
   { name: 'Image Cropper', to: '/tools/image-cropper' },
   { name: 'Image Converter', to: '/tools/image-converter' },
+  { name: 'Image Collage', to: '/tools/image-collage' },
+  { name: 'Image to PDF', to: '/tools/image-to-pdf' },
   { name: 'Word Counter', to: '/tools/word-counter' },
   { name: 'Case Converter', to: '/tools/case-converter' },
   { name: 'Lorem Ipsum Generator', to: '/tools/lorem-ipsum' },
