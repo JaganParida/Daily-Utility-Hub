@@ -6,6 +6,8 @@ const CaseConverter = () => {
   const [text, setText] = useState('');
   const [copied, setCopied] = useState(false);
 
+  const [activeCase, setActiveCase] = useState(null);
+
   const handleCopy = () => {
     if (!text) {
       toast.error('Nothing to copy!');
@@ -21,12 +23,20 @@ const CaseConverter = () => {
     if (!text) return;
     const result = text.toLowerCase().replace(/(^\s*\w|[\.\!\?]\s*\w)/g, (c) => c.toUpperCase());
     setText(result);
+    setActiveCase('sentence');
   };
 
-  const toLowerCase = () => setText(text.toLowerCase());
-  const toUpperCase = () => setText(text.toUpperCase());
+  const toLowerCase = () => {
+    setText(text.toLowerCase());
+    setActiveCase('lower');
+  };
+  const toUpperCase = () => {
+    setText(text.toUpperCase());
+    setActiveCase('upper');
+  };
   const toCapitalizedCase = () => {
     setText(text.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase()));
+    setActiveCase('capitalized');
   };
   const toAlternatingCase = () => {
     let result = '';
@@ -34,6 +44,7 @@ const CaseConverter = () => {
       result += i % 2 === 0 ? text[i].toLowerCase() : text[i].toUpperCase();
     }
     setText(result);
+    setActiveCase('alternating');
   };
   const toTitleCase = () => {
     const minorWords = ['a', 'an', 'and', 'as', 'at', 'but', 'by', 'for', 'if', 'in', 'of', 'on', 'or', 'the', 'to', 'with'];
@@ -44,6 +55,7 @@ const CaseConverter = () => {
       return word.charAt(0).toUpperCase() + word.substr(1).toLowerCase();
     });
     setText(result);
+    setActiveCase('title');
   };
   const toInverseCase = () => {
     let result = '';
@@ -51,9 +63,26 @@ const CaseConverter = () => {
       result += text[i] === text[i].toUpperCase() ? text[i].toLowerCase() : text[i].toUpperCase();
     }
     setText(result);
+    setActiveCase('inverse');
   };
 
-  const clearText = () => setText('');
+  const clearText = () => {
+    setText('');
+    setActiveCase(null);
+  };
+
+  const handleTextChange = (e) => {
+    setText(e.target.value);
+    setActiveCase(null);
+  };
+
+  const getBtnClass = (caseType) => {
+    return `px-3 py-1.5 text-sm rounded-md transition-colors font-medium border ${
+      activeCase === caseType
+        ? 'bg-blue-500/10 border-blue-500 text-blue-500 shadow-sm'
+        : 'bg-background border-border text-foreground hover:bg-muted'
+    }`;
+  };
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -72,19 +101,19 @@ const CaseConverter = () => {
           className="w-full h-64 p-4 bg-transparent border-none outline-none resize-y text-foreground placeholder:text-muted-foreground focus:ring-0 font-sans"
           placeholder="Type or paste your text here to convert..."
           value={text}
-          onChange={(e) => setText(e.target.value)}
+          onChange={handleTextChange}
         />
         
         {/* Toolbar */}
         <div className="p-3 border-t border-border bg-muted/30 flex flex-wrap gap-2 items-center justify-between">
           <div className="flex flex-wrap gap-2">
-            <button onClick={toSentenceCase} className="px-3 py-1.5 text-sm bg-background border border-border rounded-md hover:bg-muted transition-colors text-foreground font-medium">Sentence case</button>
-            <button onClick={toLowerCase} className="px-3 py-1.5 text-sm bg-background border border-border rounded-md hover:bg-muted transition-colors text-foreground font-medium">lower case</button>
-            <button onClick={toUpperCase} className="px-3 py-1.5 text-sm bg-background border border-border rounded-md hover:bg-muted transition-colors text-foreground font-medium">UPPER CASE</button>
-            <button onClick={toCapitalizedCase} className="px-3 py-1.5 text-sm bg-background border border-border rounded-md hover:bg-muted transition-colors text-foreground font-medium">Capitalized Case</button>
-            <button onClick={toAlternatingCase} className="px-3 py-1.5 text-sm bg-background border border-border rounded-md hover:bg-muted transition-colors text-foreground font-medium">aLtErNaTiNg cAsE</button>
-            <button onClick={toTitleCase} className="px-3 py-1.5 text-sm bg-background border border-border rounded-md hover:bg-muted transition-colors text-foreground font-medium">Title Case</button>
-            <button onClick={toInverseCase} className="px-3 py-1.5 text-sm bg-background border border-border rounded-md hover:bg-muted transition-colors text-foreground font-medium">InVeRsE CaSe</button>
+            <button onClick={toSentenceCase} className={getBtnClass('sentence')}>Sentence case</button>
+            <button onClick={toLowerCase} className={getBtnClass('lower')}>lower case</button>
+            <button onClick={toUpperCase} className={getBtnClass('upper')}>UPPER CASE</button>
+            <button onClick={toCapitalizedCase} className={getBtnClass('capitalized')}>Capitalized Case</button>
+            <button onClick={toAlternatingCase} className={getBtnClass('alternating')}>aLtErNaTiNg cAsE</button>
+            <button onClick={toTitleCase} className={getBtnClass('title')}>Title Case</button>
+            <button onClick={toInverseCase} className={getBtnClass('inverse')}>InVeRsE CaSe</button>
           </div>
         </div>
       </div>
