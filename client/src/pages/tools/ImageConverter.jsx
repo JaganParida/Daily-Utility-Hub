@@ -1,207 +1,252 @@
-import { useState, useRef } from 'react';
-import { ArrowRightLeft, Download, RefreshCw } from 'lucide-react';
+import { useState } from 'react';
+import { ArrowRightRight, Download, RefreshCw, Layers, FileCode2, Trash2 } from 'lucide-react';
 import DropzoneComponent from '../../components/DropzoneComponent';
+import JSZip from 'jszip';
 import { toast } from 'react-hot-toast';
 
-const ImageConverter = () => {
-  const [file, setFile] = useState(null);
-  const [previewSrc, setPreviewSrc] = useState('');
-  const [targetFormat, setTargetFormat] = useState('image/png');
-  const [convertedBlob, setConvertedBlob] = useState(null);
-  const [isConverting, setIsConverting] = useState(false);
-  const canvasRef = useRef(null);
+const FORMATS = [
+  { id: 'jpeg', ext: 'jpg', mime: 'image/jpeg', name: 'JPEG' },
+  { id: 'png', ext: 'png', mime: 'image/png', name: 'PNG' },
+  { id: 'webp', ext: 'webp', mime: 'image/webp', name: 'WEBP' },
+  { id: 'bmp', ext: 'bmp', mime: 'image/bmp', name: 'BMP' },
+];
 
-  const formats = [
-    { label: 'PNG', value: 'image/png', ext: 'png' },
-    { label: 'JPEG', value: 'image/jpeg', ext: 'jpg' },
-    { label: 'WEBP', value: 'image/webp', ext: 'webp' },
-    { label: 'BMP', value: 'image/bmp', ext: 'bmp' },
-  ];
+const ImageConverter = () => {
+  const [images, setImages] = useState([]); // { file, url, name, size }
+  const [targetFormat, setTargetFormat] = useState('jpeg');
+  const [quality, setQuality] = useState(0.9);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const handleFilesAccepted = (files) => {
     if (files.length === 0) return;
-    const selectedFile = files[0];
-    setFile(selectedFile);
-    setPreviewSrc(URL.createObjectURL(selectedFile));
     
-    // Auto-select a different format than the original
-    const currentMime = selectedFile.type;
-    const alternative = formats.find(f => f.value !== currentMime) || formats[0];
-    setTargetFormat(alternative.value);
+    const newImages = Array.from(files).map(file => ({
+      file,
+      url: URL.createObjectURL(file),
+      name: file.name,
+      size: file.size
+    }));
+    
+    setImages(prev => [...prev, ...newImages]);
   };
 
-  const convertImage = () => {
-    if (!file) return;
-    setIsConverting(true);
-    setConvertedBlob(null);
+  const removeImage = (index) => {
+    setImages(prev => {
+      const newImgs = [...prev];
+      URL.revokeObjectURL(newImgs[index].url);
+      newImgs.splice(index, 1);
+      return newImgs;
+    });
+  };
 
-    const img = new Image();
-    img.onload = () => {
-      const canvas = canvasRef.current;
-      canvas.width = img.width;
-      canvas.height = img.height;
-      
-      const ctx = canvas.getContext('2d');
-      // If converting to JPEG from PNG with transparency, fill white background first
-      if (targetFormat === 'image/jpeg') {
-        ctx.fillStyle = '#FFFFFF';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+  const clearAll = () => {
+    images.forEach(img => URL.revokeObjectURL(img.url));
+    setImages([]);
+  };
+
+  const processImages = async () => {
+    if (images.length === 0) return;
+    setIsProcessing(true);
+
+    try {
+      const formatObj = FORMATS.find(f => f.id === targetFormat);
+      if (!formatObj) throw new Error("Invalid format");
+
+      const zip = new JSZip();
+      const folder = images.length > 1 ? zip.folder(`converted_images_${Date.now()}`) : null;
+
+      for (let i = 0; i < images.length; i++) {
+        const imgObj = images[i];
+        
+        // Convert via canvas
+        const img = new Image();
+        await new Promise((resolve, reject) => {
+          img.onload = resolve;
+          img.onerror = reject;
+          img.src = imgObj.url;
+        });
+
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        
+        // If converting to JPEG, fill background with white (since JPEG has no transparency)
+        if (formatObj.id === 'jpeg') {
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+        
+        ctx.drawImage(img, 0, 0);
+
+        // Get Blob
+        const blob = await new Promise(resolve => canvas.toBlob(resolve, formatObj.mime, quality));
+        
+        const originalNameBase = imgObj.name.substring(0, imgObj.name.lastIndexOf('.')) || imgObj.name;
+        const newFileName = `${originalNameBase}.${formatObj.ext}`;
+
+        if (images.length === 1) {
+          // Single file download directly
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = newFileName;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+        } else {
+          // Add to ZIP
+          folder.file(newFileName, blob);
+        }
+      }
+
+      // If multiple, generate and download ZIP
+      if (images.length > 1) {
+        const content = await zip.generateAsync({ type: 'blob' });
+        const url = URL.createObjectURL(content);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `converted_images_${Date.now()}.zip`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
       }
       
-      ctx.drawImage(img, 0, 0);
-      
-      canvas.toBlob((blob) => {
-        if (!blob) {
-          toast.error('Conversion failed');
-          setIsConverting(false);
-          return;
-        }
-        setConvertedBlob(blob);
-        toast.success('Image converted successfully!');
-        setIsConverting(false);
-      }, targetFormat, 0.95);
-    };
-    img.src = previewSrc;
-  };
-
-  const handleDownload = () => {
-    if (!convertedBlob) return;
-    const url = URL.createObjectURL(convertedBlob);
-    const link = document.createElement('a');
-    link.href = url;
-    
-    const formatObj = formats.find(f => f.value === targetFormat);
-    const originalName = file.name.split('.')[0];
-    link.download = `${originalName}_converted.${formatObj.ext}`;
-    
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  };
-
-  const clear = () => {
-    setFile(null);
-    setPreviewSrc('');
-    setConvertedBlob(null);
+      toast.success(images.length > 1 ? 'Images successfully converted and zipped!' : 'Image converted successfully!');
+    } catch (error) {
+      console.error(error);
+      toast.error('An error occurred during conversion');
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-6xl mx-auto">
       <div className="mb-6 flex items-center gap-3">
-        <div className="p-2 bg-orange-500/10 text-orange-500 rounded-lg">
-          <ArrowRightLeft size={28} />
+        <div className="p-2 bg-pink-500/10 text-pink-500 rounded-lg shadow-sm">
+          <ArrowRightRight size={28} />
         </div>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Image Converter</h1>
-          <p className="text-muted-foreground mt-1 text-sm">Convert images between PNG, JPEG, WEBP, and BMP instantly.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Advanced Image Converter</h1>
+          <p className="text-muted-foreground mt-1 text-sm">Batch convert images to WebP, JPEG, PNG, or BMP instantly.</p>
         </div>
       </div>
 
-      <canvas ref={canvasRef} className="hidden" />
-
-      {!file ? (
-        <DropzoneComponent 
-          onFilesAccepted={handleFilesAccepted} 
-          accept={{ 'image/*': ['.jpeg', '.jpg', '.png', '.webp', '.bmp'] }} 
-          maxFiles={1}
-          title="Drag & drop an image to convert"
-        />
-      ) : (
+      <div className="grid lg:grid-cols-[1fr_350px] gap-6">
+        
+        {/* Upload Area */}
         <div className="space-y-6">
-          <div className="grid md:grid-cols-[1fr_auto_1fr] gap-6 items-center">
+          <DropzoneComponent 
+            onFilesAccepted={handleFilesAccepted} 
+            accept={{ 'image/*': ['.jpeg', '.jpg', '.png', '.webp', '.bmp', '.gif'] }} 
+            maxFiles={100}
+            title="Drag & drop images to convert (Batch Upload Supported)"
+          />
+
+          {images.length > 0 && (
+            <div className="bg-card border border-border p-6 rounded-2xl shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                  <Layers size={16} /> Batch Queue ({images.length})
+                </h3>
+                <button onClick={clearAll} className="text-xs text-red-500 hover:underline">Clear Queue</button>
+              </div>
+              
+              <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                {images.map((img, idx) => (
+                  <div key={idx} className="flex items-center gap-4 bg-muted/50 p-3 rounded-xl border border-border group hover:border-pink-500/50 transition-colors">
+                    <img src={img.url} className="w-12 h-12 object-cover rounded-md border border-border/50 shadow-sm" />
+                    <div className="flex-1 truncate">
+                      <p className="font-medium text-sm text-foreground truncate">{img.name}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{(img.size / 1024).toFixed(1)} KB</p>
+                    </div>
+                    <button 
+                      onClick={() => removeImage(idx)}
+                      className="p-2 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded-md transition-colors"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Settings Area */}
+        <div className="space-y-6">
+          <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6">
             
-            {/* Original Image */}
-            <div className="bg-card border border-border p-6 rounded-xl shadow-sm flex flex-col items-center">
-               <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4 w-full">Original</h3>
-               <div className="w-full flex justify-center bg-muted/30 rounded-lg p-4 h-48 border border-border/50 border-dashed">
-                 <img 
-                    src={previewSrc} 
-                    alt="Original" 
-                    className="max-h-full object-contain"
-                 />
-               </div>
-               <div className="mt-4 text-center w-full">
-                  <p className="font-medium text-foreground truncate">{file.name}</p>
-                  <p className="text-sm text-muted-foreground uppercase mt-1">{file.type.split('/')[1]}</p>
-                  <p className="text-xs text-muted-foreground mt-1">{(file.size / 1024).toFixed(1)} KB</p>
-               </div>
+            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground border-b border-border pb-3 flex items-center gap-2">
+              <FileCode2 size={16} /> Conversion Settings
+            </h3>
+            
+            <div className="space-y-3">
+              <label className="text-sm font-medium text-foreground block">Target Format</label>
+              <div className="grid grid-cols-2 gap-2">
+                {FORMATS.map(f => (
+                  <button
+                    key={f.id}
+                    onClick={() => setTargetFormat(f.id)}
+                    className={`py-3 rounded-lg border text-sm font-medium transition-colors ${
+                      targetFormat === f.id 
+                        ? 'bg-pink-500/10 border-pink-500 text-pink-500 shadow-sm' 
+                        : 'bg-background border-border text-foreground hover:bg-muted'
+                    }`}
+                  >
+                    {f.name}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            {/* Conversion Controls */}
-            <div className="flex flex-col items-center gap-4 py-4 md:py-0">
-               <div className="w-full">
-                 <label className="block text-sm font-medium text-center text-muted-foreground mb-2">Target Format</label>
-                 <select 
-                   value={targetFormat}
-                   onChange={(e) => setTargetFormat(e.target.value)}
-                   className="w-40 p-2.5 bg-background border border-border rounded-md text-foreground focus:ring-2 focus:ring-orange-500 outline-none transition-all text-center font-medium"
-                 >
-                   {formats.map(f => (
-                     <option key={f.value} value={f.value}>{f.label}</option>
-                   ))}
-                 </select>
-               </div>
-
-               <button 
-                  onClick={convertImage}
-                  disabled={isConverting}
-                  className="w-12 h-12 rounded-full bg-orange-500 text-white flex items-center justify-center hover:bg-orange-600 transition-colors shadow-lg disabled:opacity-50 mt-2"
-               >
-                 <ArrowRightLeft size={24} className={isConverting ? "animate-spin" : ""} />
-               </button>
-            </div>
-
-            {/* Converted Image */}
-            <div className="bg-card border border-border p-6 rounded-xl shadow-sm flex flex-col items-center relative overflow-hidden">
-               <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4 w-full">Converted</h3>
-               
-               {!convertedBlob ? (
-                 <div className="w-full h-48 flex items-center justify-center border border-border border-dashed rounded-lg text-muted-foreground text-sm">
-                   Awaiting conversion...
-                 </div>
-               ) : (
-                 <>
-                   <div className="w-full flex justify-center bg-orange-500/5 rounded-lg p-4 h-48 border border-orange-500/20">
-                     <img 
-                        src={URL.createObjectURL(convertedBlob)} 
-                        alt="Converted" 
-                        className="max-h-full object-contain"
-                     />
-                   </div>
-                   <div className="mt-4 text-center w-full">
-                      <p className="font-medium text-foreground truncate">
-                        {file.name.split('.')[0]}_converted.{formats.find(f => f.value === targetFormat).ext}
-                      </p>
-                      <p className="text-sm font-bold text-orange-500 uppercase mt-1">
-                        {formats.find(f => f.value === targetFormat).label}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">{(convertedBlob.size / 1024).toFixed(1)} KB</p>
-                   </div>
-                 </>
-               )}
-            </div>
+            {(targetFormat === 'jpeg' || targetFormat === 'webp') && (
+              <div className="space-y-2 pt-2 border-t border-border">
+                <div className="flex justify-between items-center">
+                  <label className="text-sm font-medium text-foreground">Quality</label>
+                  <span className="text-xs font-bold bg-pink-500/10 text-pink-500 px-2 py-0.5 rounded-md">
+                    {Math.round(quality * 100)}%
+                  </span>
+                </div>
+                <input 
+                  type="range" 
+                  min="0.1" 
+                  max="1.0" 
+                  step="0.05"
+                  value={quality}
+                  onChange={(e) => setQuality(Number(e.target.value))}
+                  className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-pink-500"
+                />
+                <p className="text-xs text-muted-foreground mt-1">Lower quality produces significantly smaller file sizes.</p>
+              </div>
+            )}
 
           </div>
 
-          <div className="flex justify-end gap-4 border-t border-border pt-6">
+          <div className="space-y-3">
             <button 
-              onClick={clear}
-              className="px-6 py-2.5 bg-background border border-border text-foreground font-medium rounded-md hover:bg-muted transition-colors flex items-center gap-2"
+              onClick={processImages}
+              disabled={isProcessing || images.length === 0}
+              className="w-full py-3 bg-pink-500 text-white font-medium rounded-xl hover:bg-pink-600 transition-colors flex items-center justify-center gap-2 shadow-sm shadow-pink-500/20 disabled:opacity-50"
             >
-              <RefreshCw size={18} /> Start Over
+              {isProcessing ? (
+                <>
+                  <RefreshCw size={18} className="animate-spin" /> Processing {images.length} {images.length === 1 ? 'file' : 'files'}...
+                </>
+              ) : (
+                <>
+                  <Download size={18} /> 
+                  {images.length > 1 ? `Convert & Download ZIP` : `Convert & Download`}
+                </>
+              )}
             </button>
-            {convertedBlob && (
-              <button 
-                onClick={handleDownload}
-                className="px-6 py-2.5 bg-orange-500 text-white font-medium rounded-md hover:bg-orange-600 transition-colors flex items-center gap-2 shadow-sm shadow-orange-500/20"
-              >
-                <Download size={18} /> Download {formats.find(f => f.value === targetFormat).label}
-              </button>
-            )}
           </div>
         </div>
-      )}
+
+      </div>
     </div>
   );
 };

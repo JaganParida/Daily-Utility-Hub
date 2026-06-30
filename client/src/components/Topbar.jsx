@@ -1,4 +1,4 @@
-import { Menu, Moon, Sun, User, LogOut, Search, ArrowLeft } from 'lucide-react';
+import { Menu, Moon, Sun, User, LogOut, Search, ArrowLeft, Monitor } from 'lucide-react';
 import { useState, useEffect, useContext, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import AuthContext from '../context/AuthContext';
@@ -28,14 +28,16 @@ const ALL_TOOLS = [
 ];
 
 const Topbar = ({ toggleSidebar }) => {
-  const [theme, setTheme] = useState('light');
+  const [theme, setTheme] = useState(localStorage.getItem('theme-preference') || 'system');
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
   
   const { user, logout } = useContext(AuthContext);
   const searchInputRef = useRef(null);
   const searchContainerRef = useRef(null);
+  const themeMenuRef = useRef(null);
   
   const navigate = useNavigate();
   const location = useLocation();
@@ -54,11 +56,14 @@ const Topbar = ({ toggleSidebar }) => {
     }
   }, [searchQuery]);
 
-  // Click outside search to close
+  // Click outside to close dropdowns
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (searchContainerRef.current && !searchContainerRef.current.contains(event.target)) {
         setIsSearchOpen(false);
+      }
+      if (themeMenuRef.current && !themeMenuRef.current.contains(event.target)) {
+        setIsThemeMenuOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -90,19 +95,38 @@ const Topbar = ({ toggleSidebar }) => {
       searchInputRef.current.blur();
     }
     setIsSearchOpen(false);
+    setIsThemeMenuOpen(false);
   }, { enableOnFormTags: true });
 
+  // Theme Logic
   useEffect(() => {
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
+    localStorage.setItem('theme-preference', theme);
+    
+    const applyTheme = () => {
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else if (theme === 'light') {
+        document.documentElement.classList.remove('dark');
+      } else {
+        // System preference
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      }
+    };
+
+    applyTheme();
+
+    // Listener for system theme changes if set to 'system'
+    if (theme === 'system') {
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      const handleChange = () => applyTheme();
+      mediaQuery.addEventListener('change', handleChange);
+      return () => mediaQuery.removeEventListener('change', handleChange);
     }
   }, [theme]);
-
-  const toggleTheme = () => {
-    setTheme(theme === 'light' ? 'dark' : 'light');
-  };
 
   return (
     <header className="h-16 flex items-center justify-between px-4 md:px-6 glass-header">
@@ -164,13 +188,40 @@ const Topbar = ({ toggleSidebar }) => {
       </div>
 
       <div className="flex items-center gap-2 sm:gap-4">
-        <button 
-          onClick={toggleTheme}
-          className="p-2 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-          title="Toggle Theme"
-        >
-          {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
-        </button>
+        
+        {/* Theme Dropdown */}
+        <div className="relative" ref={themeMenuRef}>
+          <button 
+            onClick={() => setIsThemeMenuOpen(!isThemeMenuOpen)}
+            className="p-2 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-colors focus:outline-none"
+            title="Theme Settings"
+          >
+            {theme === 'light' ? <Sun size={20} /> : theme === 'dark' ? <Moon size={20} /> : <Monitor size={20} />}
+          </button>
+          
+          {isThemeMenuOpen && (
+            <div className="absolute right-0 top-full mt-2 w-36 bg-card border border-border rounded-xl shadow-xl overflow-hidden z-50">
+              <button
+                onClick={() => { setTheme('light'); setIsThemeMenuOpen(false); }}
+                className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${theme === 'light' ? 'bg-primary/10 text-primary font-medium' : 'text-foreground hover:bg-muted'}`}
+              >
+                <Sun size={16} /> Light
+              </button>
+              <button
+                onClick={() => { setTheme('dark'); setIsThemeMenuOpen(false); }}
+                className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${theme === 'dark' ? 'bg-primary/10 text-primary font-medium' : 'text-foreground hover:bg-muted'}`}
+              >
+                <Moon size={16} /> Dark
+              </button>
+              <button
+                onClick={() => { setTheme('system'); setIsThemeMenuOpen(false); }}
+                className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${theme === 'system' ? 'bg-primary/10 text-primary font-medium' : 'text-foreground hover:bg-muted'}`}
+              >
+                <Monitor size={16} /> System
+              </button>
+            </div>
+          )}
+        </div>
         
         {user ? (
           <div className="flex items-center gap-2 sm:gap-4">

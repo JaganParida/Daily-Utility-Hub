@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
-import { Crop, Download, RefreshCw } from 'lucide-react';
+import { Crop, Download, RefreshCw, RotateCw, FlipHorizontal, FlipVertical, Circle } from 'lucide-react';
 import ReactCrop, { centerCrop, makeAspectCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 import DropzoneComponent from '../../components/DropzoneComponent';
@@ -27,7 +27,14 @@ const ImageCropper = () => {
   const imgRef = useRef(null);
   const [crop, setCrop] = useState();
   const [completedCrop, setCompletedCrop] = useState(null);
-  const [aspect, setAspect] = useState(16 / 9);
+  
+  // Advanced Controls
+  const [aspect, setAspect] = useState(undefined);
+  const [isCircular, setIsCircular] = useState(false);
+  const [rotate, setRotate] = useState(0); // 0, 90, 180, 270
+  const [scaleX, setScaleX] = useState(1); // 1 or -1
+  const [scaleY, setScaleY] = useState(1); // 1 or -1
+  
   const [croppedBlob, setCroppedBlob] = useState(null);
   const canvasRef = useRef(null);
 
@@ -42,54 +49,77 @@ const ImageCropper = () => {
 
   function onImageLoad(e) {
     if (aspect) {
-      const { width, height } = e.currentTarget
-      setCrop(centerAspectCrop(width, height, aspect))
+      const { width, height } = e.currentTarget;
+      setCrop(centerAspectCrop(width, height, aspect));
     }
   }
 
-  const handleAspectChange = (newAspect) => {
+  const handleAspectChange = (newAspect, circular = false) => {
     setAspect(newAspect);
-    if (imgRef.current && newAspect) {
+    setIsCircular(circular);
+    
+    if (imgRef.current) {
       const { width, height } = imgRef.current;
-      setCrop(centerAspectCrop(width, height, newAspect));
-    } else {
-      setCrop(undefined);
+      if (newAspect) {
+        setCrop(centerAspectCrop(width, height, newAspect));
+      } else {
+        setCrop(undefined);
+      }
     }
   };
 
   const applyCrop = async () => {
-    if (!completedCrop || !imgRef.current) return;
+    if (!completedCrop || !imgRef.current) {
+       toast.error("Please draw a crop area first.");
+       return;
+    }
 
     const canvas = canvasRef.current;
     const image = imgRef.current;
     
-    const scaleX = image.naturalWidth / image.width;
-    const scaleY = image.naturalHeight / image.height;
+    const scaleXRatio = image.naturalWidth / image.width;
+    const scaleYRatio = image.naturalHeight / image.height;
     
-    canvas.width = completedCrop.width * scaleX;
-    canvas.height = completedCrop.height * scaleY;
+    // Set canvas size based on bounding box of rotated image, but for cropping 
+    // it's easier to just draw the cropped rect directly.
+    canvas.width = completedCrop.width * scaleXRatio;
+    canvas.height = completedCrop.height * scaleYRatio;
     
     const ctx = canvas.getContext('2d');
     ctx.imageSmoothingQuality = 'high';
+    
+    // Fill background if rotated
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    const cropX = completedCrop.x * scaleX;
-    const cropY = completedCrop.y * scaleY;
-    const cropWidth = completedCrop.width * scaleX;
-    const cropHeight = completedCrop.height * scaleY;
+    ctx.translate(canvas.width / 2, canvas.height / 2);
+    ctx.scale(scaleX, scaleY);
+    ctx.rotate((rotate * Math.PI) / 180);
 
+    const cropX = completedCrop.x * scaleXRatio;
+    const cropY = completedCrop.y * scaleYRatio;
+    
+    // Draw the image offset by the crop amount
     ctx.drawImage(
       image,
-      cropX,
-      cropY,
-      cropWidth,
-      cropHeight,
-      0,
-      0,
-      cropWidth,
-      cropHeight
+      -cropX - (canvas.width / 2),
+      -cropY - (canvas.height / 2),
+      image.naturalWidth,
+      image.naturalHeight
     );
+    
+    ctx.resetTransform();
 
-    const type = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+    // If circular, we can clip the canvas, but standard JPEG doesn't support transparency.
+    // For circular, we'll export as PNG to keep transparency outside the circle.
+    if (isCircular) {
+      ctx.globalCompositeOperation = 'destination-in';
+      ctx.beginPath();
+      ctx.arc(canvas.width/2, canvas.height/2, Math.min(canvas.width, canvas.height)/2, 0, 2 * Math.PI);
+      ctx.fill();
+    }
+
+    const type = isCircular || file.type === 'image/png' ? 'image/png' : 'image/jpeg';
     
     canvas.toBlob((blob) => {
       if (!blob) {
@@ -106,8 +136,11 @@ const ImageCropper = () => {
     const url = URL.createObjectURL(croppedBlob);
     const link = document.createElement('a');
     link.href = url;
-    const ext = file.name.split('.').pop() || 'jpg';
-    link.download = `cropped_${file.name.replace(`.${ext}`, '')}.${ext}`;
+    
+    const originalExt = file.name.split('.').pop() || 'jpg';
+    const ext = isCircular || originalExt === 'png' ? 'png' : originalExt;
+    
+    link.download = `cropped_${file.name.replace(`.${originalExt}`, '')}.${ext}`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -120,17 +153,20 @@ const ImageCropper = () => {
     setCrop(undefined);
     setCompletedCrop(null);
     setCroppedBlob(null);
+    setRotate(0);
+    setScaleX(1);
+    setScaleY(1);
   };
 
   return (
-    <div className="max-w-5xl mx-auto">
+    <div className="max-w-6xl mx-auto">
       <div className="mb-6 flex items-center gap-3">
-        <div className="p-2 bg-purple-500/10 text-purple-500 rounded-lg">
+        <div className="p-2 bg-purple-500/10 text-purple-500 rounded-lg shadow-sm">
           <Crop size={28} />
         </div>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Image Cropper</h1>
-          <p className="text-muted-foreground mt-1 text-sm">Crop your images visually directly in your browser.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Advanced Image Cropper</h1>
+          <p className="text-muted-foreground mt-1 text-sm">Visually crop, rotate, flip, or create circular avatars instantly.</p>
         </div>
       </div>
 
@@ -145,16 +181,17 @@ const ImageCropper = () => {
         />
       ) : (
         <div className="space-y-6">
-          <div className="grid lg:grid-cols-[1fr_300px] gap-6">
+          <div className="grid lg:grid-cols-[1fr_350px] gap-6">
             
             {/* Cropper Area */}
-            <div className="bg-card border border-border p-6 rounded-xl shadow-sm overflow-hidden flex flex-col items-center justify-center min-h-[400px]">
+            <div className="bg-card border border-border p-6 rounded-2xl shadow-sm overflow-hidden flex flex-col items-center justify-center min-h-[500px] relative">
               {!croppedBlob ? (
                 <ReactCrop
                   crop={crop}
                   onChange={(_, percentCrop) => setCrop(percentCrop)}
                   onComplete={(c) => setCompletedCrop(c)}
                   aspect={aspect}
+                  circularCrop={isCircular}
                   className="max-h-[600px]"
                 >
                   <img
@@ -162,76 +199,128 @@ const ImageCropper = () => {
                     alt="Crop me"
                     src={imgSrc}
                     onLoad={onImageLoad}
-                    className="max-h-[600px] object-contain"
+                    className="max-h-[600px] object-contain transition-transform"
+                    style={{ transform: `scale(${scaleX}, ${scaleY}) rotate(${rotate}deg)` }}
                   />
                 </ReactCrop>
               ) : (
-                <div className="flex flex-col items-center">
-                  <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4">Cropped Result</h3>
-                  <img 
-                    src={URL.createObjectURL(croppedBlob)} 
-                    alt="Cropped result" 
-                    className="max-h-[500px] object-contain rounded-lg border border-border/50 shadow-md"
-                  />
+                <div className="flex flex-col items-center w-full h-full justify-center">
+                  <div className="bg-muted/30 p-8 rounded-2xl border border-border w-full flex justify-center">
+                    <img 
+                      src={URL.createObjectURL(croppedBlob)} 
+                      alt="Cropped result" 
+                      className="max-h-[500px] object-contain drop-shadow-md"
+                    />
+                  </div>
                 </div>
               )}
             </div>
 
             {/* Controls sidebar */}
             <div className="space-y-6">
-              <div className="bg-card border border-border p-6 rounded-xl shadow-sm">
-                <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4">Aspect Ratio</h3>
+              
+              <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6">
                 
-                <div className="space-y-2">
-                  {[
-                    { label: 'Freeform', value: undefined },
-                    { label: '1:1 (Square)', value: 1 },
-                    { label: '16:9 (Landscape)', value: 16 / 9 },
-                    { label: '4:3', value: 4 / 3 },
-                    { label: '9:16 (Portrait)', value: 9 / 16 },
-                  ].map((preset) => (
-                    <button
-                      key={preset.label}
-                      onClick={() => handleAspectChange(preset.value)}
-                      className={`w-full text-left px-4 py-2 text-sm rounded-md transition-colors ${
-                        aspect === preset.value 
-                          ? 'bg-primary text-primary-foreground font-medium' 
-                          : 'bg-muted/50 text-foreground hover:bg-muted'
-                      }`}
-                    >
-                      {preset.label}
-                    </button>
-                  ))}
-                </div>
+                {/* Transform Controls */}
+                {!croppedBlob && (
+                  <div>
+                    <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4 border-b border-border pb-3">Transform</h3>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setRotate((r) => (r + 90) % 360)}
+                        className="flex-1 py-2 bg-muted hover:bg-border border border-border rounded-lg text-foreground flex flex-col items-center gap-1 transition-colors"
+                        title="Rotate 90 degrees"
+                      >
+                        <RotateCw size={18} />
+                        <span className="text-[10px] font-medium uppercase tracking-wider">Rotate</span>
+                      </button>
+                      <button
+                        onClick={() => setScaleX(s => s * -1)}
+                        className="flex-1 py-2 bg-muted hover:bg-border border border-border rounded-lg text-foreground flex flex-col items-center gap-1 transition-colors"
+                        title="Flip Horizontally"
+                      >
+                        <FlipHorizontal size={18} />
+                        <span className="text-[10px] font-medium uppercase tracking-wider">Flip X</span>
+                      </button>
+                      <button
+                        onClick={() => setScaleY(s => s * -1)}
+                        className="flex-1 py-2 bg-muted hover:bg-border border border-border rounded-lg text-foreground flex flex-col items-center gap-1 transition-colors"
+                        title="Flip Vertically"
+                      >
+                        <FlipVertical size={18} />
+                        <span className="text-[10px] font-medium uppercase tracking-wider">Flip Y</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Aspect Ratio Templates */}
+                {!croppedBlob && (
+                  <div>
+                    <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4 border-b border-border pb-3">Aspect Ratio</h3>
+                    <div className="grid grid-cols-2 gap-2">
+                      {[
+                        { label: 'Freeform', value: undefined, circ: false },
+                        { label: '1:1 Square', value: 1, circ: false },
+                        { label: '16:9 Landscape', value: 16 / 9, circ: false },
+                        { label: '4:3 Classic', value: 4 / 3, circ: false },
+                        { label: '9:16 Portrait', value: 9 / 16, circ: false },
+                      ].map((preset) => (
+                        <button
+                          key={preset.label}
+                          onClick={() => handleAspectChange(preset.value, preset.circ)}
+                          className={`w-full text-left px-3 py-2 text-xs font-medium rounded-md transition-colors border ${
+                            aspect === preset.value && isCircular === preset.circ
+                              ? 'bg-purple-500/10 border-purple-500 text-purple-500' 
+                              : 'bg-muted/50 border-transparent text-foreground hover:bg-muted'
+                          }`}
+                        >
+                          {preset.label}
+                        </button>
+                      ))}
+                      <button
+                          onClick={() => handleAspectChange(1, true)}
+                          className={`w-full text-left px-3 py-2 text-xs font-medium rounded-md transition-colors border flex items-center justify-between ${
+                            isCircular 
+                              ? 'bg-purple-500/10 border-purple-500 text-purple-500' 
+                              : 'bg-muted/50 border-transparent text-foreground hover:bg-muted'
+                          }`}
+                        >
+                          Circular Profile <Circle size={12} className={isCircular ? "fill-purple-500" : ""} />
+                        </button>
+                    </div>
+                  </div>
+                )}
+
               </div>
 
-              {!croppedBlob && (
+              {/* Action Buttons */}
+              <div className="space-y-3">
+                {!croppedBlob ? (
+                  <button 
+                    onClick={applyCrop}
+                    className="w-full py-3 bg-purple-500 text-white font-medium rounded-xl hover:bg-purple-600 transition-colors shadow-sm shadow-purple-500/20"
+                  >
+                    Apply Crop & Transform
+                  </button>
+                ) : (
+                  <button 
+                    onClick={handleDownload}
+                    className="w-full py-3 bg-purple-500 text-white font-medium rounded-xl hover:bg-purple-600 transition-colors shadow-sm shadow-purple-500/20 flex items-center justify-center gap-2"
+                  >
+                    <Download size={18} /> Download Cropped Image
+                  </button>
+                )}
+                
                 <button 
-                  onClick={applyCrop}
-                  disabled={!completedCrop?.width || !completedCrop?.height}
-                  className="w-full py-3 bg-purple-500 text-white font-medium rounded-xl hover:bg-purple-600 transition-colors disabled:opacity-50 shadow-sm shadow-purple-500/20"
+                  onClick={clear}
+                  className="w-full py-3 bg-background border border-border text-foreground font-medium rounded-xl hover:bg-muted transition-colors flex items-center justify-center gap-2"
                 >
-                  Apply Crop
+                  <RefreshCw size={18} /> {croppedBlob ? 'Start Over' : 'Cancel & Clear'}
                 </button>
-              )}
-            </div>
-          </div>
+              </div>
 
-          <div className="flex justify-end gap-4 border-t border-border pt-6">
-            <button 
-              onClick={clear}
-              className="px-6 py-2.5 bg-background border border-border text-foreground font-medium rounded-md hover:bg-muted transition-colors flex items-center gap-2"
-            >
-              <RefreshCw size={18} /> {croppedBlob ? 'Start Over' : 'Cancel'}
-            </button>
-            {croppedBlob && (
-              <button 
-                onClick={handleDownload}
-                className="px-6 py-2.5 bg-purple-500 text-white font-medium rounded-md hover:bg-purple-600 transition-colors flex items-center gap-2 shadow-sm shadow-purple-500/20"
-              >
-                <Download size={18} /> Download Cropped Image
-              </button>
-            )}
+            </div>
           </div>
         </div>
       )}
