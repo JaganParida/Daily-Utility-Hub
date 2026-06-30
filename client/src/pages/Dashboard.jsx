@@ -1,9 +1,37 @@
 import { Link } from 'react-router-dom';
-import { Type, Hash, Key, Layers, AlignLeft } from 'lucide-react';
+import { Type, Hash, Key, Layers, AlignLeft, Image as ImageIcon, Expand, Crop, ArrowRightLeft } from 'lucide-react';
 import PageTransition from '../components/PageTransition';
 
 const Dashboard = () => {
   const tools = [
+    {
+      name: 'Image Compressor',
+      description: 'Compress images locally without server upload.',
+      icon: ImageIcon,
+      to: '/tools/image-compressor',
+      color: 'bg-emerald-500/10 text-emerald-500',
+    },
+    {
+      name: 'Image Resizer',
+      description: 'Change image dimensions instantly.',
+      icon: Expand,
+      to: '/tools/image-resizer',
+      color: 'bg-blue-500/10 text-blue-500',
+    },
+    {
+      name: 'Image Cropper',
+      description: 'Crop images visually in your browser.',
+      icon: Crop,
+      to: '/tools/image-cropper',
+      color: 'bg-purple-500/10 text-purple-500',
+    },
+    {
+      name: 'Image Converter',
+      description: 'Convert between PNG, JPEG, WEBP, and BMP.',
+      icon: ArrowRightLeft,
+      to: '/tools/image-converter',
+      color: 'bg-orange-500/10 text-orange-500',
+    },
     {
       name: 'Word Counter',
       description: 'Count words, characters, and sentences in your text.',
