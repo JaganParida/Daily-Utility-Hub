@@ -5,10 +5,10 @@ import WordCounter from './pages/tools/WordCounter';
 import UuidGenerator from './pages/tools/UuidGenerator';
 import PasswordGenerator from './pages/tools/PasswordGenerator';
 import CaseConverter from './pages/tools/CaseConverter';
+import FontConverter from './pages/tools/FontConverter';
 import HashGenerator from './pages/tools/HashGenerator';
-import LoremIpsumGenerator from './pages/tools/LoremIpsumGenerator';
-import RemoveDuplicateLines from './pages/tools/RemoveDuplicateLines';
-import SortLines from './pages/tools/SortLines';
+import LoremIpsum from './pages/tools/LoremIpsum';
+import TextLineEditor from './pages/tools/TextLineEditor';
 import FindAndReplace from './pages/tools/FindAndReplace';
 import JwtDecoder from './pages/tools/JwtDecoder';
 import RegexTester from './pages/tools/RegexTester';
@@ -48,10 +48,10 @@ function AnimatedRoutes() {
           <Route path="tools/uuid-generator" element={<UuidGenerator />} />
           <Route path="tools/password-generator" element={<PasswordGenerator />} />
           <Route path="tools/case-converter" element={<CaseConverter />} />
+          <Route path="tools/font-converter" element={<FontConverter />} />
           <Route path="tools/hash-generator" element={<HashGenerator />} />
-          <Route path="tools/lorem-ipsum" element={<LoremIpsumGenerator />} />
-          <Route path="tools/remove-duplicates" element={<RemoveDuplicateLines />} />
-          <Route path="tools/sort-lines" element={<SortLines />} />
+          <Route path="tools/lorem-ipsum" element={<LoremIpsum />} />
+          <Route path="tools/text-line-editor" element={<TextLineEditor />} />
           <Route path="tools/find-replace" element={<FindAndReplace />} />
           <Route path="tools/jwt-decoder" element={<JwtDecoder />} />
           <Route path="tools/regex-tester" element={<RegexTester />} />

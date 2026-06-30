@@ -26,9 +26,9 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       links: [
         { name: 'Word Counter', to: '/tools/word-counter', icon: Type },
         { name: 'Case Converter', to: '/tools/case-converter', icon: Type },
+        { name: 'Font Converter', to: '/tools/font-converter', icon: Type },
         { name: 'Lorem Ipsum', to: '/tools/lorem-ipsum', icon: AlignLeft },
-        { name: 'Remove Duplicates', to: '/tools/remove-duplicates', icon: Layers },
-        { name: 'Sort Lines', to: '/tools/sort-lines', icon: Layers },
+        { name: 'Text Line Editor', to: '/tools/text-line-editor', icon: Layers },
         { name: 'Find & Replace', to: '/tools/find-replace', icon: Type },
       ]
     },

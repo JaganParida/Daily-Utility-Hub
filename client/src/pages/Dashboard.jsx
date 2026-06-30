@@ -16,8 +16,8 @@ const Dashboard = () => {
     { name: 'Word Counter', description: 'Count words, characters, and sentences in your text.', icon: Type, to: '/tools/word-counter', color: 'bg-blue-500/10 text-blue-500' },
     { name: 'Case Converter', description: 'Convert text to lowercase, UPPERCASE, Title Case, etc.', icon: Type, to: '/tools/case-converter', color: 'bg-indigo-500/10 text-indigo-500' },
     { name: 'Lorem Ipsum Generator', description: 'Generate dummy text for your designs and mockups.', icon: AlignLeft, to: '/tools/lorem-ipsum', color: 'bg-orange-500/10 text-orange-500' },
-    { name: 'Remove Duplicate Lines', description: 'Clean up text lists by instantly removing duplicates.', icon: Layers, to: '/tools/remove-duplicates', color: 'bg-pink-500/10 text-pink-500' },
-    { name: 'Sort Lines', description: 'Sort text lines alphabetically (A-Z or Z-A).', icon: Layers, to: '/tools/sort-lines', color: 'bg-rose-500/10 text-rose-500' },
+    { name: 'Text Line Editor', description: 'Sort, deduplicate, and clean up lists of text.', icon: Layers, to: '/tools/text-line-editor', color: 'bg-pink-500/10 text-pink-500' },
+    { name: 'Font Converter', description: 'Generate stylish Instagram fonts from regular text.', icon: Type, to: '/tools/font-converter', color: 'bg-rose-500/10 text-rose-500' },
     { name: 'Find & Replace', description: 'Find and replace text with Regex support.', icon: Type, to: '/tools/find-replace', color: 'bg-cyan-500/10 text-cyan-500' },
     
     // Developer Tools (NEW & OLD)
