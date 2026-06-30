@@ -1,6 +1,5 @@
 import { useState, useCallback } from 'react';
 import { Copy, RefreshCw, Check, Hash } from 'lucide-react';
-import { v1 as uuidv1, v4 as uuidv4, v7 as uuidv7 } from 'uuid';
 import { toast } from 'react-hot-toast';
 
 const UuidGenerator = () => {
@@ -12,13 +11,27 @@ const UuidGenerator = () => {
 
   const generateUUID = () => {
     let rawUuid = '';
-    try {
-      if (version === 'v1') rawUuid = uuidv1();
-      else if (version === 'v7') rawUuid = uuidv7();
-      else rawUuid = uuidv4();
-    } catch (err) {
-      // Fallback if uuidv7 isn't supported in current version
-      rawUuid = uuidv4(); 
+    
+    if (version === 'v4') {
+      rawUuid = crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    } else if (version === 'v1') {
+      const time = Date.now().toString(16).padStart(12, '0');
+      rawUuid = `${time.slice(4, 12)}-${time.slice(0, 4)}-1xxx-yxxx-xxxxxxxxxxxx`.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    } else if (version === 'v7') {
+      const time = Date.now().toString(16).padStart(12, '0');
+      rawUuid = `${time.slice(0, 8)}-${time.slice(8, 12)}-7xxx-yxxx-xxxxxxxxxxxx`.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
     }
 
     if (format.noHyphens) rawUuid = rawUuid.replace(/-/g, '');
