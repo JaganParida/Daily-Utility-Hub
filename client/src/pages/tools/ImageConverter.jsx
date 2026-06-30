@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowRightRight, Download, RefreshCw, Layers, FileCode2, Trash2 } from 'lucide-react';
+import { ArrowRightLeft, Download, RefreshCw, Layers, FileCode2, Trash2 } from 'lucide-react';
 import DropzoneComponent from '../../components/DropzoneComponent';
 import JSZip from 'jszip';
 import { toast } from 'react-hot-toast';
@@ -127,7 +127,7 @@ const ImageConverter = () => {
     <div className="max-w-6xl mx-auto">
       <div className="mb-6 flex items-center gap-3">
         <div className="p-2 bg-pink-500/10 text-pink-500 rounded-lg shadow-sm">
-          <ArrowRightRight size={28} />
+          <ArrowRightLeft size={28} />
         </div>
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">Advanced Image Converter</h1>

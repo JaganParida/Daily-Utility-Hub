@@ -21,6 +21,10 @@ const ImageResizer = () => {
   const [maintainRatio, setMaintainRatio] = useState(true);
   const [originalRatio, setOriginalRatio] = useState(1);
   const [originalSize, setOriginalSize] = useState({ w: 0, h: 0 });
+  
+  // Track active selection for UI feedback
+  const [activeScale, setActiveScale] = useState(null);
+  const [activePreset, setActivePreset] = useState(null);
 
   const canvasRef = useRef(null);
 
@@ -41,6 +45,8 @@ const ImageResizer = () => {
       setHeight(img.height);
       setOriginalSize({ w: img.width, h: img.height });
       setOriginalRatio(img.width / img.height);
+      setActiveScale(null);
+      setActivePreset(null);
     };
     img.src = url;
   };
@@ -48,6 +54,8 @@ const ImageResizer = () => {
   const handleWidthChange = (e) => {
     const val = Number(e.target.value);
     setWidth(val);
+    setActiveScale(null);
+    setActivePreset(null);
     if (maintainRatio && val > 0) {
       setHeight(Math.round(val / originalRatio));
     }
@@ -56,22 +64,27 @@ const ImageResizer = () => {
   const handleHeightChange = (e) => {
     const val = Number(e.target.value);
     setHeight(val);
+    setActiveScale(null);
+    setActivePreset(null);
     if (maintainRatio && val > 0) {
       setWidth(Math.round(val * originalRatio));
     }
   };
 
-  const applyPreset = (w, h) => {
+  const applyPreset = (presetName, w, h) => {
     setWidth(w);
     setHeight(h);
-    // When applying a preset, we often want exactly those dimensions
-    setMaintainRatio(false); 
+    setMaintainRatio(false);
+    setActivePreset(presetName);
+    setActiveScale(null);
   };
 
   const scaleByPercentage = (percent) => {
     const factor = percent / 100;
     setWidth(Math.round(originalSize.w * factor));
     setHeight(Math.round(originalSize.h * factor));
+    setActiveScale(percent);
+    setActivePreset(null);
   };
 
   const processResize = async () => {
@@ -241,7 +254,11 @@ const ImageResizer = () => {
                     key={pct}
                     onClick={() => scaleByPercentage(pct)}
                     disabled={!image}
-                    className="py-1.5 bg-muted hover:bg-border border border-border rounded-md text-xs font-medium text-foreground transition-colors disabled:opacity-50"
+                    className={`py-1.5 border rounded-md text-xs font-medium transition-colors disabled:opacity-50 ${
+                      activeScale === pct 
+                        ? 'bg-emerald-500/10 border-emerald-500 text-emerald-500 shadow-sm' 
+                        : 'bg-muted hover:bg-border border-border text-foreground'
+                    }`}
                   >
                     {pct}%
                   </button>
@@ -258,12 +275,20 @@ const ImageResizer = () => {
                 {SOCIAL_PRESETS.map(preset => (
                   <button
                     key={preset.name}
-                    onClick={() => applyPreset(preset.w, preset.h)}
+                    onClick={() => applyPreset(preset.name, preset.w, preset.h)}
                     disabled={!image}
-                    className="p-2 bg-muted hover:bg-border border border-border rounded-md text-xs font-medium text-foreground text-left transition-colors flex flex-col disabled:opacity-50"
+                    className={`p-2 border rounded-md text-left transition-colors flex flex-col disabled:opacity-50 ${
+                      activePreset === preset.name 
+                        ? 'bg-emerald-500/10 border-emerald-500 shadow-sm' 
+                        : 'bg-muted hover:bg-border border-border'
+                    }`}
                   >
-                    <span>{preset.name}</span>
-                    <span className="text-muted-foreground text-[10px]">{preset.w} × {preset.h}</span>
+                    <span className={`text-xs font-medium ${activePreset === preset.name ? 'text-emerald-500' : 'text-foreground'}`}>
+                      {preset.name}
+                    </span>
+                    <span className={`text-[10px] ${activePreset === preset.name ? 'text-emerald-500/70' : 'text-muted-foreground'}`}>
+                      {preset.w} × {preset.h}
+                    </span>
                   </button>
                 ))}
               </div>
