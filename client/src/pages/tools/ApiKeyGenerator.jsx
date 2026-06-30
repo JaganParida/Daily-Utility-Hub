@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Key, Copy, RefreshCw, Check } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { v4 as uuidv4 } from 'uuid';
 
 const ApiKeyGenerator = () => {
   const [secret, setSecret] = useState('');
@@ -11,7 +10,12 @@ const ApiKeyGenerator = () => {
 
   const generateSecret = () => {
     if (format === 'uuid') {
-      setSecret(uuidv4());
+      // Use native browser crypto API for UUID v4
+      setSecret(crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      }));
       return;
     }
 
