@@ -203,30 +203,30 @@ const GradientGenerator = () => {
 
             <div className="space-y-3">
               {colors.map((color, idx) => (
-                <div key={color.id} className="flex items-center gap-3 bg-muted/30 p-2 rounded-xl border border-border group">
-                  <div className="flex-1 flex items-center gap-3">
+                <div key={color.id} className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 bg-muted/30 p-2 sm:p-3 rounded-xl border border-border group">
+                  <div className="flex-1 flex items-center gap-2 sm:gap-3 min-w-[120px]">
                     <input
                       type="color"
                       value={color.hex}
                       onChange={(e) => updateColor(color.id, 'hex', e.target.value)}
-                      className="w-10 h-10 p-0 border-0 bg-transparent rounded-lg cursor-pointer shrink-0 shadow-sm"
+                      className="w-8 h-8 sm:w-10 sm:h-10 p-0 border-0 bg-transparent rounded-lg cursor-pointer shrink-0 shadow-sm"
                     />
                     <input
                       type="text"
                       value={color.hex.toUpperCase()}
                       onChange={(e) => updateColor(color.id, 'hex', e.target.value)}
-                      className="w-24 bg-background border border-border rounded-md px-2 py-1.5 text-xs font-mono focus:outline-none focus:border-fuchsia-500"
+                      className="w-20 sm:w-24 bg-background border border-border rounded-md px-2 py-1.5 text-xs font-mono focus:outline-none focus:border-fuchsia-500"
                     />
                   </div>
                   
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 shrink-0">
                     <input
                       type="number"
                       min="0"
                       max="100"
                       value={color.position}
                       onChange={(e) => updateColor(color.id, 'position', e.target.value)}
-                      className="w-14 bg-background border border-border rounded-md px-2 py-1.5 text-xs font-mono text-center focus:outline-none focus:border-fuchsia-500"
+                      className="w-12 sm:w-14 bg-background border border-border rounded-md px-2 py-1.5 text-xs font-mono text-center focus:outline-none focus:border-fuchsia-500"
                     />
                     <span className="text-xs text-muted-foreground font-bold">%</span>
                   </div>
@@ -234,7 +234,7 @@ const GradientGenerator = () => {
                   <button
                     onClick={() => removeColor(color.id)}
                     disabled={colors.length <= 2}
-                    className="p-1.5 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded-md transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
+                    className="p-1.5 ml-auto text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded-md transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
                   >
                     <Trash2 size={16} />
                   </button>

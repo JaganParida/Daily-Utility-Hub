@@ -95,7 +95,7 @@ const JwtDecoder = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto flex flex-col h-[calc(100vh-140px)] min-h-[700px]">
+    <div className="max-w-6xl mx-auto flex flex-col min-h-[calc(100vh-140px)] lg:h-[calc(100vh-140px)] lg:min-h-[700px]">
       <div className="mb-6 flex items-center gap-3 shrink-0">
         <div className="p-2 bg-pink-500/10 text-pink-500 rounded-lg shadow-sm">
           <Key size={28} />

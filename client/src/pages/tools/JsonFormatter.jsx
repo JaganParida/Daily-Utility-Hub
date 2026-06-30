@@ -50,7 +50,7 @@ const JsonFormatter = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto flex flex-col h-[calc(100vh-140px)] min-h-[600px]">
+    <div className="max-w-6xl mx-auto flex flex-col min-h-[calc(100vh-140px)] lg:h-[calc(100vh-140px)] lg:min-h-[700px]">
       <div className="mb-6 flex items-center gap-3 shrink-0">
         <div className="p-2 bg-amber-500/10 text-amber-500 rounded-lg shadow-sm">
           <Braces size={28} />

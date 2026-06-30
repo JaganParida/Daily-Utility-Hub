@@ -76,8 +76,8 @@ const UrlConverter = () => {
   };
 
   return (
-    <div className="max-w-5xl mx-auto">
-      <div className="mb-6 flex items-center gap-3">
+    <div className="max-w-6xl mx-auto flex flex-col min-h-[calc(100vh-140px)] lg:h-[calc(100vh-140px)] lg:min-h-[700px]">
+      <div className="mb-6 flex items-center gap-3 shrink-0">
         <div className="p-2 bg-orange-500/10 text-orange-500 rounded-lg shadow-sm">
           <Link2 size={28} />
         </div>
