@@ -8,8 +8,9 @@ const UrlConverter = () => {
   const [mode, setMode] = useState('encode'); // encode, decode
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState(null);
+  const [scope, setScope] = useState('component'); // full, component
 
-  const handleConvert = (text, currentMode) => {
+  const handleConvert = (text, currentMode, currentScope = scope) => {
     setInput(text);
     if (!text) {
       setOutput('');
@@ -19,10 +20,18 @@ const UrlConverter = () => {
 
     try {
       if (currentMode === 'encode') {
-        setOutput(encodeURIComponent(text));
+        if (currentScope === 'full') {
+          setOutput(encodeURI(text));
+        } else {
+          setOutput(encodeURIComponent(text));
+        }
         setError(null);
       } else {
-        setOutput(decodeURIComponent(text));
+        if (currentScope === 'full') {
+          setOutput(decodeURI(text));
+        } else {
+          setOutput(decodeURIComponent(text));
+        }
         setError(null);
       }
     } catch (err) {
@@ -36,9 +45,16 @@ const UrlConverter = () => {
     // Swap input and output
     const prevOutput = output;
     if (prevOutput && !error) {
-      handleConvert(prevOutput, newMode);
+      handleConvert(prevOutput, newMode, scope);
     } else {
-      handleConvert(input, newMode);
+      handleConvert(input, newMode, scope);
+    }
+  };
+
+  const handleScopeChange = (newScope) => {
+    setScope(newScope);
+    if (input) {
+      handleConvert(input, mode, newScope);
     }
   };
 
@@ -74,28 +90,56 @@ const UrlConverter = () => {
       <div className="bg-card border border-border rounded-2xl shadow-sm mb-6 p-6">
         
         {/* Toggle Mode */}
-        <div className="flex justify-center mb-8">
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4 border-b border-border pb-6">
           <div className="bg-muted p-1 rounded-xl flex gap-1 border border-border/50">
             <button
               onClick={() => handleModeChange('encode')}
-              className={`px-8 py-2.5 rounded-lg text-sm font-medium transition-all ${
+              className={`px-6 py-2 rounded-lg text-sm font-medium transition-all ${
                 mode === 'encode'
                   ? 'bg-card text-foreground shadow-sm border border-border'
                   : 'text-muted-foreground hover:text-foreground hover:bg-background/50 border border-transparent'
               }`}
             >
-              Encode URL
+              Encode
             </button>
             <button
               onClick={() => handleModeChange('decode')}
-              className={`px-8 py-2.5 rounded-lg text-sm font-medium transition-all ${
+              className={`px-6 py-2 rounded-lg text-sm font-medium transition-all ${
                 mode === 'decode'
                   ? 'bg-card text-foreground shadow-sm border border-border'
                   : 'text-muted-foreground hover:text-foreground hover:bg-background/50 border border-transparent'
               }`}
             >
-              Decode URL
+              Decode
             </button>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Scope:</span>
+            <div className="bg-muted p-1 rounded-xl flex gap-1 border border-border/50">
+              <button
+                onClick={() => handleScopeChange('full')}
+                className={`px-4 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                  scope === 'full'
+                    ? 'bg-orange-500/10 text-orange-500 border border-orange-500/30'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-background/50 border border-transparent'
+                }`}
+                title="Leaves http:// and / intact (encodeURI)"
+              >
+                Full URL
+              </button>
+              <button
+                onClick={() => handleScopeChange('component')}
+                className={`px-4 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                  scope === 'component'
+                    ? 'bg-orange-500/10 text-orange-500 border border-orange-500/30'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-background/50 border border-transparent'
+                }`}
+                title="Encodes everything (encodeURIComponent)"
+              >
+                Query Params
+              </button>
+            </div>
           </div>
         </div>
 
