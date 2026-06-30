@@ -5,8 +5,10 @@ import { toast } from 'react-hot-toast';
 const CaseConverter = () => {
   const [text, setText] = useState('');
   const [copied, setCopied] = useState(false);
+  const [activeCase, setActiveCase] = useState(null);
 
   const convertCase = (type) => {
+    setActiveCase(type);
     if (!text) return;
     
     let result = '';
@@ -60,6 +62,7 @@ const CaseConverter = () => {
 
   const clearText = () => {
     setText('');
+    setActiveCase(null);
     toast.success('Text cleared');
   };
 
@@ -93,7 +96,11 @@ const CaseConverter = () => {
                 <button
                   key={type}
                   onClick={() => convertCase(type)}
-                  className="w-full text-left px-4 py-2.5 rounded-lg border border-transparent bg-muted/50 hover:bg-indigo-500/10 hover:border-indigo-500/30 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium transition-all"
+                  className={`w-full text-left px-4 py-2.5 rounded-lg border font-medium transition-all ${
+                    activeCase === type 
+                      ? 'bg-indigo-500/10 border-indigo-500 text-indigo-600 dark:text-indigo-400 shadow-sm' 
+                      : 'border-transparent bg-muted/50 hover:bg-indigo-500/10 hover:border-indigo-500/30 hover:text-indigo-600 dark:hover:text-indigo-400'
+                  }`}
                 >
                   {type}
                 </button>
@@ -110,7 +117,11 @@ const CaseConverter = () => {
                 <button
                   key={type}
                   onClick={() => convertCase(type)}
-                  className="w-full text-left px-4 py-2.5 rounded-lg border border-transparent bg-muted/50 hover:bg-orange-500/10 hover:border-orange-500/30 hover:text-orange-600 dark:hover:text-orange-400 font-medium transition-all font-mono text-sm"
+                  className={`w-full text-left px-4 py-2.5 rounded-lg border font-medium transition-all font-mono text-sm ${
+                    activeCase === type 
+                      ? 'bg-orange-500/10 border-orange-500 text-orange-600 dark:text-orange-400 shadow-sm' 
+                      : 'border-transparent bg-muted/50 hover:bg-orange-500/10 hover:border-orange-500/30 hover:text-orange-600 dark:hover:text-orange-400'
+                  }`}
                 >
                   {type}
                 </button>
@@ -127,7 +138,11 @@ const CaseConverter = () => {
                 <button
                   key={type}
                   onClick={() => convertCase(type)}
-                  className="w-full text-left px-4 py-2.5 rounded-lg border border-transparent bg-muted/50 hover:bg-pink-500/10 hover:border-pink-500/30 hover:text-pink-600 dark:hover:text-pink-400 font-medium transition-all"
+                  className={`w-full text-left px-4 py-2.5 rounded-lg border font-medium transition-all ${
+                    activeCase === type 
+                      ? 'bg-pink-500/10 border-pink-500 text-pink-600 dark:text-pink-400 shadow-sm' 
+                      : 'border-transparent bg-muted/50 hover:bg-pink-500/10 hover:border-pink-500/30 hover:text-pink-600 dark:hover:text-pink-400'
+                  }`}
                 >
                   {type}
                 </button>
