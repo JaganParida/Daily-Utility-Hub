@@ -63,7 +63,7 @@ const ImageCompressor = () => {
     } else {
       // Strategy: Size
       options.maxSizeMB = sizeUnit === 'MB' ? Number(targetSize) : Number(targetSize) / 1024;
-      options.initialQuality = 1.0; // Let it figure out the quality needed for the size
+      options.maxIteration = 20; // Give the algorithm more attempts to hit extreme targets like 100KB
     }
 
     try {
