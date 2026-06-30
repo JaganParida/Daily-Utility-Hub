@@ -24,7 +24,13 @@ const ALL_TOOLS = [
   { name: 'JWT Decoder', to: '/tools/jwt-decoder' },
   { name: 'Regex Tester', to: '/tools/regex-tester' },
   { name: 'Color Picker', to: '/tools/color-picker' },
-  { name: 'Gradient Generator', to: '/tools/gradient-generator' }
+  { name: 'Gradient Generator', to: '/tools/gradient-generator' },
+  { name: 'API Key Generator', to: '/tools/api-key-generator' },
+  { name: 'JSON Formatter', to: '/tools/json-formatter' },
+  { name: 'Base64 Converter', to: '/tools/base64-converter' },
+  { name: 'URL Converter', to: '/tools/url-converter' },
+  { name: 'Bcrypt Generator', to: '/tools/bcrypt-generator' },
+  { name: 'Cron Parser', to: '/tools/cron-parser' }
 ];
 
 const Topbar = ({ toggleSidebar }) => {

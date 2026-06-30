@@ -35,6 +35,12 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     {
       title: 'Developer Tools',
       links: [
+        { name: 'API Key Generator', to: '/tools/api-key-generator', icon: Key },
+        { name: 'JSON Formatter', to: '/tools/json-formatter', icon: Layers },
+        { name: 'Base64 Converter', to: '/tools/base64-converter', icon: Hash },
+        { name: 'URL Converter', to: '/tools/url-converter', icon: Type },
+        { name: 'Bcrypt Generator', to: '/tools/bcrypt-generator', icon: Key },
+        { name: 'Cron Parser', to: '/tools/cron-parser', icon: Layers },
         { name: 'UUID Generator', to: '/tools/uuid-generator', icon: Hash },
         { name: 'Password Generator', to: '/tools/password-generator', icon: Key },
         { name: 'Hash Generator', to: '/tools/hash-generator', icon: Hash },

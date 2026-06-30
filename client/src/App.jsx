@@ -20,6 +20,15 @@ import ImageCropper from './pages/tools/ImageCropper';
 import ImageConverter from './pages/tools/ImageConverter';
 import ImageCollage from './pages/tools/ImageCollage';
 import ImageToPdf from './pages/tools/ImageToPdf';
+
+// New Dev Tools
+import ApiKeyGenerator from './pages/tools/ApiKeyGenerator';
+import JsonFormatter from './pages/tools/JsonFormatter';
+import Base64Converter from './pages/tools/Base64Converter';
+import UrlConverter from './pages/tools/UrlConverter';
+import BcryptGenerator from './pages/tools/BcryptGenerator';
+import CronParser from './pages/tools/CronParser';
+
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import { Toaster } from 'react-hot-toast';
@@ -54,6 +63,14 @@ function AnimatedRoutes() {
           <Route path="tools/image-converter" element={<ImageConverter />} />
           <Route path="tools/image-collage" element={<ImageCollage />} />
           <Route path="tools/image-to-pdf" element={<ImageToPdf />} />
+          
+          {/* New Dev Tools Routes */}
+          <Route path="tools/api-key-generator" element={<ApiKeyGenerator />} />
+          <Route path="tools/json-formatter" element={<JsonFormatter />} />
+          <Route path="tools/base64-converter" element={<Base64Converter />} />
+          <Route path="tools/url-converter" element={<UrlConverter />} />
+          <Route path="tools/bcrypt-generator" element={<BcryptGenerator />} />
+          <Route path="tools/cron-parser" element={<CronParser />} />
         </Route>
       </Routes>
     </AnimatePresence>
