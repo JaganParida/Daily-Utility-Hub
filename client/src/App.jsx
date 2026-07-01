@@ -45,10 +45,7 @@ import TextDiff from './pages/tools/TextDiff';
 import MarkdownEditor from './pages/tools/MarkdownEditor';
 
 // Developer & Data Tools
-import JsonFormatter from './pages/tools/JsonFormatter';
-import PasswordGenerator from './pages/tools/PasswordGenerator';
 import EncoderDecoder from './pages/tools/EncoderDecoder';
-import RegexTester from './pages/tools/RegexTester';
 
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
@@ -109,10 +106,7 @@ function AnimatedRoutes() {
           <Route path="tools/markdown-editor" element={<MarkdownEditor />} />
 
           {/* Developer & Data Tools */}
-          <Route path="tools/json-formatter" element={<JsonFormatter />} />
-          <Route path="tools/password-generator" element={<PasswordGenerator />} />
           <Route path="tools/encoder-decoder" element={<EncoderDecoder />} />
-          <Route path="tools/regex-tester" element={<RegexTester />} />
         </Route>
       </Routes>
     </AnimatePresence>
