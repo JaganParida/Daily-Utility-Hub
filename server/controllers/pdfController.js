@@ -107,12 +107,29 @@ exports.watermarkPdf = async (req, res) => {
       return res.status(400).json({ message: 'Please upload a PDF file.' });
     }
 
-    const { watermarkText } = req.body;
+    const { watermarkText, color, opacity, rotation, fontSize, position } = req.body;
     
     if (!watermarkText) {
       cleanupFiles([req.file]);
       return res.status(400).json({ message: 'Please provide watermark text.' });
     }
+
+    // Helper to convert HEX to RGB
+    const hexToRgb = (hexStr) => {
+      const hex = hexStr || '#e61a1a'; // Default red
+      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+      return result ? {
+        r: parseInt(result[1], 16) / 255,
+        g: parseInt(result[2], 16) / 255,
+        b: parseInt(result[3], 16) / 255
+      } : { r: 0.9, g: 0.1, b: 0.1 };
+    };
+
+    const rgbColor = hexToRgb(color);
+    const parsedOpacity = parseFloat(opacity) !== undefined ? parseFloat(opacity) : 0.3;
+    const parsedFontSize = parseInt(fontSize) || 50;
+    const parsedRotation = parseInt(rotation) !== undefined ? parseInt(rotation) : -45;
+    const pos = position || 'center';
 
     const pdfBytes = fs.readFileSync(req.file.path);
     const pdfDoc = await PDFDocument.load(pdfBytes);
@@ -121,13 +138,39 @@ exports.watermarkPdf = async (req, res) => {
     
     for (const page of pages) {
       const { width, height } = page.getSize();
+      
+      // Calculate layout coordinates
+      const textWidth = parsedFontSize * watermarkText.length * 0.55;
+      const textHeight = parsedFontSize;
+      
+      let x = width / 2 - textWidth / 2;
+      let y = height / 2 - textHeight / 2;
+
+      if (pos === 'top-left') {
+        x = 50;
+        y = height - parsedFontSize - 50;
+      } else if (pos === 'top-right') {
+        x = width - textWidth - 50;
+        y = height - parsedFontSize - 50;
+      } else if (pos === 'bottom-left') {
+        x = 50;
+        y = 50;
+      } else if (pos === 'bottom-right') {
+        x = width - textWidth - 50;
+        y = 50;
+      }
+
+      // Safeguard coords
+      if (x < 0) x = 10;
+      if (y < 0) y = 10;
+
       page.drawText(watermarkText, {
-        x: width / 4,
-        y: height / 2,
-        size: 50,
-        color: rgb(0.9, 0.1, 0.1),
-        opacity: 0.3,
-        rotate: degrees(-45),
+        x,
+        y,
+        size: parsedFontSize,
+        color: rgb(rgbColor.r, rgbColor.g, rgbColor.b),
+        opacity: parsedOpacity,
+        rotate: degrees(parsedRotation),
       });
     }
 
@@ -156,7 +199,7 @@ exports.lockPdf = async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ message: 'Please upload a PDF file.' });
     
-    const { password } = req.body;
+    const { password, restrictPrinting, restrictModifying, restrictCopying } = req.body;
     if (!password) {
       cleanupFiles([req.file]);
       return res.status(400).json({ message: 'Please provide a password to lock the PDF.' });
@@ -167,9 +210,9 @@ exports.lockPdf = async (req, res) => {
     // Encrypt using AES-256
     const encryptedBytes = await encryptPDF(new Uint8Array(pdfBytes), password, {
       ownerPassword: password, // use same password for owner
-      allowPrinting: false,
-      allowModifying: false,
-      allowCopying: false,
+      allowPrinting: restrictPrinting !== 'true',
+      allowModifying: restrictModifying !== 'true',
+      allowCopying: restrictCopying !== 'true',
     });
     
     cleanupFiles([req.file]);
@@ -270,5 +313,75 @@ exports.extractText = async (req, res) => {
     cleanupFiles(req.file ? [req.file] : []);
     console.error('Extract Text Error:', error);
     res.status(500).json({ message: 'Server error while parsing PDF.' });
+  }
+};
+
+// Inspect PDF (Get page count, encryption status, metadata)
+exports.inspectPdf = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'Please upload a PDF file.' });
+    }
+
+    const pdfBytes = fs.readFileSync(req.file.path);
+    let isEncrypted = false;
+    let pageCount = 0;
+    let metadata = {
+      title: '',
+      author: '',
+      subject: '',
+      keywords: '',
+      creator: '',
+      producer: ''
+    };
+
+    // First check for "/Encrypt" keyword in buffer to see if it's likely encrypted
+    const isEncryptedBuffer = pdfBytes.toString('utf8').includes('/Encrypt');
+
+    try {
+      const pdfDoc = await PDFDocument.load(pdfBytes, { ignoreEncryption: true });
+      pageCount = pdfDoc.getPageCount();
+      
+      // Try to load it fully to verify encryption status
+      try {
+        const fullPdfDoc = await PDFDocument.load(pdfBytes);
+        metadata = {
+          title: fullPdfDoc.getTitle() || '',
+          author: fullPdfDoc.getAuthor() || '',
+          subject: fullPdfDoc.getSubject() || '',
+          keywords: fullPdfDoc.getKeywords() || '',
+          creator: fullPdfDoc.getCreator() || '',
+          producer: fullPdfDoc.getProducer() || ''
+        };
+      } catch (err) {
+        // If loading without ignoreEncryption fails, it's encrypted
+        isEncrypted = true;
+      }
+    } catch (error) {
+      // If even loading with ignoreEncryption fails, the PDF might be corrupted or deeply encrypted
+      isEncrypted = true;
+    }
+
+    // In case pdf-lib couldn't read pages because of encryption, try pdf-parse
+    if (isEncrypted && pageCount === 0) {
+      try {
+        const data = await pdfParse(pdfBytes);
+        pageCount = data.numpages || 0;
+      } catch (e) {
+        // fallback
+      }
+    }
+
+    cleanupFiles([req.file]);
+
+    res.json({
+      pageCount,
+      isEncrypted: isEncrypted || isEncryptedBuffer,
+      metadata
+    });
+  } catch (error) {
+    cleanupFiles(req.file ? [req.file] : []);
+    console.error('Inspect Error:', error);
+    res.status(500).json({ message: 'Failed to inspect PDF file.', details: error.message });
   }
 };

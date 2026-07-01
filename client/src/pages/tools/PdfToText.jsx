@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Type, UploadCloud, FileText, CheckCircle2, Copy, Check } from 'lucide-react';
+import { Type, UploadCloud, FileText, CheckCircle2, Copy, Check, Download } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
 
@@ -12,16 +12,19 @@ const PdfToText = () => {
   const [copied, setCopied] = useState(false);
   const fileInputRef = useRef(null);
 
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    setIsDragging(true);
+  const getStats = () => {
+    if (!extractedText) return { words: 0, chars: 0 };
+    const cleanText = extractedText.trim();
+    const words = cleanText === '' ? 0 : cleanText.split(/\s+/).length;
+    const chars = extractedText.length;
+    return { words, chars };
   };
 
-  const handleDragLeave = (e) => {
-    e.preventDefault();
-    setIsDragging(false);
-  };
+  const { words, chars } = getStats();
 
+  const handleDragOver = (e) => { e.preventDefault(); setIsDragging(true); };
+  const handleDragLeave = (e) => { e.preventDefault(); setIsDragging(false); };
+  
   const handleDrop = (e) => {
     e.preventDefault();
     setIsDragging(false);
@@ -50,9 +53,10 @@ const PdfToText = () => {
     const formData = new FormData();
     formData.append('pdf', file);
 
+    let toastId;
     try {
       setIsProcessing(true);
-      const toastId = toast.loading('Extracting text on server...');
+      toastId = toast.loading('Extracting text from PDF...');
       
       const response = await axios.post('http://localhost:5000/api/pdf/extract-text', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
@@ -65,7 +69,7 @@ const PdfToText = () => {
     } catch (error) {
       console.error(error);
       const errMsg = error.response?.data?.message || 'Failed to extract text. The file might be encrypted.';
-      toast.error(errMsg);
+      toast.error(errMsg, { id: toastId });
     } finally {
       setIsProcessing(false);
     }
@@ -79,15 +83,28 @@ const PdfToText = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const downloadTextFile = () => {
+    if (!extractedText) return;
+    const blob = new Blob([extractedText], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `${file.name.replace('.pdf', '')}_extracted_text.txt`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    toast.success('Downloaded text file!');
+  };
+
   return (
-    <div className="max-w-5xl mx-auto flex flex-col min-h-[calc(100vh-140px)]">
+    <div className="max-w-6xl mx-auto flex flex-col min-h-[calc(100vh-140px)]">
       <div className="mb-6 flex items-center gap-3 shrink-0">
         <div className="p-2 bg-pink-500/10 text-pink-500 rounded-lg shadow-sm">
           <Type size={28} />
         </div>
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">Extract Text from PDF</h1>
-          <p className="text-muted-foreground mt-1 text-sm">Convert PDF documents into raw, editable text.</p>
+          <p className="text-muted-foreground mt-1 text-sm">Convert your PDF documents into editable raw text plain files.</p>
         </div>
       </div>
 
@@ -99,21 +116,13 @@ const PdfToText = () => {
           {/* Dropzone */}
           {!file ? (
             <div 
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
+              onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}
               onClick={() => fileInputRef.current?.click()}
               className={`border-2 border-dashed rounded-2xl p-10 flex flex-col items-center justify-center cursor-pointer transition-all h-64 ${
                 isDragging ? 'border-pink-500 bg-pink-500/5' : 'border-border bg-card hover:border-pink-500/50 hover:bg-muted/30'
               }`}
             >
-              <input 
-                type="file" 
-                ref={fileInputRef} 
-                onChange={handleFileSelect} 
-                className="hidden" 
-                accept=".pdf,application/pdf" 
-              />
+              <input type="file" ref={fileInputRef} onChange={handleFileSelect} className="hidden" accept=".pdf,application/pdf" />
               <div className="w-16 h-16 bg-pink-500/10 rounded-full flex items-center justify-center text-pink-500 mb-4 pointer-events-none">
                 <UploadCloud size={32} />
               </div>
@@ -129,33 +138,50 @@ const PdfToText = () => {
                   <FileText size={24} />
                 </div>
                 <div>
-                  <h3 className="font-bold text-foreground text-lg">{file.name}</h3>
+                  <h3 className="font-bold text-foreground text-lg truncate max-w-md">{file.name}</h3>
                   <p className="text-muted-foreground text-sm">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
                 </div>
               </div>
-              <button onClick={() => { setFile(null); setExtractedText(''); }} className="text-sm text-red-500 hover:bg-red-500/10 px-3 py-1.5 rounded-lg transition-colors font-medium">
-                Remove
+              <button 
+                onClick={() => { setFile(null); setExtractedText(''); setPagesCount(0); }} 
+                className="text-sm text-red-500 hover:bg-red-500/10 px-3 py-1.5 rounded-lg transition-colors font-semibold"
+              >
+                Change File
               </button>
             </div>
           )}
 
           {extractedText && (
-             <div className="bg-card border border-border p-6 rounded-2xl shadow-sm flex flex-col min-h-0 flex-1">
-               <div className="flex items-center justify-between mb-4 shrink-0">
-                 <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Extracted Text ({pagesCount} Pages)</h3>
-                 <button 
-                   onClick={copyToClipboard}
-                   className="text-xs bg-muted hover:bg-muted/80 text-foreground px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2"
-                 >
-                   {copied ? <Check size={14} className="text-emerald-500"/> : <Copy size={14}/>}
-                   {copied ? 'Copied' : 'Copy Text'}
-                 </button>
-               </div>
-               <textarea
-                 readOnly
-                 value={extractedText}
-                 className="w-full flex-1 bg-background border border-border rounded-xl p-4 text-sm text-foreground focus:outline-none custom-scrollbar resize-none"
-               />
+             <div className="bg-card border border-border p-6 rounded-2xl shadow-sm flex flex-col min-h-0 flex-1 relative overflow-hidden">
+                <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 mb-4 shrink-0">
+                  <div>
+                    <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Extracted Text ({pagesCount} Pages)</h3>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Words: {words.toLocaleString()} &bull; Characters: {chars.toLocaleString()}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button 
+                      onClick={copyToClipboard}
+                      className="text-xs bg-muted hover:bg-muted/80 text-foreground px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-bold"
+                    >
+                      {copied ? <Check size={14} className="text-emerald-500"/> : <Copy size={14}/>}
+                      {copied ? 'Copied' : 'Copy'}
+                    </button>
+                    <button 
+                      onClick={downloadTextFile}
+                      className="text-xs bg-pink-500 hover:bg-pink-600 text-white px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 font-bold"
+                    >
+                      <Download size={14} /> Download TXT
+                    </button>
+                  </div>
+                </div>
+                <textarea
+                  readOnly
+                  value={extractedText}
+                  className="w-full flex-1 bg-background border border-border rounded-xl p-4 text-sm text-foreground focus:outline-none custom-scrollbar resize-none font-mono"
+                  placeholder="Extracted text will appear here..."
+                />
              </div>
           )}
 
@@ -164,19 +190,19 @@ const PdfToText = () => {
         {/* Action Panel */}
         <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6 h-fit shrink-0">
           <div>
-            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4">Extraction Info</h3>
+            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4">Extraction Details</h3>
             <div className="space-y-4 text-sm text-foreground">
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="text-emerald-500 mt-0.5 shrink-0" size={16} />
-                <p>Instantly extracts all human-readable text from the document.</p>
+                <p>Scrapes selectable text layer instantly from the PDF.</p>
               </div>
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="text-emerald-500 mt-0.5 shrink-0" size={16} />
-                <p>Maintains basic line breaks and paragraphs.</p>
+                <p>Computes readability stats: word count and character count.</p>
               </div>
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="text-emerald-500 mt-0.5 shrink-0" size={16} />
-                <p>Note: Does not work on scanned image-only PDFs (OCR not supported yet).</p>
+                <p>Note: Scanned images with no text layer cannot be parsed (requires OCR).</p>
               </div>
             </div>
           </div>

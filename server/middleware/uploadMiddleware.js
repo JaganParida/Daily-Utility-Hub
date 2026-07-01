@@ -39,13 +39,12 @@ const validateFileType = async (req, res, next) => {
   ];
 
   try {
-    // Dynamic import for pure ESM file-type package
-    const { fileTypeFromFile } = await import('file-type');
+    const fileType = require('file-type');
     
     for (const file of files) {
       // For text files, file-type might return undefined as it only checks binary magic numbers.
       // So we must handle text files differently if needed, but for now we'll allow standard text mimes.
-      const meta = await fileTypeFromFile(file.path);
+      const meta = await fileType.fromFile(file.path);
       
       let isValid = false;
       

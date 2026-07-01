@@ -157,7 +157,10 @@ const PdfMerge = () => {
             <div className="bg-muted/20 border border-border rounded-2xl p-4 flex flex-col min-h-0 flex-1">
               <div className="flex justify-between items-center mb-4 shrink-0 px-2">
                 <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Reorder Files ({files.length})</h3>
-                <span className="text-xs text-muted-foreground italic">Drag the handles to sort</span>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-muted-foreground italic hidden sm:inline">Drag the handles to sort</span>
+                  <button onClick={() => setFiles([])} className="text-xs text-red-500 hover:underline font-bold">Clear All</button>
+                </div>
               </div>
               <div className="overflow-y-auto custom-scrollbar pr-2 flex flex-col gap-2">
                 <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
