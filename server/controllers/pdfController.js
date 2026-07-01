@@ -51,7 +51,7 @@ exports.splitPdf = async (req, res) => {
       return res.status(400).json({ message: 'Please upload a PDF file.' });
     }
 
-    const { pages } = req.body; // Array of page numbers to extract (1-indexed) or a range string "1-3"
+    const { pages, mode } = req.body; // Array of page numbers to extract (1-indexed) or a range string "1-3", and mode ('extract' or 'split')
     
     if (!pages) {
       cleanupFiles([req.file]);
@@ -77,22 +77,44 @@ exports.splitPdf = async (req, res) => {
       }
     }
 
-    if (pageIndices.size === 0) {
+    const sortedIndices = Array.from(pageIndices).sort((a, b) => a - b);
+
+    if (sortedIndices.length === 0) {
       cleanupFiles([req.file]);
       return res.status(400).json({ message: 'Invalid page range specified.' });
     }
 
-    const newPdf = await PDFDocument.create();
-    const copiedPages = await newPdf.copyPages(pdf, Array.from(pageIndices).sort((a,b) => a-b));
-    copiedPages.forEach((page) => newPdf.addPage(page));
+    if (mode === 'split') {
+      const AdmZip = require('adm-zip');
+      const zip = new AdmZip();
 
-    const newPdfBytes = await newPdf.save();
-    
-    cleanupFiles([req.file]);
+      for (const index of sortedIndices) {
+        const singlePagePdf = await PDFDocument.create();
+        const [copiedPage] = await singlePagePdf.copyPages(pdf, [index]);
+        singlePagePdf.addPage(copiedPage);
+        const singlePageBytes = await singlePagePdf.save();
 
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', 'attachment; filename=split_document.pdf');
-    res.send(Buffer.from(newPdfBytes));
+        zip.addFile(`page_${index + 1}.pdf`, Buffer.from(singlePageBytes));
+      }
+
+      const zipBuffer = zip.toBuffer();
+      cleanupFiles([req.file]);
+
+      res.setHeader('Content-Type', 'application/zip');
+      res.setHeader('Content-Disposition', 'attachment; filename=split_pages.zip');
+      res.send(zipBuffer);
+    } else {
+      const newPdf = await PDFDocument.create();
+      const copiedPages = await newPdf.copyPages(pdf, sortedIndices);
+      copiedPages.forEach((page) => newPdf.addPage(page));
+
+      const newPdfBytes = await newPdf.save();
+      cleanupFiles([req.file]);
+
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', 'attachment; filename=split_document.pdf');
+      res.send(Buffer.from(newPdfBytes));
+    }
   } catch (error) {
     cleanupFiles(req.file ? [req.file] : []);
     console.error('Split Error:', error);

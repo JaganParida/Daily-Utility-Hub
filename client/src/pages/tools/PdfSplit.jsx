@@ -45,6 +45,7 @@ const parseRangeString = (str, total) => {
 
 const PdfSplit = () => {
   const [file, setFile] = useState(null);
+  const [splitMode, setSplitMode] = useState('extract'); // 'extract' (1 PDF) or 'split' (ZIP of PDFs)
   const [pages, setPages] = useState('');
   const [selectedPages, setSelectedPages] = useState([]);
   const [totalPages, setTotalPages] = useState(0);
@@ -147,11 +148,12 @@ const PdfSplit = () => {
     const formData = new FormData();
     formData.append('pdf', file);
     formData.append('pages', pages);
+    formData.append('mode', splitMode);
 
     let toastId;
     try {
       setIsProcessing(true);
-      toastId = toast.loading('Extracting PDF pages securely...');
+      toastId = toast.loading(splitMode === 'split' ? 'Splitting PDF into separate pages...' : 'Extracting PDF pages securely...');
       
       const response = await axios.post('http://localhost:5000/api/pdf/split', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
@@ -161,15 +163,19 @@ const PdfSplit = () => {
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `${file.name.replace('.pdf', '')}_extracted.pdf`);
+      
+      const extension = splitMode === 'split' ? '.zip' : '.pdf';
+      const fileSuffix = splitMode === 'split' ? '_split' : '_extracted';
+      link.setAttribute('download', `${file.name.replace('.pdf', '')}${fileSuffix}${extension}`);
+      
       document.body.appendChild(link);
       link.click();
       link.remove();
       
-      toast.success('Pages extracted successfully!', { id: toastId });
+      toast.success(splitMode === 'split' ? 'PDF split into separate files!' : 'Pages extracted successfully!', { id: toastId });
     } catch (error) {
       console.error(error);
-      const backendMsg = error.response?.data?.message || 'Failed to extract pages.';
+      const backendMsg = error.response?.data?.message || 'Failed to process PDF.';
       toast.error(backendMsg, { id: toastId });
     } finally {
       setIsProcessing(false);
@@ -301,6 +307,45 @@ const PdfSplit = () => {
 
         {/* Sidebar Actions */}
         <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6 h-fit shrink-0">
+          
+          {/* Split Mode Selector */}
+          {file && (
+            <div className="space-y-3 pb-4 border-b border-border">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Output Format</h3>
+              <div className="flex flex-col gap-2">
+                <label className="flex items-center gap-3 cursor-pointer p-3 bg-muted/20 border border-border/50 hover:bg-muted/40 rounded-xl transition-colors">
+                  <input 
+                    type="radio" 
+                    name="splitMode"
+                    value="extract"
+                    checked={splitMode === 'extract'}
+                    onChange={() => setSplitMode('extract')}
+                    className="w-4 h-4 text-blue-500 focus:ring-blue-500/50 accent-blue-500" 
+                  />
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">Single PDF</p>
+                    <p className="text-xs text-muted-foreground">Extract selected pages into one PDF file.</p>
+                  </div>
+                </label>
+
+                <label className="flex items-center gap-3 cursor-pointer p-3 bg-muted/20 border border-border/50 hover:bg-muted/40 rounded-xl transition-colors">
+                  <input 
+                    type="radio" 
+                    name="splitMode"
+                    value="split"
+                    checked={splitMode === 'split'}
+                    onChange={() => setSplitMode('split')}
+                    className="w-4 h-4 text-blue-500 focus:ring-blue-500/50 accent-blue-500" 
+                  />
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">Separate PDFs (ZIP)</p>
+                    <p className="text-xs text-muted-foreground">Split each selected page into its own PDF file packaged in a ZIP.</p>
+                  </div>
+                </label>
+              </div>
+            </div>
+          )}
+
           <div>
             <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4">Split details</h3>
             <div className="space-y-4 text-sm text-foreground">
@@ -325,7 +370,7 @@ const PdfSplit = () => {
             className="w-full py-3 bg-blue-500 text-white font-semibold rounded-xl hover:bg-blue-600 transition-colors flex items-center justify-center gap-2 shadow-sm shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Scissors size={18} />
-            {isProcessing ? 'Extracting...' : `Extract ${selectedPages.length} Pages`}
+            {isProcessing ? 'Processing...' : splitMode === 'split' ? `Split into ${selectedPages.length} PDFs` : `Extract ${selectedPages.length} Pages`}
           </button>
         </div>
 
