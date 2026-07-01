@@ -231,7 +231,7 @@ exports.lockPdf = async (req, res) => {
     
     // Encrypt using AES-256
     const encryptedBytes = await encryptPDF(new Uint8Array(pdfBytes), password, {
-      ownerPassword: password, // use same password for owner
+      ownerPassword: `${password}_owner_restrict`, // Derived secret owner password to enforce restrictions
       allowPrinting: restrictPrinting !== 'true',
       allowModifying: restrictModifying !== 'true',
       allowCopying: restrictCopying !== 'true',
