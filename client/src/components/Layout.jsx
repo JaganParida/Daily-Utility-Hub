@@ -1,7 +1,6 @@
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
-import Footer from './Footer';
 import { useState } from 'react';
 
 const Layout = () => {
@@ -26,7 +25,6 @@ const Layout = () => {
           <div className="p-4 md:p-6 lg:p-8 flex-1">
             <Outlet />
           </div>
-          <Footer />
         </main>
       </div>
     </div>

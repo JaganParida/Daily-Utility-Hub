@@ -48,6 +48,7 @@ const Dashboard = () => {
       { name: 'Extract Text', description: 'Convert PDF documents into raw, editable text.', icon: FileText, to: '/tools/pdf-to-text', color: 'text-pink-500 bg-pink-500/10' },
     ],
     'Student & Docs': [
+      { name: 'Readme Generator', description: 'Generate professional, structured README.md files instantly.', icon: FileText, to: '/tools/readme-generator', color: 'text-emerald-500 bg-emerald-500/10' },
       { name: 'Code to Image', description: 'Create beautiful, shareable images of your code snippets.', icon: ImageIcon, to: '/tools/code-to-image', color: 'text-indigo-500 bg-indigo-500/10' },
       { name: 'Image to Text', description: 'Scan photos of documents and extract text instantly.', icon: Type, to: '/tools/image-to-text', color: 'text-orange-500 bg-orange-500/10' },
       { name: 'Text Diff', description: 'Compare two pieces of text or code to see exactly what changed.', icon: FileText, to: '/tools/text-diff', color: 'text-rose-500 bg-rose-500/10' },

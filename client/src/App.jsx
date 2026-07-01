@@ -45,6 +45,7 @@ import PdfMetadata from './pages/tools/PdfMetadata';
 import PdfToText from './pages/tools/PdfToText';
 
 // Student & Docs Tools
+import ReadmeGenerator from './pages/tools/ReadmeGenerator';
 import CodeToImage from './pages/tools/CodeToImage';
 import ImageToText from './pages/tools/ImageToText';
 import TextDiff from './pages/tools/TextDiff';
@@ -124,6 +125,7 @@ function AnimatedRoutes() {
           <Route path="tools/pdf-converter" element={<PdfConverter />} />
 
           {/* Student & Docs Tools Routes */}
+          <Route path="tools/readme-generator" element={<ReadmeGenerator />} />
           <Route path="tools/code-to-image" element={<CodeToImage />} />
           <Route path="tools/image-to-text" element={<ImageToText />} />
           <Route path="tools/text-diff" element={<TextDiff />} />
