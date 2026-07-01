@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { upload, validateFileType } = require('../middleware/uploadMiddleware');
-const { mergePdfs, splitPdf, watermarkPdf } = require('../controllers/pdfController');
+const { mergePdfs, splitPdf, watermarkPdf, lockPdf, unlockPdf, editMetadata, extractText } = require('../controllers/pdfController');
 
 // Ensure that we only allow PDF files for these routes
 const ensurePdf = (req, res, next) => {
@@ -28,5 +28,17 @@ router.post('/split', upload.single('pdf'), validateFileType, ensurePdf, splitPd
 // Route: Watermark PDF
 // Expects a single file under 'pdf' and a 'watermarkText' text field
 router.post('/watermark', upload.single('pdf'), validateFileType, ensurePdf, watermarkPdf);
+
+// Route: Lock PDF
+router.post('/lock', upload.single('pdf'), validateFileType, ensurePdf, lockPdf);
+
+// Route: Unlock PDF
+router.post('/unlock', upload.single('pdf'), validateFileType, ensurePdf, unlockPdf);
+
+// Route: Edit Metadata
+router.post('/metadata', upload.single('pdf'), validateFileType, ensurePdf, editMetadata);
+
+// Route: Extract Text
+router.post('/extract-text', upload.single('pdf'), validateFileType, ensurePdf, extractText);
 
 module.exports = router;

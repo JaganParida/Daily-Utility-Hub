@@ -56,6 +56,10 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         { name: 'Merge PDF', to: '/tools/pdf-merge', icon: FileText },
         { name: 'Split PDF', to: '/tools/pdf-split', icon: FileText },
         { name: 'Watermark PDF', to: '/tools/pdf-watermark', icon: FileText },
+        { name: 'Lock PDF', to: '/tools/pdf-lock', icon: FileText },
+        { name: 'Unlock PDF', to: '/tools/pdf-unlock', icon: FileText },
+        { name: 'Edit Metadata', to: '/tools/pdf-metadata', icon: FileText },
+        { name: 'Extract Text', to: '/tools/pdf-to-text', icon: FileText },
       ]
     }
   ];

@@ -143,3 +143,131 @@ exports.watermarkPdf = async (req, res) => {
     res.status(500).json({ message: 'Failed to add watermark to PDF.' });
   }
 };
+
+// --- NEW ADVANCED FEATURES ---
+
+const { encryptPDF } = require('@pdfsmaller/pdf-encrypt');
+const { decryptPDF } = require('@pdfsmaller/pdf-decrypt');
+const pdfParse = require('pdf-parse');
+
+// Lock PDF (Encrypt)
+exports.lockPdf = async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ message: 'Please upload a PDF file.' });
+    
+    const { password } = req.body;
+    if (!password) {
+      cleanupFiles([req.file]);
+      return res.status(400).json({ message: 'Please provide a password to lock the PDF.' });
+    }
+
+    const pdfBytes = fs.readFileSync(req.file.path);
+    
+    // Encrypt using AES-256
+    const encryptedBytes = await encryptPDF(new Uint8Array(pdfBytes), password, {
+      ownerPassword: password, // use same password for owner
+      allowPrinting: false,
+      allowModifying: false,
+      allowCopying: false,
+    });
+    
+    cleanupFiles([req.file]);
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename=locked_document.pdf');
+    res.send(Buffer.from(encryptedBytes));
+  } catch (error) {
+    cleanupFiles(req.file ? [req.file] : []);
+    console.error('Lock Error:', error);
+    res.status(500).json({ message: 'Failed to lock PDF.' });
+  }
+};
+
+// Unlock PDF (Decrypt)
+exports.unlockPdf = async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ message: 'Please upload a PDF file.' });
+    
+    const { password } = req.body;
+    if (!password) {
+      cleanupFiles([req.file]);
+      return res.status(400).json({ message: 'Please provide the password to unlock the PDF.' });
+    }
+
+    const pdfBytes = fs.readFileSync(req.file.path);
+    
+    try {
+      const decryptedBytes = await decryptPDF(new Uint8Array(pdfBytes), password);
+      cleanupFiles([req.file]);
+      
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', 'attachment; filename=unlocked_document.pdf');
+      res.send(Buffer.from(decryptedBytes));
+    } catch (decryptError) {
+      cleanupFiles([req.file]);
+      return res.status(401).json({ message: 'Incorrect password or unsupported encryption type.' });
+    }
+  } catch (error) {
+    cleanupFiles(req.file ? [req.file] : []);
+    console.error('Unlock Error:', error);
+    res.status(500).json({ message: 'Failed to unlock PDF.' });
+  }
+};
+
+// Edit Metadata
+exports.editMetadata = async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ message: 'Please upload a PDF file.' });
+    
+    const { title, author, subject, creator, producer, keywords } = req.body;
+    
+    const pdfBytes = fs.readFileSync(req.file.path);
+    const pdfDoc = await PDFDocument.load(pdfBytes);
+    
+    if (title) pdfDoc.setTitle(title);
+    if (author) pdfDoc.setAuthor(author);
+    if (subject) pdfDoc.setSubject(subject);
+    if (creator) pdfDoc.setCreator(creator);
+    if (producer) pdfDoc.setProducer(producer);
+    if (keywords) pdfDoc.setKeywords(keywords.split(',').map(k => k.trim()));
+    
+    const modifiedBytes = await pdfDoc.save();
+    
+    cleanupFiles([req.file]);
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename=updated_document.pdf');
+    res.send(Buffer.from(modifiedBytes));
+  } catch (error) {
+    cleanupFiles(req.file ? [req.file] : []);
+    console.error('Metadata Error:', error);
+    res.status(500).json({ message: 'Failed to update PDF metadata.' });
+  }
+};
+
+// Extract Text
+exports.extractText = async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ message: 'Please upload a PDF file.' });
+    
+    const pdfBytes = fs.readFileSync(req.file.path);
+    
+    try {
+      const data = await pdfParse(pdfBytes);
+      cleanupFiles([req.file]);
+      
+      res.json({ 
+        text: data.text,
+        pages: data.numpages,
+        info: data.info
+      });
+    } catch (parseError) {
+      cleanupFiles([req.file]);
+      res.status(500).json({ message: 'Failed to extract text. The PDF might be an image-only scan or encrypted.' });
+    }
+  } catch (error) {
+    cleanupFiles(req.file ? [req.file] : []);
+    console.error('Extract Text Error:', error);
+    res.status(500).json({ message: 'Server error while parsing PDF.' });
+  }
+};

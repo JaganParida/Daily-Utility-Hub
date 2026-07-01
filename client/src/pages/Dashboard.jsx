@@ -39,6 +39,10 @@ const Dashboard = () => {
       { name: 'Merge PDF', description: 'Combine multiple PDF files into one securely.', icon: FileText, to: '/tools/pdf-merge', color: 'bg-red-500/10 text-red-500' },
       { name: 'Split PDF', description: 'Extract specific pages or page ranges from a PDF.', icon: FileText, to: '/tools/pdf-split', color: 'bg-blue-500/10 text-blue-500' },
       { name: 'Watermark PDF', description: 'Add a text watermark across all pages of a PDF document.', icon: FileText, to: '/tools/pdf-watermark', color: 'bg-purple-500/10 text-purple-500' },
+      { name: 'Lock PDF', description: 'Encrypt your PDF with a password and restrict permissions.', icon: FileText, to: '/tools/pdf-lock', color: 'bg-emerald-500/10 text-emerald-500' },
+      { name: 'Unlock PDF', description: 'Remove password protection and restrictions from a PDF.', icon: FileText, to: '/tools/pdf-unlock', color: 'bg-yellow-500/10 text-yellow-600' },
+      { name: 'Edit Metadata', description: 'Modify hidden document properties like Author, Title, and Creator.', icon: FileText, to: '/tools/pdf-metadata', color: 'bg-blue-500/10 text-blue-500' },
+      { name: 'Extract Text', description: 'Convert PDF documents into raw, editable text.', icon: FileText, to: '/tools/pdf-to-text', color: 'bg-pink-500/10 text-pink-500' },
     ]
   };
 

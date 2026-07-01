@@ -33,6 +33,10 @@ import CronParser from './pages/tools/CronParser';
 import PdfMerge from './pages/tools/PdfMerge';
 import PdfSplit from './pages/tools/PdfSplit';
 import PdfWatermark from './pages/tools/PdfWatermark';
+import PdfLock from './pages/tools/PdfLock';
+import PdfUnlock from './pages/tools/PdfUnlock';
+import PdfMetadata from './pages/tools/PdfMetadata';
+import PdfToText from './pages/tools/PdfToText';
 
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
@@ -81,6 +85,10 @@ function AnimatedRoutes() {
           <Route path="tools/pdf-merge" element={<PdfMerge />} />
           <Route path="tools/pdf-split" element={<PdfSplit />} />
           <Route path="tools/pdf-watermark" element={<PdfWatermark />} />
+          <Route path="tools/pdf-lock" element={<PdfLock />} />
+          <Route path="tools/pdf-unlock" element={<PdfUnlock />} />
+          <Route path="tools/pdf-metadata" element={<PdfMetadata />} />
+          <Route path="tools/pdf-to-text" element={<PdfToText />} />
         </Route>
       </Routes>
     </AnimatePresence>
