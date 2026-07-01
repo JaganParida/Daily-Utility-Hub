@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { UploadCloud, FileText, CheckCircle2, Scissors, HelpCircle, Loader2 } from 'lucide-react';
+import { UploadCloud, FileText, CheckCircle2, Scissors, HelpCircle, Loader2, Eye, ExternalLink } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
 
@@ -49,6 +49,8 @@ const PdfSplit = () => {
   const [pages, setPages] = useState('');
   const [selectedPages, setSelectedPages] = useState([]);
   const [totalPages, setTotalPages] = useState(0);
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [showPreview, setShowPreview] = useState(false);
   const [isInspecting, setIsInspecting] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -56,6 +58,18 @@ const PdfSplit = () => {
 
   const handleDragOver = (e) => { e.preventDefault(); setIsDragging(true); };
   const handleDragLeave = (e) => { e.preventDefault(); setIsDragging(false); };
+
+  const handleClear = () => {
+    setFile(null);
+    setSelectedPages([]);
+    setPages('');
+    setTotalPages(0);
+    setShowPreview(false);
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(null);
+    }
+  };
 
   const inspectFile = async (selectedFile) => {
     const formData = new FormData();
@@ -73,6 +87,7 @@ const PdfSplit = () => {
       }
       
       setFile(selectedFile);
+      setPreviewUrl(URL.createObjectURL(selectedFile));
       setTotalPages(data.pageCount);
       // Select all pages by default
       const allPages = Array.from({ length: data.pageCount }, (_, i) => i + 1);
@@ -225,24 +240,62 @@ const PdfSplit = () => {
           {file && (
             <>
               {/* File Info Header */}
-              <div className="bg-card border border-border rounded-2xl shadow-sm p-6 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-blue-500/10 text-blue-500 rounded-xl flex items-center justify-center shrink-0">
-                    <FileText size={24} />
+              <div className="bg-card border border-border rounded-2xl shadow-sm p-6 flex flex-col gap-4 shrink-0">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div className="flex items-center gap-4 min-w-0 w-full sm:w-auto">
+                    <div className="w-12 h-12 bg-blue-500/10 text-blue-500 rounded-xl flex items-center justify-center shrink-0">
+                      <FileText size={24} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-bold text-foreground text-lg truncate w-full" title={file.name}>{file.name}</h3>
+                      <p className="text-muted-foreground text-sm">
+                        {(file.size / 1024 / 1024).toFixed(2)} MB &bull; {totalPages} Pages
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-bold text-foreground text-lg truncate max-w-md">{file.name}</h3>
-                    <p className="text-muted-foreground text-sm">
-                      {(file.size / 1024 / 1024).toFixed(2)} MB &bull; {totalPages} Pages
-                    </p>
+                  <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
+                    <button
+                      onClick={() => setShowPreview(!showPreview)}
+                      className="text-xs bg-muted hover:bg-muted/80 text-foreground px-3 py-1.5 rounded-lg transition-colors font-bold flex items-center gap-1.5"
+                    >
+                      <Eye size={14} />
+                      {showPreview ? 'Hide Preview' : 'Show Preview'}
+                    </button>
+                    <button 
+                      onClick={handleClear} 
+                      className="text-xs text-red-500 hover:bg-red-500/10 px-3 py-1.5 rounded-lg transition-colors font-semibold"
+                    >
+                      Change File
+                    </button>
                   </div>
                 </div>
-                <button 
-                  onClick={() => { setFile(null); setTotalPages(0); setSelectedPages([]); setPages(''); }} 
-                  className="text-sm text-red-500 hover:bg-red-500/10 px-3 py-1.5 rounded-lg transition-colors font-semibold"
-                >
-                  Change File
-                </button>
+
+                {showPreview && previewUrl && (
+                  <div className="border-t border-border pt-4 w-full flex flex-col gap-3">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Interactive Document Preview</h4>
+                      <a 
+                        href={previewUrl} target="_blank" rel="noreferrer"
+                        className="text-xs text-blue-500 hover:underline flex items-center gap-1 font-semibold"
+                      >
+                        Open in New Tab <ExternalLink size={12} />
+                      </a>
+                    </div>
+                    <div className="w-full h-[400px] md:h-[500px] border border-border rounded-xl overflow-hidden bg-muted/10 relative">
+                      <object 
+                        data={previewUrl} 
+                        type="application/pdf" 
+                        className="w-full h-full"
+                      >
+                        <iframe src={previewUrl} className="w-full h-full border-none" title="PDF Preview">
+                          <div className="p-6 text-center text-sm text-muted-foreground">
+                            Your browser doesn't support inline PDF previews. Please click "Open in New Tab" to view it.
+                          </div>
+                        </iframe>
+                      </object>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Grid Page Selector */}

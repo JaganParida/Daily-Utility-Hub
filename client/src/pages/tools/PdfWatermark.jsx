@@ -1,5 +1,5 @@
-import { useState, useRef } from 'react';
-import { UploadCloud, FileText, CheckCircle2, Droplets } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { UploadCloud, FileText, CheckCircle2, Droplets, Eye, ExternalLink } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
 
@@ -11,6 +11,8 @@ const PdfWatermark = () => {
   const [fontSize, setFontSize] = useState(48);
   const [rotation, setRotation] = useState(-45);
   const [position, setPosition] = useState('center'); // center, top-left, top-right, bottom-left, bottom-right
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [showPreview, setShowPreview] = useState(false);
   
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -24,9 +26,24 @@ const PdfWatermark = () => {
     { name: 'Black', value: '#0f172a' }
   ];
 
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
+
   const handleDragOver = (e) => { e.preventDefault(); setIsDragging(true); };
   const handleDragLeave = (e) => { e.preventDefault(); setIsDragging(false); };
   
+  const handleClear = () => {
+    setFile(null);
+    setShowPreview(false);
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(null);
+    }
+  };
+
   const handleDrop = (e) => {
     e.preventDefault();
     setIsDragging(false);
@@ -36,12 +53,14 @@ const PdfWatermark = () => {
       return;
     }
     setFile(droppedFile);
+    setPreviewUrl(URL.createObjectURL(droppedFile));
   };
 
   const handleFileSelect = (e) => {
     const selectedFile = e.target.files[0];
     if (selectedFile?.type !== 'application/pdf') return;
     setFile(selectedFile);
+    setPreviewUrl(URL.createObjectURL(selectedFile));
   };
 
   const handleWatermark = async () => {
@@ -135,15 +154,24 @@ const PdfWatermark = () => {
                 <p className="text-xs text-muted-foreground pointer-events-none">Drag & drop or click to browse</p>
               </div>
             ) : (
-              <div className="bg-card border border-border rounded-2xl shadow-sm p-6 flex flex-col justify-center items-center h-full relative group">
-                <div className="w-16 h-16 bg-purple-500/10 text-purple-500 rounded-xl flex items-center justify-center mb-4">
+              <div className="bg-card border border-border rounded-2xl shadow-sm p-6 flex flex-col justify-center items-center h-full relative group min-w-0">
+                <div className="w-16 h-16 bg-purple-500/10 text-purple-500 rounded-xl flex items-center justify-center mb-4 shrink-0">
                   <FileText size={32} />
                 </div>
-                <h3 className="font-bold text-foreground text-center truncate w-full px-4">{file.name}</h3>
+                <h3 className="font-bold text-foreground text-center truncate w-full px-4 min-w-0" title={file.name}>{file.name}</h3>
                 <p className="text-muted-foreground text-sm mt-1">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
-                <button onClick={() => setFile(null)} className="absolute top-4 right-4 text-xs text-red-500 bg-red-500/10 hover:bg-red-500/20 px-3 py-1.5 rounded-lg transition-colors font-semibold">
-                  Change File
-                </button>
+                <div className="absolute top-4 right-4 flex items-center gap-2">
+                  <button
+                    onClick={() => setShowPreview(!showPreview)}
+                    className="text-xs bg-muted hover:bg-muted/80 text-foreground px-3 py-1.5 rounded-lg transition-colors font-bold flex items-center gap-1.5"
+                  >
+                    <Eye size={12} />
+                    {showPreview ? 'Hide' : 'Preview'}
+                  </button>
+                  <button onClick={handleClear} className="text-xs text-red-500 bg-red-500/10 hover:bg-red-500/20 px-3 py-1.5 rounded-lg transition-colors font-semibold">
+                    Change
+                  </button>
+                </div>
               </div>
             )}
 
@@ -170,6 +198,33 @@ const PdfWatermark = () => {
               </div>
             </div>
           </div>
+
+          {file && showPreview && previewUrl && (
+            <div className="bg-card border border-border p-6 rounded-2xl shadow-sm flex flex-col gap-3 shrink-0">
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Interactive Document Preview</h4>
+                <a 
+                  href={previewUrl} target="_blank" rel="noreferrer"
+                  className="text-xs text-blue-500 hover:underline flex items-center gap-1 font-semibold"
+                >
+                  Open in New Tab <ExternalLink size={12} />
+                </a>
+              </div>
+              <div className="w-full h-[400px] md:h-[500px] border border-border rounded-xl overflow-hidden bg-muted/10 relative">
+                <object 
+                  data={previewUrl} 
+                  type="application/pdf" 
+                  className="w-full h-full"
+                >
+                  <iframe src={previewUrl} className="w-full h-full border-none" title="PDF Preview">
+                    <div className="p-6 text-center text-sm text-muted-foreground">
+                      Your browser doesn't support inline PDF previews. Please click "Open in New Tab" to view it.
+                    </div>
+                  </iframe>
+                </object>
+              </div>
+            </div>
+          )}
 
           {/* Watermark Configuration Options */}
           <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6 overflow-y-auto custom-scrollbar flex-1 min-h-[350px]">

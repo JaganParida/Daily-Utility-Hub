@@ -1,5 +1,5 @@
-import { useState, useRef } from 'react';
-import { Lock, UploadCloud, FileText, CheckCircle2, Eye, EyeOff, ShieldCheck, ShieldAlert } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Lock, UploadCloud, FileText, CheckCircle2, Eye, EyeOff, ShieldCheck, ShieldAlert, ExternalLink } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
 
@@ -11,10 +11,27 @@ const PdfLock = () => {
   const [restrictPrinting, setRestrictPrinting] = useState(true);
   const [restrictModifying, setRestrictModifying] = useState(true);
   const [restrictCopying, setRestrictCopying] = useState(true);
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [showPreview, setShowPreview] = useState(false);
   
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
+
+  const handleClear = () => {
+    setFile(null);
+    setShowPreview(false);
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(null);
+    }
+  };
 
   const getPasswordStrength = () => {
     if (!password) return { label: 'None', score: 0, color: 'bg-muted' };
@@ -44,12 +61,14 @@ const PdfLock = () => {
       return;
     }
     setFile(droppedFile);
+    setPreviewUrl(URL.createObjectURL(droppedFile));
   };
 
   const handleFileSelect = (e) => {
     const selectedFile = e.target.files[0];
     if (selectedFile?.type !== 'application/pdf') return;
     setFile(selectedFile);
+    setPreviewUrl(URL.createObjectURL(selectedFile));
   };
 
   const handleLock = async () => {
@@ -140,19 +159,57 @@ const PdfLock = () => {
               </p>
             </div>
           ) : (
-            <div className="bg-card border border-border rounded-2xl shadow-sm p-6 flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-emerald-500/10 text-emerald-500 rounded-xl flex items-center justify-center">
-                  <FileText size={24} />
+            <div className="bg-card border border-border rounded-2xl shadow-sm p-6 flex flex-col gap-4 shrink-0 min-w-0">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-4 min-w-0 w-full sm:w-auto">
+                  <div className="w-12 h-12 bg-emerald-500/10 text-emerald-500 rounded-xl flex items-center justify-center shrink-0">
+                    <FileText size={24} />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-bold text-foreground text-lg truncate w-full" title={file.name}>{file.name}</h3>
+                    <p className="text-muted-foreground text-sm">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-bold text-foreground text-lg truncate max-w-md">{file.name}</h3>
-                  <p className="text-muted-foreground text-sm">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
+                  <button
+                    onClick={() => setShowPreview(!showPreview)}
+                    className="text-xs bg-muted hover:bg-muted/80 text-foreground px-3 py-1.5 rounded-lg transition-colors font-bold flex items-center gap-1.5"
+                  >
+                    <Eye size={14} />
+                    {showPreview ? 'Hide Preview' : 'Show Preview'}
+                  </button>
+                  <button onClick={handleClear} className="text-xs text-red-500 hover:bg-red-500/10 px-3 py-1.5 rounded-lg transition-colors font-semibold">
+                    Change File
+                  </button>
                 </div>
               </div>
-              <button onClick={() => { setFile(null); setPassword(''); setConfirmPassword(''); }} className="text-sm text-red-500 hover:bg-red-500/10 px-3 py-1.5 rounded-lg transition-colors font-semibold">
-                Change File
-              </button>
+
+              {showPreview && previewUrl && (
+                <div className="border-t border-border pt-4 w-full flex flex-col gap-3">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Interactive Document Preview</h4>
+                    <a 
+                      href={previewUrl} target="_blank" rel="noreferrer"
+                      className="text-xs text-blue-500 hover:underline flex items-center gap-1 font-semibold"
+                    >
+                      Open in New Tab <ExternalLink size={12} />
+                    </a>
+                  </div>
+                  <div className="w-full h-[400px] md:h-[500px] border border-border rounded-xl overflow-hidden bg-muted/10 relative">
+                    <object 
+                      data={previewUrl} 
+                      type="application/pdf" 
+                      className="w-full h-full"
+                    >
+                      <iframe src={previewUrl} className="w-full h-full border-none" title="PDF Preview">
+                        <div className="p-6 text-center text-sm text-muted-foreground">
+                          Your browser doesn't support inline PDF previews. Please click "Open in New Tab" to view it.
+                        </div>
+                      </iframe>
+                    </object>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

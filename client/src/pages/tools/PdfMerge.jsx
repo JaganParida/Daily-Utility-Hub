@@ -1,12 +1,12 @@
-import { useState, useRef } from 'react';
-import { UploadCloud, FileText, CheckCircle2, GripVertical, Trash2 } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { UploadCloud, FileText, CheckCircle2, GripVertical, Trash2, Eye, X, ExternalLink } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
-const SortableItem = ({ id, file, index, removeFile }) => {
+const SortableItem = ({ id, file, index, removeFile, onPreview }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
 
   const style = {
@@ -17,25 +17,40 @@ const SortableItem = ({ id, file, index, removeFile }) => {
 
   return (
     <div ref={setNodeRef} style={style} className={`flex items-center gap-3 p-3 bg-card border ${isDragging ? 'border-red-500 shadow-lg' : 'border-border'} hover:border-red-500/50 rounded-xl group transition-all`}>
-      <button {...attributes} {...listeners} className="p-2 text-muted-foreground hover:text-foreground cursor-grab active:cursor-grabbing">
+      <button {...attributes} {...listeners} className="p-2 text-muted-foreground hover:text-foreground cursor-grab active:cursor-grabbing shrink-0">
         <GripVertical size={18} />
       </button>
       <div className="w-10 h-10 bg-red-500/10 text-red-500 rounded-lg flex items-center justify-center shrink-0">
         <span className="font-bold">{index + 1}</span>
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-foreground truncate">{file.name}</p>
+        <p className="text-sm font-semibold text-foreground truncate" title={file.name}>{file.name}</p>
         <p className="text-xs text-muted-foreground">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
       </div>
-      <button onClick={() => removeFile(id)} className="p-2 text-red-500/50 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors opacity-0 group-hover:opacity-100">
-        <Trash2 size={18} />
-      </button>
+      <div className="flex items-center gap-1 shrink-0">
+        <button 
+          onClick={() => onPreview(file)} 
+          className="p-2 text-blue-500/50 hover:text-blue-500 hover:bg-blue-500/10 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+          title="Preview File"
+        >
+          <Eye size={18} />
+        </button>
+        <button 
+          onClick={() => removeFile(id)} 
+          className="p-2 text-red-500/50 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+          title="Remove File"
+        >
+          <Trash2 size={18} />
+        </button>
+      </div>
     </div>
   );
 };
 
 const PdfMerge = () => {
   const [files, setFiles] = useState([]);
+  const [previewFile, setPreviewFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const fileInputRef = useRef(null);
@@ -45,6 +60,13 @@ const PdfMerge = () => {
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
+  useEffect(() => {
+    // Cleanup preview URL on unmount
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
+
   const handleDragOver = (e) => { e.preventDefault(); setIsDragging(true); };
   const handleDragLeave = (e) => { e.preventDefault(); setIsDragging(false); };
   
@@ -53,7 +75,6 @@ const PdfMerge = () => {
     setIsDragging(false);
     const droppedFiles = Array.from(e.dataTransfer.files).filter(f => f.type === 'application/pdf');
     if (droppedFiles.length === 0) { toast.error('Only PDF files are allowed'); return; }
-    // Attach unique ID for sortable functionality
     setFiles(prev => [...prev, ...droppedFiles.map(f => ({ file: f, id: Math.random().toString(36).substr(2, 9) }))]);
   };
 
@@ -63,7 +84,27 @@ const PdfMerge = () => {
     setFiles(prev => [...prev, ...selectedFiles.map(f => ({ file: f, id: Math.random().toString(36).substr(2, 9) }))]);
   };
 
+  const handlePreview = (fileObj) => {
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+    setPreviewFile(fileObj);
+    setPreviewUrl(URL.createObjectURL(fileObj));
+  };
+
+  const closePreview = () => {
+    setPreviewFile(null);
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(null);
+    }
+  };
+
   const removeFile = (id) => {
+    const fileToRemove = files.find(item => item.id === id);
+    if (fileToRemove && previewFile === fileToRemove.file) {
+      closePreview();
+    }
     setFiles(files.filter(item => item.id !== id));
   };
 
@@ -159,6 +200,12 @@ const PdfMerge = () => {
                 <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Reorder Files ({files.length})</h3>
                 <div className="flex items-center gap-3">
                   <span className="text-xs text-muted-foreground italic hidden sm:inline">Drag the handles to sort</span>
+                  <button 
+                    onClick={() => fileInputRef.current?.click()}
+                    className="text-xs text-blue-500 hover:underline font-bold"
+                  >
+                    + Add Files
+                  </button>
                   <button onClick={() => setFiles([])} className="text-xs text-red-500 hover:underline font-bold">Clear All</button>
                 </div>
               </div>
@@ -166,7 +213,7 @@ const PdfMerge = () => {
                 <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                   <SortableContext items={files.map(f => f.id)} strategy={verticalListSortingStrategy}>
                     {files.map((item, index) => (
-                      <SortableItem key={item.id} id={item.id} file={item.file} index={index} removeFile={removeFile} />
+                      <SortableItem key={item.id} id={item.id} file={item.file} index={index} removeFile={removeFile} onPreview={handlePreview} />
                     ))}
                   </SortableContext>
                 </DndContext>
@@ -207,6 +254,47 @@ const PdfMerge = () => {
         </div>
 
       </div>
+
+      {/* Preview Modal Overlay */}
+      {previewFile && previewUrl && (
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-card border border-border rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in-50 zoom-in-95 duration-200">
+            <div className="p-4 border-b border-border flex items-center justify-between shrink-0 bg-muted/30">
+              <div className="min-w-0 flex-1">
+                <h3 className="font-bold text-foreground truncate" title={previewFile.name}>{previewFile.name}</h3>
+                <p className="text-xs text-muted-foreground mt-0.5">{(previewFile.size / 1024 / 1024).toFixed(2)} MB</p>
+              </div>
+              <div className="flex items-center gap-3 shrink-0 ml-4">
+                <a 
+                  href={previewUrl} target="_blank" rel="noreferrer"
+                  className="text-xs text-blue-500 hover:underline flex items-center gap-1 font-semibold"
+                >
+                  Open in New Tab <ExternalLink size={12} />
+                </a>
+                <button 
+                  onClick={closePreview}
+                  className="p-1.5 hover:bg-muted rounded-lg text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+            </div>
+            <div className="flex-1 min-h-0 bg-muted/10 p-4">
+              <object 
+                data={previewUrl} 
+                type="application/pdf" 
+                className="w-full h-full rounded-xl overflow-hidden border border-border"
+              >
+                <iframe src={previewUrl} className="w-full h-full border-none" title="PDF Preview">
+                  <div className="p-6 text-center text-sm text-muted-foreground">
+                    Your browser doesn't support inline PDF previews. Please click "Open in New Tab" to view it.
+                  </div>
+                </iframe>
+              </object>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
