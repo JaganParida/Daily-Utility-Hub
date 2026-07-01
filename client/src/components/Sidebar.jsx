@@ -48,6 +48,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         { name: 'Regex Tester', to: '/tools/regex-tester', icon: Type },
         { name: 'Color Picker', to: '/tools/color-picker', icon: Layers },
         { name: 'Gradient Generator', to: '/tools/gradient-generator', icon: Layers },
+        { name: 'Encoder / Decoder', to: '/tools/encoder-decoder', icon: ArrowRightLeft },
       ]
     },
     {
@@ -71,15 +72,6 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         { name: 'Image to Text', to: '/tools/image-to-text', icon: Type },
         { name: 'Text Diff', to: '/tools/text-diff', icon: FileText },
         { name: 'Markdown Editor', to: '/tools/markdown-editor', icon: FileText },
-      ]
-    },
-    {
-      title: 'Developer & Data',
-      links: [
-        { name: 'JSON Formatter', to: '/tools/json-formatter', icon: Braces },
-        { name: 'Password Gen', to: '/tools/password-generator', icon: Key },
-        { name: 'Encoder / Decoder', to: '/tools/encoder-decoder', icon: ArrowRightLeft },
-        { name: 'Regex Tester', to: '/tools/regex-tester', icon: Search },
       ]
     }
   ];
