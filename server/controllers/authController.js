@@ -93,9 +93,12 @@ exports.logoutUser = (req, res) => {
 
 // @desc    Get user profile
 // @route   GET /api/auth/profile
-// @access  Private
+// @access  Private (Soft)
 exports.getUserProfile = async (req, res) => {
   try {
+    if (!req.user) {
+      return res.status(200).json(null);
+    }
     const user = await User.findById(req.user.id);
     if (user) {
       res.json({
@@ -104,7 +107,7 @@ exports.getUserProfile = async (req, res) => {
         email: user.email,
       });
     } else {
-      res.status(404).json({ message: 'User not found' });
+      res.status(200).json(null);
     }
   } catch (error) {
     res.status(500).json({ message: error.message });

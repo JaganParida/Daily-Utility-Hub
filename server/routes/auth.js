@@ -5,7 +5,7 @@ const {
   loginUser,
   getUserProfile,
 } = require('../controllers/authController');
-const { protect } = require('../middleware/authMiddleware');
+const { protect, softProtect } = require('../middleware/authMiddleware');
 
 const { check } = require('express-validator');
 const { validate } = require('../middleware/validationMiddleware');
@@ -31,6 +31,6 @@ router.post(
   loginUser
 );
 
-router.get('/profile', protect, getUserProfile);
+router.get('/profile', softProtect, getUserProfile);
 
 module.exports = router;
