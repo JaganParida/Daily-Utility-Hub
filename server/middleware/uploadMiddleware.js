@@ -22,7 +22,7 @@ const storage = multer.diskStorage({
 // Configure multer
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit per file
+  limits: { fileSize: 200 * 1024 * 1024 }, // 200MB limit per file to support large PDFs
 });
 
 // Malware Validation Middleware (Magic Numbers)
