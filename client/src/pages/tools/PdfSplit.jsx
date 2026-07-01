@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { FileDown, UploadCloud, FileText, CheckCircle2, Scissors } from 'lucide-react';
+import { UploadCloud, FileText, CheckCircle2, Scissors, HelpCircle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
 
@@ -10,16 +10,9 @@ const PdfSplit = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const fileInputRef = useRef(null);
 
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = (e) => {
-    e.preventDefault();
-    setIsDragging(false);
-  };
-
+  const handleDragOver = (e) => { e.preventDefault(); setIsDragging(true); };
+  const handleDragLeave = (e) => { e.preventDefault(); setIsDragging(false); };
+  
   const handleDrop = (e) => {
     e.preventDefault();
     setIsDragging(false);
@@ -43,7 +36,7 @@ const PdfSplit = () => {
       return;
     }
     if (!pages.trim()) {
-      toast.error('Please enter the pages to extract');
+      toast.error('Please specify pages to extract');
       return;
     }
 
@@ -53,14 +46,13 @@ const PdfSplit = () => {
 
     try {
       setIsProcessing(true);
-      const toastId = toast.loading('Extracting pages securely on server...');
+      const toastId = toast.loading('Splitting PDF securely on server...');
       
       const response = await axios.post('http://localhost:5000/api/pdf/split', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         responseType: 'blob'
       });
 
-      // Download the result
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
@@ -72,23 +64,7 @@ const PdfSplit = () => {
       toast.success('PDF split successfully!', { id: toastId });
     } catch (error) {
       console.error(error);
-      const errMsg = error.response?.data?.message || 'Failed to split PDF. Check your page ranges.';
-      
-      // Axios blobs return as arraybuffer in error.response.data sometimes, so handle it
-      if (error.response?.data instanceof Blob) {
-         const reader = new FileReader();
-         reader.onload = () => {
-           try {
-             const json = JSON.parse(reader.result);
-             toast.error(json.message || 'Failed to split PDF', { id: toastId });
-           } catch {
-             toast.error('Failed to split PDF', { id: toastId });
-           }
-         };
-         reader.readAsText(error.response.data);
-      } else {
-        toast.error(errMsg, { id: toastId });
-      }
+      toast.error('Failed to split PDF. Check your page ranges and ensure the PDF is not encrypted.');
     } finally {
       setIsProcessing(false);
     }
@@ -101,8 +77,8 @@ const PdfSplit = () => {
           <Scissors size={28} />
         </div>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Split / Extract PDF</h1>
-          <p className="text-muted-foreground mt-1 text-sm">Extract specific pages or page ranges from a PDF.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Split PDF</h1>
+          <p className="text-muted-foreground mt-1 text-sm">Extract specific pages or page ranges into a new PDF document.</p>
         </div>
       </div>
 
@@ -114,21 +90,13 @@ const PdfSplit = () => {
           {/* Dropzone */}
           {!file ? (
             <div 
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
+              onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}
               onClick={() => fileInputRef.current?.click()}
               className={`border-2 border-dashed rounded-2xl p-10 flex flex-col items-center justify-center cursor-pointer transition-all h-64 ${
                 isDragging ? 'border-blue-500 bg-blue-500/5' : 'border-border bg-card hover:border-blue-500/50 hover:bg-muted/30'
               }`}
             >
-              <input 
-                type="file" 
-                ref={fileInputRef} 
-                onChange={handleFileSelect} 
-                className="hidden" 
-                accept=".pdf,application/pdf" 
-              />
+              <input type="file" ref={fileInputRef} onChange={handleFileSelect} className="hidden" accept=".pdf,application/pdf" />
               <div className="w-16 h-16 bg-blue-500/10 rounded-full flex items-center justify-center text-blue-500 mb-4 pointer-events-none">
                 <UploadCloud size={32} />
               </div>
@@ -155,18 +123,31 @@ const PdfSplit = () => {
           )}
 
           {file && (
-             <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-4">
-               <label className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Pages to Extract</label>
-               <input
-                 type="text"
-                 value={pages}
-                 onChange={(e) => setPages(e.target.value)}
-                 placeholder="e.g. 1, 3, 5-10"
-                 className="w-full bg-background border border-border rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-               />
-               <p className="text-xs text-muted-foreground">
-                 Enter page numbers separated by commas (1, 2, 5) or ranges (1-5).
-               </p>
+             <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6">
+               <div>
+                 <label className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2 mb-4">
+                   Select Pages to Extract
+                   <span className="group relative cursor-help text-blue-500">
+                     <HelpCircle size={16} />
+                     <div className="absolute bottom-full mb-2 left-0 w-64 p-3 bg-foreground text-background text-xs rounded-xl shadow-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50">
+                       Valid formats: "1-5", "8,11,13", or combinations like "1-3, 5, 8".
+                     </div>
+                   </span>
+                 </label>
+                 <input
+                   type="text"
+                   value={pages}
+                   onChange={(e) => setPages(e.target.value)}
+                   placeholder="e.g. 1-3, 5, 8"
+                   className="w-full bg-background border border-border rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-lg font-mono tracking-widest"
+                 />
+               </div>
+               
+               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                 <button onClick={() => setPages(prev => prev ? prev + ', 1' : '1')} className="px-3 py-2 text-xs border border-border rounded-lg hover:bg-muted text-foreground transition-colors font-medium text-left truncate">Extract First Page</button>
+                 <button onClick={() => setPages(prev => prev ? prev + ', 1-5' : '1-5')} className="px-3 py-2 text-xs border border-border rounded-lg hover:bg-muted text-foreground transition-colors font-medium text-left truncate">First 5 Pages</button>
+                 <button onClick={() => setPages('')} className="px-3 py-2 text-xs border border-red-500/20 bg-red-500/5 hover:bg-red-500/10 text-red-500 rounded-lg transition-colors font-medium text-left truncate col-span-2">Clear Selection</button>
+               </div>
              </div>
           )}
 
@@ -175,19 +156,19 @@ const PdfSplit = () => {
         {/* Action Panel */}
         <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6 h-fit shrink-0">
           <div>
-            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4">Split Settings</h3>
+            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4">Split Details</h3>
             <div className="space-y-4 text-sm text-foreground">
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="text-emerald-500 mt-0.5 shrink-0" size={16} />
-                <p>Files are processed securely on the backend server.</p>
+                <p>Creates a new PDF containing only the pages you specified.</p>
               </div>
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="text-emerald-500 mt-0.5 shrink-0" size={16} />
-                <p>Original file is deleted immediately after processing.</p>
+                <p>Use commas and dashes for complex selections (e.g., 1-5, 8, 11-13).</p>
               </div>
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="text-emerald-500 mt-0.5 shrink-0" size={16} />
-                <p>Extract exactly the pages you need.</p>
+                <p>Processed securely; we delete all files after splitting.</p>
               </div>
             </div>
           </div>
@@ -197,8 +178,8 @@ const PdfSplit = () => {
             disabled={!file || !pages.trim() || isProcessing}
             className="w-full py-3 bg-blue-500 text-white font-medium rounded-xl hover:bg-blue-600 transition-colors flex items-center justify-center gap-2 shadow-sm shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <FileDown size={18} />
-            {isProcessing ? 'Processing...' : 'Extract Pages'}
+            <Scissors size={18} />
+            {isProcessing ? 'Splitting...' : 'Extract Pages'}
           </button>
         </div>
 

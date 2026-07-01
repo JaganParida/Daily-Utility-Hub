@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { FileDown, UploadCloud, FileText, CheckCircle2, Droplets } from 'lucide-react';
+import { UploadCloud, FileText, CheckCircle2, Droplets } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
 
@@ -10,16 +10,9 @@ const PdfWatermark = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const fileInputRef = useRef(null);
 
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = (e) => {
-    e.preventDefault();
-    setIsDragging(false);
-  };
-
+  const handleDragOver = (e) => { e.preventDefault(); setIsDragging(true); };
+  const handleDragLeave = (e) => { e.preventDefault(); setIsDragging(false); };
+  
   const handleDrop = (e) => {
     e.preventDefault();
     setIsDragging(false);
@@ -43,7 +36,7 @@ const PdfWatermark = () => {
       return;
     }
     if (!watermarkText.trim()) {
-      toast.error('Please enter the watermark text');
+      toast.error('Please enter watermark text');
       return;
     }
 
@@ -60,7 +53,6 @@ const PdfWatermark = () => {
         responseType: 'blob'
       });
 
-      // Download the result
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
@@ -72,122 +64,102 @@ const PdfWatermark = () => {
       toast.success('Watermark applied successfully!', { id: toastId });
     } catch (error) {
       console.error(error);
-      const errMsg = error.response?.data?.message || 'Failed to apply watermark. The file may be encrypted.';
-      
-      // Axios blobs return as arraybuffer in error.response.data sometimes
-      if (error.response?.data instanceof Blob) {
-         const reader = new FileReader();
-         reader.onload = () => {
-           try {
-             const json = JSON.parse(reader.result);
-             toast.error(json.message || 'Failed to apply watermark', { id: toastId });
-           } catch {
-             toast.error('Failed to apply watermark', { id: toastId });
-           }
-         };
-         reader.readAsText(error.response.data);
-      } else {
-        toast.error(errMsg, { id: toastId });
-      }
+      toast.error('Failed to add watermark to PDF. It may be encrypted.');
     } finally {
       setIsProcessing(false);
     }
   };
 
   return (
-    <div className="max-w-5xl mx-auto flex flex-col min-h-[calc(100vh-140px)]">
+    <div className="max-w-6xl mx-auto flex flex-col min-h-[calc(100vh-140px)]">
       <div className="mb-6 flex items-center gap-3 shrink-0">
         <div className="p-2 bg-purple-500/10 text-purple-500 rounded-lg shadow-sm">
           <Droplets size={28} />
         </div>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Watermark PDF</h1>
-          <p className="text-muted-foreground mt-1 text-sm">Add a text watermark across all pages of a PDF document.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Add PDF Watermark</h1>
+          <p className="text-muted-foreground mt-1 text-sm">Stamp your PDF documents with custom text across all pages.</p>
         </div>
       </div>
 
       <div className="grid lg:grid-cols-[1fr_350px] gap-6 flex-1 min-h-0">
         
-        {/* Upload & Form Area */}
+        {/* Upload & Preview Area */}
         <div className="flex flex-col gap-6 overflow-hidden">
           
-          {/* Dropzone */}
-          {!file ? (
-            <div 
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
-              onClick={() => fileInputRef.current?.click()}
-              className={`border-2 border-dashed rounded-2xl p-10 flex flex-col items-center justify-center cursor-pointer transition-all h-64 ${
-                isDragging ? 'border-purple-500 bg-purple-500/5' : 'border-border bg-card hover:border-purple-500/50 hover:bg-muted/30'
-              }`}
-            >
-              <input 
-                type="file" 
-                ref={fileInputRef} 
-                onChange={handleFileSelect} 
-                className="hidden" 
-                accept=".pdf,application/pdf" 
-              />
-              <div className="w-16 h-16 bg-purple-500/10 rounded-full flex items-center justify-center text-purple-500 mb-4 pointer-events-none">
-                <UploadCloud size={32} />
-              </div>
-              <h3 className="text-lg font-bold text-foreground mb-1 pointer-events-none">Upload a PDF</h3>
-              <p className="text-sm text-muted-foreground text-center pointer-events-none">
-                Drag & drop a PDF file here or click to browse.
-              </p>
-            </div>
-          ) : (
-            <div className="bg-card border border-border rounded-2xl shadow-sm p-6 flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-purple-500/10 text-purple-500 rounded-xl flex items-center justify-center">
-                  <FileText size={24} />
+          <div className="grid md:grid-cols-2 gap-6 h-64 shrink-0">
+            {/* Dropzone */}
+            {!file ? (
+              <div 
+                onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}
+                onClick={() => fileInputRef.current?.click()}
+                className={`border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center cursor-pointer transition-all h-full ${
+                  isDragging ? 'border-purple-500 bg-purple-500/5' : 'border-border bg-card hover:border-purple-500/50 hover:bg-muted/30'
+                }`}
+              >
+                <input type="file" ref={fileInputRef} onChange={handleFileSelect} className="hidden" accept=".pdf,application/pdf" />
+                <div className="w-16 h-16 bg-purple-500/10 rounded-full flex items-center justify-center text-purple-500 mb-4 pointer-events-none">
+                  <UploadCloud size={32} />
                 </div>
-                <div>
-                  <h3 className="font-bold text-foreground text-lg">{file.name}</h3>
-                  <p className="text-muted-foreground text-sm">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
-                </div>
+                <h3 className="text-lg font-bold text-foreground mb-1 pointer-events-none">Upload a PDF</h3>
               </div>
-              <button onClick={() => setFile(null)} className="text-sm text-red-500 hover:bg-red-500/10 px-3 py-1.5 rounded-lg transition-colors font-medium">
-                Remove
-              </button>
-            </div>
-          )}
+            ) : (
+              <div className="bg-card border border-border rounded-2xl shadow-sm p-6 flex flex-col justify-center items-center h-full relative group">
+                <div className="w-16 h-16 bg-purple-500/10 text-purple-500 rounded-xl flex items-center justify-center mb-4">
+                  <FileText size={32} />
+                </div>
+                <h3 className="font-bold text-foreground text-center truncate w-full px-4">{file.name}</h3>
+                <p className="text-muted-foreground text-sm mt-1">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                <button onClick={() => setFile(null)} className="absolute top-4 right-4 text-xs text-red-500 bg-red-500/10 hover:bg-red-500/20 px-3 py-1.5 rounded-lg transition-colors font-medium">
+                  Remove
+                </button>
+              </div>
+            )}
 
-          {file && (
-             <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-4">
-               <label className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Watermark Text</label>
-               <input
-                 type="text"
-                 value={watermarkText}
-                 onChange={(e) => setWatermarkText(e.target.value)}
-                 placeholder="e.g. CONFIDENTIAL"
-                 className="w-full bg-background border border-border rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-               />
-               <p className="text-xs text-muted-foreground">
-                 This text will be stamped diagonally across the center of all pages.
-               </p>
-             </div>
-          )}
+            {/* Visual Preview */}
+            <div className="bg-white rounded-2xl border border-border shadow-inner p-4 relative overflow-hidden flex items-center justify-center h-full">
+              <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+                <span 
+                  className="text-gray-300 font-bold whitespace-nowrap opacity-50 select-none pointer-events-none"
+                  style={{ fontSize: 'clamp(2rem, 5vw, 4rem)', transform: 'rotate(-45deg)' }}
+                >
+                  {watermarkText || 'PREVIEW'}
+                </span>
+              </div>
+              <p className="text-gray-400 text-sm opacity-50 absolute bottom-4">Live Preview</p>
+            </div>
+          </div>
+
+          <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-4">
+             <label className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Watermark Text</label>
+             <input
+               type="text"
+               value={watermarkText}
+               onChange={(e) => setWatermarkText(e.target.value)}
+               placeholder="e.g. CONFIDENTIAL or DRAFT"
+               className="w-full bg-background border border-border rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-purple-500/50 text-lg font-medium"
+               maxLength={30}
+             />
+          </div>
 
         </div>
 
         {/* Action Panel */}
         <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6 h-fit shrink-0">
           <div>
-            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4">Watermark Settings</h3>
+            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4">Watermark Details</h3>
             <div className="space-y-4 text-sm text-foreground">
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="text-emerald-500 mt-0.5 shrink-0" size={16} />
-                <p>Files are processed securely on the backend server.</p>
+                <p>Applied diagonally across the center of all pages.</p>
               </div>
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="text-emerald-500 mt-0.5 shrink-0" size={16} />
-                <p>Original file is deleted immediately after processing.</p>
+                <p>Text is semi-transparent to keep document readable.</p>
               </div>
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="text-emerald-500 mt-0.5 shrink-0" size={16} />
-                <p>Protects your document from unauthorized use.</p>
+                <p>We delete your file immediately after processing.</p>
               </div>
             </div>
           </div>
@@ -197,8 +169,8 @@ const PdfWatermark = () => {
             disabled={!file || !watermarkText.trim() || isProcessing}
             className="w-full py-3 bg-purple-500 text-white font-medium rounded-xl hover:bg-purple-600 transition-colors flex items-center justify-center gap-2 shadow-sm shadow-purple-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <FileDown size={18} />
-            {isProcessing ? 'Processing...' : 'Apply Watermark'}
+            <Droplets size={18} />
+            {isProcessing ? 'Applying...' : 'Stamp PDF'}
           </button>
         </div>
 

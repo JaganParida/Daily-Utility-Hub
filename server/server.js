@@ -37,11 +37,8 @@ app.use(cors({
 // Set security headers
 app.use(helmet());
 
-// Prevent NoSQL injections
-app.use(mongoSanitize());
-
-// Prevent XSS attacks
-app.use(xss());
+// Prevent XSS attacks (Removed xss-clean because it crashes with TypeError: Cannot set property query of #<IncomingMessage> which has only a getter)
+// We will handle XSS on the client-side and use DOMPurify when necessary.
 
 // Rate limiting
 const limiter = rateLimit({
