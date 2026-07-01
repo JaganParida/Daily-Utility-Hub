@@ -39,8 +39,10 @@ const Topbar = ({ toggleSidebar }) => {
   const [searchResults, setSearchResults] = useState([]);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
   const { currentUser: user, logout } = useAuth();
   const profileMenuRef = useRef(null);
+  const searchInputRef = useRef(null);
   const searchContainerRef = useRef(null);
   const themeMenuRef = useRef(null);
   
