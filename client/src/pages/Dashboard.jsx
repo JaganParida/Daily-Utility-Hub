@@ -34,6 +34,11 @@ const Dashboard = () => {
       { name: 'URL Converter', description: 'Safely encode and decode URLs and query parameters.', icon: Type, to: '/tools/url-converter', color: 'bg-pink-500/10 text-pink-500' },
       { name: 'Bcrypt Generator', description: 'Generate and verify secure bcrypt password hashes.', icon: Key, to: '/tools/bcrypt-generator', color: 'bg-rose-500/10 text-rose-500' },
       { name: 'Cron Parser', description: 'Translate cron expressions into human-readable text.', icon: Layers, to: '/tools/cron-parser', color: 'bg-purple-500/10 text-purple-500' },
+    ],
+    'PDF Tools': [
+      { name: 'Merge PDF', description: 'Combine multiple PDF files into one securely.', icon: FileText, to: '/tools/pdf-merge', color: 'bg-red-500/10 text-red-500' },
+      { name: 'Split PDF', description: 'Extract specific pages or page ranges from a PDF.', icon: FileText, to: '/tools/pdf-split', color: 'bg-blue-500/10 text-blue-500' },
+      { name: 'Watermark PDF', description: 'Add a text watermark across all pages of a PDF document.', icon: FileText, to: '/tools/pdf-watermark', color: 'bg-purple-500/10 text-purple-500' },
     ]
   };
 

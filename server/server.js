@@ -60,6 +60,7 @@ if (process.env.NODE_ENV === 'development') {
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/pdf', require('./routes/pdf'));
 // app.use('/api/users', require('./routes/users'));
 
 // Basic route

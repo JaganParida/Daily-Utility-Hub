@@ -29,6 +29,11 @@ import UrlConverter from './pages/tools/UrlConverter';
 import BcryptGenerator from './pages/tools/BcryptGenerator';
 import CronParser from './pages/tools/CronParser';
 
+// New PDF Tools
+import PdfMerge from './pages/tools/PdfMerge';
+import PdfSplit from './pages/tools/PdfSplit';
+import PdfWatermark from './pages/tools/PdfWatermark';
+
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import { Toaster } from 'react-hot-toast';
@@ -71,6 +76,11 @@ function AnimatedRoutes() {
           <Route path="tools/url-converter" element={<UrlConverter />} />
           <Route path="tools/bcrypt-generator" element={<BcryptGenerator />} />
           <Route path="tools/cron-parser" element={<CronParser />} />
+
+          {/* New PDF Tools Routes */}
+          <Route path="tools/pdf-merge" element={<PdfMerge />} />
+          <Route path="tools/pdf-split" element={<PdfSplit />} />
+          <Route path="tools/pdf-watermark" element={<PdfWatermark />} />
         </Route>
       </Routes>
     </AnimatePresence>

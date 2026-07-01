@@ -49,6 +49,14 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         { name: 'Color Picker', to: '/tools/color-picker', icon: Layers },
         { name: 'Gradient Generator', to: '/tools/gradient-generator', icon: Layers },
       ]
+    },
+    {
+      title: 'PDF Tools',
+      links: [
+        { name: 'Merge PDF', to: '/tools/pdf-merge', icon: FileText },
+        { name: 'Split PDF', to: '/tools/pdf-split', icon: FileText },
+        { name: 'Watermark PDF', to: '/tools/pdf-watermark', icon: FileText },
+      ]
     }
   ];
 

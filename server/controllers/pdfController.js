@@ -1,0 +1,145 @@
+const { PDFDocument, rgb, degrees } = require('pdf-lib');
+const fs = require('fs');
+const path = require('path');
+
+// Helper to clean up uploaded files
+const cleanupFiles = (files) => {
+  files.forEach(file => {
+    if (fs.existsSync(file.path)) {
+      fs.unlinkSync(file.path);
+    }
+  });
+};
+
+// Merge Multiple PDFs
+exports.mergePdfs = async (req, res) => {
+  try {
+    if (!req.files || req.files.length < 2) {
+      cleanupFiles(req.files || []);
+      return res.status(400).json({ message: 'Please upload at least two PDF files to merge.' });
+    }
+
+    const mergedPdf = await PDFDocument.create();
+
+    for (const file of req.files) {
+      const pdfBytes = fs.readFileSync(file.path);
+      const pdf = await PDFDocument.load(pdfBytes);
+      const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
+      copiedPages.forEach((page) => mergedPdf.addPage(page));
+    }
+
+    const mergedPdfBytes = await mergedPdf.save();
+    
+    // Clean up temp uploads
+    cleanupFiles(req.files);
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename=merged_document.pdf');
+    res.send(Buffer.from(mergedPdfBytes));
+  } catch (error) {
+    cleanupFiles(req.files || []);
+    console.error('Merge Error:', error);
+    res.status(500).json({ message: 'Failed to merge PDFs. The files may be corrupted or encrypted.' });
+  }
+};
+
+// Split PDF
+exports.splitPdf = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'Please upload a PDF file.' });
+    }
+
+    const { pages } = req.body; // Array of page numbers to extract (1-indexed) or a range string "1-3"
+    
+    if (!pages) {
+      cleanupFiles([req.file]);
+      return res.status(400).json({ message: 'Please specify which pages to extract.' });
+    }
+
+    const pdfBytes = fs.readFileSync(req.file.path);
+    const pdf = await PDFDocument.load(pdfBytes);
+    const totalPages = pdf.getPageCount();
+
+    // Parse page numbers (e.g. "1,3,4-6")
+    let pageIndices = new Set();
+    const parts = pages.split(',');
+    for (const part of parts) {
+      if (part.includes('-')) {
+        const [start, end] = part.split('-').map(n => parseInt(n.trim()));
+        for (let i = start; i <= end; i++) {
+          if (i > 0 && i <= totalPages) pageIndices.add(i - 1);
+        }
+      } else {
+        const num = parseInt(part.trim());
+        if (num > 0 && num <= totalPages) pageIndices.add(num - 1);
+      }
+    }
+
+    if (pageIndices.size === 0) {
+      cleanupFiles([req.file]);
+      return res.status(400).json({ message: 'Invalid page range specified.' });
+    }
+
+    const newPdf = await PDFDocument.create();
+    const copiedPages = await newPdf.copyPages(pdf, Array.from(pageIndices).sort((a,b) => a-b));
+    copiedPages.forEach((page) => newPdf.addPage(page));
+
+    const newPdfBytes = await newPdf.save();
+    
+    cleanupFiles([req.file]);
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename=split_document.pdf');
+    res.send(Buffer.from(newPdfBytes));
+  } catch (error) {
+    cleanupFiles(req.file ? [req.file] : []);
+    console.error('Split Error:', error);
+    res.status(500).json({ message: 'Failed to split PDF.' });
+  }
+};
+
+// Watermark PDF
+exports.watermarkPdf = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'Please upload a PDF file.' });
+    }
+
+    const { watermarkText } = req.body;
+    
+    if (!watermarkText) {
+      cleanupFiles([req.file]);
+      return res.status(400).json({ message: 'Please provide watermark text.' });
+    }
+
+    const pdfBytes = fs.readFileSync(req.file.path);
+    const pdfDoc = await PDFDocument.load(pdfBytes);
+    
+    const pages = pdfDoc.getPages();
+    
+    for (const page of pages) {
+      const { width, height } = page.getSize();
+      page.drawText(watermarkText, {
+        x: width / 4,
+        y: height / 2,
+        size: 50,
+        color: rgb(0.9, 0.1, 0.1),
+        opacity: 0.3,
+        rotate: degrees(-45),
+      });
+    }
+
+    const watermarkedPdfBytes = await pdfDoc.save();
+    
+    cleanupFiles([req.file]);
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename=watermarked_document.pdf');
+    res.send(Buffer.from(watermarkedPdfBytes));
+  } catch (error) {
+    cleanupFiles(req.file ? [req.file] : []);
+    console.error('Watermark Error:', error);
+    res.status(500).json({ message: 'Failed to add watermark to PDF.' });
+  }
+};
