@@ -4,7 +4,7 @@ import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 import { 
   UploadCloud, FileText, CheckCircle2, Type, Paintbrush, Highlighter, 
   Square, MousePointer, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, 
-  Download, Undo2, X, Eye, ExternalLink, HelpCircle
+  Download, Undo2, X, Eye, ExternalLink, HelpCircle, Edit3
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
@@ -27,7 +27,7 @@ const PdfEdit = () => {
   const [scale, setScale] = useState(1.25);
   
   // Tool state
-  const [selectedTool, setSelectedTool] = useState('select'); // select, text, draw, highlight, redact
+  const [selectedTool, setSelectedTool] = useState('select'); // select, text, draw, highlight, redact, edit-text
   const [selectedColor, setSelectedColor] = useState('#ef4444'); // default red
   const [selectedWidth, setSelectedWidth] = useState(4);
   const [selectedFontSize, setSelectedFontSize] = useState(16);
@@ -36,6 +36,7 @@ const PdfEdit = () => {
   const [drawings, setDrawings] = useState({}); // pageIndex -> array of drawings
   const [texts, setTexts] = useState({}); // pageIndex -> array of text objects
   const [shapes, setShapes] = useState({}); // pageIndex -> array of shapes (highlight/redact)
+  const [detectedTexts, setDetectedTexts] = useState({}); // pageIndex -> array of detected text runs
   const [actionHistory, setActionHistory] = useState([]); // Array of actions for Undo
 
   // UI state
@@ -74,6 +75,7 @@ const PdfEdit = () => {
           setDrawings({});
           setTexts({});
           setShapes({});
+          setDetectedTexts({});
           setActionHistory([]);
           
           toast.success(`PDF Loaded: ${pdf.numPages} pages`, { id: toastId });
@@ -116,6 +118,7 @@ const PdfEdit = () => {
     setDrawings({});
     setTexts({});
     setShapes({});
+    setDetectedTexts({});
     setActionHistory([]);
   };
 
@@ -132,8 +135,14 @@ const PdfEdit = () => {
         const canvas = canvasRef.current;
         if (canvas) {
           const context = canvas.getContext('2d');
-          canvas.width = viewport.width;
-          canvas.height = viewport.height;
+          const dpr = window.devicePixelRatio || 1;
+          
+          canvas.width = viewport.width * dpr;
+          canvas.height = viewport.height * dpr;
+          canvas.style.width = `${viewport.width}px`;
+          canvas.style.height = `${viewport.height}px`;
+          
+          context.scale(dpr, dpr);
           
           const renderContext = {
             canvasContext: context,
@@ -149,6 +158,38 @@ const PdfEdit = () => {
             pdfWidth: unscaledViewport.width,
             pdfHeight: unscaledViewport.height
           });
+
+          // Extract text runs for direct inline editing
+          try {
+            const textContent = await page.getTextContent();
+            const items = textContent.items.map(item => {
+              const tx = item.transform[4];
+              const ty = item.transform[5];
+              const [canvasX, canvasY] = viewport.convertToViewportPoint(tx, ty);
+              
+              const widthPoints = item.width;
+              const heightPoints = item.height || Math.abs(item.transform[3]) || 12;
+              
+              const pxWidth = widthPoints * (viewport.width / unscaledViewport.width);
+              const pxHeight = heightPoints * (viewport.height / unscaledViewport.height);
+              
+              return {
+                str: item.str,
+                x: canvasX,
+                y: canvasY - pxHeight,
+                width: pxWidth,
+                height: pxHeight,
+                fontSize: heightPoints
+              };
+            }).filter(item => item.str.trim() !== '');
+            
+            setDetectedTexts(prev => ({
+              ...prev,
+              [currentPage - 1]: items
+            }));
+          } catch (textErr) {
+            console.error('Text extraction failed:', textErr);
+          }
         }
       } catch (err) {
         console.error('Render error:', err);
@@ -179,9 +220,51 @@ const PdfEdit = () => {
     };
   };
 
+  const handleEditTextClick = (item) => {
+    // 1. Add whiteout shape covering the original text
+    const newRedactShape = {
+      x: item.x - 1.5,
+      y: item.y - 1.5,
+      width: item.width + 3.0,
+      height: item.height + 3.0,
+      type: 'redact',
+      color: '#ffffff' // Whiteout!
+    };
+
+    // 2. Add editable text block replacing it
+    const newTextItem = {
+      id: `txt_${Date.now()}`,
+      x: item.x,
+      y: item.y,
+      text: item.str,
+      fontSize: item.fontSize,
+      color: '#000000', // default black text for replacements
+      isEditing: true
+    };
+
+    setShapes(prev => ({
+      ...prev,
+      [pageIdx]: [...(prev[pageIdx] || []), newRedactShape]
+    }));
+
+    setTexts(prev => ({
+      ...prev,
+      [pageIdx]: [...(prev[pageIdx] || []), newTextItem]
+    }));
+
+    setActionHistory(prev => [
+      ...prev,
+      { type: 'shape', pageIdx },
+      { type: 'text_add', pageIdx, id: newTextItem.id }
+    ]);
+
+    setSelectedTool('select'); // Switch to select tool so they can type/edit immediately
+    toast.success('Text selected for editing. Click away to save.');
+  };
+
   // Handle pointer down
   const handlePointerDown = (e) => {
-    if (selectedTool === 'select') return;
+    if (selectedTool === 'select' || selectedTool === 'edit-text') return;
     e.preventDefault();
     
     const coords = getCoordinates(e);
@@ -546,8 +629,15 @@ const PdfEdit = () => {
                   <MousePointer size={18} />
                 </button>
                 <button
+                  onClick={() => setSelectedTool('edit-text')}
+                  title="Edit PDF Text (Click to Rewrite)"
+                  className={`p-2 rounded-lg transition-colors ${selectedTool === 'edit-text' ? 'bg-background shadow text-red-500 font-bold' : 'text-muted-foreground hover:text-foreground'}`}
+                >
+                  <Edit3 size={18} />
+                </button>
+                <button
                   onClick={() => setSelectedTool('text')}
-                  title="Insert Text"
+                  title="Insert New Text"
                   className={`p-2 rounded-lg transition-colors ${selectedTool === 'text' ? 'bg-background shadow text-red-500 font-bold' : 'text-muted-foreground hover:text-foreground'}`}
                 >
                   <Type size={18} />
@@ -658,6 +748,7 @@ const PdfEdit = () => {
               {/* Info Indicator */}
               <div className="text-xs bg-muted/40 px-3 py-1.5 rounded-xl text-muted-foreground border border-border hidden sm:block">
                 {selectedTool === 'select' && 'Select / Drag text elements.'}
+                {selectedTool === 'edit-text' && 'Click on any original PDF text to edit it.'}
                 {selectedTool === 'text' && 'Click on page to type text.'}
                 {selectedTool === 'draw' && 'Draw signature / lines.'}
                 {selectedTool === 'highlight' && 'Click & drag to highlight.'}
@@ -809,7 +900,27 @@ const PdfEdit = () => {
                           )}
                         </div>
                       )}
-                    </div>
+                  ))}
+
+                  {/* Render detected text runs when 'edit-text' tool is active */}
+                  {selectedTool === 'edit-text' && (detectedTexts[pageIdx] || []).map((item, idx) => (
+                    <div
+                      key={`det_${idx}`}
+                      style={{
+                        position: 'absolute',
+                        left: `${item.x}px`,
+                        top: `${item.y}px`,
+                        width: `${item.width}px`,
+                        height: `${item.height}px`,
+                        border: '1px dashed rgba(59, 130, 246, 0.5)',
+                        backgroundColor: 'rgba(59, 130, 246, 0.05)',
+                        cursor: 'pointer',
+                        zIndex: 15
+                      }}
+                      className="hover:bg-blue-500/20 hover:border-blue-500 transition-colors"
+                      onClick={() => handleEditTextClick(item)}
+                      title="Click to edit this text"
+                    />
                   ))}
 
                 </div>
