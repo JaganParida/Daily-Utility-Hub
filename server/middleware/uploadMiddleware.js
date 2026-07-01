@@ -31,16 +31,17 @@ const validateFileType = async (req, res, next) => {
     return next();
   }
 
-  // Use dynamic import for ES modules, or we can use the CommonJS version we installed (16.5.4).
-  const { fileTypeFromFile } = require('file-type');
   const files = req.files ? (Array.isArray(req.files) ? req.files : Object.values(req.files).flat()) : [req.file];
-  
+
   const allowedMimeTypes = [
     'image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/bmp',
     'application/pdf', 'application/json', 'text/plain', 'text/csv'
   ];
 
   try {
+    // Dynamic import for pure ESM file-type package
+    const { fileTypeFromFile } = await import('file-type');
+    
     for (const file of files) {
       // For text files, file-type might return undefined as it only checks binary magic numbers.
       // So we must handle text files differently if needed, but for now we'll allow standard text mimes.

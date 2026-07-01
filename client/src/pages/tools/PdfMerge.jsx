@@ -89,9 +89,10 @@ const PdfMerge = () => {
       formData.append('pdfs', item.file);
     });
 
+    let toastId;
     try {
       setIsProcessing(true);
-      const toastId = toast.loading('Merging PDFs securely on server...');
+      toastId = toast.loading('Merging PDFs securely on server...');
       
       const response = await axios.post('http://localhost:5000/api/pdf/merge', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
