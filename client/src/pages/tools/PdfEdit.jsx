@@ -900,6 +900,7 @@ const PdfEdit = () => {
                           )}
                         </div>
                       )}
+                    </div>
                   ))}
 
                   {/* Render detected text runs when 'edit-text' tool is active */}
