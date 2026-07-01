@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { Home, Type, Hash, Key, Layers, AlignLeft, ChevronRight, X, Image as ImageIcon, Expand, Crop, ArrowRightLeft, LayoutGrid, FileText, Braces, Search } from 'lucide-react';
+import { Home, Type, Hash, Key, Layers, AlignLeft, ChevronRight, X, Image as ImageIcon, Expand, Crop, ArrowRightLeft, LayoutGrid, FileText, Braces, Search, Calculator, TrendingUp, Percent, Landmark } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
@@ -72,6 +72,15 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         { name: 'Image to Text', to: '/tools/image-to-text', icon: Type },
         { name: 'Text Diff', to: '/tools/text-diff', icon: FileText },
         { name: 'Markdown Editor', to: '/tools/markdown-editor', icon: FileText },
+      ]
+    },
+    {
+      title: 'Finance & Productivity',
+      links: [
+        { name: 'EMI Calculator', to: '/tools/emi-calculator', icon: Calculator },
+        { name: 'SIP Calculator', to: '/tools/sip-calculator', icon: TrendingUp },
+        { name: 'GST Calculator', to: '/tools/gst-calculator', icon: Percent },
+        { name: 'Income Tax', to: '/tools/tax-calculator', icon: Landmark },
       ]
     }
   ];

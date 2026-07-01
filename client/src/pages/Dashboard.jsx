@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Type, Hash, Key, Layers, AlignLeft, Image as ImageIcon, Expand, Crop, ArrowRightLeft, LayoutGrid, FileText, Braces, Search } from 'lucide-react';
+import { Type, Hash, Key, Layers, AlignLeft, Image as ImageIcon, Expand, Crop, ArrowRightLeft, LayoutGrid, FileText, Braces, Search, Calculator, TrendingUp, Percent, Landmark } from 'lucide-react';
 import PageTransition from '../components/PageTransition';
 
 const Dashboard = () => {
@@ -51,6 +51,12 @@ const Dashboard = () => {
       { name: 'Image to Text', description: 'Scan photos of documents and extract text instantly using OCR.', icon: Type, to: '/tools/image-to-text', color: 'bg-orange-500/10 text-orange-500' },
       { name: 'Text Diff', description: 'Compare two pieces of text or code to see exactly what changed.', icon: FileText, to: '/tools/text-diff', color: 'bg-rose-500/10 text-rose-500' },
       { name: 'Markdown Editor', description: 'Write beautiful documentation with instant GitHub-flavored previews.', icon: FileText, to: '/tools/markdown-editor', color: 'bg-blue-500/10 text-blue-500' },
+    ],
+    'Finance & Productivity': [
+      { name: 'EMI Calculator', description: 'Calculate monthly payments and total interest payable on loans.', icon: Calculator, to: '/tools/emi-calculator', color: 'bg-blue-500/10 text-blue-500' },
+      { name: 'SIP Calculator', description: 'Estimate future values and compound growth on systematic investments.', icon: TrendingUp, to: '/tools/sip-calculator', color: 'bg-emerald-500/10 text-emerald-500' },
+      { name: 'GST Calculator', description: 'Calculate tax inclusive or exclusive prices and SGST/CGST splits.', icon: Percent, to: '/tools/gst-calculator', color: 'bg-indigo-500/10 text-indigo-500' },
+      { name: 'Income Tax', description: 'Compare old vs new tax regimes and calculate taxable income liabilities.', icon: Landmark, to: '/tools/tax-calculator', color: 'bg-amber-500/10 text-amber-500' },
     ]
   };
 

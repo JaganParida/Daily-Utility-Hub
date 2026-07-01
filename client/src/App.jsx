@@ -46,6 +46,12 @@ import ImageToText from './pages/tools/ImageToText';
 import TextDiff from './pages/tools/TextDiff';
 import MarkdownEditor from './pages/tools/MarkdownEditor';
 
+// Finance & Productivity Tools
+import EmiCalculator from './pages/tools/EmiCalculator';
+import SipCalculator from './pages/tools/SipCalculator';
+import GstCalculator from './pages/tools/GstCalculator';
+import TaxCalculator from './pages/tools/TaxCalculator';
+
 // Developer & Data Tools
 import EncoderDecoder from './pages/tools/EncoderDecoder';
 
@@ -108,6 +114,12 @@ function AnimatedRoutes() {
           <Route path="tools/image-to-text" element={<ImageToText />} />
           <Route path="tools/text-diff" element={<TextDiff />} />
           <Route path="tools/markdown-editor" element={<MarkdownEditor />} />
+
+          {/* Finance & Productivity Tools Routes */}
+          <Route path="tools/emi-calculator" element={<EmiCalculator />} />
+          <Route path="tools/sip-calculator" element={<SipCalculator />} />
+          <Route path="tools/gst-calculator" element={<GstCalculator />} />
+          <Route path="tools/tax-calculator" element={<TaxCalculator />} />
 
           {/* Developer & Data Tools */}
           <Route path="tools/encoder-decoder" element={<EncoderDecoder />} />
