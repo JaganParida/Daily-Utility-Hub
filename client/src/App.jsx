@@ -75,14 +75,17 @@ function AnimatedRoutes() {
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
-        <Route path="/" element={<Layout />}>
-          <Route index element={<Home />} />
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="login" element={<Login />} />
-          <Route path="register" element={<Register />} />
-          <Route path="forgot-password" element={<ForgotPassword />} />
-          <Route path="tools/word-counter" element={<WordCounter />} />
-          <Route path="tools/uuid-generator" element={<UuidGenerator />} />
+        {/* Public Pages (No Sidebar) */}
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+
+        {/* App Pages (With Sidebar & Topbar) */}
+        <Route element={<Layout />}>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/tools/word-counter" element={<WordCounter />} />
+          <Route path="/tools/uuid-generator" element={<UuidGenerator />} />
           <Route path="tools/password-generator" element={<PasswordGenerator />} />
           <Route path="tools/case-converter" element={<CaseConverter />} />
           <Route path="tools/font-converter" element={<FontConverter />} />

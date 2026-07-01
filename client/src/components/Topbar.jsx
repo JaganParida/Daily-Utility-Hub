@@ -139,9 +139,9 @@ const Topbar = ({ toggleSidebar }) => {
     <header className="h-16 flex items-center justify-between px-4 md:px-6 glass-header">
       <div className="flex items-center gap-4 flex-1">
         {/* Mobile Sidebar Toggle / Back Button */}
-        {location.pathname !== '/' ? (
+        {location.pathname !== '/dashboard' ? (
           <button 
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/dashboard')}
             className="md:hidden p-2 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-full transition-colors"
             title="Back to Dashboard"
           >
