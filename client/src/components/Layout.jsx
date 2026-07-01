@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
+import Footer from './Footer';
 import { useState } from 'react';
 
 const Layout = () => {
@@ -21,8 +22,11 @@ const Layout = () => {
       
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <Topbar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} isCollapsed={isCollapsed} />
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
-          <Outlet />
+        <main className="flex-1 overflow-y-auto flex flex-col relative z-10">
+          <div className="p-4 md:p-6 lg:p-8 flex-1">
+            <Outlet />
+          </div>
+          <Footer />
         </main>
       </div>
     </div>

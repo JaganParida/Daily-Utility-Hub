@@ -158,28 +158,31 @@ const Topbar = ({ toggleSidebar }) => {
         )}
         
         {/* Search Bar */}
-        <div ref={searchContainerRef} className="hidden sm:flex items-center relative max-w-md w-full">
-          <Search size={18} className="absolute left-3 text-muted-foreground" />
-          <input 
-            ref={searchInputRef}
-            type="text" 
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onFocus={() => {
-              if (searchQuery.trim() !== '') setIsSearchOpen(true);
-            }}
-            placeholder="Search tools... (Ctrl+K)"
-            className="w-full bg-muted/50 border border-border/50 text-foreground text-sm rounded-full pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-muted-foreground"
-          />
+        <div ref={searchContainerRef} className="hidden sm:flex items-center relative max-w-md w-full group">
+          <div className="absolute inset-0 bg-indigo-500/20 rounded-full blur-lg transition-all duration-500 group-hover:bg-indigo-500/30 opacity-0 focus-within:opacity-100 group-hover:opacity-100"></div>
+          <div className="relative w-full flex items-center">
+            <Search size={18} className="absolute left-3.5 text-muted-foreground z-10" />
+            <input 
+              ref={searchInputRef}
+              type="text" 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={() => {
+                if (searchQuery.trim() !== '') setIsSearchOpen(true);
+              }}
+              placeholder="Search tools... (Ctrl+K)"
+              className="w-full bg-card/60 backdrop-blur-md border border-border/60 text-foreground text-sm rounded-full pl-10 pr-4 py-2.5 focus:outline-none focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10 transition-all placeholder:text-muted-foreground relative z-0"
+            />
+          </div>
           
           {/* Search Results Dropdown */}
           {isSearchOpen && searchResults.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-xl shadow-xl overflow-hidden z-50 max-h-64 overflow-y-auto">
+            <div className="absolute top-[calc(100%+8px)] left-0 right-0 bg-card/90 backdrop-blur-2xl border border-border/80 rounded-xl shadow-2xl overflow-hidden z-50 max-h-72 overflow-y-auto custom-scrollbar">
               {searchResults.map((tool) => (
                 <button
                   key={tool.to}
                   onClick={() => handleSearchResultClick(tool.to)}
-                  className="w-full text-left px-4 py-3 text-sm text-foreground hover:bg-muted transition-colors border-b border-border/50 last:border-0"
+                  className="w-full text-left px-4 py-3 text-sm font-medium text-foreground hover:bg-indigo-500 hover:text-white transition-colors border-b border-border/50 last:border-0"
                 >
                   {tool.name}
                 </button>
@@ -187,7 +190,7 @@ const Topbar = ({ toggleSidebar }) => {
             </div>
           )}
           {isSearchOpen && searchQuery.trim() !== '' && searchResults.length === 0 && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-xl shadow-xl p-4 text-center text-sm text-muted-foreground z-50">
+            <div className="absolute top-[calc(100%+8px)] left-0 right-0 bg-card/90 backdrop-blur-2xl border border-border/80 rounded-xl shadow-2xl p-6 text-center text-sm font-medium text-muted-foreground z-50">
               No tools found matching "{searchQuery}"
             </div>
           )}

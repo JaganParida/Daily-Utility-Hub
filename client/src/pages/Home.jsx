@@ -6,6 +6,7 @@ import {
 import { cn } from '../lib/utils';
 import PageTransition from '../components/PageTransition';
 import { useAuth } from '../context/AuthContext';
+import Footer from '../components/Footer';
 
 const Home = () => {
   const { currentUser } = useAuth();
@@ -235,21 +236,7 @@ const Home = () => {
       </section>
 
       {/* 5. FOOTER */}
-      <footer className="py-12 px-4 border-t border-border bg-card">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-2">
-            <span className="font-bold text-xl tracking-tight bg-gradient-to-r from-primary to-blue-500 bg-clip-text text-transparent">Daily Utility Hub</span>
-          </div>
-          <p className="text-muted-foreground text-sm">
-            © {new Date().getFullYear()} Daily Utility Hub. All rights reserved.
-          </p>
-          <div className="flex items-center gap-6 text-sm text-muted-foreground">
-            <Link to="/dashboard" className="hover:text-foreground transition-colors">Dashboard</Link>
-            {!currentUser && <Link to="/login" className="hover:text-foreground transition-colors">Log in</Link>}
-          </div>
-        </div>
-      </footer>
-
+      <Footer />
     </PageTransition>
   );
 };

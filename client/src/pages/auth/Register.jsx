@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { UserPlus, Loader2 } from 'lucide-react';
+import { UserPlus, Loader2, ArrowLeft } from 'lucide-react';
 import PageTransition from '../../components/PageTransition';
 
 const Register = () => {
@@ -39,7 +39,11 @@ const Register = () => {
   };
 
   return (
-    <PageTransition className="min-h-[80vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <PageTransition className="min-h-[80vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative">
+      <Link to="/" className="absolute top-4 left-4 md:top-8 md:left-8 flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors font-medium bg-card/50 backdrop-blur-md px-4 py-2 rounded-full border border-border/50 hover:bg-card shadow-sm">
+        <ArrowLeft size={18} />
+        Back to Home
+      </Link>
       <div className="max-w-md w-full space-y-8 bg-card p-8 rounded-3xl shadow-sm border border-border">
         <div>
           <h2 className="mt-2 text-center text-3xl font-extrabold text-foreground">

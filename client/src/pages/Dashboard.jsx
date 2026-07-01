@@ -2,7 +2,6 @@ import { Link } from 'react-router-dom';
 import { Type, Hash, Key, Layers, AlignLeft, Image as ImageIcon, Expand, Crop, ArrowRightLeft, LayoutGrid, FileText, Braces, Search, Calculator, TrendingUp, Percent, Landmark, FolderArchive, Pin, Clock } from 'lucide-react';
 import PageTransition from '../components/PageTransition';
 import { useAnalytics } from '../hooks/useAnalytics';
-import { useState } from 'react';
 
 const Dashboard = () => {
   const toolCategories = {
@@ -68,19 +67,11 @@ const Dashboard = () => {
   };
 
   const { recentTools, pinnedTools, togglePin } = useAnalytics();
-  const [searchQuery, setSearchQuery] = useState('');
   
   // Flatten all tools for quick lookup
   const allTools = Object.values(toolCategories).flat();
   const pinnedToolObjects = pinnedTools.map(path => allTools.find(t => t.to === path)).filter(Boolean);
   const recentToolObjects = recentTools.map(path => allTools.find(t => t.to === path)).filter(Boolean);
-
-  const filteredTools = searchQuery.trim() !== '' 
-    ? allTools.filter(tool => 
-        tool.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        tool.description.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    : [];
 
   const renderToolCard = (tool) => {
     const Icon = tool.icon;
@@ -129,94 +120,52 @@ const Dashboard = () => {
 
   return (
     <PageTransition className="space-y-12 max-w-[1600px] mx-auto pb-12">
-      <div className="text-center space-y-6 mt-4">
+      <div className="text-center space-y-4 mt-4">
         <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-foreground bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
           Welcome to Daily Utility Hub
         </h1>
-        
-        {/* Search Bar */}
-        <div className="relative max-w-2xl mx-auto group z-20">
-          <div className="absolute inset-0 bg-indigo-500/20 rounded-2xl blur-xl transition-all duration-500 group-hover:bg-indigo-500/30 opacity-0 group-hover:opacity-100"></div>
-          <div className="relative bg-card/80 backdrop-blur-xl border border-border/80 rounded-2xl flex items-center px-4 py-2 shadow-lg transition-all duration-300 focus-within:border-indigo-500/50 focus-within:ring-4 focus-within:ring-indigo-500/10">
-            <Search className="text-muted-foreground w-6 h-6 ml-2" />
-            <input 
-              type="text" 
-              placeholder="Search 50+ tools..." 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-transparent border-none focus:outline-none p-4 text-foreground placeholder:text-muted-foreground text-lg"
-            />
-            {searchQuery && (
-              <button 
-                onClick={() => setSearchQuery('')}
-                className="p-2 text-muted-foreground hover:text-foreground transition-colors mr-2 text-sm font-medium"
-              >
-                Clear
-              </button>
-            )}
-          </div>
-        </div>
+        <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+          Your all-in-one platform for everyday utilities. Select a tool below to get started. No installation required.
+        </p>
       </div>
 
       <div className="space-y-16">
-        {searchQuery.trim() !== '' ? (
-          // Search Results View
+        {/* Dynamic Analytics Sections */}
+        {pinnedToolObjects.length > 0 && (
           <div>
-            <h2 className="text-2xl font-bold text-foreground mb-8 flex items-center gap-2">
-              Search Results for "{searchQuery}"
+            <h2 className="text-xl md:text-2xl font-bold text-indigo-500 mb-8 flex items-center gap-3">
+              <div className="p-2 bg-indigo-500/10 rounded-lg"><Pin size={22} className="fill-current" /></div>
+              Pinned Tools
             </h2>
-            {filteredTools.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
-                {filteredTools.map(renderToolCard)}
-              </div>
-            ) : (
-              <div className="text-center py-20 text-muted-foreground">
-                <Search size={48} className="mx-auto mb-4 opacity-20" />
-                <p className="text-lg">No tools found matching your search.</p>
-              </div>
-            )}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
+              {pinnedToolObjects.map(renderToolCard)}
+            </div>
           </div>
-        ) : (
-          // Default Dashboard View
-          <>
-            {/* Dynamic Analytics Sections */}
-            {pinnedToolObjects.length > 0 && (
-              <div>
-                <h2 className="text-xl md:text-2xl font-bold text-indigo-500 mb-8 flex items-center gap-3">
-                  <div className="p-2 bg-indigo-500/10 rounded-lg"><Pin size={22} className="fill-current" /></div>
-                  Pinned Tools
-                </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
-                  {pinnedToolObjects.map(renderToolCard)}
-                </div>
-              </div>
-            )}
-
-            {recentToolObjects.length > 0 && (
-              <div>
-                <h2 className="text-xl md:text-2xl font-bold text-foreground mb-8 flex items-center gap-3">
-                  <div className="p-2 bg-muted rounded-lg"><Clock size={22} className="text-muted-foreground" /></div>
-                  Recently Used
-                </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
-                  {recentToolObjects.map(renderToolCard)}
-                </div>
-              </div>
-            )}
-
-            {/* Regular Categories */}
-            {Object.entries(toolCategories).map(([categoryName, tools]) => (
-              <div key={categoryName}>
-                <h2 className="text-xl md:text-2xl font-bold text-foreground mb-8 border-b border-border/50 pb-4">
-                  {categoryName}
-                </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
-                  {tools.map(renderToolCard)}
-                </div>
-              </div>
-            ))}
-          </>
         )}
+
+        {recentToolObjects.length > 0 && (
+          <div>
+            <h2 className="text-xl md:text-2xl font-bold text-foreground mb-8 flex items-center gap-3">
+              <div className="p-2 bg-muted rounded-lg"><Clock size={22} className="text-muted-foreground" /></div>
+              Recently Used
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
+              {recentToolObjects.map(renderToolCard)}
+            </div>
+          </div>
+        )}
+
+        {/* Regular Categories */}
+        {Object.entries(toolCategories).map(([categoryName, tools]) => (
+          <div key={categoryName}>
+            <h2 className="text-xl md:text-2xl font-bold text-foreground mb-8 border-b border-border/50 pb-4">
+              {categoryName}
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
+              {tools.map(renderToolCard)}
+            </div>
+          </div>
+        ))}
       </div>
     </PageTransition>
   );

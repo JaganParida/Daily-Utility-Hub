@@ -118,7 +118,7 @@ const Sidebar = ({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }) => {
 
       {/* Sidebar */}
       <aside className={cn(
-        "fixed md:static inset-y-0 left-0 z-50 bg-card md:bg-transparent md:border-r border-border transition-all duration-300 ease-in-out flex flex-col backdrop-blur-xl",
+        "fixed md:static inset-y-0 left-0 z-50 bg-card/40 md:bg-transparent md:border-r border-border/50 transition-all duration-300 ease-in-out flex flex-col backdrop-blur-2xl",
         isCollapsed ? "w-20" : "w-64",
         isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
       )}>
@@ -150,7 +150,7 @@ const Sidebar = ({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }) => {
                   {category.title}
                 </h3>
               ) : (
-                <div className="h-[1px] bg-border/50 my-4 mx-2" />
+                <div className="h-[1px] bg-border/50 my-4 mx-4" />
               )}
               <div className="space-y-1">
                 {category.links.map((link) => {
@@ -166,11 +166,11 @@ const Sidebar = ({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }) => {
                       }}
                       title={isCollapsed ? link.name : undefined}
                       className={({ isActive }) => cn(
-                        "flex items-center gap-3 px-3 py-2 rounded-md transition-colors",
-                        isCollapsed ? "justify-center px-0 mx-2" : "",
+                        "flex items-center gap-3 rounded-xl transition-all duration-300",
+                        isCollapsed ? "justify-center w-11 h-11 mx-auto" : "px-3 py-2.5",
                         isActive 
-                          ? "bg-primary text-primary-foreground font-medium shadow-sm" 
-                          : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                          ? "bg-indigo-500 text-white font-semibold shadow-md shadow-indigo-500/20" 
+                          : "text-muted-foreground hover:bg-card hover:text-foreground hover:shadow-sm border border-transparent hover:border-border/50"
                       )}
                     >
                       <Icon size={18} className="shrink-0" />
@@ -184,7 +184,7 @@ const Sidebar = ({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }) => {
         </nav>
 
         {/* User Profile / Auth Footer */}
-        <div className="p-4 border-t border-border bg-card/50 shrink-0">
+        <div className="p-4 border-t border-border/50 bg-card/20 shrink-0">
           {currentUser ? (
             <div className={cn("flex items-center", isCollapsed ? "justify-center" : "justify-between")}>
               {!isCollapsed && (
