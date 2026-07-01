@@ -161,7 +161,9 @@ const PdfEdit = () => {
 
           // Extract text runs for direct inline editing
           try {
+            console.log(`[PDF Editor] Starting text extraction for page ${currentPage}...`);
             const textContent = await page.getTextContent();
+            console.log(`[PDF Editor] Extracted ${textContent.items.length} raw text runs.`);
             const styles = textContent.styles || {};
             const items = textContent.items.map(item => {
               const tx = item.transform[4];
@@ -171,8 +173,8 @@ const PdfEdit = () => {
               const widthPoints = item.width;
               const heightPoints = item.height || Math.abs(item.transform[3]) || 12;
               
-              const pxWidth = widthPoints * (viewport.width / unscaledViewport.width);
-              const pxHeight = heightPoints * (viewport.height / unscaledViewport.height);
+              const pxWidth = widthPoints * scale;
+              const pxHeight = heightPoints * scale;
               
               const fontStyle = styles[item.fontName] || {};
               const fontFamily = fontStyle.fontFamily || 'sans-serif';
@@ -187,6 +189,8 @@ const PdfEdit = () => {
                 fontFamily: fontFamily
               };
             }).filter(item => item.str.trim() !== '');
+            
+            console.log(`[PDF Editor] Filtered down to ${items.length} non-empty text blocks for page ${currentPage}.`);
             
             setDetectedTexts(prev => ({
               ...prev,
@@ -944,8 +948,12 @@ const PdfEdit = () => {
                         cursor: 'pointer',
                         zIndex: 15
                       }}
-                      className="hover:bg-blue-500/20 hover:border-blue-500 transition-colors"
-                      onClick={() => handleEditTextClick(item)}
+                      className="hover:bg-blue-500/30 hover:border-blue-500 transition-all duration-100"
+                      onMouseDown={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        handleEditTextClick(item);
+                      }}
                       title="Click to edit this text"
                     />
                   ))}
