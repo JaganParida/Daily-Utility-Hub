@@ -86,17 +86,17 @@ const Home = () => {
         </motion.div>
 
         {/* Floating Tool Badges to make it look professional */}
-        <div className="absolute w-full max-w-6xl mx-auto inset-x-0 bottom-0 h-40 pointer-events-none hidden md:block">
-          <motion.div animate={{ y: [0, -10, 0] }} transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }} className="absolute bottom-10 left-[10%] px-4 py-2 rounded-xl bg-card border border-border shadow-lg flex items-center gap-2 text-sm font-medium text-foreground backdrop-blur-xl">
-            <FileText size={16} className="text-indigo-400"/> JSON Formatter
+        <div className="absolute w-full max-w-6xl mx-auto inset-x-0 bottom-0 h-32 md:h-40 pointer-events-none block overflow-hidden sm:overflow-visible">
+          <motion.div animate={{ y: [0, -10, 0] }} transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }} className="absolute bottom-4 md:bottom-10 left-[2%] md:left-[10%] px-2.5 py-1.5 md:px-4 md:py-2 rounded-lg md:rounded-xl bg-card border border-border shadow-lg flex items-center gap-1.5 md:gap-2 text-[10px] md:text-sm font-medium text-foreground backdrop-blur-xl scale-90 md:scale-100 origin-bottom-left">
+            <FileText size={16} className="text-indigo-400 w-3 h-3 md:w-4 md:h-4"/> JSON Formatter
           </motion.div>
-          <motion.div animate={{ y: [0, -15, 0] }} transition={{ repeat: Infinity, duration: 5, ease: "easeInOut", delay: 1 }} className="absolute bottom-24 left-[25%] px-4 py-2 rounded-xl bg-card border border-border shadow-lg flex items-center gap-2 text-sm font-medium text-foreground backdrop-blur-xl">
+          <motion.div animate={{ y: [0, -15, 0] }} transition={{ repeat: Infinity, duration: 5, ease: "easeInOut", delay: 1 }} className="absolute bottom-16 md:bottom-24 left-[15%] md:left-[25%] px-2.5 py-1.5 md:px-4 md:py-2 rounded-lg md:rounded-xl bg-card border border-border shadow-lg flex items-center gap-1.5 md:gap-2 text-[10px] md:text-sm font-medium text-foreground backdrop-blur-xl scale-90 md:scale-100 origin-bottom-left">
              Image Compressor
           </motion.div>
-          <motion.div animate={{ y: [0, -8, 0] }} transition={{ repeat: Infinity, duration: 3.5, ease: "easeInOut", delay: 0.5 }} className="absolute bottom-8 right-[15%] px-4 py-2 rounded-xl bg-card border border-border shadow-lg flex items-center gap-2 text-sm font-medium text-foreground backdrop-blur-xl">
-            <Calculator size={16} className="text-emerald-400"/> EMI Calculator
+          <motion.div animate={{ y: [0, -8, 0] }} transition={{ repeat: Infinity, duration: 3.5, ease: "easeInOut", delay: 0.5 }} className="absolute bottom-6 md:bottom-8 right-[2%] md:right-[15%] px-2.5 py-1.5 md:px-4 md:py-2 rounded-lg md:rounded-xl bg-card border border-border shadow-lg flex items-center gap-1.5 md:gap-2 text-[10px] md:text-sm font-medium text-foreground backdrop-blur-xl scale-90 md:scale-100 origin-bottom-right">
+            <Calculator size={16} className="text-emerald-400 w-3 h-3 md:w-4 md:h-4"/> EMI Calculator
           </motion.div>
-          <motion.div animate={{ y: [0, -12, 0] }} transition={{ repeat: Infinity, duration: 4.5, ease: "easeInOut", delay: 1.5 }} className="absolute bottom-20 right-[30%] px-4 py-2 rounded-xl bg-card border border-border shadow-lg flex items-center gap-2 text-sm font-medium text-foreground backdrop-blur-xl">
+          <motion.div animate={{ y: [0, -12, 0] }} transition={{ repeat: Infinity, duration: 4.5, ease: "easeInOut", delay: 1.5 }} className="absolute bottom-14 md:bottom-20 right-[15%] md:right-[30%] px-2.5 py-1.5 md:px-4 md:py-2 rounded-lg md:rounded-xl bg-card border border-border shadow-lg flex items-center gap-1.5 md:gap-2 text-[10px] md:text-sm font-medium text-foreground backdrop-blur-xl scale-90 md:scale-100 origin-bottom-right">
             JWT Decoder
           </motion.div>
         </div>
