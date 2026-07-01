@@ -25,6 +25,7 @@
     "cronstrue": "^3.24.0",
     "crypto-js": "^4.2.0",
     "diff": "^9.0.0",
+    "firebase": "^12.15.0",
     "framer-motion": "^12.42.1",
     "html-to-image": "^1.11.13",
     "html2canvas": "^1.4.1",

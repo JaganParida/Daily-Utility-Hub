@@ -1,13 +1,15 @@
-import { NavLink } from 'react-router-dom';
-import { Home, Type, Hash, Key, Layers, AlignLeft, ChevronRight, X, Image as ImageIcon, Expand, Crop, ArrowRightLeft, LayoutGrid, FileText, Braces, Search, Calculator, TrendingUp, Percent, Landmark, FolderArchive } from 'lucide-react';
+import { NavLink, Link } from 'react-router-dom';
+import { Home, Type, Hash, Key, Layers, AlignLeft, ChevronRight, X, Image as ImageIcon, Expand, Crop, ArrowRightLeft, LayoutGrid, FileText, Braces, Search, Calculator, TrendingUp, Percent, Landmark, FolderArchive, LogOut, User } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { useAuth } from '../context/AuthContext';
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
+  const { currentUser, logout } = useAuth();
   const categories = [
     {
       title: 'General',
       links: [
-        { name: 'Dashboard', to: '/', icon: Home },
+        { name: 'Dashboard', to: '/dashboard', icon: Home },
       ]
     },
     {
@@ -152,6 +154,43 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
             </div>
           ))}
         </nav>
+
+        {/* User Profile / Auth Footer */}
+        <div className="p-4 border-t border-border bg-card/50 shrink-0">
+          {currentUser ? (
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3 overflow-hidden">
+                <div className="w-9 h-9 rounded-full bg-indigo-500/10 text-indigo-500 flex items-center justify-center shrink-0">
+                  {currentUser.photoURL ? (
+                    <img src={currentUser.photoURL} alt="Profile" className="w-full h-full rounded-full object-cover" />
+                  ) : (
+                    <User size={18} />
+                  )}
+                </div>
+                <div className="truncate">
+                  <p className="text-sm font-medium text-foreground truncate">{currentUser.displayName || 'User'}</p>
+                  <p className="text-xs text-muted-foreground truncate">{currentUser.email}</p>
+                </div>
+              </div>
+              <button 
+                onClick={logout} 
+                className="p-2 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors shrink-0"
+                title="Log out"
+              >
+                <LogOut size={18} />
+              </button>
+            </div>
+          ) : (
+            <Link 
+              to="/login"
+              className="flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-indigo-500 hover:bg-indigo-600 text-white font-medium rounded-lg transition-colors"
+              onClick={() => setIsOpen(false)}
+            >
+              <User size={18} />
+              <span>Sign In / Register</span>
+            </Link>
+          )}
+        </div>
       </aside>
     </>
   );

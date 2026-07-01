@@ -1,7 +1,7 @@
 import { Menu, Moon, Sun, User, LogOut, Search, ArrowLeft, Monitor } from 'lucide-react';
 import { useState, useEffect, useContext, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import AuthContext from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import { useHotkeys } from 'react-hotkeys-hook';
 
 // Master list of tools for search
@@ -38,10 +38,9 @@ const Topbar = ({ toggleSidebar }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
-  
-  const { user, logout } = useContext(AuthContext);
-  const searchInputRef = useRef(null);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const { currentUser: user, logout } = useAuth();
+  const profileMenuRef = useRef(null);
   const searchContainerRef = useRef(null);
   const themeMenuRef = useRef(null);
   
