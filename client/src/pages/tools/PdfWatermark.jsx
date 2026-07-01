@@ -136,13 +136,13 @@ const PdfWatermark = () => {
         {/* Upload & Preview Area */}
         <div className="flex flex-col gap-6 w-full min-h-0">
           
-          <div className="grid md:grid-cols-2 gap-6 h-64 shrink-0">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-auto md:h-64 shrink-0">
             {/* Dropzone */}
             {!file ? (
               <div 
                 onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}
                 onClick={() => fileInputRef.current?.click()}
-                className={`border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center cursor-pointer transition-all h-full ${
+                className={`border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center cursor-pointer transition-all h-64 md:h-full ${
                   isDragging ? 'border-purple-500 bg-purple-500/5' : 'border-border bg-card hover:border-purple-500/50 hover:bg-muted/30'
                 }`}
               >
@@ -154,7 +154,7 @@ const PdfWatermark = () => {
                 <p className="text-xs text-muted-foreground pointer-events-none">Drag & drop or click to browse</p>
               </div>
             ) : (
-              <div className="bg-card border border-border rounded-2xl shadow-sm p-6 flex flex-col justify-center items-center h-full relative group min-w-0">
+              <div className="bg-card border border-border rounded-2xl shadow-sm p-6 flex flex-col justify-center items-center h-64 md:h-full relative group min-w-0">
                 <div className="w-16 h-16 bg-purple-500/10 text-purple-500 rounded-xl flex items-center justify-center mb-4 shrink-0">
                   <FileText size={32} />
                 </div>
@@ -176,7 +176,7 @@ const PdfWatermark = () => {
             )}
 
             {/* Visual Live Preview */}
-            <div className="bg-card rounded-2xl border border-border p-4 relative overflow-hidden h-full flex flex-col">
+            <div className="bg-card rounded-2xl border border-border p-4 relative overflow-hidden h-64 md:h-full flex flex-col">
               <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 block">Live Preview</span>
               <div className={`flex-1 bg-background rounded-xl border border-dashed border-border flex relative ${getPreviewAlignmentClass()}`}>
                 <span 
