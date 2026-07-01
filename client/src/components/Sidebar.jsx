@@ -1,6 +1,6 @@
 import { NavLink, Link } from 'react-router-dom';
 import { 
-  Home, Image as ImageIcon, Maximize, Crop, RefreshCw, LayoutGrid, FileJson,
+  Home, LayoutDashboard, Image as ImageIcon, Maximize, Crop, RefreshCw, LayoutGrid, FileJson,
   ListOrdered, CaseUpper, Pilcrow, AlignLeft, ListChecks, SearchCode,
   Key, Braces, Binary, Link as LinkIcon, Shield, Clock, Fingerprint, Lock, Hash, Ticket, TerminalSquare, Palette, Droplet, Repeat,
   FileEdit, FileType, Combine, Scissors, Droplets, FileLock2, FileKey2, Tags, ScanText,
@@ -19,7 +19,8 @@ const Sidebar = ({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }) => {
     {
       title: 'General',
       links: [
-        { name: 'Dashboard', to: '/dashboard', icon: Home },
+        { name: 'Home', to: '/', icon: Home },
+        { name: 'Dashboard', to: '/dashboard', icon: LayoutDashboard },
       ]
     },
     {
@@ -122,8 +123,8 @@ const Sidebar = ({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }) => {
         isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
       )}>
         <div className="h-16 flex items-center justify-between px-4 border-b border-border/50 shrink-0">
-          {!isCollapsed && <span className="font-bold text-lg tracking-tight bg-gradient-to-r from-primary to-blue-500 bg-clip-text text-transparent truncate">Daily Utility Hub</span>}
-          {isCollapsed && <span className="font-bold text-lg tracking-tight text-primary mx-auto hidden md:block">DUH</span>}
+          {!isCollapsed && <Link to="/" className="font-bold text-lg tracking-tight bg-gradient-to-r from-primary to-blue-500 bg-clip-text text-transparent truncate hover:opacity-80 transition-opacity">Daily Utility Hub</Link>}
+          {isCollapsed && <Link to="/" className="font-bold text-lg tracking-tight text-primary mx-auto hidden md:block hover:opacity-80 transition-opacity">DUH</Link>}
           
           <button 
             className={cn("hidden md:flex p-2 text-muted-foreground hover:text-foreground", !isCollapsed && "ml-auto")}
