@@ -254,7 +254,7 @@ exports.unlockPdf = async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ message: 'Please upload a PDF file.' });
     
-    const { password } = req.body;
+    const { password, removeSignatures } = req.body;
     if (!password) {
       cleanupFiles([req.file]);
       return res.status(400).json({ message: 'Please provide the password to unlock the PDF.' });
@@ -266,9 +266,35 @@ exports.unlockPdf = async (req, res) => {
       const decryptedBytes = await decryptPDF(new Uint8Array(pdfBytes), password);
       cleanupFiles([req.file]);
       
+      let finalBytes = decryptedBytes;
+      if (removeSignatures === 'true') {
+        try {
+          const pdfDoc = await PDFDocument.load(decryptedBytes);
+          const form = pdfDoc.getForm();
+          const fields = form.getFields();
+          
+          let signatureCount = 0;
+          fields.forEach(field => {
+            const isSig = field.constructor.name === 'PDFSignature' || 
+                          (typeof field.getType === 'function' && field.getType() === 'signature');
+            if (isSig) {
+              form.removeField(field);
+              signatureCount++;
+            }
+          });
+          
+          if (signatureCount > 0) {
+            console.log(`Successfully stripped ${signatureCount} digital signatures from document.`);
+            finalBytes = await pdfDoc.save();
+          }
+        } catch (sigError) {
+          console.error('Failed to strip signatures, returning raw decrypted bytes:', sigError);
+        }
+      }
+
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', 'attachment; filename=unlocked_document.pdf');
-      res.send(Buffer.from(decryptedBytes));
+      res.send(Buffer.from(finalBytes));
     } catch (decryptError) {
       cleanupFiles([req.file]);
       return res.status(401).json({ message: 'Incorrect password or unsupported encryption type.' });

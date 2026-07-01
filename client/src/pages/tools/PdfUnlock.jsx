@@ -8,6 +8,7 @@ const PdfUnlock = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isEncrypted, setIsEncrypted] = useState(true);
+  const [removeSignatures, setRemoveSignatures] = useState(true);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [showPreview, setShowPreview] = useState(false);
   const [isInspecting, setIsInspecting] = useState(false);
@@ -95,6 +96,7 @@ const PdfUnlock = () => {
     const formData = new FormData();
     formData.append('pdf', file);
     formData.append('password', password);
+    formData.append('removeSignatures', removeSignatures);
 
     let toastId;
     try {
@@ -249,6 +251,22 @@ const PdfUnlock = () => {
                     <p className="text-xs text-muted-foreground">
                       You must know the password to strip encryption.
                     </p>
+
+                    <div className="flex items-start gap-3 border border-border bg-muted/20 p-3.5 rounded-xl mt-2">
+                      <input
+                        type="checkbox"
+                        id="removeSignatures"
+                        checked={removeSignatures}
+                        onChange={(e) => setRemoveSignatures(e.target.checked)}
+                        className="w-4 h-4 rounded text-yellow-500 border-border focus:ring-yellow-500 focus:ring-opacity-25 mt-0.5"
+                      />
+                      <label htmlFor="removeSignatures" className="text-xs font-bold text-foreground cursor-pointer select-none">
+                        Remove digital signatures (Aadhaar cards, etc.)
+                        <span className="block text-[10px] text-muted-foreground font-normal mt-0.5">
+                          Highly recommended. Prevents Acrobat and Chrome from showing "Signature Invalid" warnings on decrypted PDFs.
+                        </span>
+                      </label>
+                    </div>
                   </>
                 )}
              </div>
