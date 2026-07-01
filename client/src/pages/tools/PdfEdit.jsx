@@ -64,7 +64,7 @@ const PdfEdit = () => {
       fileReader.onload = async (e) => {
         try {
           const typedarray = new Uint8Array(e.target.result);
-          const loadingTask = pdfjsLib.getDocument(typedarray);
+          const loadingTask = pdfjsLib.getDocument({ data: typedarray });
           const pdf = await loadingTask.promise;
           
           setFile(selectedFile);

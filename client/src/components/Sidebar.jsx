@@ -54,6 +54,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       title: 'PDF Tools',
       links: [
         { name: 'Edit PDF', to: '/tools/pdf-edit', icon: FileText },
+        { name: 'PDF Converter', to: '/tools/pdf-converter', icon: FileText },
         { name: 'Merge PDF', to: '/tools/pdf-merge', icon: FileText },
         { name: 'Split PDF', to: '/tools/pdf-split', icon: FileText },
         { name: 'Watermark PDF', to: '/tools/pdf-watermark', icon: FileText },

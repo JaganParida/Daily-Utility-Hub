@@ -38,6 +38,7 @@ import PdfUnlock from './pages/tools/PdfUnlock';
 import PdfMetadata from './pages/tools/PdfMetadata';
 import PdfToText from './pages/tools/PdfToText';
 import PdfEdit from './pages/tools/PdfEdit';
+import PdfConverter from './pages/tools/PdfConverter';
 
 // Student & Docs Tools
 import CodeToImage from './pages/tools/CodeToImage';
@@ -100,6 +101,7 @@ function AnimatedRoutes() {
           <Route path="tools/pdf-metadata" element={<PdfMetadata />} />
           <Route path="tools/pdf-to-text" element={<PdfToText />} />
           <Route path="tools/pdf-edit" element={<PdfEdit />} />
+          <Route path="tools/pdf-converter" element={<PdfConverter />} />
 
           {/* Student & Docs Tools Routes */}
           <Route path="tools/code-to-image" element={<CodeToImage />} />

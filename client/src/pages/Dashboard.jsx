@@ -37,6 +37,7 @@ const Dashboard = () => {
     ],
     'PDF Tools': [
       { name: 'Edit PDF', description: 'Draw, write text, highlight, and redact elements directly on your document.', icon: FileText, to: '/tools/pdf-edit', color: 'bg-red-500/10 text-red-500' },
+      { name: 'PDF Converter', description: 'Convert PDF documents into editable Word files or high-quality PNG/JPG images.', icon: FileText, to: '/tools/pdf-converter', color: 'bg-rose-500/10 text-rose-500' },
       { name: 'Merge PDF', description: 'Combine multiple PDF files into one securely.', icon: FileText, to: '/tools/pdf-merge', color: 'bg-red-500/10 text-red-500' },
       { name: 'Split PDF', description: 'Extract specific pages or page ranges from a PDF.', icon: FileText, to: '/tools/pdf-split', color: 'bg-blue-500/10 text-blue-500' },
       { name: 'Watermark PDF', description: 'Add a text watermark across all pages of a PDF document.', icon: FileText, to: '/tools/pdf-watermark', color: 'bg-purple-500/10 text-purple-500' },
