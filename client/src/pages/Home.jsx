@@ -122,7 +122,7 @@ const Home = () => {
             <motion.div 
               variants={itemVariants}
               whileHover={{ scale: 1.02 }}
-              className="md:col-span-8 bg-gradient-to-br from-emerald-900/40 to-card border border-emerald-500/20 p-8 md:p-12 rounded-[2rem] flex flex-col justify-between relative overflow-hidden group"
+              className="md:col-span-12 lg:col-span-8 bg-gradient-to-br from-emerald-900/40 to-card border border-emerald-500/20 p-8 md:p-12 rounded-[2rem] flex flex-col justify-between relative overflow-hidden group"
             >
               <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-[80px] -mr-20 -mt-20 transition-all group-hover:bg-emerald-500/20"></div>
               <div className="w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-2xl flex items-center justify-center mb-8 backdrop-blur-sm border border-emerald-500/30 group-hover:rotate-12 transition-transform">
@@ -140,7 +140,7 @@ const Home = () => {
             <motion.div 
               variants={itemVariants}
               whileHover={{ scale: 1.02 }}
-              className="md:col-span-4 bg-gradient-to-br from-indigo-900/40 to-card border border-indigo-500/20 p-8 rounded-[2rem] flex flex-col justify-between relative overflow-hidden group"
+              className="md:col-span-12 lg:col-span-4 bg-gradient-to-br from-indigo-900/40 to-card border border-indigo-500/20 p-8 rounded-[2rem] flex flex-col justify-between relative overflow-hidden group"
             >
               <div className="absolute bottom-0 right-0 w-40 h-40 bg-indigo-500/10 rounded-full blur-[50px] transition-all group-hover:bg-indigo-500/20"></div>
               <div className="w-14 h-14 bg-indigo-500/20 text-indigo-400 rounded-2xl flex items-center justify-center mb-6 backdrop-blur-sm border border-indigo-500/30 group-hover:-rotate-12 transition-transform">
@@ -188,9 +188,9 @@ const Home = () => {
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">Get your tasks done in three simple steps.</p>
           </motion.div>
 
-          <div className="flex flex-col md:flex-row items-center justify-center gap-12 lg:gap-24 relative">
+          <div className="flex flex-col lg:flex-row items-center justify-center gap-12 lg:gap-24 relative">
             {/* Connecting line for desktop */}
-            <div className="hidden md:block absolute top-[40px] left-[10%] right-[10%] h-[2px] bg-border -z-10">
+            <div className="hidden lg:block absolute top-[40px] left-[10%] right-[10%] h-[2px] bg-border -z-10">
               <motion.div 
                 className="h-full bg-indigo-500"
                 initial={{ width: "0%" }}
@@ -206,7 +206,7 @@ const Home = () => {
               whileInView={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2, type: "spring" }}
               viewport={{ once: true }}
-              className="flex flex-col items-center text-center relative group w-full md:w-1/3"
+              className="flex flex-col items-center text-center relative group w-full lg:w-1/3"
             >
               <div className="w-20 h-20 rounded-full bg-card border-4 border-indigo-500/30 flex items-center justify-center shadow-[0_0_30px_-5px_rgba(79,70,229,0.3)] mb-8 group-hover:border-indigo-500 transition-colors z-10 bg-background relative overflow-hidden">
                  <motion.div className="absolute inset-0 bg-indigo-500/20" initial={{ y: "100%" }} whileHover={{ y: "0%" }} transition={{ duration: 0.3 }} />
@@ -225,7 +225,7 @@ const Home = () => {
               whileInView={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.6, type: "spring" }}
               viewport={{ once: true }}
-              className="flex flex-col items-center text-center relative group w-full md:w-1/3 mt-12 md:mt-0"
+              className="flex flex-col items-center text-center relative group w-full lg:w-1/3 mt-12 lg:mt-0"
             >
               <div className="w-20 h-20 rounded-full bg-card border-4 border-purple-500/30 flex items-center justify-center shadow-[0_0_30px_-5px_rgba(168,85,247,0.3)] mb-8 group-hover:border-purple-500 transition-colors z-10 bg-background relative overflow-hidden">
                 <motion.div className="absolute inset-0 bg-purple-500/20" initial={{ y: "100%" }} whileHover={{ y: "0%" }} transition={{ duration: 0.3 }} />
@@ -244,7 +244,7 @@ const Home = () => {
               whileInView={{ opacity: 1, scale: 1 }}
               transition={{ delay: 1.0, type: "spring" }}
               viewport={{ once: true }}
-              className="flex flex-col items-center text-center relative group w-full md:w-1/3 mt-12 md:mt-0"
+              className="flex flex-col items-center text-center relative group w-full lg:w-1/3 mt-12 lg:mt-0"
             >
               <div className="w-20 h-20 rounded-full bg-card border-4 border-emerald-500/30 flex items-center justify-center shadow-[0_0_30px_-5px_rgba(16,185,129,0.3)] mb-8 group-hover:border-emerald-500 transition-colors z-10 bg-background relative overflow-hidden">
                 <motion.div className="absolute inset-0 bg-emerald-500/20" initial={{ y: "100%" }} whileHover={{ y: "0%" }} transition={{ duration: 0.3 }} />
@@ -287,17 +287,17 @@ const Home = () => {
           >
             {/* Table Header */}
             <div className="grid grid-cols-3 border-b border-zinc-800 bg-[#161616]">
-              <div className="p-6 md:p-8 flex items-center">
-                <span className="text-lg md:text-xl font-semibold text-zinc-300">Features</span>
+              <div className="p-3 sm:p-4 md:p-8 flex items-center">
+                <span className="text-sm sm:text-base md:text-xl font-semibold text-zinc-300">Features</span>
               </div>
-              <div className="p-6 md:p-8 flex flex-col items-center justify-center text-center border-l border-zinc-800">
-                <span className="text-lg md:text-xl font-bold text-zinc-100">Guest User</span>
-                <span className="text-xs md:text-sm text-zinc-500 mt-1">No Sign In</span>
+              <div className="p-3 sm:p-4 md:p-8 flex flex-col items-center justify-center text-center border-l border-zinc-800">
+                <span className="text-sm sm:text-base md:text-xl font-bold text-zinc-100">Guest User</span>
+                <span className="text-[10px] sm:text-xs md:text-sm text-zinc-500 mt-1">No Sign In</span>
               </div>
-              <div className="p-6 md:p-8 flex flex-col items-center justify-center text-center border-l border-zinc-800 bg-gradient-to-b from-emerald-500/10 to-transparent relative">
+              <div className="p-3 sm:p-4 md:p-8 flex flex-col items-center justify-center text-center border-l border-zinc-800 bg-gradient-to-b from-emerald-500/10 to-transparent relative">
                 <div className="absolute top-0 left-0 w-full h-1 bg-emerald-500"></div>
-                <span className="text-lg md:text-xl font-bold text-emerald-400">Registered</span>
-                <span className="text-xs md:text-sm text-emerald-500/70 mt-1">Free Account</span>
+                <span className="text-sm sm:text-base md:text-xl font-bold text-emerald-400">Registered</span>
+                <span className="text-[10px] sm:text-xs md:text-sm text-emerald-500/70 mt-1">Free Account</span>
               </div>
             </div>
 
@@ -313,29 +313,29 @@ const Home = () => {
                 { name: 'Access Data on Any Device', guest: false, reg: true },
               ].map((row, idx) => (
                 <div key={idx} className="grid grid-cols-3 border-b border-zinc-800/50 hover:bg-white/[0.02] transition-colors">
-                  <div className="p-5 md:p-6 flex items-center text-sm md:text-base text-zinc-300 font-medium">
+                  <div className="p-3 sm:p-4 md:p-6 flex items-center text-xs sm:text-sm md:text-base text-zinc-300 font-medium">
                     {row.name}
                   </div>
-                  <div className="p-5 md:p-6 flex justify-center items-center border-l border-zinc-800">
+                  <div className="p-3 sm:p-4 md:p-6 flex justify-center items-center border-l border-zinc-800">
                     {row.guest === true ? (
-                      <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-300">
-                        <CheckCircle2 size={18} />
+                      <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-300">
+                        <CheckCircle2 size={16} className="sm:w-[18px] sm:h-[18px]" />
                       </div>
                     ) : row.guest === false ? (
-                      <div className="w-8 h-8 rounded-full bg-zinc-900 flex items-center justify-center text-zinc-600">
-                        <XCircle size={18} />
+                      <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-zinc-900 flex items-center justify-center text-zinc-600">
+                        <XCircle size={16} className="sm:w-[18px] sm:h-[18px]" />
                       </div>
                     ) : (
-                      <span className="text-zinc-500 text-sm font-medium">{row.guest}</span>
+                      <span className="text-zinc-500 text-[10px] sm:text-xs md:text-sm font-medium">{row.guest}</span>
                     )}
                   </div>
-                  <div className="p-5 md:p-6 flex justify-center items-center border-l border-zinc-800 bg-emerald-500/[0.02]">
+                  <div className="p-3 sm:p-4 md:p-6 flex justify-center items-center border-l border-zinc-800 bg-emerald-500/[0.02]">
                     {row.reg === true ? (
-                      <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400">
-                        <CheckCircle2 size={18} />
+                      <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400">
+                        <CheckCircle2 size={16} className="sm:w-[18px] sm:h-[18px]" />
                       </div>
                     ) : (
-                      <span className="text-emerald-400 text-sm font-medium">{row.reg}</span>
+                      <span className="text-emerald-400 text-[10px] sm:text-xs md:text-sm font-medium">{row.reg}</span>
                     )}
                   </div>
                 </div>
@@ -345,13 +345,13 @@ const Home = () => {
             {/* Table Footer */}
             {!currentUser && (
               <div className="grid grid-cols-3 bg-[#161616]">
-                <div className="col-span-1 p-6 border-r border-zinc-800"></div>
-                <div className="col-span-1 p-6 border-r border-zinc-800 flex justify-center">
-                  <Link to="/dashboard" className="text-zinc-400 hover:text-white text-sm font-medium transition-colors">Continue as Guest</Link>
+                <div className="col-span-1 p-3 sm:p-4 md:p-6 border-r border-zinc-800"></div>
+                <div className="col-span-1 p-3 sm:p-4 md:p-6 border-r border-zinc-800 flex justify-center text-center">
+                  <Link to="/dashboard" className="text-zinc-400 hover:text-white text-xs sm:text-sm font-medium transition-colors">Continue as Guest</Link>
                 </div>
-                <div className="col-span-1 p-6 flex justify-center">
-                  <Link to="/register" className="text-emerald-400 hover:text-emerald-300 text-sm font-medium transition-colors flex items-center gap-1">
-                    Create Account <ArrowRight size={16} />
+                <div className="col-span-1 p-3 sm:p-4 md:p-6 flex justify-center text-center">
+                  <Link to="/register" className="text-emerald-400 hover:text-emerald-300 text-xs sm:text-sm font-medium transition-colors flex items-center gap-1 justify-center">
+                    Create Account <ArrowRight size={14} className="sm:w-[16px] sm:h-[16px]" />
                   </Link>
                 </div>
               </div>
