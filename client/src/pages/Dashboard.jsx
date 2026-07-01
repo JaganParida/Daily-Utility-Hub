@@ -43,6 +43,12 @@ const Dashboard = () => {
       { name: 'Unlock PDF', description: 'Remove password protection and restrictions from a PDF.', icon: FileText, to: '/tools/pdf-unlock', color: 'bg-yellow-500/10 text-yellow-600' },
       { name: 'Edit Metadata', description: 'Modify hidden document properties like Author, Title, and Creator.', icon: FileText, to: '/tools/pdf-metadata', color: 'bg-blue-500/10 text-blue-500' },
       { name: 'Extract Text', description: 'Convert PDF documents into raw, editable text.', icon: FileText, to: '/tools/pdf-to-text', color: 'bg-pink-500/10 text-pink-500' },
+    ],
+    'Student & Docs': [
+      { name: 'Code to Image', description: 'Create beautiful, shareable images of your code snippets.', icon: Image, to: '/tools/code-to-image', color: 'bg-indigo-500/10 text-indigo-500' },
+      { name: 'Image to Text', description: 'Scan photos of documents and extract text instantly using OCR.', icon: Type, to: '/tools/image-to-text', color: 'bg-orange-500/10 text-orange-500' },
+      { name: 'Text Diff', description: 'Compare two pieces of text or code to see exactly what changed.', icon: FileText, to: '/tools/text-diff', color: 'bg-rose-500/10 text-rose-500' },
+      { name: 'Markdown Editor', description: 'Write beautiful documentation with instant GitHub-flavored previews.', icon: FileText, to: '/tools/markdown-editor', color: 'bg-blue-500/10 text-blue-500' },
     ]
   };
 

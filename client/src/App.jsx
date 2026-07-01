@@ -38,6 +38,12 @@ import PdfUnlock from './pages/tools/PdfUnlock';
 import PdfMetadata from './pages/tools/PdfMetadata';
 import PdfToText from './pages/tools/PdfToText';
 
+// Student & Docs Tools
+import CodeToImage from './pages/tools/CodeToImage';
+import ImageToText from './pages/tools/ImageToText';
+import TextDiff from './pages/tools/TextDiff';
+import MarkdownEditor from './pages/tools/MarkdownEditor';
+
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import { Toaster } from 'react-hot-toast';
@@ -89,6 +95,12 @@ function AnimatedRoutes() {
           <Route path="tools/pdf-unlock" element={<PdfUnlock />} />
           <Route path="tools/pdf-metadata" element={<PdfMetadata />} />
           <Route path="tools/pdf-to-text" element={<PdfToText />} />
+
+          {/* Student & Docs Tools Routes */}
+          <Route path="tools/code-to-image" element={<CodeToImage />} />
+          <Route path="tools/image-to-text" element={<ImageToText />} />
+          <Route path="tools/text-diff" element={<TextDiff />} />
+          <Route path="tools/markdown-editor" element={<MarkdownEditor />} />
         </Route>
       </Routes>
     </AnimatePresence>
