@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
-import { Type, Hash, Key, Layers, AlignLeft, Image as ImageIcon, Expand, Crop, ArrowRightLeft, LayoutGrid, FileText, Braces, Search, Calculator, TrendingUp, Percent, Landmark, FolderArchive } from 'lucide-react';
+import { Type, Hash, Key, Layers, AlignLeft, Image as ImageIcon, Expand, Crop, ArrowRightLeft, LayoutGrid, FileText, Braces, Search, Calculator, TrendingUp, Percent, Landmark, FolderArchive, Pin, Clock } from 'lucide-react';
 import PageTransition from '../components/PageTransition';
+import { useAnalytics } from '../hooks/useAnalytics';
 
 const Dashboard = () => {
   const toolCategories = {
@@ -65,6 +66,48 @@ const Dashboard = () => {
     ]
   };
 
+  const { recentTools, pinnedTools, togglePin } = useAnalytics();
+  
+  // Flatten all tools for quick lookup
+  const allTools = Object.values(toolCategories).flat();
+  const pinnedToolObjects = pinnedTools.map(path => allTools.find(t => t.to === path)).filter(Boolean);
+  const recentToolObjects = recentTools.map(path => allTools.find(t => t.to === path)).filter(Boolean);
+
+  const renderToolCard = (tool) => {
+    const Icon = tool.icon;
+    const isPinned = pinnedTools.includes(tool.to);
+
+    return (
+      <Link 
+        key={tool.name} 
+        to={tool.to}
+        className="group relative bg-card border border-border p-6 rounded-2xl hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col h-full"
+      >
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            togglePin(tool.to);
+          }}
+          className={`absolute top-4 right-4 p-2 rounded-lg transition-colors z-10 ${
+            isPinned 
+              ? 'text-indigo-500 bg-indigo-500/10 hover:bg-indigo-500/20' 
+              : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground opacity-0 group-hover:opacity-100 focus:opacity-100'
+          }`}
+          title={isPinned ? "Unpin Tool" : "Pin Tool"}
+        >
+          <Pin size={18} className={isPinned ? "fill-current" : ""} />
+        </button>
+
+        <div className={`w-14 h-14 rounded-xl ${tool.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
+          <Icon size={28} />
+        </div>
+        <h3 className="font-semibold text-lg text-foreground mb-2 group-hover:text-primary transition-colors pr-8">{tool.name}</h3>
+        <p className="text-muted-foreground text-sm leading-relaxed flex-1">{tool.description}</p>
+      </Link>
+    );
+  };
+
   return (
     <PageTransition className="space-y-12">
       <div>
@@ -75,28 +118,37 @@ const Dashboard = () => {
       </div>
 
       <div className="space-y-12">
+        {/* Dynamic Analytics Sections */}
+        {pinnedToolObjects.length > 0 && (
+          <div>
+            <h2 className="text-xl font-bold text-indigo-500 mb-6 flex items-center gap-2 border-b border-border pb-3">
+              <Pin size={22} className="fill-current" /> Pinned Tools
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {pinnedToolObjects.map(renderToolCard)}
+            </div>
+          </div>
+        )}
+
+        {recentToolObjects.length > 0 && (
+          <div>
+            <h2 className="text-xl font-bold text-foreground mb-6 flex items-center gap-2 border-b border-border pb-3">
+              <Clock size={22} className="text-muted-foreground" /> Recently Used
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {recentToolObjects.map(renderToolCard)}
+            </div>
+          </div>
+        )}
+
+        {/* Regular Categories */}
         {Object.entries(toolCategories).map(([categoryName, tools]) => (
           <div key={categoryName}>
             <h2 className="text-xl font-bold text-foreground mb-6 flex items-center gap-2 border-b border-border pb-3">
               {categoryName}
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {tools.map((tool) => {
-                const Icon = tool.icon;
-                return (
-                  <Link 
-                    key={tool.name} 
-                    to={tool.to}
-                    className="group bg-card border border-border p-6 rounded-2xl hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
-                  >
-                    <div className={`w-14 h-14 rounded-xl ${tool.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
-                      <Icon size={28} />
-                    </div>
-                    <h3 className="font-semibold text-lg text-foreground mb-2 group-hover:text-primary transition-colors">{tool.name}</h3>
-                    <p className="text-muted-foreground text-sm leading-relaxed">{tool.description}</p>
-                  </Link>
-                );
-              })}
+              {tools.map(renderToolCard)}
             </div>
           </div>
         ))}

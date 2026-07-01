@@ -139,10 +139,13 @@ function AnimatedRoutes() {
   );
 }
 
+import RouteTracker from './components/RouteTracker';
+
 function App() {
   return (
     <Router>
       <Toaster position="top-right" toastOptions={{ duration: 4000, style: { background: 'var(--card)', color: 'var(--foreground)', border: '1px solid var(--border)' } }} />
+      <RouteTracker />
       <AnimatedRoutes />
     </Router>
   );
