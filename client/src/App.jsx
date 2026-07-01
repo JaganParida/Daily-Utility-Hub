@@ -2,6 +2,14 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import Home from './pages/Home';
+
+// Image Tools
+import ImageCompressor from './pages/tools/ImageCompressor';
+import ImageResizer from './pages/tools/ImageResizer';
+import ImageCropper from './pages/tools/ImageCropper';
+import ImageConverter from './pages/tools/ImageConverter';
+import ImageCollage from './pages/tools/ImageCollage';
+import ImageToPdf from './pages/tools/ImageToPdf';
 import WordCounter from './pages/tools/WordCounter';
 import UuidGenerator from './pages/tools/UuidGenerator';
 import PasswordGenerator from './pages/tools/PasswordGenerator';
