@@ -29,10 +29,10 @@ const Home = () => {
     <PageTransition className="flex flex-col min-h-screen bg-background selection:bg-indigo-500/30">
       
       {/* 1. HERO SECTION */}
-      <section className="relative flex flex-col items-center justify-center text-center py-24 lg:py-40 px-4 overflow-hidden">
-        {/* Background Gradients */}
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/20 via-background to-background"></div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-indigo-500/10 rounded-full blur-[120px] -z-10 pointer-events-none"></div>
+      <section className="relative flex flex-col items-center justify-center text-center pt-24 pb-32 lg:pt-40 lg:pb-48 px-4 overflow-hidden">
+        {/* Sleek Minimalist Background */}
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-500/10 via-background to-background"></div>
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wNykiLz48L3N2Zz4=')] [mask-image:linear-gradient(to_bottom,white,transparent)] -z-10"></div>
 
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
@@ -59,7 +59,7 @@ const Home = () => {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-5 pt-8">
             <Link 
               to="/dashboard" 
-              className="px-8 py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition-all shadow-[0_0_40px_-10px_rgba(79,70,229,0.5)] hover:shadow-[0_0_60px_-15px_rgba(79,70,229,0.7)] hover:-translate-y-1 flex items-center gap-2 text-lg w-full sm:w-auto justify-center"
+              className="px-8 py-4 bg-foreground hover:bg-foreground/90 text-background font-bold rounded-xl transition-all shadow-[0_0_40px_-10px_rgba(255,255,255,0.2)] hover:shadow-[0_0_60px_-15px_rgba(255,255,255,0.4)] hover:-translate-y-1 flex items-center gap-2 text-lg w-full sm:w-auto justify-center"
             >
               <LayoutGrid size={20} />
               Explore All Tools
@@ -68,7 +68,7 @@ const Home = () => {
             {!currentUser && (
               <Link 
                 to="/register" 
-                className="px-8 py-4 bg-card hover:bg-muted text-foreground font-bold rounded-xl transition-all flex items-center gap-2 text-lg border border-border w-full sm:w-auto justify-center hover:-translate-y-1 shadow-sm"
+                className="px-8 py-4 bg-card/50 backdrop-blur-md hover:bg-card text-foreground font-bold rounded-xl transition-all flex items-center gap-2 text-lg border border-border w-full sm:w-auto justify-center hover:-translate-y-1 shadow-sm"
               >
                 <UserPlus size={20} />
                 Create Free Account
@@ -79,11 +79,26 @@ const Home = () => {
             No Credit Card Required • No Installation • No Hidden Fees
           </p>
         </motion.div>
+
+        {/* Floating Tool Badges to make it look professional */}
+        <div className="absolute w-full max-w-6xl mx-auto inset-x-0 bottom-0 h-40 pointer-events-none hidden md:block">
+          <motion.div animate={{ y: [0, -10, 0] }} transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }} className="absolute bottom-10 left-[10%] px-4 py-2 rounded-xl bg-card border border-border shadow-lg flex items-center gap-2 text-sm font-medium text-foreground backdrop-blur-xl">
+            <FileText size={16} className="text-indigo-400"/> JSON Formatter
+          </motion.div>
+          <motion.div animate={{ y: [0, -15, 0] }} transition={{ repeat: Infinity, duration: 5, ease: "easeInOut", delay: 1 }} className="absolute bottom-24 left-[25%] px-4 py-2 rounded-xl bg-card border border-border shadow-lg flex items-center gap-2 text-sm font-medium text-foreground backdrop-blur-xl">
+             Image Compressor
+          </motion.div>
+          <motion.div animate={{ y: [0, -8, 0] }} transition={{ repeat: Infinity, duration: 3.5, ease: "easeInOut", delay: 0.5 }} className="absolute bottom-8 right-[15%] px-4 py-2 rounded-xl bg-card border border-border shadow-lg flex items-center gap-2 text-sm font-medium text-foreground backdrop-blur-xl">
+            <Calculator size={16} className="text-emerald-400"/> EMI Calculator
+          </motion.div>
+          <motion.div animate={{ y: [0, -12, 0] }} transition={{ repeat: Infinity, duration: 4.5, ease: "easeInOut", delay: 1.5 }} className="absolute bottom-20 right-[30%] px-4 py-2 rounded-xl bg-card border border-border shadow-lg flex items-center gap-2 text-sm font-medium text-foreground backdrop-blur-xl">
+            JWT Decoder
+          </motion.div>
+        </div>
       </section>
 
       {/* 2. WHY USE THIS PLATFORM? (BENTO GRID DESIGN) */}
-      <section className="py-24 px-4 bg-card/30 border-y border-border/50 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+      <section className="py-24 px-4 relative overflow-hidden">
         
         <div className="max-w-7xl mx-auto relative z-10">
           <motion.div 

@@ -124,13 +124,13 @@ const Sidebar = ({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }) => {
       )}>
         <div className="h-16 flex items-center justify-between px-4 border-b border-border/50 shrink-0">
           {!isCollapsed && <Link to="/" className="flex items-center gap-2 font-bold text-lg tracking-tight hover:opacity-80 transition-opacity">
-            <div className="w-8 h-8 shrink-0 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-md">
+            <div className="w-8 h-8 shrink-0 rounded-lg bg-primary flex items-center justify-center text-primary-foreground shadow-sm">
               <Layers size={18} strokeWidth={2.5} />
             </div>
-            <span className="bg-gradient-to-r from-primary to-blue-500 bg-clip-text text-transparent truncate">Daily Utility Hub</span>
+            <span className="text-foreground truncate">Daily Utility Hub</span>
           </Link>}
           {isCollapsed && <Link to="/" className="mx-auto hidden md:flex items-center justify-center hover:opacity-80 transition-opacity">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-md">
+            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground shadow-sm">
               <Layers size={18} strokeWidth={2.5} />
             </div>
           </Link>}
