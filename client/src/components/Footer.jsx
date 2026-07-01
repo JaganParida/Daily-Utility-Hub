@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Instagram, Linkedin, MessageSquare, Youtube, Twitter, Mail, MapPin, Clock, Github } from 'lucide-react';
+import { Camera, Briefcase, MessageSquare, PlayCircle, Code, Mail, MapPin, Clock } from 'lucide-react';
 
 const Footer = () => {
   return (
@@ -22,20 +22,20 @@ const Footer = () => {
             </p>
             
             <div className="flex items-center gap-4">
-              <a href="#" className="w-10 h-10 rounded-full bg-muted/50 flex items-center justify-center text-muted-foreground hover:bg-indigo-500 hover:text-white transition-all duration-300">
-                <Instagram size={18} />
+              <a href="#" className="w-10 h-10 rounded-full bg-muted/50 flex items-center justify-center text-muted-foreground hover:bg-pink-500 hover:text-white transition-all duration-300">
+                <Camera size={18} />
               </a>
               <a href="#" className="w-10 h-10 rounded-full bg-muted/50 flex items-center justify-center text-muted-foreground hover:bg-blue-500 hover:text-white transition-all duration-300">
-                <Linkedin size={18} />
+                <Briefcase size={18} />
               </a>
               <a href="#" className="w-10 h-10 rounded-full bg-muted/50 flex items-center justify-center text-muted-foreground hover:bg-indigo-500 hover:text-white transition-all duration-300">
                 <MessageSquare size={18} />
               </a>
               <a href="#" className="w-10 h-10 rounded-full bg-muted/50 flex items-center justify-center text-muted-foreground hover:bg-red-500 hover:text-white transition-all duration-300">
-                <Youtube size={18} />
+                <PlayCircle size={18} />
               </a>
               <a href="#" className="w-10 h-10 rounded-full bg-muted/50 flex items-center justify-center text-muted-foreground hover:bg-gray-800 hover:text-white transition-all duration-300">
-                <Github size={18} />
+                <Code size={18} />
               </a>
             </div>
           </div>
