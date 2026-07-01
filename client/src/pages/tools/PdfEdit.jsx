@@ -162,6 +162,7 @@ const PdfEdit = () => {
           // Extract text runs for direct inline editing
           try {
             const textContent = await page.getTextContent();
+            const styles = textContent.styles || {};
             const items = textContent.items.map(item => {
               const tx = item.transform[4];
               const ty = item.transform[5];
@@ -173,13 +174,17 @@ const PdfEdit = () => {
               const pxWidth = widthPoints * (viewport.width / unscaledViewport.width);
               const pxHeight = heightPoints * (viewport.height / unscaledViewport.height);
               
+              const fontStyle = styles[item.fontName] || {};
+              const fontFamily = fontStyle.fontFamily || 'sans-serif';
+              
               return {
                 str: item.str,
                 x: canvasX,
                 y: canvasY - pxHeight,
                 width: pxWidth,
                 height: pxHeight,
-                fontSize: heightPoints
+                fontSize: heightPoints,
+                fontFamily: fontFamily
               };
             }).filter(item => item.str.trim() !== '');
             
@@ -238,6 +243,7 @@ const PdfEdit = () => {
       y: item.y,
       text: item.str,
       fontSize: item.fontSize,
+      fontFamily: item.fontFamily || 'sans-serif',
       color: '#000000', // default black text for replacements
       isEditing: true
     };
@@ -548,11 +554,27 @@ const PdfEdit = () => {
         for (const textItem of pageTexts) {
           const colorFloat = hexToRgbFloat(textItem.color);
           
+          let fontToUse = helveticaBold;
+          const fam = (textItem.fontFamily || '').toLowerCase();
+          
+          try {
+            if (fam.includes('serif') || fam.includes('times') || fam.includes('roman') || fam.includes('georgia')) {
+              fontToUse = await pdfDoc.embedFont(StandardFonts.TimesRoman);
+            } else if (fam.includes('mono') || fam.includes('courier') || fam.includes('consolas')) {
+              fontToUse = await pdfDoc.embedFont(StandardFonts.Courier);
+            } else {
+              fontToUse = await pdfDoc.embedFont(StandardFonts.Helvetica);
+            }
+          } catch (embedErr) {
+            console.error('Failed to embed font, falling back to Helvetica:', embedErr);
+            fontToUse = helveticaBold;
+          }
+          
           page.drawText(textItem.text, {
             x: textItem.x * scaleX,
             y: pdfHeight - (textItem.y * scaleY) - (textItem.fontSize * scaleY),
             size: textItem.fontSize * scaleX,
-            font: helveticaBold,
+            font: fontToUse,
             color: rgb(colorFloat.r, colorFloat.g, colorFloat.b)
           });
         }
@@ -857,8 +879,8 @@ const PdfEdit = () => {
                         left: `${textItem.x}px`,
                         top: `${textItem.y}px`,
                         color: textItem.color,
-                        fontSize: `${textItem.fontSize}px`,
-                        fontFamily: 'sans-serif',
+                        fontSize: `${textItem.fontSize * scale}px`,
+                        fontFamily: textItem.fontFamily || 'sans-serif',
                         fontWeight: 'bold',
                         zIndex: 20
                       }}
@@ -875,17 +897,21 @@ const PdfEdit = () => {
                           onKeyDown={(e) => {
                             if (e.key === 'Enter') handleTextBlur(pageIdx, textItem.id);
                           }}
-                          className="bg-background/80 border-2 border-red-500 rounded px-1.5 py-0.5 outline-none text-foreground font-bold shadow-md min-w-[120px]"
+                          className="bg-transparent border border-dashed border-blue-500 outline-none text-foreground font-bold p-0 m-0"
                           style={{ 
-                            fontSize: `${textItem.fontSize}px`, 
-                            color: textItem.color 
+                            fontSize: `${textItem.fontSize * scale}px`, 
+                            color: textItem.color,
+                            fontFamily: textItem.fontFamily || 'sans-serif'
                           }}
                           onClick={(e) => e.stopPropagation()}
                           onMouseDown={(e) => e.stopPropagation()}
                         />
                       ) : (
                         <div 
-                          className="px-1.5 py-0.5 border border-dashed border-transparent hover:border-red-500/55 hover:bg-muted/40 rounded cursor-move select-none flex items-center gap-1.5"
+                          className="border border-dashed border-transparent hover:border-red-500/55 hover:bg-muted/40 rounded cursor-move select-none flex items-center gap-1.5"
+                          style={{
+                            fontFamily: textItem.fontFamily || 'sans-serif'
+                          }}
                           onDoubleClick={() => startTextEdit(pageIdx, textItem.id)}
                         >
                           <span>{textItem.text || 'Type...'}</span>
