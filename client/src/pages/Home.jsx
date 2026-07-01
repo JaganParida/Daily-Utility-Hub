@@ -29,7 +29,7 @@ const Home = () => {
     <PageTransition className="flex flex-col min-h-screen bg-background selection:bg-indigo-500/30">
       
       {/* 1. HERO SECTION */}
-      <section className="relative flex flex-col items-center justify-center text-center pt-24 pb-32 lg:pt-40 lg:pb-48 px-4 overflow-hidden">
+      <section className="relative flex flex-col items-center justify-center text-center pt-16 pb-24 sm:pt-24 sm:pb-32 lg:pt-40 lg:pb-48 px-4 overflow-hidden">
         {/* Sleek Minimalist Background */}
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-500/10 via-background to-background"></div>
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wNykiLz48L3N2Zz4=')] [mask-image:linear-gradient(to_bottom,white,transparent)] -z-10"></div>
@@ -38,45 +38,45 @@ const Home = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
-          className="max-w-5xl space-y-8 relative z-10"
+          className="max-w-5xl space-y-6 sm:space-y-8 relative z-10"
         >
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-500/10 text-indigo-400 font-medium text-sm mb-4 border border-indigo-500/20">
-            <Zap size={16} className="text-indigo-400" />
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-500/10 text-indigo-400 font-medium text-xs sm:text-sm mb-2 sm:mb-4 border border-indigo-500/20">
+            <Zap size={14} className="text-indigo-400 sm:w-4 sm:h-4" />
             <span>50+ Premium Tools, 100% Free</span>
           </div>
           
-          <h1 className="text-5xl md:text-7xl lg:text-8xl font-extrabold tracking-tight text-foreground leading-[1.1]">
+          <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-extrabold tracking-tight text-foreground leading-[1.1] sm:leading-[1.1]">
             The Ultimate <br className="hidden md:block" />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-blue-500 to-emerald-400 drop-shadow-sm">
               Utility Hub
             </span>
           </h1>
           
-          <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+          <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed px-2">
             Stop endlessly searching the web for basic tools. Get instant access to powerful image converters, PDF editors, developer utilities, and finance calculators all in one beautiful, privacy-first platform.
           </p>
           
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-5 pt-8">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-5 pt-6 sm:pt-8 w-full max-w-md mx-auto sm:max-w-none">
             <Link 
               to="/dashboard" 
-              className="px-8 py-4 bg-foreground hover:bg-foreground/90 text-background font-bold rounded-xl transition-all shadow-[0_0_40px_-10px_rgba(255,255,255,0.2)] hover:shadow-[0_0_60px_-15px_rgba(255,255,255,0.4)] hover:-translate-y-1 flex items-center gap-2 text-lg w-full sm:w-auto justify-center"
+              className="px-6 py-3 sm:px-8 sm:py-4 bg-foreground hover:bg-foreground/90 text-background font-bold rounded-xl transition-all shadow-[0_0_40px_-10px_rgba(255,255,255,0.2)] hover:shadow-[0_0_60px_-15px_rgba(255,255,255,0.4)] hover:-translate-y-1 flex items-center gap-2 text-base sm:text-lg w-full sm:w-auto justify-center"
             >
-              <LayoutGrid size={20} />
+              <LayoutGrid size={18} className="sm:w-5 sm:h-5" />
               Explore All Tools
             </Link>
             
             {!currentUser && (
               <Link 
                 to="/register" 
-                className="px-8 py-4 bg-card/50 backdrop-blur-md hover:bg-card text-foreground font-bold rounded-xl transition-all flex items-center gap-2 text-lg border border-border w-full sm:w-auto justify-center hover:-translate-y-1 shadow-sm"
+                className="px-6 py-3 sm:px-8 sm:py-4 bg-card/50 backdrop-blur-md hover:bg-card text-foreground font-bold rounded-xl transition-all flex items-center gap-2 text-base sm:text-lg border border-border w-full sm:w-auto justify-center hover:-translate-y-1 shadow-sm"
               >
-                <UserPlus size={20} />
+                <UserPlus size={18} className="sm:w-5 sm:h-5" />
                 Create Free Account
               </Link>
             )}
           </div>
-          <p className="text-sm font-medium text-muted-foreground uppercase tracking-widest mt-6 opacity-70">
-            No Credit Card Required • No Installation • No Hidden Fees
+          <p className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-widest mt-6 opacity-70 px-4 leading-relaxed sm:leading-normal">
+            No Credit Card Required <span className="hidden sm:inline">•</span><br className="sm:hidden" /> No Installation <span className="hidden sm:inline">•</span><br className="sm:hidden" /> No Hidden Fees
           </p>
         </motion.div>
 
