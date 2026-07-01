@@ -1,8 +1,9 @@
 import { Link } from 'react-router-dom';
 import { 
   ArrowRight, ShieldCheck, Zap, Globe, FileText, Calculator, 
-  CheckCircle2, XCircle, UserPlus, LogIn, LayoutGrid, MonitorSmartphone, Lock
+  CheckCircle2, XCircle, UserPlus, LogIn, LayoutGrid, MonitorSmartphone, Lock, Search, Download, PlayCircle
 } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { cn } from '../lib/utils';
 import PageTransition from '../components/PageTransition';
 import { useAuth } from '../context/AuthContext';
@@ -10,6 +11,19 @@ import Footer from '../components/Footer';
 
 const Home = () => {
   const { currentUser } = useAuth();
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.2 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 30 },
+    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 70, damping: 15 } }
+  };
 
   return (
     <PageTransition className="flex flex-col min-h-screen bg-background selection:bg-indigo-500/30">
@@ -20,7 +34,12 @@ const Home = () => {
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/20 via-background to-background"></div>
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-indigo-500/10 rounded-full blur-[120px] -z-10 pointer-events-none"></div>
 
-        <div className="max-w-5xl space-y-8 animate-fadeIn relative z-10">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="max-w-5xl space-y-8 relative z-10"
+        >
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-500/10 text-indigo-400 font-medium text-sm mb-4 border border-indigo-500/20">
             <Zap size={16} className="text-indigo-400" />
             <span>50+ Premium Tools, 100% Free</span>
@@ -43,7 +62,7 @@ const Home = () => {
               className="px-8 py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition-all shadow-[0_0_40px_-10px_rgba(79,70,229,0.5)] hover:shadow-[0_0_60px_-15px_rgba(79,70,229,0.7)] hover:-translate-y-1 flex items-center gap-2 text-lg w-full sm:w-auto justify-center"
             >
               <LayoutGrid size={20} />
-              Open Dashboard
+              Explore All Tools
             </Link>
             
             {!currentUser && (
@@ -59,89 +78,170 @@ const Home = () => {
           <p className="text-sm font-medium text-muted-foreground uppercase tracking-widest mt-6 opacity-70">
             No Credit Card Required • No Installation • No Hidden Fees
           </p>
-        </div>
+        </motion.div>
       </section>
 
-      {/* 2. WHY USE THIS PLATFORM? */}
-      <section className="py-24 px-4 bg-card/30 border-y border-border/50 relative">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center space-y-4 mb-16">
+      {/* 2. WHY USE THIS PLATFORM? (BENTO GRID DESIGN) */}
+      <section className="py-24 px-4 bg-card/30 border-y border-border/50 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+        
+        <div className="max-w-7xl mx-auto relative z-10">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            className="text-center space-y-4 mb-16"
+          >
             <h2 className="text-3xl md:text-5xl font-bold text-foreground tracking-tight">Why Choose Daily Utility Hub?</h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">We built the platform we always wished existed. No ads, no popups, just pure productivity.</p>
-          </div>
+          </motion.div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Feature 1 */}
-            <div className="group bg-card border border-border/60 p-8 rounded-[2rem] flex flex-col items-start gap-5 hover:border-emerald-500/50 hover:shadow-[0_0_30px_-10px_rgba(16,185,129,0.15)] transition-all duration-300">
-              <div className="w-14 h-14 bg-emerald-500/10 text-emerald-400 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                <Lock size={28} />
+          <motion.div 
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-100px" }}
+            className="grid grid-cols-1 md:grid-cols-12 gap-6"
+          >
+            {/* Feature 1 - Large Feature (Privacy) */}
+            <motion.div 
+              variants={itemVariants}
+              whileHover={{ scale: 1.02 }}
+              className="md:col-span-8 bg-gradient-to-br from-emerald-900/40 to-card border border-emerald-500/20 p-8 md:p-12 rounded-[2rem] flex flex-col justify-between relative overflow-hidden group"
+            >
+              <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-[80px] -mr-20 -mt-20 transition-all group-hover:bg-emerald-500/20"></div>
+              <div className="w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-2xl flex items-center justify-center mb-8 backdrop-blur-sm border border-emerald-500/30 group-hover:rotate-12 transition-transform">
+                <Lock size={32} />
               </div>
-              <h3 className="text-2xl font-bold text-foreground">Absolute Privacy</h3>
-              <p className="text-muted-foreground leading-relaxed">
-                Over 90% of our utilities (including all PDF and Image tools) process your files <b>100% locally</b> in your web browser. Your sensitive data never leaves your device.
-              </p>
-            </div>
+              <div>
+                <h3 className="text-3xl font-bold text-white mb-4">Absolute Privacy</h3>
+                <p className="text-emerald-100/70 text-lg leading-relaxed max-w-xl">
+                  Over 90% of our utilities process your files <b>100% locally</b> in your web browser. Your sensitive PDFs, images, and code never leave your device. We literally can't see your data.
+                </p>
+              </div>
+            </motion.div>
 
-            {/* Feature 2 */}
-            <div className="group bg-card border border-border/60 p-8 rounded-[2rem] flex flex-col items-start gap-5 hover:border-indigo-500/50 hover:shadow-[0_0_30px_-10px_rgba(99,102,241,0.15)] transition-all duration-300">
-              <div className="w-14 h-14 bg-indigo-500/10 text-indigo-400 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+            {/* Feature 2 - Small Feature (Speed) */}
+            <motion.div 
+              variants={itemVariants}
+              whileHover={{ scale: 1.02 }}
+              className="md:col-span-4 bg-gradient-to-br from-indigo-900/40 to-card border border-indigo-500/20 p-8 rounded-[2rem] flex flex-col justify-between relative overflow-hidden group"
+            >
+              <div className="absolute bottom-0 right-0 w-40 h-40 bg-indigo-500/10 rounded-full blur-[50px] transition-all group-hover:bg-indigo-500/20"></div>
+              <div className="w-14 h-14 bg-indigo-500/20 text-indigo-400 rounded-2xl flex items-center justify-center mb-6 backdrop-blur-sm border border-indigo-500/30 group-hover:-rotate-12 transition-transform">
                 <Zap size={28} />
               </div>
-              <h3 className="text-2xl font-bold text-foreground">Lightning Fast</h3>
-              <p className="text-muted-foreground leading-relaxed">
-                Zero server latency. Because tools run locally, formatting JSON, compressing images, and editing text happens instantly. Say goodbye to loading spinners.
-              </p>
-            </div>
-
-            {/* Feature 3 */}
-            <div className="group bg-card border border-border/60 p-8 rounded-[2rem] flex flex-col items-start gap-5 hover:border-blue-500/50 hover:shadow-[0_0_30px_-10px_rgba(59,130,246,0.15)] transition-all duration-300">
-              <div className="w-14 h-14 bg-blue-500/10 text-blue-400 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                <MonitorSmartphone size={28} />
+              <div>
+                <h3 className="text-2xl font-bold text-white mb-3">Lightning Fast</h3>
+                <p className="text-indigo-100/70 leading-relaxed">
+                  Zero server latency. Operations like formatting JSON or editing text happen instantly.
+                </p>
               </div>
-              <h3 className="text-2xl font-bold text-foreground">Any Device, Anywhere</h3>
-              <p className="text-muted-foreground leading-relaxed">
-                Fully responsive design works flawlessly on your phone, tablet, or desktop. It looks and feels like a native app on every single screen size.
-              </p>
-            </div>
-          </div>
+            </motion.div>
+
+            {/* Feature 3 - Wide Feature (Responsive) */}
+            <motion.div 
+              variants={itemVariants}
+              whileHover={{ scale: 1.02 }}
+              className="md:col-span-12 bg-gradient-to-r from-blue-900/30 via-card to-card border border-blue-500/20 p-8 md:p-12 rounded-[2rem] flex flex-col md:flex-row items-center gap-8 relative overflow-hidden group"
+            >
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-64 h-64 bg-blue-500/10 rounded-full blur-[80px] transition-all group-hover:bg-blue-500/20"></div>
+              <div className="w-20 h-20 shrink-0 bg-blue-500/20 text-blue-400 rounded-3xl flex items-center justify-center backdrop-blur-sm border border-blue-500/30 group-hover:scale-110 transition-transform">
+                <MonitorSmartphone size={40} />
+              </div>
+              <div>
+                <h3 className="text-3xl font-bold text-white mb-4">Any Device, Anywhere</h3>
+                <p className="text-blue-100/70 text-lg leading-relaxed">
+                  Fully responsive design works flawlessly on your phone, tablet, or desktop. It looks and feels like a native app on every single screen size, allowing you to get work done on the go.
+                </p>
+              </div>
+            </motion.div>
+          </motion.div>
         </div>
       </section>
 
-      {/* 3. HOW IT WORKS */}
-      <section className="py-24 px-4">
-        <div className="max-w-7xl mx-auto text-center space-y-16">
-          <div className="space-y-4">
+      {/* 3. HOW IT WORKS (INTERACTIVE TIMELINE) */}
+      <section className="py-32 px-4 relative">
+        <div className="max-w-7xl mx-auto">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center space-y-4 mb-24"
+          >
             <h2 className="text-3xl md:text-5xl font-bold text-foreground tracking-tight">How It Works</h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">Get your tasks done in three simple steps.</p>
-          </div>
+          </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
+          <div className="flex flex-col md:flex-row items-center justify-center gap-12 lg:gap-24 relative">
             {/* Connecting line for desktop */}
-            <div className="hidden md:block absolute top-12 left-[15%] right-[15%] h-[2px] bg-gradient-to-r from-transparent via-border to-transparent -z-10"></div>
+            <div className="hidden md:block absolute top-[40px] left-[10%] right-[10%] h-[2px] bg-border -z-10">
+              <motion.div 
+                className="h-full bg-indigo-500"
+                initial={{ width: "0%" }}
+                whileInView={{ width: "100%" }}
+                transition={{ duration: 1.5, ease: "easeInOut", delay: 0.2 }}
+                viewport={{ once: true }}
+              />
+            </div>
             
-            <div className="flex flex-col items-center gap-6">
-              <div className="w-24 h-24 rounded-full bg-card border-4 border-background shadow-xl flex items-center justify-center text-3xl font-black text-indigo-500 z-10">
-                1
+            {/* Step 1 */}
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.8 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.2, type: "spring" }}
+              viewport={{ once: true }}
+              className="flex flex-col items-center text-center relative group w-full md:w-1/3"
+            >
+              <div className="w-20 h-20 rounded-full bg-card border-4 border-indigo-500/30 flex items-center justify-center shadow-[0_0_30px_-5px_rgba(79,70,229,0.3)] mb-8 group-hover:border-indigo-500 transition-colors z-10 bg-background relative overflow-hidden">
+                 <motion.div className="absolute inset-0 bg-indigo-500/20" initial={{ y: "100%" }} whileHover={{ y: "0%" }} transition={{ duration: 0.3 }} />
+                 <Search size={32} className="text-indigo-400 relative z-10" />
               </div>
-              <h3 className="text-2xl font-bold">Search</h3>
-              <p className="text-muted-foreground">Hit <kbd className="px-2 py-1 bg-muted rounded text-sm">Ctrl+K</kbd> or browse the sidebar to find the exact tool you need.</p>
-            </div>
+              <div className="text-center w-full">
+                <span className="text-indigo-500 font-bold tracking-widest text-sm uppercase mb-2 block">Step 1</span>
+                <h3 className="text-2xl font-bold text-white mb-3">Search</h3>
+                <p className="text-muted-foreground">Hit <kbd className="px-2 py-1 bg-muted rounded text-sm text-foreground">Ctrl+K</kbd> to instantly find the exact utility you need from our library of 50+ tools.</p>
+              </div>
+            </motion.div>
 
-            <div className="flex flex-col items-center gap-6">
-              <div className="w-24 h-24 rounded-full bg-card border-4 border-background shadow-xl flex items-center justify-center text-3xl font-black text-indigo-500 z-10">
-                2
+            {/* Step 2 */}
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.8 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.6, type: "spring" }}
+              viewport={{ once: true }}
+              className="flex flex-col items-center text-center relative group w-full md:w-1/3 mt-12 md:mt-0"
+            >
+              <div className="w-20 h-20 rounded-full bg-card border-4 border-purple-500/30 flex items-center justify-center shadow-[0_0_30px_-5px_rgba(168,85,247,0.3)] mb-8 group-hover:border-purple-500 transition-colors z-10 bg-background relative overflow-hidden">
+                <motion.div className="absolute inset-0 bg-purple-500/20" initial={{ y: "100%" }} whileHover={{ y: "0%" }} transition={{ duration: 0.3 }} />
+                <PlayCircle size={32} className="text-purple-400 relative z-10" />
               </div>
-              <h3 className="text-2xl font-bold">Execute</h3>
-              <p className="text-muted-foreground">Upload your files or paste your text. The tool processes everything instantly right in your browser.</p>
-            </div>
+              <div className="text-center w-full">
+                <span className="text-purple-500 font-bold tracking-widest text-sm uppercase mb-2 block">Step 2</span>
+                <h3 className="text-2xl font-bold text-white mb-3">Execute</h3>
+                <p className="text-muted-foreground">Upload your files or paste your text. The tool processes everything instantly right in your browser securely.</p>
+              </div>
+            </motion.div>
 
-            <div className="flex flex-col items-center gap-6">
-              <div className="w-24 h-24 rounded-full bg-card border-4 border-background shadow-xl flex items-center justify-center text-3xl font-black text-indigo-500 z-10">
-                3
+            {/* Step 3 */}
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.8 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 1.0, type: "spring" }}
+              viewport={{ once: true }}
+              className="flex flex-col items-center text-center relative group w-full md:w-1/3 mt-12 md:mt-0"
+            >
+              <div className="w-20 h-20 rounded-full bg-card border-4 border-emerald-500/30 flex items-center justify-center shadow-[0_0_30px_-5px_rgba(16,185,129,0.3)] mb-8 group-hover:border-emerald-500 transition-colors z-10 bg-background relative overflow-hidden">
+                <motion.div className="absolute inset-0 bg-emerald-500/20" initial={{ y: "100%" }} whileHover={{ y: "0%" }} transition={{ duration: 0.3 }} />
+                <Download size={32} className="text-emerald-400 relative z-10" />
               </div>
-              <h3 className="text-2xl font-bold">Download</h3>
-              <p className="text-muted-foreground">Copy the results or download your processed files immediately. No waiting required.</p>
-            </div>
+              <div className="text-center w-full">
+                <span className="text-emerald-500 font-bold tracking-widest text-sm uppercase mb-2 block">Step 3</span>
+                <h3 className="text-2xl font-bold text-white mb-3">Download</h3>
+                <p className="text-muted-foreground">Copy the results or download your processed files immediately. No waiting required, no hidden paywalls.</p>
+              </div>
+            </motion.div>
+
           </div>
         </div>
       </section>
@@ -152,14 +252,24 @@ const Home = () => {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-emerald-500/5 rounded-full blur-[100px] -z-10 pointer-events-none"></div>
 
         <div className="max-w-5xl mx-auto space-y-12">
-          <div className="text-center space-y-4">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center space-y-4"
+          >
             <h2 className="text-3xl md:text-5xl font-bold text-white tracking-tight">Simple. Transparent. Free.</h2>
             <p className="text-zinc-400 text-lg max-w-2xl mx-auto">
               You can use all 50+ tools without ever creating an account. But if you want a personalized experience across your devices, a free account makes it better.
             </p>
-          </div>
+          </motion.div>
 
-          <div className="rounded-2xl border border-zinc-800 bg-[#111111] overflow-hidden shadow-2xl">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            className="rounded-2xl border border-zinc-800 bg-[#111111] overflow-hidden shadow-2xl"
+          >
             {/* Table Header */}
             <div className="grid grid-cols-3 border-b border-zinc-800 bg-[#161616]">
               <div className="p-6 md:p-8 flex items-center">
@@ -231,7 +341,7 @@ const Home = () => {
                 </div>
               </div>
             )}
-          </div>
+          </motion.div>
         </div>
       </section>
 

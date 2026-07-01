@@ -7,7 +7,7 @@ import {
   Code, Scan, Diff, PenTool,
   Calculator, TrendingUp, Receipt, Landmark,
   Share2, FolderEdit, Archive,
-  LogOut, User, X, PanelLeftClose, PanelLeftOpen
+  LogOut, User, X, PanelLeftClose, PanelLeftOpen, Layers
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { useAuth } from '../context/AuthContext';
@@ -123,8 +123,17 @@ const Sidebar = ({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }) => {
         isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
       )}>
         <div className="h-16 flex items-center justify-between px-4 border-b border-border/50 shrink-0">
-          {!isCollapsed && <Link to="/" className="font-bold text-lg tracking-tight bg-gradient-to-r from-primary to-blue-500 bg-clip-text text-transparent truncate hover:opacity-80 transition-opacity">Daily Utility Hub</Link>}
-          {isCollapsed && <Link to="/" className="font-bold text-lg tracking-tight text-primary mx-auto hidden md:block hover:opacity-80 transition-opacity">DUH</Link>}
+          {!isCollapsed && <Link to="/" className="flex items-center gap-2 font-bold text-lg tracking-tight hover:opacity-80 transition-opacity">
+            <div className="w-8 h-8 shrink-0 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-md">
+              <Layers size={18} strokeWidth={2.5} />
+            </div>
+            <span className="bg-gradient-to-r from-primary to-blue-500 bg-clip-text text-transparent truncate">Daily Utility Hub</span>
+          </Link>}
+          {isCollapsed && <Link to="/" className="mx-auto hidden md:flex items-center justify-center hover:opacity-80 transition-opacity">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-md">
+              <Layers size={18} strokeWidth={2.5} />
+            </div>
+          </Link>}
           
           <button 
             className={cn("hidden md:flex p-2 text-muted-foreground hover:text-foreground", !isCollapsed && "ml-auto")}
