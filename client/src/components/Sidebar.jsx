@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { Home, Type, Hash, Key, Layers, AlignLeft, ChevronRight, X, Image as ImageIcon, Expand, Crop, ArrowRightLeft, LayoutGrid, FileText } from 'lucide-react';
+import { Home, Type, Hash, Key, Layers, AlignLeft, ChevronRight, X, Image as ImageIcon, Expand, Crop, ArrowRightLeft, LayoutGrid, FileText, Braces, Search } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
@@ -69,6 +69,15 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         { name: 'Image to Text', to: '/tools/image-to-text', icon: Type },
         { name: 'Text Diff', to: '/tools/text-diff', icon: FileText },
         { name: 'Markdown Editor', to: '/tools/markdown-editor', icon: FileText },
+      ]
+    },
+    {
+      title: 'Developer & Data',
+      links: [
+        { name: 'JSON Formatter', to: '/tools/json-formatter', icon: Braces },
+        { name: 'Password Gen', to: '/tools/password-generator', icon: Key },
+        { name: 'Encoder / Decoder', to: '/tools/encoder-decoder', icon: ArrowRightLeft },
+        { name: 'Regex Tester', to: '/tools/regex-tester', icon: Search },
       ]
     }
   ];

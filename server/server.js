@@ -65,6 +65,16 @@ app.get('/', (req, res) => {
   res.send('API is running...');
 });
 
+// Global Error Handler
+app.use((err, req, res, next) => {
+  console.error('🔥🔥🔥 Global Express Error:', err);
+  console.error(err.stack);
+  res.status(500).json({ 
+    message: err.message || 'Internal Server Error',
+    details: err.code || null
+  });
+});
+
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {

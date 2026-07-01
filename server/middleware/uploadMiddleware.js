@@ -70,16 +70,18 @@ const validateFileType = async (req, res, next) => {
       if (!isValid) {
         // Delete all uploaded files since one is invalid
         files.forEach(f => fs.unlinkSync(f.path));
+        console.error(`🔥🔥🔥 File validation failed for ${file.originalname}`);
         return res.status(400).json({ message: 'Invalid file type detected. Malware validation failed.' });
       }
     }
     next();
   } catch (error) {
+    console.error('🔥🔥🔥 Upload Middleware Error:', error);
     // Clean up on error
     files.forEach(f => {
       if (fs.existsSync(f.path)) fs.unlinkSync(f.path);
     });
-    return res.status(500).json({ message: 'Error validating file format.' });
+    return res.status(500).json({ message: 'Error validating file format.', details: error.message });
   }
 };
 

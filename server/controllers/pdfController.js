@@ -38,8 +38,9 @@ exports.mergePdfs = async (req, res) => {
     res.send(Buffer.from(mergedPdfBytes));
   } catch (error) {
     cleanupFiles(req.files || []);
-    console.error('Merge Error:', error);
-    res.status(500).json({ message: 'Failed to merge PDFs. The files may be corrupted or encrypted.' });
+    console.error('🔥🔥🔥 Merge Error (pdfController.js):', error);
+    console.error(error.stack);
+    res.status(500).json({ message: 'Failed to merge PDFs. The files may be corrupted or encrypted.', details: error.message });
   }
 };
 

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Type, Hash, Key, Layers, AlignLeft, Image as ImageIcon, Expand, Crop, ArrowRightLeft, LayoutGrid, FileText } from 'lucide-react';
+import { Type, Hash, Key, Layers, AlignLeft, Image as ImageIcon, Expand, Crop, ArrowRightLeft, LayoutGrid, FileText, Braces, Search } from 'lucide-react';
 import PageTransition from '../components/PageTransition';
 
 const Dashboard = () => {

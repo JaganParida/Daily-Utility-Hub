@@ -109,7 +109,9 @@ const PdfMerge = () => {
       toast.success('PDFs merged successfully!', { id: toastId });
     } catch (error) {
       console.error(error);
-      toast.error('Failed to merge PDFs. They may be encrypted.');
+      const backendMsg = error.response?.data?.message || 'Failed to merge PDFs.';
+      const details = error.response?.data?.details ? ` (${error.response.data.details})` : '';
+      toast.error(backendMsg + details, { id: toastId });
     } finally {
       setIsProcessing(false);
     }

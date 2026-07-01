@@ -1,259 +1,213 @@
-import { useState, useCallback, useEffect } from 'react';
-import { Copy, RefreshCw, Key, Check, Shield, ShieldAlert, ShieldCheck } from 'lucide-react';
-import zxcvbn from 'zxcvbn';
+import { useState, useEffect } from 'react';
+import { Key, Copy, Check, RefreshCw, ShieldCheck, ShieldAlert, Shield } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
+const words = ["apple", "river", "mountain", "eagle", "forest", "ocean", "desert", "storm", "winter", "summer", "tiger", "lion", "dragon", "knight", "castle", "sword", "shield", "magic", "moon", "star", "galaxy", "planet", "comet", "nebula", "quantum", "cyber", "neural", "pixel", "vector", "matrix", "cloud", "data", "logic", "syntax", "code", "byte", "script", "hacker", "ninja", "pirate", "robot", "cyborg", "mutant", "alien", "ghost", "phantom", "shadow", "specter", "spirit", "soul"];
+
 const PasswordGenerator = () => {
-  const [passwords, setPasswords] = useState([]);
+  const [password, setPassword] = useState('');
+  const [mode, setMode] = useState('random'); // 'random' or 'passphrase'
   const [length, setLength] = useState(16);
-  const [count, setCount] = useState(1);
-  const [copiedIndex, setCopiedIndex] = useState(null);
+  const [includeUppercase, setIncludeUppercase] = useState(true);
+  const [includeNumbers, setIncludeNumbers] = useState(true);
+  const [includeSymbols, setIncludeSymbols] = useState(true);
   
-  const [options, setOptions] = useState({
-    uppercase: true,
-    lowercase: true,
-    numbers: true,
-    symbols: true,
-    excludeAmbiguous: false // e.g. i, l, 1, L, o, 0, O
-  });
+  const [wordCount, setWordCount] = useState(4);
+  const [separator, setSeparator] = useState('-');
+  const [capitalizeWords, setCapitalizeWords] = useState(false);
+  const [addNumber, setAddNumber] = useState(false);
 
-  const generatePassword = () => {
-    let charset = '';
-    const uppercaseChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    const lowercaseChars = 'abcdefghijklmnopqrstuvwxyz';
-    const numberChars = '0123456789';
-    const symbolChars = '!@#$%^&*()_+~`|}{[]:;?><,./-=';
-    const ambiguousChars = 'il1Lo0O';
+  const [copied, setCopied] = useState(false);
+  const [strength, setStrength] = useState({ score: 0, label: 'Weak', color: 'text-red-500' });
 
-    let currentUppercase = uppercaseChars;
-    let currentLowercase = lowercaseChars;
-    let currentNumbers = numberChars;
-    let currentSymbols = symbolChars;
-
-    if (options.excludeAmbiguous) {
-      currentUppercase = currentUppercase.replace(/[ILO]/g, '');
-      currentLowercase = currentLowercase.replace(/[ilo]/g, '');
-      currentNumbers = currentNumbers.replace(/[01]/g, '');
-    }
-
-    if (options.uppercase) charset += currentUppercase;
-    if (options.lowercase) charset += currentLowercase;
-    if (options.numbers) charset += currentNumbers;
-    if (options.symbols) charset += currentSymbols;
-
-    if (charset === '') {
-      toast.error('Please select at least one character type!');
-      return '';
-    }
-
-    let result = '';
+  const generateRandomPassword = () => {
+    let charset = 'abcdefghijklmnopqrstuvwxyz';
+    if (includeUppercase) charset += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    if (includeNumbers) charset += '0123456789';
+    if (includeSymbols) charset += '!@#$%^&*()_+~`|}{[]:;?><,./-=';
     
-    // Ensure at least one character of each selected type
-    if (options.uppercase) result += currentUppercase.charAt(Math.floor(Math.random() * currentUppercase.length));
-    if (options.lowercase) result += currentLowercase.charAt(Math.floor(Math.random() * currentLowercase.length));
-    if (options.numbers) result += currentNumbers.charAt(Math.floor(Math.random() * currentNumbers.length));
-    if (options.symbols) result += currentSymbols.charAt(Math.floor(Math.random() * currentSymbols.length));
-
-    // Fill the rest
-    for (let i = result.length; i < length; i++) {
-      result += charset.charAt(Math.floor(Math.random() * charset.length));
+    let res = '';
+    for (let i = 0, n = charset.length; i < length; ++i) {
+      res += charset.charAt(Math.floor(Math.random() * n));
     }
-
-    // Shuffle result
-    return result.split('').sort(() => 0.5 - Math.random()).join('');
+    return res;
   };
 
-  const handleGenerate = useCallback(() => {
-    if (!options.uppercase && !options.lowercase && !options.numbers && !options.symbols) {
-      toast.error('Select at least one character type');
-      return;
+  const generatePassphrase = () => {
+    let phraseWords = [];
+    for (let i = 0; i < wordCount; i++) {
+      let word = words[Math.floor(Math.random() * words.length)];
+      if (capitalizeWords) word = word.charAt(0).toUpperCase() + word.slice(1);
+      phraseWords.push(word);
     }
-    
-    const newPasswords = [];
-    for (let i = 0; i < count; i++) {
-      newPasswords.push(generatePassword());
-    }
-    setPasswords(newPasswords);
-    setCopiedIndex(null);
-  }, [length, options, count]);
+    let res = phraseWords.join(separator);
+    if (addNumber) res += separator + Math.floor(Math.random() * 100);
+    return res;
+  };
 
-  // Initial generate
+  const calculateStrength = (pwd) => {
+    let score = 0;
+    if (pwd.length > 8) score += 1;
+    if (pwd.length > 12) score += 1;
+    if (pwd.length >= 16) score += 1;
+    if (/[A-Z]/.test(pwd)) score += 1;
+    if (/[0-9]/.test(pwd)) score += 1;
+    if (/[^A-Za-z0-9]/.test(pwd)) score += 1;
+
+    if (score <= 2) return { score, label: 'Weak', color: 'text-red-500', icon: ShieldAlert };
+    if (score <= 4) return { score, label: 'Good', color: 'text-yellow-500', icon: Shield };
+    return { score, label: 'Strong', color: 'text-emerald-500', icon: ShieldCheck };
+  };
+
+  const handleGenerate = () => {
+    const newPwd = mode === 'random' ? generateRandomPassword() : generatePassphrase();
+    setPassword(newPwd);
+    setStrength(calculateStrength(newPwd));
+  };
+
+  // Generate on initial load and when options change
   useEffect(() => {
     handleGenerate();
-    // eslint-disable-next-line
-  }, []);
+  }, [mode, length, includeUppercase, includeNumbers, includeSymbols, wordCount, separator, capitalizeWords, addNumber]);
 
-  const copyToClipboard = (text, index) => {
-    navigator.clipboard.writeText(text);
-    setCopiedIndex(index);
-    toast.success('Copied to clipboard!');
-    setTimeout(() => setCopiedIndex(null), 2000);
+  const copyToClipboard = () => {
+    if (!password) return;
+    navigator.clipboard.writeText(password);
+    setCopied(true);
+    toast.success('Password copied to clipboard!');
+    setTimeout(() => setCopied(false), 2000);
   };
 
-  const getStrengthDisplay = (password) => {
-    if (!password) return null;
-    const score = zxcvbn(password).score; // 0 to 4
-    
-    const strengthMap = {
-      0: { label: 'Very Weak', color: 'text-red-500', bg: 'bg-red-500', icon: ShieldAlert },
-      1: { label: 'Weak', color: 'text-orange-500', bg: 'bg-orange-500', icon: ShieldAlert },
-      2: { label: 'Fair', color: 'text-yellow-500', bg: 'bg-yellow-500', icon: Shield },
-      3: { label: 'Strong', color: 'text-emerald-500', bg: 'bg-emerald-500', icon: ShieldCheck },
-      4: { label: 'Very Strong', color: 'text-emerald-500', bg: 'bg-emerald-500', icon: ShieldCheck },
-    };
-
-    const details = strengthMap[score];
-    const Icon = details.icon;
-
-    return (
-      <div className="flex flex-col gap-1 items-end shrink-0">
-        <div className={`flex items-center gap-1 text-xs font-bold ${details.color}`}>
-          <Icon size={14} /> {details.label}
-        </div>
-        <div className="flex gap-1">
-          {[0, 1, 2, 3].map(i => (
-            <div 
-              key={i} 
-              className={`w-3 h-1 rounded-full ${i <= score ? details.bg : 'bg-muted'}`} 
-            />
-          ))}
-        </div>
-      </div>
-    );
-  };
+  const StrengthIcon = strength.icon || Shield;
 
   return (
-    <div className="max-w-5xl mx-auto">
-      <div className="mb-6 flex items-center gap-3">
-        <div className="p-2 bg-emerald-500/10 text-emerald-500 rounded-lg shadow-sm">
-          <Key size={28} />
+    <div className="max-w-4xl mx-auto flex flex-col min-h-[calc(100vh-140px)] items-center justify-center py-10">
+      <div className="mb-8 flex flex-col items-center text-center">
+        <div className="p-3 bg-indigo-500/10 text-indigo-500 rounded-2xl shadow-sm mb-4">
+          <Key size={32} />
         </div>
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Advanced Password Generator</h1>
-          <p className="text-muted-foreground mt-1 text-sm">Generate secure, complex passwords in batches with real-time strength analysis.</p>
-        </div>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">Password Generator</h1>
+        <p className="text-muted-foreground mt-2 text-sm max-w-lg">Generate highly secure, unpredictable passwords or memorable xkcd-style passphrases to keep your accounts safe.</p>
       </div>
 
-      <div className="grid md:grid-cols-[1fr_1.5fr] gap-6 items-start">
+      <div className="w-full bg-card border border-border rounded-3xl shadow-xl overflow-hidden relative">
         
-        {/* Settings Panel */}
-        <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6">
-          
-          <div className="space-y-4">
-            <div className="flex justify-between items-center border-b border-border pb-2">
-              <label className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Length</label>
-              <span className="text-xs font-bold bg-emerald-500/10 text-emerald-500 px-2 py-0.5 rounded-md">{length}</span>
-            </div>
-            <input 
-              type="range" 
-              min="8" 
-              max="128" 
-              value={length}
-              onChange={(e) => setLength(parseInt(e.target.value))}
-              className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-emerald-500"
-            />
-          </div>
-
-          <div className="space-y-4">
-            <div className="flex justify-between items-center border-b border-border pb-2">
-              <label className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Quantity</label>
-              <span className="text-xs font-bold bg-emerald-500/10 text-emerald-500 px-2 py-0.5 rounded-md">{count}</span>
-            </div>
-            <input 
-              type="range" 
-              min="1" 
-              max="50" 
-              value={count}
-              onChange={(e) => setCount(parseInt(e.target.value))}
-              className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-emerald-500"
-            />
-          </div>
-
-          <div className="space-y-4 pt-2">
-            <label className="text-sm font-bold uppercase tracking-wider text-muted-foreground block border-b border-border pb-2">Characters</label>
-            
-            <div className="space-y-3">
-              <label className="flex items-center justify-between cursor-pointer group">
-                <span className="text-sm text-foreground font-medium group-hover:text-emerald-500 transition-colors">Uppercase (A-Z)</span>
-                <input type="checkbox" checked={options.uppercase} onChange={(e) => setOptions({...options, uppercase: e.target.checked})} className="w-4 h-4 text-emerald-500 border-border rounded focus:ring-emerald-500" />
-              </label>
-              
-              <label className="flex items-center justify-between cursor-pointer group">
-                <span className="text-sm text-foreground font-medium group-hover:text-emerald-500 transition-colors">Lowercase (a-z)</span>
-                <input type="checkbox" checked={options.lowercase} onChange={(e) => setOptions({...options, lowercase: e.target.checked})} className="w-4 h-4 text-emerald-500 border-border rounded focus:ring-emerald-500" />
-              </label>
-              
-              <label className="flex items-center justify-between cursor-pointer group">
-                <span className="text-sm text-foreground font-medium group-hover:text-emerald-500 transition-colors">Numbers (0-9)</span>
-                <input type="checkbox" checked={options.numbers} onChange={(e) => setOptions({...options, numbers: e.target.checked})} className="w-4 h-4 text-emerald-500 border-border rounded focus:ring-emerald-500" />
-              </label>
-              
-              <label className="flex items-center justify-between cursor-pointer group">
-                <span className="text-sm text-foreground font-medium group-hover:text-emerald-500 transition-colors">Symbols (!@#$)</span>
-                <input type="checkbox" checked={options.symbols} onChange={(e) => setOptions({...options, symbols: e.target.checked})} className="w-4 h-4 text-emerald-500 border-border rounded focus:ring-emerald-500" />
-              </label>
-            </div>
-          </div>
-
-          <div className="pt-2">
-            <label className="flex items-center gap-3 p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl cursor-pointer">
-              <input 
-                type="checkbox" 
-                checked={options.excludeAmbiguous} 
-                onChange={(e) => setOptions({...options, excludeAmbiguous: e.target.checked})} 
-                className="w-4 h-4 text-amber-500 border-amber-200 rounded focus:ring-amber-500" 
-              />
-              <div className="text-sm text-foreground">
-                <div className="font-bold text-amber-600 dark:text-amber-500 mb-0.5">Exclude Ambiguous</div>
-                <div className="text-xs text-muted-foreground">Removes easily confused characters like <span className="font-mono bg-background px-1 rounded border">l</span>, <span className="font-mono bg-background px-1 rounded border">1</span>, <span className="font-mono bg-background px-1 rounded border">O</span>, <span className="font-mono bg-background px-1 rounded border">0</span></div>
-              </div>
-            </label>
-          </div>
-
-          <button 
-            onClick={handleGenerate}
-            className="w-full py-3 bg-emerald-500 text-white font-medium rounded-xl hover:bg-emerald-600 transition-colors flex items-center justify-center gap-2 shadow-sm shadow-emerald-500/20"
-          >
-            <RefreshCw size={18} /> Generate Passwords
-          </button>
+        {/* Result Display */}
+        <div className="bg-muted/30 p-8 border-b border-border relative">
+           <div className="flex justify-between items-center mb-2">
+             <div className={`flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider ${strength.color}`}>
+               <StrengthIcon size={14} />
+               {strength.label} Password
+             </div>
+             <button onClick={handleGenerate} className="text-muted-foreground hover:text-indigo-500 transition-colors p-1" title="Regenerate">
+               <RefreshCw size={16} />
+             </button>
+           </div>
+           
+           <div className="relative group mt-2">
+             <input
+               type="text"
+               readOnly
+               value={password}
+               className="w-full bg-transparent text-center text-3xl sm:text-4xl lg:text-5xl font-mono text-foreground focus:outline-none truncate px-12"
+             />
+             <button 
+               onClick={copyToClipboard}
+               className={`absolute right-0 top-1/2 -translate-y-1/2 p-3 rounded-xl transition-all ${copied ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20 scale-110' : 'bg-indigo-500/10 text-indigo-500 hover:bg-indigo-500 hover:text-white hover:scale-105'}`}
+             >
+               {copied ? <Check size={20} /> : <Copy size={20} />}
+             </button>
+           </div>
         </div>
 
-        {/* Results Panel */}
-        <div className="bg-card border border-border p-6 rounded-2xl shadow-sm h-full flex flex-col min-h-[500px]">
-          <div className="flex justify-between items-center mb-4 pb-4 border-b border-border">
-            <h3 className="font-bold text-foreground">Generated Passwords</h3>
-            <span className="text-xs font-bold text-muted-foreground bg-muted px-2 py-1 rounded-md">{passwords.length} items</span>
+        {/* Controls */}
+        <div className="p-8">
+          <div className="flex bg-muted/50 p-1 rounded-xl w-fit mx-auto mb-8">
+            <button 
+              onClick={() => setMode('random')}
+              className={`px-6 py-2 rounded-lg text-sm font-medium transition-all ${mode === 'random' ? 'bg-background shadow text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+            >
+              Random String
+            </button>
+            <button 
+              onClick={() => setMode('passphrase')}
+              className={`px-6 py-2 rounded-lg text-sm font-medium transition-all ${mode === 'passphrase' ? 'bg-background shadow text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+            >
+              Passphrase (Words)
+            </button>
           </div>
-          
-          <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 max-h-[550px]">
-            <ul className="space-y-3">
-              {passwords.map((pass, index) => (
-                <li key={index} className="flex justify-between items-center p-4 bg-muted/30 border border-border rounded-xl transition-colors hover:border-emerald-500/30 group">
-                  <code className="text-sm font-mono text-foreground break-all mr-4">{pass}</code>
-                  
-                  <div className="flex items-center gap-4">
-                    {getStrengthDisplay(pass)}
-                    
-                    <div className="h-8 w-px bg-border"></div>
 
-                    <button 
-                      onClick={() => copyToClipboard(pass, index)}
-                      className={`p-2 rounded-lg transition-colors shrink-0 ${
-                        copiedIndex === index 
-                          ? 'bg-emerald-500/20 text-emerald-600' 
-                          : 'bg-background border border-border text-muted-foreground hover:bg-emerald-500/10 hover:text-emerald-500 hover:border-emerald-500/30'
-                      }`}
-                      title="Copy to clipboard"
-                    >
-                      {copiedIndex === index ? <Check size={18} /> : <Copy size={18} />}
-                    </button>
+          <div className="max-w-lg mx-auto transition-all">
+            {mode === 'random' ? (
+              <div className="space-y-6 animate-in fade-in zoom-in-95 duration-200">
+                <div>
+                  <div className="flex justify-between mb-2 text-sm font-medium">
+                    <label>Password Length</label>
+                    <span className="text-indigo-500">{length} characters</span>
                   </div>
-                </li>
-              ))}
-            </ul>
+                  <input 
+                    type="range" min="8" max="64" value={length} onChange={(e) => setLength(Number(e.target.value))}
+                    className="w-full accent-indigo-500 h-2 bg-muted rounded-lg appearance-none cursor-pointer"
+                  />
+                </div>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <label className="flex items-center gap-3 p-4 border border-border rounded-xl cursor-pointer hover:bg-muted/30 transition-colors">
+                    <input type="checkbox" checked={includeUppercase} onChange={(e) => setIncludeUppercase(e.target.checked)} className="w-5 h-5 accent-indigo-500 rounded cursor-pointer" />
+                    <span className="text-sm font-medium">Uppercase Letters</span>
+                  </label>
+                  <label className="flex items-center gap-3 p-4 border border-border rounded-xl cursor-pointer hover:bg-muted/30 transition-colors">
+                    <input type="checkbox" checked={includeNumbers} onChange={(e) => setIncludeNumbers(e.target.checked)} className="w-5 h-5 accent-indigo-500 rounded cursor-pointer" />
+                    <span className="text-sm font-medium">Numbers (0-9)</span>
+                  </label>
+                  <label className="flex items-center gap-3 p-4 border border-border rounded-xl cursor-pointer hover:bg-muted/30 transition-colors sm:col-span-2">
+                    <input type="checkbox" checked={includeSymbols} onChange={(e) => setIncludeSymbols(e.target.checked)} className="w-5 h-5 accent-indigo-500 rounded cursor-pointer" />
+                    <span className="text-sm font-medium">Symbols (!@#$%)</span>
+                  </label>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-6 animate-in fade-in zoom-in-95 duration-200">
+                <div>
+                  <div className="flex justify-between mb-2 text-sm font-medium">
+                    <label>Number of Words</label>
+                    <span className="text-indigo-500">{wordCount} words</span>
+                  </div>
+                  <input 
+                    type="range" min="3" max="8" value={wordCount} onChange={(e) => setWordCount(Number(e.target.value))}
+                    className="w-full accent-indigo-500 h-2 bg-muted rounded-lg appearance-none cursor-pointer"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Word Separator</label>
+                  <div className="flex gap-2">
+                    {['-', '_', '.', ' ', ''].map(sep => (
+                      <button 
+                        key={sep} onClick={() => setSeparator(sep)}
+                        className={`w-12 h-12 rounded-xl text-lg font-bold border transition-colors ${separator === sep ? 'bg-indigo-500 text-white border-indigo-500 shadow-md shadow-indigo-500/20' : 'bg-background border-border text-foreground hover:bg-muted'}`}
+                      >
+                        {sep === ' ' ? 'Space' : sep === '' ? 'None' : sep}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <label className="flex items-center gap-3 p-4 border border-border rounded-xl cursor-pointer hover:bg-muted/30 transition-colors">
+                    <input type="checkbox" checked={capitalizeWords} onChange={(e) => setCapitalizeWords(e.target.checked)} className="w-5 h-5 accent-indigo-500 rounded cursor-pointer" />
+                    <span className="text-sm font-medium">Capitalize Words</span>
+                  </label>
+                  <label className="flex items-center gap-3 p-4 border border-border rounded-xl cursor-pointer hover:bg-muted/30 transition-colors">
+                    <input type="checkbox" checked={addNumber} onChange={(e) => setAddNumber(e.target.checked)} className="w-5 h-5 accent-indigo-500 rounded cursor-pointer" />
+                    <span className="text-sm font-medium">Add Number at End</span>
+                  </label>
+                </div>
+              </div>
+            )}
           </div>
         </div>
-        
+
       </div>
     </div>
   );
