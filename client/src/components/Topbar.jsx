@@ -1,5 +1,5 @@
-import { Menu, User, LogOut, Search, ArrowLeft } from 'lucide-react';
-import { useState, useEffect, useContext, useRef } from 'react';
+import { User, LogOut, Search, ArrowLeft, Layers } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useHotkeys } from 'react-hotkeys-hook';
@@ -30,16 +30,50 @@ const ALL_TOOLS = [
   { name: 'Base64 Converter', to: '/tools/base64-converter' },
   { name: 'URL Converter', to: '/tools/url-converter' },
   { name: 'Bcrypt Generator', to: '/tools/bcrypt-generator' },
-  { name: 'Cron Parser', to: '/tools/cron-parser' }
+  { name: 'Cron Parser', to: '/tools/cron-parser' },
+  { name: 'Readme Generator', to: '/tools/readme-generator' },
+  { name: 'Code to Image', to: '/tools/code-to-image' },
+  { name: 'Image to Text', to: '/tools/image-to-text' },
+  { name: 'Text Diff', to: '/tools/text-diff' },
+  { name: 'Markdown Editor', to: '/tools/markdown-editor' },
+  { name: 'Temp File Share', to: '/tools/temp-share' },
+  { name: 'Batch Renamer', to: '/tools/batch-renamer' },
+  { name: 'Zip & Unzip', to: '/tools/zip-archiver' },
+  { name: 'EMI Calculator', to: '/tools/emi-calculator' },
+  { name: 'SIP Calculator', to: '/tools/sip-calculator' },
+  { name: 'GST Calculator', to: '/tools/gst-calculator' },
+  { name: 'Income Tax', to: '/tools/tax-calculator' }
 ];
 
-const Topbar = ({ toggleSidebar }) => {
+const HighlightText = ({ text, highlight }) => {
+  if (!highlight.trim()) {
+    return <span>{text}</span>;
+  }
+  
+  // Split the text based on the search query, case-insensitive
+  const regex = new RegExp(`(${highlight})`, 'gi');
+  const parts = text.split(regex);
+  
+  return (
+    <span>
+      {parts.map((part, i) => 
+        regex.test(part) ? (
+          <span key={i} className="bg-indigo-500/20 text-indigo-400 font-bold px-0.5 rounded">
+            {part}
+          </span>
+        ) : (
+          <span key={i}>{part}</span>
+        )
+      )}
+    </span>
+  );
+};
+
+const Topbar = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [showProfileMenu, setShowProfileMenu] = useState(false);
   const { currentUser: user, logout } = useAuth();
-  const profileMenuRef = useRef(null);
   const searchInputRef = useRef(null);
   const searchContainerRef = useRef(null);
   
@@ -79,11 +113,6 @@ const Topbar = ({ toggleSidebar }) => {
   };
 
   // Global Hotkeys
-  useHotkeys('ctrl+b, meta+b', (e) => {
-    e.preventDefault();
-    toggleSidebar();
-  }, { enableOnFormTags: true });
-
   useHotkeys('ctrl+k, meta+k', (e) => {
     e.preventDefault();
     if (searchInputRef.current) {
@@ -100,29 +129,32 @@ const Topbar = ({ toggleSidebar }) => {
 
 
   return (
-    <header className="h-16 flex items-center justify-between px-4 md:px-6 glass-header">
-      <div className="flex items-center gap-4 flex-1">
-        {/* Mobile Sidebar Toggle / Back Button */}
-        {location.pathname !== '/dashboard' ? (
+    <header className="h-16 flex items-center justify-between px-4 md:px-8 glass-header border-b border-border/50 bg-card/40 backdrop-blur-2xl">
+      
+      {/* LEFT: Logo & Back Button */}
+      <div className="flex items-center gap-6">
+        <Link to="/" className="flex items-center gap-2 font-bold text-lg tracking-tight hover:opacity-80 transition-opacity">
+          <div className="w-8 h-8 shrink-0 rounded-lg bg-primary flex items-center justify-center text-primary-foreground shadow-sm">
+            <Layers size={18} strokeWidth={2.5} />
+          </div>
+          <span className="hidden sm:inline-block text-foreground truncate">Daily Utility Hub</span>
+        </Link>
+        
+        {location.pathname !== '/dashboard' && (
           <button 
             onClick={() => navigate('/dashboard')}
-            className="md:hidden p-2 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-full transition-colors"
+            className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 px-3 py-1.5 rounded-full transition-colors"
             title="Back to Dashboard"
           >
-            <ArrowLeft size={24} />
-          </button>
-        ) : (
-          <button 
-            onClick={toggleSidebar}
-            className="md:hidden p-2 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-full transition-colors"
-            title="Toggle Sidebar"
-          >
-            <Menu size={24} />
+            <ArrowLeft size={16} />
+            <span className="hidden md:inline-block">Dashboard</span>
           </button>
         )}
-        
-        {/* Search Bar */}
-        <div ref={searchContainerRef} className="hidden sm:flex items-center relative max-w-md w-full group">
+      </div>
+
+      {/* CENTER: Search Bar */}
+      <div className="flex-1 flex justify-center px-4 max-w-2xl">
+        <div ref={searchContainerRef} className="flex items-center relative w-full group">
           <div className="absolute inset-0 bg-indigo-500/20 rounded-full blur-lg transition-all duration-500 group-hover:bg-indigo-500/30 opacity-0 focus-within:opacity-100 group-hover:opacity-100"></div>
           <div className="relative w-full flex items-center">
             <Search size={18} className="absolute left-3.5 text-muted-foreground z-10" />
@@ -134,40 +166,42 @@ const Topbar = ({ toggleSidebar }) => {
               onFocus={() => {
                 if (searchQuery.trim() !== '') setIsSearchOpen(true);
               }}
-              placeholder="Search tools... (Ctrl+K)"
+              placeholder="Search all tools... (Ctrl+K)"
               className="w-full bg-card/60 backdrop-blur-md border border-border/60 text-foreground text-sm rounded-full pl-10 pr-4 py-2.5 focus:outline-none focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10 transition-all placeholder:text-muted-foreground relative z-0"
             />
           </div>
           
           {/* Search Results Dropdown */}
           {isSearchOpen && searchResults.length > 0 && (
-            <div className="absolute top-[calc(100%+8px)] left-0 right-0 bg-card/90 backdrop-blur-2xl border border-border/80 rounded-xl shadow-2xl overflow-hidden z-50 max-h-72 overflow-y-auto custom-scrollbar">
+            <div className="absolute top-[calc(100%+8px)] left-0 right-0 bg-card/95 backdrop-blur-3xl border border-border/80 rounded-xl shadow-2xl overflow-hidden z-50 max-h-[60vh] overflow-y-auto custom-scrollbar">
               {searchResults.map((tool) => (
                 <button
                   key={tool.to}
                   onClick={() => handleSearchResultClick(tool.to)}
-                  className="w-full text-left px-4 py-3 text-sm font-medium text-foreground hover:bg-indigo-500 hover:text-white transition-colors border-b border-border/50 last:border-0"
+                  className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-foreground hover:bg-indigo-500/10 hover:text-indigo-400 transition-colors border-b border-border/50 last:border-0 group/item"
                 >
-                  {tool.name}
+                  <HighlightText text={tool.name} highlight={searchQuery} />
+                  <span className="opacity-0 group-hover/item:opacity-100 text-xs text-indigo-400 font-mono tracking-widest transition-opacity">
+                    JUMP TO
+                  </span>
                 </button>
               ))}
             </div>
           )}
           {isSearchOpen && searchQuery.trim() !== '' && searchResults.length === 0 && (
-            <div className="absolute top-[calc(100%+8px)] left-0 right-0 bg-card/90 backdrop-blur-2xl border border-border/80 rounded-xl shadow-2xl p-6 text-center text-sm font-medium text-muted-foreground z-50">
-              No tools found matching "{searchQuery}"
+            <div className="absolute top-[calc(100%+8px)] left-0 right-0 bg-card/95 backdrop-blur-3xl border border-border/80 rounded-xl shadow-2xl p-8 text-center text-sm font-medium text-muted-foreground z-50 flex flex-col items-center gap-2">
+              <Search size={32} className="text-muted-foreground/30" />
+              No tools found matching "<span className="text-foreground">{searchQuery}</span>"
             </div>
           )}
         </div>
       </div>
 
-      <div className="flex items-center gap-2 sm:gap-4">
-        
-
-        
+      {/* RIGHT: User Profile */}
+      <div className="flex items-center gap-2 sm:gap-4 shrink-0">
         {user ? (
           <div className="flex items-center gap-2 sm:gap-4">
-            <span className="hidden md:inline-block text-sm font-medium text-foreground bg-muted/30 px-3 py-1 rounded-full border border-border/50">
+            <span className="hidden lg:inline-block text-sm font-medium text-foreground bg-muted/30 px-3 py-1.5 rounded-full border border-border/50">
               Hello, {user.name}
             </span>
             <button 
@@ -181,7 +215,7 @@ const Topbar = ({ toggleSidebar }) => {
         ) : (
           <Link 
             to="/login"
-            className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground font-medium transition-all"
+            className="flex items-center gap-2 px-5 py-2 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 font-medium transition-all shadow-sm"
           >
             <User size={18} />
             <span className="hidden sm:inline-block text-sm">Sign In</span>
