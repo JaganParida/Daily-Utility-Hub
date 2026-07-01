@@ -65,7 +65,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     {
       title: 'Student & Docs',
       links: [
-        { name: 'Code to Image', to: '/tools/code-to-image', icon: Image },
+        { name: 'Code to Image', to: '/tools/code-to-image', icon: ImageIcon },
         { name: 'Image to Text', to: '/tools/image-to-text', icon: Type },
         { name: 'Text Diff', to: '/tools/text-diff', icon: FileText },
         { name: 'Markdown Editor', to: '/tools/markdown-editor', icon: FileText },
