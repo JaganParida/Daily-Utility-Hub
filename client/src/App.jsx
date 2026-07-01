@@ -55,6 +55,11 @@ import TaxCalculator from './pages/tools/TaxCalculator';
 // Developer & Data Tools
 import EncoderDecoder from './pages/tools/EncoderDecoder';
 
+// File Management & Sharing Tools
+import TempShare from './pages/tools/TempShare';
+import BatchRenamer from './pages/tools/BatchRenamer';
+import ZipArchiver from './pages/tools/ZipArchiver';
+
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import { Toaster } from 'react-hot-toast';
@@ -123,6 +128,11 @@ function AnimatedRoutes() {
 
           {/* Developer & Data Tools */}
           <Route path="tools/encoder-decoder" element={<EncoderDecoder />} />
+
+          {/* File Management & Sharing Tools Routes */}
+          <Route path="tools/temp-share" element={<TempShare />} />
+          <Route path="tools/batch-renamer" element={<BatchRenamer />} />
+          <Route path="tools/zip-archiver" element={<ZipArchiver />} />
         </Route>
       </Routes>
     </AnimatePresence>

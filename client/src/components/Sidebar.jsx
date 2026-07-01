@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { Home, Type, Hash, Key, Layers, AlignLeft, ChevronRight, X, Image as ImageIcon, Expand, Crop, ArrowRightLeft, LayoutGrid, FileText, Braces, Search, Calculator, TrendingUp, Percent, Landmark } from 'lucide-react';
+import { Home, Type, Hash, Key, Layers, AlignLeft, ChevronRight, X, Image as ImageIcon, Expand, Crop, ArrowRightLeft, LayoutGrid, FileText, Braces, Search, Calculator, TrendingUp, Percent, Landmark, FolderArchive } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
@@ -81,6 +81,14 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         { name: 'SIP Calculator', to: '/tools/sip-calculator', icon: TrendingUp },
         { name: 'GST Calculator', to: '/tools/gst-calculator', icon: Percent },
         { name: 'Income Tax', to: '/tools/tax-calculator', icon: Landmark },
+      ]
+    },
+    {
+      title: 'File & Storage Tools',
+      links: [
+        { name: 'Temp File Share', to: '/tools/temp-share', icon: FolderArchive },
+        { name: 'Batch Renamer', to: '/tools/batch-renamer', icon: FolderArchive },
+        { name: 'Zip & Unzip', to: '/tools/zip-archiver', icon: FolderArchive },
       ]
     }
   ];

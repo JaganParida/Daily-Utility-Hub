@@ -141,8 +141,8 @@ const TaxCalculator = () => {
                 
                 {/* Standard deduction indicator */}
                 <div className="flex justify-between items-center border-b border-border/50 pb-2">
-                  <span>Standard Deduction (Both Regimes)</span>
-                  <span className="font-bold text-foreground">₹{STANDARD_DEDUCTION.toLocaleString('en-IN')}</span>
+                  <span>Standard Deduction (Old / New)</span>
+                  <span className="font-bold text-foreground">₹50,000 / ₹75,000</span>
                 </div>
 
                 {/* Section 80C */}

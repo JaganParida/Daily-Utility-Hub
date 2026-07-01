@@ -43,6 +43,17 @@ const setupCleanupJobs = () => {
       });
     });
   });
+
+  // Scheduled Temp Share Cleanup (runs every 10 minutes)
+  cron.schedule('*/10 * * * *', () => {
+    console.log('[Cron] Running Temp Share expired files sweep...');
+    try {
+      const shareController = require('../controllers/shareController');
+      shareController.runCleanup();
+    } catch (err) {
+      console.error('[Cron] Temp Share sweep failed:', err);
+    }
+  });
 };
 
 module.exports = setupCleanupJobs;

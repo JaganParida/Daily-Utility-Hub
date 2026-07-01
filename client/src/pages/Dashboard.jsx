@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Type, Hash, Key, Layers, AlignLeft, Image as ImageIcon, Expand, Crop, ArrowRightLeft, LayoutGrid, FileText, Braces, Search, Calculator, TrendingUp, Percent, Landmark } from 'lucide-react';
+import { Type, Hash, Key, Layers, AlignLeft, Image as ImageIcon, Expand, Crop, ArrowRightLeft, LayoutGrid, FileText, Braces, Search, Calculator, TrendingUp, Percent, Landmark, FolderArchive } from 'lucide-react';
 import PageTransition from '../components/PageTransition';
 
 const Dashboard = () => {
@@ -57,6 +57,11 @@ const Dashboard = () => {
       { name: 'SIP Calculator', description: 'Estimate future values and compound growth on systematic investments.', icon: TrendingUp, to: '/tools/sip-calculator', color: 'bg-emerald-500/10 text-emerald-500' },
       { name: 'GST Calculator', description: 'Calculate tax inclusive or exclusive prices and SGST/CGST splits.', icon: Percent, to: '/tools/gst-calculator', color: 'bg-indigo-500/10 text-indigo-500' },
       { name: 'Income Tax', description: 'Compare old vs new tax regimes and calculate taxable income liabilities.', icon: Landmark, to: '/tools/tax-calculator', color: 'bg-amber-500/10 text-amber-500' },
+    ],
+    'File & Storage Tools': [
+      { name: 'Temp File Share', description: 'Upload a file temporarily and share via secure auto-expiring links.', icon: FolderArchive, to: '/tools/temp-share', color: 'bg-indigo-500/10 text-indigo-500' },
+      { name: 'Batch Renamer', description: 'Rename multiple files at once using prefix, suffix, and custom numbering.', icon: FolderArchive, to: '/tools/batch-renamer', color: 'bg-blue-500/10 text-blue-500' },
+      { name: 'Zip & Unzip', description: 'Compress files into a single ZIP archive or extract existing ZIP files.', icon: FolderArchive, to: '/tools/zip-archiver', color: 'bg-emerald-500/10 text-emerald-500' },
     ]
   };
 
