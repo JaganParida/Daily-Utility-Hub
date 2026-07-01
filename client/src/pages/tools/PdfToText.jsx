@@ -97,7 +97,7 @@ const PdfToText = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto flex flex-col min-h-[calc(100vh-140px)]">
+    <div className="max-w-6xl mx-auto px-4 py-4 lg:py-6 flex flex-col min-h-0">
       <div className="mb-6 flex items-center gap-3 shrink-0">
         <div className="p-2 bg-pink-500/10 text-pink-500 rounded-lg shadow-sm">
           <Type size={28} />
@@ -108,10 +108,10 @@ const PdfToText = () => {
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-[1fr_350px] gap-6 flex-1 min-h-0">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-6 items-start">
         
         {/* Upload & Form Area */}
-        <div className="flex flex-col gap-6 overflow-hidden">
+        <div className="flex flex-col gap-6 w-full min-h-0">
           
           {/* Dropzone */}
           {!file ? (
@@ -179,7 +179,7 @@ const PdfToText = () => {
                 <textarea
                   readOnly
                   value={extractedText}
-                  className="w-full flex-1 bg-background border border-border rounded-xl p-4 text-sm text-foreground focus:outline-none custom-scrollbar resize-none font-mono"
+                  className="w-full flex-1 min-h-[250px] lg:min-h-0 bg-background border border-border rounded-xl p-4 text-sm text-foreground focus:outline-none custom-scrollbar resize-none font-mono"
                   placeholder="Extracted text will appear here..."
                 />
              </div>
@@ -188,7 +188,7 @@ const PdfToText = () => {
         </div>
 
         {/* Action Panel */}
-        <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6 h-fit shrink-0">
+        <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6 lg:sticky lg:top-6 w-full lg:w-[350px] shrink-0">
           <div>
             <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4">Extraction Details</h3>
             <div className="space-y-4 text-sm text-foreground">

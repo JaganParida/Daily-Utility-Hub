@@ -183,7 +183,7 @@ const PdfSplit = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto flex flex-col min-h-[calc(100vh-140px)]">
+    <div className="max-w-6xl mx-auto px-4 py-4 lg:py-6 flex flex-col min-h-0">
       <div className="mb-6 flex items-center gap-3 shrink-0">
         <div className="p-2 bg-blue-500/10 text-blue-500 rounded-lg shadow-sm">
           <Scissors size={28} />
@@ -194,10 +194,10 @@ const PdfSplit = () => {
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-[1fr_350px] gap-6 flex-1 min-h-0">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-6 items-start">
         
         {/* Main Work Area */}
-        <div className="flex flex-col gap-6 overflow-hidden">
+        <div className="flex flex-col gap-6 w-full min-h-0">
           
           {/* File Upload Dropzone */}
           {!file && (
@@ -261,7 +261,7 @@ const PdfSplit = () => {
                 </div>
 
                 {/* The Page Grid */}
-                <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 mb-4 grid grid-cols-5 sm:grid-cols-8 md:grid-cols-10 gap-2 p-1 min-h-[150px]">
+                <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 mb-4 grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-2 p-1 min-h-[150px]">
                   {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => {
                     const isSelected = selectedPages.includes(page);
                     return (
@@ -306,7 +306,7 @@ const PdfSplit = () => {
         </div>
 
         {/* Sidebar Actions */}
-        <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6 h-fit shrink-0">
+        <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6 lg:sticky lg:top-6 w-full lg:w-[350px] shrink-0">
           
           {/* Split Mode Selector */}
           {file && (
