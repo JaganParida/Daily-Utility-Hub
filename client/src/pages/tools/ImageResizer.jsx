@@ -1,19 +1,20 @@
 import { useState, useRef, useEffect } from 'react';
-import { Maximize, Download, RefreshCw, Lock, Unlock, Settings2, Image as ImageIcon, Check, Loader2 } from 'lucide-react';
+import { Maximize, Download, RefreshCw, Lock, Unlock, Settings2, Image as ImageIcon, Loader2, CheckCircle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import DropzoneComponent from '../../components/DropzoneComponent';
 import { toast } from 'react-hot-toast';
 
-const SOCIAL_PRESETS = [
+const QUICK_PRESETS = [
   { name: 'Insta Square', w: 1080, h: 1080 },
   { name: 'Insta Portrait', w: 1080, h: 1350 },
-  { name: 'Insta Story', w: 1080, h: 1920 },
-  { name: 'FB Story', w: 1080, h: 1920 },
-  { name: 'WA Status', w: 1080, h: 1920 },
-  { name: 'YT Shorts', w: 1080, h: 1920 },
+  { name: 'Story / Reels', w: 1080, h: 1920 },
   { name: 'YouTube Thumb', w: 1280, h: 720 },
+  { name: 'Full HD (Web)', w: 1920, h: 1080 },
+  { name: '4K UHD', w: 3840, h: 2160 },
   { name: 'Twitter Post', w: 1200, h: 675 },
-  { name: 'Facebook Cover', w: 820, h: 312 },
-  { name: 'LinkedIn Cover', w: 1584, h: 396 },
+  { name: 'Passport Photo', w: 600, h: 600 },
+  { name: 'A4 Document', w: 2480, h: 3508 },
+  { name: 'US Letter', w: 2550, h: 3300 },
 ];
 
 const ImageResizer = () => {
@@ -159,21 +160,39 @@ const ImageResizer = () => {
         </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
+      <div className="flex flex-col lg:flex-row gap-6 w-full items-stretch">
         
         {/* Preview Area */}
-        <div className="flex-1 w-full bg-card border border-border p-4 md:p-5 rounded-lg shadow-sm flex flex-col">
-          {!image ? (
-            <div className="flex flex-col justify-center min-h-[300px] md:min-h-[350px]">
-              <DropzoneComponent 
-                onFilesAccepted={handleFilesAccepted} 
-                accept={{ 'image/*': ['.jpeg', '.jpg', '.png', '.webp'] }} 
-                maxFiles={1}
-                title="Drag & drop an image to resize"
-              />
-            </div>
-          ) : (
-            <div className="flex-1 flex flex-col w-full">
+        <motion.div layout className="flex-1 w-full bg-card border border-border p-4 md:p-5 rounded-lg shadow-sm flex flex-col">
+          <AnimatePresence mode="popLayout" initial={false}>
+            {!image ? (
+              <motion.div 
+                key="dropzone"
+                layout
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.3 }}
+                className="flex-1 h-full w-full flex flex-col justify-center min-h-[300px] md:min-h-[350px]"
+              >
+                <DropzoneComponent 
+                  className="flex-1 h-full w-full justify-center"
+                  onFilesAccepted={handleFilesAccepted} 
+                  accept={{ 'image/*': ['.jpeg', '.jpg', '.png', '.webp'] }} 
+                  maxFiles={1}
+                  title="Drag & drop an image to resize"
+                />
+              </motion.div>
+            ) : (
+              <motion.div 
+                key="workspace"
+                layout
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.3 }}
+                className="flex-1 flex flex-col w-full"
+              >
               <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-4 gap-2 px-1">
                 <div className="flex flex-col">
                   <h3 className="font-medium text-foreground text-sm truncate max-w-[300px]" title={image.name}>{image.name}</h3>
@@ -209,16 +228,17 @@ const ImageResizer = () => {
                   </div>
                 </div>
               </div>
-            </div>
-          )}
-        </div>
+            </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
 
         {/* Controls */}
-        <div className="w-full lg:w-[350px] xl:w-[400px] shrink-0 space-y-4">
-          <div className="bg-card border border-border p-5 rounded-xl shadow-sm space-y-5">
+        <div className="w-full lg:w-[350px] xl:w-[400px] shrink-0 space-y-6">
+          <div className={`bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6 transition-all duration-300 ${!image ? 'opacity-50 pointer-events-none grayscale-[0.5]' : ''}`}>
             
             <div>
-              <h3 className="text-sm font-bold uppercase tracking-wider text-foreground mb-4 flex items-center gap-2 border-b border-border pb-3">
+              <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4 flex items-center gap-2 border-b border-border pb-3">
                 <Settings2 size={18} className="text-muted-foreground" /> Dimensions
               </h3>
               
@@ -229,7 +249,7 @@ const ImageResizer = () => {
                     type="number" 
                     value={width || ''}
                     onChange={handleWidthChange}
-                    className="w-full bg-background border border-border rounded-lg p-3 text-base font-mono text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="w-full p-3 bg-background border border-border rounded-xl text-base font-mono text-foreground focus:ring-2 focus:ring-primary/50 outline-none transition-all shadow-sm"
                   />
                 </div>
                 
@@ -247,7 +267,7 @@ const ImageResizer = () => {
                     type="number" 
                     value={height || ''}
                     onChange={handleHeightChange}
-                    className="w-full bg-background border border-border rounded-lg p-3 text-base font-mono text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="w-full p-3 bg-background border border-border rounded-xl text-base font-mono text-foreground focus:ring-2 focus:ring-primary/50 outline-none transition-all shadow-sm"
                   />
                 </div>
               </div>
@@ -274,13 +294,13 @@ const ImageResizer = () => {
               </div>
             </div>
 
-            {/* Social Presets */}
+            {/* Quick Presets */}
             <div className="pt-1">
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block mb-2.5 flex items-center gap-2">
-                <ImageIcon size={14} /> Social Presets
+                <ImageIcon size={14} /> Quick Presets
               </label>
               <div className="grid grid-cols-2 gap-2">
-                {SOCIAL_PRESETS.map(preset => (
+                {QUICK_PRESETS.map(preset => (
                   <button
                     key={preset.name}
                     onClick={() => applyPreset(preset.name, preset.w, preset.h)}
@@ -302,30 +322,65 @@ const ImageResizer = () => {
               </div>
             </div>
 
-          </div>
-
-          <div className="flex flex-col gap-3">
-            <button 
-              onClick={processResize}
-              disabled={!image || isProcessing || downloadState !== 'idle'}
-              className={`w-full py-3.5 font-bold text-base rounded-lg transition-all flex items-center justify-center gap-2 disabled:opacity-80 ${
-                downloadState === 'downloaded' 
-                  ? 'bg-emerald-500 text-white shadow-emerald-500/20 shadow-lg scale-[0.98]' 
-                  : 'bg-foreground text-background hover:bg-foreground/90'
-              }`}
-            >
-              {downloadState === 'idle' && <><Download size={18} /> Download Resized</>}
-              {downloadState === 'downloading' && <><Loader2 size={18} className="animate-spin" /> Processing...</>}
-              {downloadState === 'downloaded' && <><Check size={18} /> Downloaded!</>}
-            </button>
-            
-            <button 
-              onClick={clear}
-              disabled={!image || isProcessing || downloadState !== 'idle'}
-              className="w-full py-3.5 bg-muted/50 border border-border text-foreground font-bold text-base rounded-lg hover:bg-muted transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
-            >
-              <RefreshCw size={18} /> Upload New
-            </button>
+            <div className="flex flex-col gap-3 pt-4 border-t border-border/50">
+              <button 
+                onClick={processResize}
+                disabled={!image || isProcessing || downloadState !== 'idle'}
+                className={`w-full h-14 font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-[0_1px_2px_rgba(0,0,0,0.1),0_0_0_1px_rgba(255,255,255,0.1)_inset] disabled:opacity-50 disabled:hover:shadow-none active:scale-[0.98] overflow-hidden ${
+                  downloadState === 'downloaded' 
+                    ? 'bg-green-600 hover:bg-green-700 text-white shadow-[0_4px_12px_rgba(22,163,74,0.3)]' 
+                    : 'bg-primary hover:bg-primary/90 text-primary-foreground hover:shadow-[0_4px_12px_rgba(var(--primary),0.3)]'
+                }`}
+              >
+                <AnimatePresence mode="popLayout" initial={false}>
+                  {downloadState === 'downloaded' ? (
+                    <motion.div
+                      key="success"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                      className="flex items-center gap-2"
+                    >
+                      <CheckCircle size={20} />
+                      Downloaded!
+                    </motion.div>
+                  ) : downloadState === 'downloading' ? (
+                    <motion.div
+                      key="generating"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                      className="flex items-center gap-2"
+                    >
+                      <Loader2 size={20} className="animate-spin" />
+                      Processing...
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="idle"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                      className="flex items-center gap-2"
+                    >
+                      <Download size={20} />
+                      Download Resized
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </button>
+              
+              <button 
+                onClick={clear}
+                disabled={!image || isProcessing || downloadState !== 'idle'}
+                className="w-full py-3.5 bg-muted/20 hover:bg-muted/50 border border-border/50 hover:border-border text-foreground font-semibold rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 active:scale-[0.98]"
+              >
+                <RefreshCw size={18} /> Upload New
+              </button>
+            </div>
           </div>
         </div>
       </div>
