@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Maximize, Download, RefreshCw, Lock, Unlock, Settings2, Image as ImageIcon } from 'lucide-react';
+import { Maximize, Download, RefreshCw, Lock, Unlock, Settings2, Image as ImageIcon, Check, Loader2 } from 'lucide-react';
 import DropzoneComponent from '../../components/DropzoneComponent';
 import { toast } from 'react-hot-toast';
 
@@ -15,6 +15,7 @@ const SOCIAL_PRESETS = [
 const ImageResizer = () => {
   const [image, setImage] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [downloadState, setDownloadState] = useState('idle'); // 'idle', 'downloading', 'downloaded'
   
   const [width, setWidth] = useState(0);
   const [height, setHeight] = useState(0);
@@ -90,6 +91,7 @@ const ImageResizer = () => {
   const processResize = async () => {
     if (!image || width <= 0 || height <= 0) return;
     setIsProcessing(true);
+    setDownloadState('downloading');
     
     // Slight delay to allow UI to show processing state
     await new Promise(res => setTimeout(res, 50));
@@ -122,9 +124,12 @@ const ImageResizer = () => {
       link.click();
       document.body.removeChild(link);
       
+      setDownloadState('downloaded');
       toast.success('Image resized and downloaded!');
+      setTimeout(() => setDownloadState('idle'), 2500);
     } catch (error) {
       console.error(error);
+      setDownloadState('idle');
       toast.error('Failed to resize image.');
     } finally {
       setIsProcessing(false);
@@ -139,23 +144,23 @@ const ImageResizer = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="max-w-[1600px] mx-auto w-full px-2 md:px-8">
       <div className="mb-6 flex items-center gap-3">
-        <div className="p-2 bg-emerald-500/10 text-emerald-500 rounded-lg shadow-sm">
-          <Maximize size={28} />
+        <div className="p-2 bg-emerald-500/10 text-emerald-500 rounded-md shadow-sm">
+          <Maximize size={24} />
         </div>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Advanced Image Resizer</h1>
-          <p className="text-muted-foreground mt-1 text-sm">Resize images with precise dimensions, aspect ratio lock, or social presets.</p>
+          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">Advanced Image Resizer</h1>
+          <p className="text-muted-foreground mt-1 text-xs md:text-sm">Resize images with precise dimensions, aspect ratio lock, or social presets.</p>
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-[1fr_350px] gap-6">
+      <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         
         {/* Preview Area */}
-        <div className="bg-card border border-border p-6 rounded-2xl shadow-sm flex flex-col min-h-[500px]">
+        <div className="flex-1 w-full bg-card border border-border p-4 md:p-5 rounded-lg shadow-sm flex flex-col">
           {!image ? (
-            <div className="flex-1 flex flex-col justify-center">
+            <div className="flex flex-col justify-center min-h-[300px] md:min-h-[350px]">
               <DropzoneComponent 
                 onFilesAccepted={handleFilesAccepted} 
                 accept={{ 'image/*': ['.jpeg', '.jpg', '.png', '.webp'] }} 
@@ -164,18 +169,18 @@ const ImageResizer = () => {
               />
             </div>
           ) : (
-            <div className="flex-1 flex flex-col">
-              <div className="flex justify-between items-center mb-4">
-                <div>
-                  <h3 className="font-medium text-foreground">{image.name}</h3>
-                  <p className="text-sm text-muted-foreground">Original: {originalSize.w} × {originalSize.h} px</p>
+            <div className="flex-1 flex flex-col w-full">
+              <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-4 gap-2 px-1">
+                <div className="flex flex-col">
+                  <h3 className="font-medium text-foreground text-sm truncate max-w-[300px]" title={image.name}>{image.name}</h3>
+                  <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider mt-1">Original: {originalSize.w} × {originalSize.h} px</p>
                 </div>
-                <div className="bg-emerald-500/10 text-emerald-500 px-3 py-1 rounded-md font-bold text-sm">
-                  {width} × {height} px
+                <div className="self-start md:self-auto bg-emerald-500/10 text-emerald-600 px-3 py-1.5 rounded-md font-bold text-sm flex items-center gap-2">
+                  Result: {width} × {height} px
                 </div>
               </div>
               
-              <div className="flex-1 bg-muted/10 rounded-xl border border-border flex items-center justify-center p-4 overflow-hidden relative">
+              <div className="w-full h-auto max-h-[45vh] min-h-[250px] bg-muted/20 rounded-xl border border-border flex items-center justify-center p-4 overflow-hidden relative">
                 {/* Visual feedback of bounding box */}
                 <div 
                   className="relative flex items-center justify-center"
@@ -189,7 +194,7 @@ const ImageResizer = () => {
                   <img 
                     src={image.url} 
                     alt="Preview" 
-                    className="max-w-full max-h-full object-contain drop-shadow-md"
+                    className="max-w-full max-h-full object-contain drop-shadow-md transition-all duration-300"
                     style={{
                       // If aspect ratio is broken, show it visually
                       width: !maintainRatio ? '100%' : 'auto',
@@ -206,58 +211,58 @@ const ImageResizer = () => {
         </div>
 
         {/* Controls */}
-        <div className="space-y-6">
-          <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6">
+        <div className="w-full lg:w-[350px] xl:w-[400px] shrink-0 space-y-4">
+          <div className="bg-card border border-border p-5 rounded-xl shadow-sm space-y-5">
             
             <div>
-              <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4 flex items-center gap-2 border-b border-border pb-3">
-                <Settings2 size={16} /> Dimensions
+              <h3 className="text-sm font-bold uppercase tracking-wider text-foreground mb-4 flex items-center gap-2 border-b border-border pb-3">
+                <Settings2 size={18} className="text-muted-foreground" /> Dimensions
               </h3>
               
-              <div className="flex items-end gap-2">
+              <div className="flex items-end gap-3">
                 <div className="flex-1 space-y-2">
-                  <label className="text-sm font-medium text-foreground">Width (px)</label>
+                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Width (px)</label>
                   <input 
                     type="number" 
                     value={width || ''}
                     onChange={handleWidthChange}
-                    className="w-full bg-background border border-border rounded-lg px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                    className="w-full bg-background border border-border rounded-lg p-3 text-base font-mono text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                   />
                 </div>
                 
                 <button 
                   onClick={() => setMaintainRatio(!maintainRatio)}
-                  className={`p-2.5 mb-[1px] rounded-lg transition-colors border ${maintainRatio ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' : 'bg-muted border-border text-muted-foreground hover:bg-border'}`}
+                  className={`p-3 mb-[1px] rounded-lg transition-colors border ${maintainRatio ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600' : 'bg-muted border-border text-muted-foreground hover:bg-border'}`}
                   title={maintainRatio ? "Unlock Aspect Ratio" : "Lock Aspect Ratio"}
                 >
                   {maintainRatio ? <Lock size={18} /> : <Unlock size={18} />}
                 </button>
 
                 <div className="flex-1 space-y-2">
-                  <label className="text-sm font-medium text-foreground">Height (px)</label>
+                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Height (px)</label>
                   <input 
                     type="number" 
                     value={height || ''}
                     onChange={handleHeightChange}
-                    className="w-full bg-background border border-border rounded-lg px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                    className="w-full bg-background border border-border rounded-lg p-3 text-base font-mono text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                   />
                 </div>
               </div>
             </div>
 
             {/* Quick Scale */}
-            <div>
-              <label className="text-sm font-medium text-foreground block mb-2">Quick Scale</label>
+            <div className="pt-1">
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block mb-2.5">Quick Scale</label>
               <div className="grid grid-cols-4 gap-2">
                 {[25, 50, 150, 200].map(pct => (
                   <button
                     key={pct}
                     onClick={() => scaleByPercentage(pct)}
                     disabled={!image}
-                    className={`py-1.5 border rounded-md text-xs font-medium transition-colors disabled:opacity-50 ${
+                    className={`py-2 border rounded-md text-sm font-semibold transition-colors disabled:opacity-50 ${
                       activeScale === pct 
-                        ? 'bg-emerald-500/10 border-emerald-500 text-emerald-500 shadow-sm' 
-                        : 'bg-muted hover:bg-border border-border text-foreground'
+                        ? 'bg-foreground border-foreground text-background shadow-sm' 
+                        : 'bg-muted/50 hover:bg-muted border-border text-foreground'
                     }`}
                   >
                     {pct}%
@@ -267,8 +272,8 @@ const ImageResizer = () => {
             </div>
 
             {/* Social Presets */}
-            <div>
-              <label className="text-sm font-medium text-foreground block mb-2 flex items-center gap-2">
+            <div className="pt-1">
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block mb-2.5 flex items-center gap-2">
                 <ImageIcon size={14} /> Social Presets
               </label>
               <div className="grid grid-cols-2 gap-2">
@@ -277,16 +282,16 @@ const ImageResizer = () => {
                     key={preset.name}
                     onClick={() => applyPreset(preset.name, preset.w, preset.h)}
                     disabled={!image}
-                    className={`p-2 border rounded-md text-left transition-colors flex flex-col disabled:opacity-50 ${
+                    className={`p-2.5 border rounded-md text-left transition-colors flex flex-col disabled:opacity-50 ${
                       activePreset === preset.name 
-                        ? 'bg-emerald-500/10 border-emerald-500 shadow-sm' 
-                        : 'bg-muted hover:bg-border border-border'
+                        ? 'bg-emerald-500/10 border-emerald-500/50 shadow-sm' 
+                        : 'bg-muted/30 hover:bg-muted border-border'
                     }`}
                   >
-                    <span className={`text-xs font-medium ${activePreset === preset.name ? 'text-emerald-500' : 'text-foreground'}`}>
+                    <span className={`text-sm font-semibold ${activePreset === preset.name ? 'text-emerald-600' : 'text-foreground'}`}>
                       {preset.name}
                     </span>
-                    <span className={`text-[10px] ${activePreset === preset.name ? 'text-emerald-500/70' : 'text-muted-foreground'}`}>
+                    <span className={`text-xs ${activePreset === preset.name ? 'text-emerald-600/70' : 'text-muted-foreground'}`}>
                       {preset.w} × {preset.h}
                     </span>
                   </button>
@@ -296,21 +301,27 @@ const ImageResizer = () => {
 
           </div>
 
-          <div className="space-y-3">
+          <div className="flex flex-col gap-3">
             <button 
               onClick={processResize}
-              disabled={!image || isProcessing}
-              className="w-full py-3 bg-emerald-500 text-white font-medium rounded-xl hover:bg-emerald-600 transition-colors flex items-center justify-center gap-2 shadow-sm shadow-emerald-500/20 disabled:opacity-50"
+              disabled={!image || isProcessing || downloadState !== 'idle'}
+              className={`w-full py-3.5 font-bold text-base rounded-lg transition-all flex items-center justify-center gap-2 disabled:opacity-80 ${
+                downloadState === 'downloaded' 
+                  ? 'bg-emerald-500 text-white shadow-emerald-500/20 shadow-lg scale-[0.98]' 
+                  : 'bg-foreground text-background hover:bg-foreground/90'
+              }`}
             >
-              {isProcessing ? <RefreshCw size={18} className="animate-spin" /> : <Download size={18} />}
-              Download Resized
+              {downloadState === 'idle' && <><Download size={18} /> Download Resized</>}
+              {downloadState === 'downloading' && <><Loader2 size={18} className="animate-spin" /> Processing...</>}
+              {downloadState === 'downloaded' && <><Check size={18} /> Downloaded!</>}
             </button>
+            
             <button 
               onClick={clear}
-              disabled={!image || isProcessing}
-              className="w-full py-3 bg-background border border-border text-foreground font-medium rounded-xl hover:bg-muted transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+              disabled={!image || isProcessing || downloadState !== 'idle'}
+              className="w-full py-3.5 bg-muted/50 border border-border text-foreground font-bold text-base rounded-lg hover:bg-muted transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
             >
-              <RefreshCw size={18} /> Start Over
+              <RefreshCw size={18} /> Upload New
             </button>
           </div>
         </div>
