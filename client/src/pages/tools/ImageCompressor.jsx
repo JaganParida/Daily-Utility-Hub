@@ -133,7 +133,7 @@ const ImageCompressor = () => {
                   <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Original</h3>
                   <span className="text-base font-semibold text-foreground">{(originalFile.size / 1024).toFixed(1)} KB</span>
                 </div>
-                <div className="w-full aspect-square md:aspect-video lg:aspect-auto lg:h-[350px] xl:h-[420px] bg-muted/20 rounded-xl p-4 border border-border flex items-center justify-center overflow-hidden relative group">
+                <div className="w-full h-auto max-h-[400px] min-h-[200px] bg-muted/20 rounded-xl p-2 border border-border flex items-center justify-center overflow-hidden relative group">
                   <img 
                     src={URL.createObjectURL(originalFile)} 
                     alt="Original" 
@@ -160,7 +160,7 @@ const ImageCompressor = () => {
                     {compressedFile ? `${(compressedFile.size / 1024).toFixed(1)} KB` : '...'}
                   </span>
                 </div>
-                <div className="w-full aspect-square md:aspect-video lg:aspect-auto lg:h-[350px] xl:h-[420px] bg-emerald-500/5 rounded-xl p-4 border border-emerald-500/20 flex items-center justify-center relative overflow-hidden group">
+                <div className="w-full h-auto max-h-[400px] min-h-[200px] bg-emerald-500/5 rounded-xl p-2 border border-emerald-500/20 flex items-center justify-center relative overflow-hidden group">
                   {compressedFile ? (
                     <img 
                       src={URL.createObjectURL(compressedFile)} 
@@ -191,23 +191,23 @@ const ImageCompressor = () => {
           {/* Controls Sidebar */}
           <div className="w-full lg:w-[350px] xl:w-[400px] shrink-0 space-y-6">
             <div className="bg-card border border-border p-6 rounded-xl shadow-sm">
-              <h3 className="text-sm font-bold uppercase tracking-wider text-foreground mb-5 flex items-center gap-2 border-b border-border pb-3">
+              <h3 className="text-sm font-bold uppercase tracking-wider text-foreground mb-6 flex items-center gap-2 border-b border-border pb-4">
                 <Settings2 size={18} className="text-muted-foreground" /> Compression Settings
               </h3>
               
-              <div className="space-y-6">
+              <div className="space-y-7">
                 
                 {/* Strategy Tabs */}
-                <div className="flex bg-muted/40 rounded-md border border-border p-0.5">
+                <div className="flex bg-muted/40 rounded-lg border border-border p-1">
                   <button 
                     onClick={() => setStrategy('size')}
-                    className={`flex-1 py-1.5 text-xs font-semibold rounded transition-all ${strategy === 'size' ? 'bg-background shadow-sm text-foreground border border-border/50' : 'text-muted-foreground hover:text-foreground border border-transparent'}`}
+                    className={`flex-1 py-2.5 text-sm font-semibold rounded-md transition-all ${strategy === 'size' ? 'bg-background shadow-sm text-foreground border border-border/50' : 'text-muted-foreground hover:text-foreground border border-transparent'}`}
                   >
                     Target Size
                   </button>
                   <button 
                     onClick={() => setStrategy('quality')}
-                    className={`flex-1 py-1.5 text-xs font-semibold rounded transition-all ${strategy === 'quality' ? 'bg-background shadow-sm text-foreground border border-border/50' : 'text-muted-foreground hover:text-foreground border border-transparent'}`}
+                    className={`flex-1 py-2.5 text-sm font-semibold rounded-md transition-all ${strategy === 'quality' ? 'bg-background shadow-sm text-foreground border border-border/50' : 'text-muted-foreground hover:text-foreground border border-transparent'}`}
                   >
                     Target Quality
                   </button>
@@ -215,19 +215,19 @@ const ImageCompressor = () => {
 
                 {/* Strategy Context Controls */}
                 {strategy === 'size' ? (
-                  <div className="space-y-2 animate-in fade-in">
+                  <div className="space-y-3 animate-in fade-in">
                     <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider">Max File Size</label>
-                    <div className="flex gap-2">
+                    <div className="flex gap-3">
                       <input 
                         type="number" 
                         value={targetSize}
                         onChange={(e) => setTargetSize(e.target.value)}
-                        className="w-full p-2 bg-background border border-border rounded-md text-sm text-foreground focus:ring-1 focus:ring-primary outline-none transition-all font-mono"
+                        className="w-full p-3 bg-background border border-border rounded-lg text-base text-foreground focus:ring-1 focus:ring-primary outline-none transition-all font-mono"
                       />
                       <select 
                         value={sizeUnit}
                         onChange={(e) => setSizeUnit(e.target.value)}
-                        className="p-2 bg-background border border-border rounded-md text-sm text-foreground focus:ring-1 focus:ring-primary outline-none transition-all font-medium w-20 shrink-0"
+                        className="p-3 bg-background border border-border rounded-lg text-base text-foreground focus:ring-1 focus:ring-primary outline-none transition-all font-medium w-24 shrink-0"
                       >
                          <option value="KB">KB</option>
                          <option value="MB">MB</option>
@@ -235,10 +235,10 @@ const ImageCompressor = () => {
                     </div>
                   </div>
                 ) : (
-                  <div className="space-y-3 animate-in fade-in">
+                  <div className="space-y-4 animate-in fade-in">
                     <div className="flex justify-between items-center">
                       <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Quality Level</label>
-                      <span className="text-xs font-bold text-foreground">{quality}%</span>
+                      <span className="text-sm font-bold text-foreground">{quality}%</span>
                     </div>
                     <input 
                       type="range" 
@@ -246,18 +246,18 @@ const ImageCompressor = () => {
                       max="100" 
                       value={quality}
                       onChange={(e) => setQuality(Number(e.target.value))}
-                      className="w-full h-1.5 bg-muted rounded-full appearance-none cursor-pointer accent-primary"
+                      className="w-full h-2 bg-muted rounded-full appearance-none cursor-pointer accent-primary"
                     />
                   </div>
                 )}
 
                 {/* Max Dimensions */}
-                <div className="pt-4 border-t border-border">
-                  <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Max Dimensions</label>
+                <div className="pt-5 border-t border-border">
+                  <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Max Dimensions</label>
                   <select 
                     value={maxWidthOrHeight}
                     onChange={(e) => setMaxWidthOrHeight(Number(e.target.value))}
-                    className="w-full p-2 bg-background border border-border rounded-md text-sm text-foreground focus:ring-1 focus:ring-primary outline-none transition-all font-medium"
+                    className="w-full p-3 bg-background border border-border rounded-lg text-base text-foreground focus:ring-1 focus:ring-primary outline-none transition-all font-medium"
                   >
                     <option value={4000}>Original (No scaling)</option>
                     <option value={1920}>1920px (Full HD)</option>
@@ -268,20 +268,20 @@ const ImageCompressor = () => {
               </div>
             </div>
 
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-3">
               <button 
                 onClick={handleDownload}
                 disabled={!compressedFile || isCompressing}
-                className="w-full py-2.5 bg-foreground text-background font-bold text-sm rounded-md hover:bg-foreground/90 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                className="w-full py-3.5 bg-foreground text-background font-bold text-base rounded-lg hover:bg-foreground/90 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
               >
-                <Download size={16} /> Download
+                <Download size={18} /> Download
               </button>
               
               <button 
                 onClick={clear}
-                className="w-full py-2.5 bg-muted/50 border border-border text-foreground font-semibold text-sm rounded-md hover:bg-muted transition-colors flex items-center justify-center gap-2"
+                className="w-full py-3.5 bg-muted/50 border border-border text-foreground font-bold text-base rounded-lg hover:bg-muted transition-colors flex items-center justify-center gap-2"
               >
-                <RefreshCw size={16} /> Upload New
+                <RefreshCw size={18} /> Upload New
               </button>
             </div>
           </div>
