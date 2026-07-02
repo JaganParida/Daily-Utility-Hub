@@ -163,7 +163,7 @@ const ImageResizer = () => {
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         
         {/* Preview Area */}
-        <motion.div layout className="flex-1 w-full bg-card border border-border p-4 md:p-5 rounded-lg shadow-sm flex flex-col h-[calc(100vh-220px)] min-h-[500px] lg:sticky lg:top-6">
+        <motion.div layout className="flex-1 w-full bg-card border border-border p-4 md:p-5 rounded-lg shadow-sm flex flex-col max-h-[calc(100vh-140px)] min-h-[400px] lg:sticky lg:top-6">
           <AnimatePresence mode="popLayout" initial={false}>
             {!image ? (
               <motion.div 
@@ -206,9 +206,9 @@ const ImageResizer = () => {
               <motion.div layout className="w-full flex-1 bg-muted/10 rounded-xl border border-border p-4 md:p-6 relative flex items-center justify-center overflow-hidden min-h-0">
                 {/* Visual feedback of bounding box */}
                 <motion.div layout className="relative flex items-center justify-center max-w-full max-h-full transition-all duration-500 ease-out">
-                  {/* Invisible SVG spacer scaled to 4000px max dimension so it ALWAYS expands to fill the screen bounds (max-w-full and max-h) without being a tiny dot for small dimensions */}
+                  {/* Invisible SVG spacer scaled to 1200px fixed width so it naturally shrink-wraps landscape ratios while hitting the max-height constraint for portrait ratios */}
                   <img 
-                    src={`data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='${Math.round(((width > 0 ? width : 1) / Math.max(width > 0 ? width : 1, height > 0 ? height : 1)) * 4000)}' height='${Math.round(((height > 0 ? height : 1) / Math.max(width > 0 ? width : 1, height > 0 ? height : 1)) * 4000)}' viewBox='0 0 ${width > 0 ? width : 1} ${height > 0 ? height : 1}'%3E%3C/svg%3E`}
+                    src={`data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='${Math.round((height > 0 ? height : 1) * (1200 / (width > 0 ? width : 1)))}' viewBox='0 0 ${width > 0 ? width : 1} ${height > 0 ? height : 1}'%3E%3C/svg%3E`}
                     alt="spacer"
                     className="max-w-full max-h-full opacity-0 pointer-events-none block transition-all duration-500 ease-out"
                   />
@@ -217,7 +217,7 @@ const ImageResizer = () => {
                       layout
                       src={image.url} 
                       alt="Preview" 
-                      className="w-full h-full object-fill drop-shadow-md"
+                      className="w-full h-full object-contain drop-shadow-md"
                     />
                     {!maintainRatio && (
                       <motion.div layout className="absolute inset-0 border-[3px] border-red-500 border-dashed pointer-events-none z-10 shadow-[inset_0_0_30px_rgba(239,68,68,0.4)]"></motion.div>
