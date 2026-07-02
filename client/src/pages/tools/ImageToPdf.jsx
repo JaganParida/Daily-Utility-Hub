@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { FileText, Download, RefreshCw, Trash2, ArrowUp, ArrowDown, Settings2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import DropzoneComponent from '../../components/DropzoneComponent';
 import { jsPDF } from 'jspdf';
 import { toast } from 'react-hot-toast';
@@ -151,8 +152,16 @@ const ImageToPdf = () => {
             title="Drag & drop images here"
           />
 
+          <AnimatePresence>
           {images.length > 0 && (
-            <div className="bg-muted/10 border border-border p-4 md:p-6 rounded-xl shadow-inner flex-1 flex flex-col">
+            <motion.div 
+              layout
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.4, ease: "easeOut" }}
+              className="bg-muted/10 border border-border p-4 md:p-6 rounded-xl shadow-inner flex-1 flex flex-col"
+            >
               <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4">Pages ({images.length})</h3>
               <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
                 {images.map((img, idx) => (
@@ -191,8 +200,9 @@ const ImageToPdf = () => {
                   </div>
                 ))}
               </div>
-            </div>
+            </motion.div>
           )}
+          </AnimatePresence>
         </div>
 
         {/* Settings Sidebar */}

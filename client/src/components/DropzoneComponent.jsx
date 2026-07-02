@@ -36,10 +36,11 @@ const DropzoneComponent = ({
   });
 
   return (
-    <div className={`w-full flex flex-col transition-all duration-500 ${className}`}>
-      <div
+    <motion.div layout className={`w-full flex flex-col ${className}`}>
+      <motion.div
+        layout
         {...getRootProps()}
-        className={`relative w-full h-full min-h-[160px] flex-1 p-8 md:p-12 border-2 border-dashed rounded-2xl transition-all duration-300 ease-out cursor-pointer flex flex-col items-center justify-center text-center overflow-hidden
+        className={`relative w-full h-full min-h-[160px] flex-1 p-8 md:p-12 border-2 border-dashed rounded-2xl transition-colors duration-300 ease-out cursor-pointer flex flex-col items-center justify-center text-center overflow-hidden
           ${isDragReject ? 'border-red-500 bg-red-500/10' : 
             isDragActive ? 'border-primary bg-primary/10 scale-[1.02]' : 
             'border-border bg-card/50 hover:bg-muted hover:border-primary/50'
@@ -62,7 +63,7 @@ const DropzoneComponent = ({
             {subtitle} (Max size: {Math.round(maxSize / 1024 / 1024)}MB)
           </p>
         </div>
-      </div>
+      </motion.div>
 
       {/* Selected Files Preview */}
       {value && value.length > 0 && (
@@ -104,7 +105,7 @@ const DropzoneComponent = ({
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 };
 

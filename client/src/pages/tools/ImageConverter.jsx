@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ArrowRightLeft, Download, RefreshCw, Layers, FileCode2, Trash2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import DropzoneComponent from '../../components/DropzoneComponent';
 import JSZip from 'jszip';
 import { toast } from 'react-hot-toast';
@@ -147,8 +148,16 @@ const ImageConverter = () => {
             title="Drag & drop images to convert (Batch Upload Supported)"
           />
 
-          {images.length > 0 && (
-            <div className="bg-muted/10 border border-border p-4 md:p-6 rounded-xl shadow-inner flex-1 flex flex-col">
+          <AnimatePresence>
+            {images.length > 0 && (
+              <motion.div 
+                layout
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
+                className="bg-muted/10 border border-border p-4 md:p-6 rounded-xl shadow-inner flex-1 flex flex-col"
+              >
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                   <Layers size={16} /> Batch Queue ({images.length})
@@ -173,8 +182,9 @@ const ImageConverter = () => {
                   </div>
                 ))}
               </div>
-            </div>
+            </motion.div>
           )}
+          </AnimatePresence>
         </div>
 
         {/* Settings Area */}
