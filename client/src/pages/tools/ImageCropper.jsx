@@ -172,20 +172,21 @@ const ImageCropper = () => {
 
       <canvas ref={canvasRef} className="hidden" />
 
-      {!file ? (
-        <DropzoneComponent 
-          onFilesAccepted={handleFilesAccepted} 
-          accept={{ 'image/*': ['.jpeg', '.jpg', '.png', '.webp'] }} 
-          maxFiles={1}
-          title="Drag & drop an image to crop"
-        />
-      ) : (
-        <div className="space-y-6">
-          <div className="grid lg:grid-cols-[1fr_350px] gap-6">
-            
-            {/* Cropper Area */}
-            <div className="bg-card border border-border p-6 rounded-2xl shadow-sm overflow-hidden flex flex-col items-center justify-center min-h-[500px] relative">
-              {!croppedBlob ? (
+      <div className="space-y-6">
+        <div className="grid lg:grid-cols-[1fr_350px] gap-6">
+          
+          {/* Cropper Area */}
+          <div className="bg-card border border-border p-6 rounded-2xl shadow-sm overflow-hidden flex flex-col items-center justify-center min-h-[500px] relative">
+            {!file ? (
+              <div className="w-full h-full flex flex-col justify-center">
+                <DropzoneComponent 
+                  onFilesAccepted={handleFilesAccepted} 
+                  accept={{ 'image/*': ['.jpeg', '.jpg', '.png', '.webp'] }} 
+                  maxFiles={1}
+                  title="Drag & drop an image to crop"
+                />
+              </div>
+            ) : !croppedBlob ? (
                 <ReactCrop
                   crop={crop}
                   onChange={(_, percentCrop) => setCrop(percentCrop)}
@@ -323,8 +324,7 @@ const ImageCropper = () => {
             </div>
           </div>
         </div>
-      )}
-    </div>
+      </div>
   );
 };
 
