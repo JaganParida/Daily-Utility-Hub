@@ -85,48 +85,47 @@ const Dashboard = () => {
     const borderColor = textColor.replace('text-', 'border-') + '/50';
 
     return (
-      <div key={tool.name} className="group relative h-56 [perspective:1500px]">
+      <div key={tool.name} className="group relative h-56">
         
-        {/* Outer link wrapper to ensure full card clickability without interfering with 3D context */}
+        {/* Outer link wrapper to ensure full card clickability */}
         <Link 
           to={tool.to}
-          className={`relative block w-full h-full transition-all duration-700 [transform-style:preserve-3d] group-hover:[transform:rotateY(180deg)] bg-card/60 backdrop-blur-md border border-border/60 rounded-3xl hover:${borderColor} shadow-sm group-hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:group-hover:shadow-[0_8px_30px_rgba(255,255,255,0.05)]`}
+          className={`relative block w-full h-full transition-all duration-500 bg-card/60 backdrop-blur-md border border-border/60 rounded-3xl hover:${borderColor} shadow-sm group-hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:group-hover:shadow-[0_8px_30px_rgba(255,255,255,0.05)] overflow-hidden`}
         >
-          {/* Subtle background glow on front face */}
-          <div className={`absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-[0.03] transition-opacity duration-500 ${tool.color.split(' ')[1].replace('/10', '')} [backface-visibility:hidden]`}></div>
+          {/* Subtle background glow */}
+          <div className={`absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-[0.03] transition-opacity duration-500 ${tool.color.split(' ')[1].replace('/10', '')}`}></div>
           
-          {/* FRONT FACE */}
-          <div className="absolute inset-0 p-6 flex flex-col [backface-visibility:hidden] overflow-hidden rounded-3xl">
-            <div className={`w-16 h-16 rounded-2xl ${tool.color} flex items-center justify-center mb-6 shadow-inner transition-transform duration-500 shrink-0`}>
+          {/* BASE CONTENT (Always visible, stays behind overlay) */}
+          <div className="absolute inset-0 p-6 flex flex-col">
+            <div className={`w-16 h-16 rounded-2xl ${tool.color} flex items-center justify-center mb-6 shadow-inner transition-transform duration-500 shrink-0 group-hover:scale-90 group-hover:rotate-3`}>
               <Icon size={32} />
             </div>
             <h3 className="font-bold text-xl text-foreground tracking-tight pr-8">{tool.name}</h3>
-            {/* Front doesn't show full description to keep it clean, maybe just a teaser or nothing */}
-            <div className="mt-auto flex items-center text-sm font-medium text-muted-foreground group-hover:text-primary transition-colors">
+            <div className="mt-auto flex items-center text-sm font-medium text-muted-foreground group-hover:text-primary transition-colors group-hover:opacity-0">
               Hover for details &rarr;
             </div>
           </div>
 
-          {/* BACK FACE */}
-          <div className="absolute inset-0 p-6 flex flex-col items-center justify-center text-center [transform:rotateY(180deg)] [backface-visibility:hidden] bg-card/95 rounded-3xl border border-indigo-500/20">
-             <div className={`w-12 h-12 rounded-full ${tool.color} flex items-center justify-center mb-4 opacity-50`}>
+          {/* SLIDE-UP OVERLAY (Shows Description) */}
+          <div className="absolute inset-0 p-6 flex flex-col items-center justify-center text-center translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] bg-card/95 backdrop-blur-xl z-20">
+             <div className={`w-12 h-12 rounded-full ${tool.color} flex items-center justify-center mb-4 opacity-70`}>
                 <Icon size={20} />
              </div>
-             <p className="text-muted-foreground text-sm leading-relaxed mb-6">{tool.description}</p>
-             <span className="px-5 py-2 bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground font-semibold text-sm rounded-full transition-colors flex items-center gap-2">
+             <p className="text-foreground text-sm leading-relaxed mb-6 font-medium">{tool.description}</p>
+             <span className="px-5 py-2 bg-primary text-primary-foreground font-semibold text-sm rounded-full transition-transform hover:scale-105 flex items-center gap-2 shadow-sm">
                 Launch Tool
              </span>
           </div>
         </Link>
         
-        {/* PIN BUTTON (Lifted outside the 3D flipping container so it doesn't rotate!) */}
+        {/* PIN BUTTON (Lifted outside the overlay so it doesn't get covered) */}
         <button
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
             togglePin(tool.to);
           }}
-          className={`absolute top-4 right-4 p-2 rounded-xl transition-all duration-300 z-10 [transform:translateZ(10px)] ${
+          className={`absolute top-4 right-4 p-2 rounded-xl transition-all duration-300 z-30 ${
             isPinned 
               ? 'text-indigo-500 bg-indigo-500/10 hover:bg-indigo-500/20 shadow-sm' 
               : 'text-muted-foreground hover:bg-muted/80 hover:text-foreground opacity-0 group-hover:opacity-100 focus:opacity-100 scale-90 group-hover:scale-100'
@@ -143,13 +142,6 @@ const Dashboard = () => {
   return (
     <PageTransition className="space-y-12 max-w-[1600px] mx-auto pb-20 px-4 md:px-8">
       <div className="text-center space-y-6 pt-16 md:pt-28 pb-12">
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-500/10 text-indigo-500 font-medium text-sm mb-4 border border-indigo-500/20">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
-          </span>
-          Discover 30+ Free Utilities
-        </div>
         <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-foreground">
           Welcome to <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">Daily Utility Hub</span>
         </h1>
