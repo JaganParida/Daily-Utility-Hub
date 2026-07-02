@@ -11,6 +11,32 @@ const ImageCompressor = () => {
   const [isCompressing, setIsCompressing] = useState(false);
   const [downloadState, setDownloadState] = useState('idle'); // 'idle', 'downloading', 'downloaded'
   
+  // Preview Object URLs (tracked in state to prevent memory leaks)
+  const [originalUrl, setOriginalUrl] = useState('');
+  const [compressedUrl, setCompressedUrl] = useState('');
+
+  // Handle original file object URL lifecycle
+  useEffect(() => {
+    if (originalFile) {
+      const url = URL.createObjectURL(originalFile);
+      setOriginalUrl(url);
+      return () => URL.revokeObjectURL(url);
+    } else {
+      setOriginalUrl('');
+    }
+  }, [originalFile]);
+
+  // Handle compressed file object URL lifecycle
+  useEffect(() => {
+    if (compressedFile) {
+      const url = URL.createObjectURL(compressedFile);
+      setCompressedUrl(url);
+      return () => URL.revokeObjectURL(url);
+    } else {
+      setCompressedUrl('');
+    }
+  }, [compressedFile]);
+  
   // Advanced Settings
   const [strategy, setStrategy] = useState('quality'); // 'quality' or 'size'
   const [quality, setQuality] = useState(80); // 1-100
@@ -80,20 +106,18 @@ const ImageCompressor = () => {
   };
 
   const handleDownload = () => {
-    if (!compressedFile) return;
+    if (!compressedUrl) return;
     
     setDownloadState('downloading');
     
     // Simulate processing time for better UX state feedback
     setTimeout(() => {
-      const url = URL.createObjectURL(compressedFile);
       const link = document.createElement('a');
-      link.href = url;
+      link.href = compressedUrl;
       link.download = `compressed_${originalFile.name}`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      URL.revokeObjectURL(url);
       
       setDownloadState('downloaded');
       toast.success('Image downloaded successfully!');
@@ -131,79 +155,102 @@ const ImageCompressor = () => {
       <div className="flex flex-col lg:flex-row gap-6 w-full items-stretch">
         
         {/* Upload Area / Workspace */}
-        <div className="flex-1 w-full bg-card border border-border p-4 md:p-6 rounded-2xl shadow-sm flex flex-col min-h-[50vh] relative">
-          {!originalFile ? (
-            <DropzoneComponent 
-              className="flex-1 h-full w-full justify-center"
-              onFilesAccepted={handleFilesAccepted} 
-              accept={{ 'image/*': ['.jpeg', '.jpg', '.png', '.webp'] }} 
-              maxFiles={1}
-              title="Drag & drop an image to compress"
-            />
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-4 md:gap-6 items-center w-full">
-              
-              {/* Original */}
-              <div className="flex flex-col items-center w-full min-w-0">
-                <div className="flex justify-between items-center w-full mb-3 px-2">
-                  <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Original</h3>
-                  <span className="text-base font-semibold text-foreground">{(originalFile.size / 1024).toFixed(1)} KB</span>
-                </div>
-                <div className="w-full h-auto max-h-[400px] min-h-[200px] bg-muted/20 rounded-xl p-2 border border-border flex items-center justify-center overflow-hidden relative group">
-                  <img 
-                    src={URL.createObjectURL(originalFile)} 
-                    alt="Original" 
-                    className="max-h-full max-w-full object-contain drop-shadow-md transition-transform duration-500 group-hover:scale-105"
-                  />
-                </div>
-                <p className="font-medium text-muted-foreground text-sm truncate w-full text-center mt-4 px-2" title={originalFile.name}>
-                  {originalFile.name}
-                </p>
-              </div>
-
-              {/* Separator / Arrow (Hidden on very small screens, visible on md+) */}
-              <div className="hidden md:flex flex-col items-center justify-center text-muted-foreground">
-                <ArrowRightLeft size={20} className="opacity-50" />
-              </div>
-
-              {/* Compressed */}
-              <div className="flex flex-col items-center w-full min-w-0">
-                <div className="flex justify-between items-center w-full mb-3 px-2">
-                  <h3 className="text-sm font-bold uppercase tracking-wider text-emerald-600 flex items-center gap-1.5">
-                    Result {isCompressing && <RefreshCw size={14} className="animate-spin" />}
-                  </h3>
-                  <span className={`text-base font-bold transition-colors ${compressedFile ? 'text-emerald-600' : 'text-muted-foreground'}`}>
-                    {compressedFile ? `${(compressedFile.size / 1024).toFixed(1)} KB` : '...'}
-                  </span>
-                </div>
-                <div className="w-full h-auto max-h-[400px] min-h-[200px] bg-emerald-500/5 rounded-xl p-2 border border-emerald-500/20 flex items-center justify-center relative overflow-hidden group">
-                  {compressedFile ? (
+        <motion.div 
+          layout 
+          className={`flex-1 w-full bg-card border border-border p-4 md:p-6 rounded-2xl shadow-sm flex flex-col relative transition-all duration-500 ease-out ${!originalFile ? 'min-h-[50vh]' : 'min-h-0'}`}
+        >
+          <AnimatePresence mode="popLayout" initial={false}>
+            {!originalFile ? (
+              <motion.div 
+                key="dropzone"
+                layout
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.3 }}
+                className="flex-1 h-full w-full flex flex-col justify-center"
+              >
+                <DropzoneComponent 
+                  className="flex-1 h-full w-full justify-center"
+                  onFilesAccepted={handleFilesAccepted} 
+                  accept={{ 'image/*': ['.jpeg', '.jpg', '.png', '.webp'] }} 
+                  maxFiles={1}
+                  title="Drag & drop an image to compress"
+                />
+              </motion.div>
+            ) : (
+              <motion.div 
+                key="workspace"
+                layout
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.3 }}
+                className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-4 md:gap-6 items-center w-full min-h-0"
+              >
+                
+                {/* Original */}
+                <div className="flex flex-col items-center w-full min-w-0">
+                  <div className="flex justify-between items-center w-full mb-3 px-2">
+                    <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Original</h3>
+                    <span className="text-base font-semibold text-foreground">{(originalFile.size / 1024).toFixed(1)} KB</span>
+                  </div>
+                  <div className="w-full h-auto max-h-[400px] min-h-[200px] bg-muted/20 rounded-xl p-2 border border-border flex items-center justify-center overflow-hidden relative group">
                     <img 
-                      src={URL.createObjectURL(compressedFile)} 
-                      alt="Compressed" 
-                      className={`max-h-full max-w-full object-contain drop-shadow-sm transition-all duration-500 group-hover:scale-105 ${isCompressing ? 'opacity-50 blur-sm scale-95' : 'opacity-100 scale-100'}`}
+                      src={originalUrl} 
+                      alt="Original" 
+                      className="max-h-full max-w-full object-contain drop-shadow-md transition-transform duration-500 group-hover:scale-105"
                     />
-                  ) : (
-                    <div className="text-emerald-600/50 flex flex-col items-center gap-2">
-                      <RefreshCw size={20} className="animate-spin" />
-                    </div>
-                  )}
-                </div>
-                <div className="w-full flex items-center justify-between mt-4 px-2">
-                  <p className="font-medium text-muted-foreground text-sm truncate max-w-[200px]" title={originalFile.name}>
-                    {compressedFile ? `min_${originalFile.name}` : 'Processing...'}
+                  </div>
+                  <p className="font-medium text-muted-foreground text-sm truncate w-full text-center mt-4 px-2" title={originalFile.name}>
+                    {originalFile.name}
                   </p>
-                  {compressedFile && (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-emerald-500/10 text-emerald-700 text-xs font-bold uppercase tracking-wider">
-                      -{getSavings()}%
-                    </span>
-                  )}
                 </div>
-              </div>
 
-            </div>
-          )}
-        </div>
+                {/* Separator / Arrow (Hidden on very small screens, visible on md+) */}
+                <div className="hidden md:flex flex-col items-center justify-center text-muted-foreground">
+                  <ArrowRightLeft size={20} className="opacity-50" />
+                </div>
+
+                {/* Compressed */}
+                <div className="flex flex-col items-center w-full min-w-0">
+                  <div className="flex justify-between items-center w-full mb-3 px-2">
+                    <h3 className="text-sm font-bold uppercase tracking-wider text-emerald-600 flex items-center gap-1.5">
+                      Result {isCompressing && <RefreshCw size={14} className="animate-spin" />}
+                    </h3>
+                    <span className={`text-base font-bold transition-colors ${compressedFile ? 'text-emerald-600' : 'text-muted-foreground'}`}>
+                      {compressedFile ? `${(compressedFile.size / 1024).toFixed(1)} KB` : '...'}
+                    </span>
+                  </div>
+                  <div className="w-full h-auto max-h-[400px] min-h-[200px] bg-emerald-500/5 rounded-xl p-2 border border-emerald-500/20 flex items-center justify-center relative overflow-hidden group">
+                    {compressedUrl ? (
+                      <img 
+                        src={compressedUrl} 
+                        alt="Compressed" 
+                        className={`max-h-full max-w-full object-contain drop-shadow-sm transition-all duration-500 group-hover:scale-105 ${isCompressing ? 'opacity-50 blur-sm scale-95' : 'opacity-100 scale-100'}`}
+                      />
+                    ) : (
+                      <div className="text-emerald-600/50 flex flex-col items-center gap-2">
+                        <RefreshCw size={20} className="animate-spin" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="w-full flex items-center justify-between mt-4 px-2">
+                    <p className="font-medium text-muted-foreground text-sm truncate max-w-[200px]" title={originalFile.name}>
+                      {compressedFile ? `min_${originalFile.name}` : 'Processing...'}
+                    </p>
+                    {compressedFile && (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-emerald-500/10 text-emerald-700 text-xs font-bold uppercase tracking-wider">
+                        -{getSavings()}%
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
 
           {/* Controls Sidebar */}
           <div className="w-full lg:w-[350px] xl:w-[400px] shrink-0 space-y-6">
