@@ -7,6 +7,9 @@ const SOCIAL_PRESETS = [
   { name: 'Insta Square', w: 1080, h: 1080 },
   { name: 'Insta Portrait', w: 1080, h: 1350 },
   { name: 'Insta Story', w: 1080, h: 1920 },
+  { name: 'FB Story', w: 1080, h: 1920 },
+  { name: 'WA Status', w: 1080, h: 1920 },
+  { name: 'YT Shorts', w: 1080, h: 1920 },
   { name: 'YouTube Thumb', w: 1280, h: 720 },
   { name: 'Twitter Post', w: 1200, h: 675 },
   { name: 'Facebook Cover', w: 820, h: 312 },
@@ -180,29 +183,26 @@ const ImageResizer = () => {
                 </div>
               </div>
               
-              <div className="w-full h-auto max-h-[45vh] min-h-[250px] bg-muted/20 rounded-xl border border-border flex items-center justify-center p-4 overflow-hidden relative">
+              <div className="w-full h-auto max-h-[45vh] min-h-[250px] bg-muted/10 rounded-xl border border-border flex items-center justify-center p-4 overflow-hidden relative">
                 {/* Visual feedback of bounding box */}
                 <div 
-                  className="relative flex items-center justify-center"
+                  className="relative flex items-center justify-center bg-black/20 dark:bg-black/40 ring-1 ring-border/50 shadow-2xl transition-all duration-300 ease-out"
                   style={{
-                    width: '100%',
-                    height: '100%',
-                    maxWidth: `${width}px`,
-                    maxHeight: `${height}px`,
+                    aspectRatio: `${width > 0 ? width : 1} / ${height > 0 ? height : 1}`,
+                    maxHeight: '100%',
+                    maxWidth: '100%',
                   }}
                 >
                   <img 
                     src={image.url} 
                     alt="Preview" 
-                    className="max-w-full max-h-full object-contain drop-shadow-md transition-all duration-300"
-                    style={{
-                      // If aspect ratio is broken, show it visually
-                      width: !maintainRatio ? '100%' : 'auto',
-                      height: !maintainRatio ? '100%' : 'auto',
-                    }}
+                    className="w-full h-full object-fill drop-shadow-md"
                   />
                   {!maintainRatio && (
-                    <div className="absolute inset-0 border-2 border-red-500 border-dashed opacity-50 pointer-events-none rounded-sm"></div>
+                    <div className="absolute inset-0 border-[3px] border-red-500 shadow-[inset_0_0_30px_rgba(239,68,68,0.4)] pointer-events-none z-10"></div>
+                  )}
+                  {maintainRatio && (
+                    <div className="absolute inset-0 border-2 border-emerald-500/30 pointer-events-none z-10"></div>
                   )}
                 </div>
               </div>
