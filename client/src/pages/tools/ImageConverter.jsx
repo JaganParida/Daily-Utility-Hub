@@ -141,23 +141,23 @@ const ImageConverter = () => {
         {/* Upload Area */}
         <div className="flex-1 w-full bg-card border border-border p-4 md:p-6 rounded-xl shadow-sm flex flex-col min-h-[50vh] relative space-y-6">
           <DropzoneComponent 
-            className="flex-1"
+            className={images.length === 0 ? "flex-1 justify-center" : "shrink-0"}
             onFilesAccepted={handleFilesAccepted} 
             accept={{ 'image/*': ['.jpeg', '.jpg', '.png', '.webp', '.bmp', '.gif'] }} 
             maxFiles={100}
             title="Drag & drop images to convert (Batch Upload Supported)"
           />
 
-          <AnimatePresence>
+          <AnimatePresence mode="popLayout">
             {images.length > 0 && (
               <motion.div 
-                initial={{ opacity: 0, height: 0, overflow: 'hidden' }}
-                animate={{ opacity: 1, height: 'auto', overflow: 'visible' }}
-                exit={{ opacity: 0, height: 0, overflow: 'hidden' }}
-                transition={{ duration: 0.4, ease: "easeInOut" }}
-                className="flex flex-col"
+                layout
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
+                className="bg-muted/10 border border-border p-4 md:p-6 rounded-xl shadow-inner flex-1 flex flex-col"
               >
-                <div className="bg-muted/10 border border-border p-4 md:p-6 rounded-xl shadow-inner flex-1 flex flex-col">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                   <Layers size={16} /> Batch Queue ({images.length})
@@ -166,8 +166,16 @@ const ImageConverter = () => {
               </div>
               
               <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                <AnimatePresence mode="popLayout">
                 {images.map((img, idx) => (
-                  <div key={idx} className="flex items-center gap-4 bg-muted/50 p-3 rounded-xl border border-border group hover:border-pink-500/50 transition-colors">
+                  <motion.div 
+                    layout
+                    initial={{ opacity: 0, scale: 0.8, y: 10 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.8, transition: { duration: 0.2 } }}
+                    key={img.url || `${img.name}-${idx}`} 
+                    className="flex items-center gap-4 bg-muted/50 p-3 rounded-xl border border-border group hover:border-pink-500/50 transition-colors"
+                  >
                     <img src={img.url} className="w-12 h-12 object-cover rounded-md border border-border/50 shadow-sm" />
                     <div className="flex-1 truncate">
                       <p className="font-medium text-sm text-foreground truncate">{img.name}</p>
@@ -179,10 +187,10 @@ const ImageConverter = () => {
                     >
                       <Trash2 size={16} />
                     </button>
-                  </div>
+                  </motion.div>
                 ))}
+                </AnimatePresence>
               </div>
-                </div>
               </motion.div>
             )}
           </AnimatePresence>

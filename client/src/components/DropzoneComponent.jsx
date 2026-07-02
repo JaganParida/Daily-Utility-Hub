@@ -36,8 +36,10 @@ const DropzoneComponent = ({
   });
 
   return (
-    <div className={`w-full flex flex-col ${className}`}>
-      <div
+    <motion.div layout className={`w-full flex flex-col ${className}`}>
+      <motion.div
+        layout
+        style={{ borderRadius: 16 }}
         {...getRootProps()}
         className={`relative w-full h-full min-h-[160px] flex-1 p-8 md:p-12 border-2 border-dashed rounded-2xl transition-colors duration-300 ease-out cursor-pointer flex flex-col items-center justify-center text-center overflow-hidden
           ${isDragReject ? 'border-red-500 bg-red-500/10' : 
@@ -50,19 +52,19 @@ const DropzoneComponent = ({
         {/* Glow effect on drag */}
         <div className={`absolute inset-0 bg-primary/5 blur-3xl transition-opacity duration-300 ${isDragActive ? 'opacity-100' : 'opacity-0'}`} />
 
-        <div className="relative z-10">
-          <div className={`mx-auto w-16 h-16 mb-4 flex items-center justify-center rounded-full transition-transform duration-300 ${isDragActive ? 'bg-primary text-primary-foreground scale-110' : 'bg-muted text-muted-foreground'}`}>
+        <motion.div layout className="relative z-10">
+          <motion.div layout="position" className={`mx-auto w-16 h-16 mb-4 flex items-center justify-center rounded-full transition-transform duration-300 ${isDragActive ? 'bg-primary text-primary-foreground scale-110' : 'bg-muted text-muted-foreground'}`}>
             <UploadCloud size={32} />
-          </div>
+          </motion.div>
           
-          <h3 className="text-xl font-semibold text-foreground mb-2">
+          <motion.h3 layout="position" className="text-xl font-semibold text-foreground mb-2">
             {isDragActive ? 'Drop the files now!' : title}
-          </h3>
-          <p className="text-sm text-muted-foreground">
+          </motion.h3>
+          <motion.p layout="position" className="text-sm text-muted-foreground">
             {subtitle} (Max size: {Math.round(maxSize / 1024 / 1024)}MB)
-          </p>
-        </div>
-      </div>
+          </motion.p>
+        </motion.div>
+      </motion.div>
 
       {/* Selected Files Preview */}
       {value && value.length > 0 && (
@@ -104,7 +106,7 @@ const DropzoneComponent = ({
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 };
 

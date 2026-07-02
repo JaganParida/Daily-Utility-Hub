@@ -145,27 +145,35 @@ const ImageToPdf = () => {
         
         <div className="flex-1 w-full bg-card border border-border p-4 md:p-6 rounded-xl shadow-sm flex flex-col min-h-[50vh] relative space-y-6">
           <DropzoneComponent 
-            className="flex-1"
+            className={images.length === 0 ? "flex-1 justify-center" : "shrink-0"}
             onFilesAccepted={handleFilesAccepted} 
             accept={{ 'image/*': ['.jpeg', '.jpg', '.png', '.webp'] }} 
             maxFiles={50}
             title="Drag & drop images here"
           />
 
-          <AnimatePresence>
+          <AnimatePresence mode="popLayout">
           {images.length > 0 && (
             <motion.div 
-              initial={{ opacity: 0, height: 0, overflow: 'hidden' }}
-              animate={{ opacity: 1, height: 'auto', overflow: 'visible' }}
-              exit={{ opacity: 0, height: 0, overflow: 'hidden' }}
-              transition={{ duration: 0.4, ease: "easeInOut" }}
-              className="flex flex-col"
+              layout
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.4, ease: "easeOut" }}
+              className="bg-muted/10 border border-border p-4 md:p-6 rounded-xl shadow-inner flex-1 flex flex-col"
             >
-              <div className="bg-muted/10 border border-border p-4 md:p-6 rounded-xl shadow-inner flex-1 flex flex-col">
               <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4">Pages ({images.length})</h3>
               <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+                <AnimatePresence mode="popLayout">
                 {images.map((img, idx) => (
-                  <div key={idx} className="flex items-center gap-4 bg-muted/50 p-3 rounded-xl border border-border group hover:border-primary/50 transition-colors">
+                  <motion.div 
+                    layout
+                    initial={{ opacity: 0, scale: 0.8, y: 10 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.8, transition: { duration: 0.2 } }}
+                    key={img.url || `${img.file?.name}-${idx}`} 
+                    className="flex items-center gap-4 bg-muted/50 p-3 rounded-xl border border-border group hover:border-primary/50 transition-colors"
+                  >
                     <div className="w-8 text-center text-sm font-bold text-muted-foreground">
                       {idx + 1}
                     </div>
@@ -197,9 +205,9 @@ const ImageToPdf = () => {
                         <Trash2 size={16} />
                       </button>
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
-              </div>
+                </AnimatePresence>
               </div>
             </motion.div>
           )}
