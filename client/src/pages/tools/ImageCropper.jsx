@@ -220,7 +220,7 @@ const ImageCropper = () => {
         {/* Cropper Area */}
         <motion.div 
           layout
-          className={`flex-1 w-full bg-card border border-border p-4 md:p-6 rounded-2xl shadow-sm flex flex-col items-center justify-center relative transition-all duration-500 ease-out ${!file ? 'min-h-[50vh]' : 'min-h-0'}`}
+          className={`flex-1 w-full bg-card border border-border rounded-2xl shadow-sm flex flex-col relative transition-all duration-500 ease-out ${!file ? 'min-h-[50vh] items-stretch p-0' : 'min-h-0 items-center justify-center p-4 md:p-6'}`}
         >
           <AnimatePresence mode="popLayout" initial={false}>
             {!file ? (
@@ -259,13 +259,14 @@ const ImageCropper = () => {
                   circularCrop={isCircular}
                   className="max-h-[60vh] lg:max-h-[calc(100vh-220px)] overflow-hidden rounded-xl border border-border/50"
                 >
-                  <img
+                  <motion.img
                     ref={imgRef}
                     alt="Crop target"
                     src={imgSrc}
                     onLoad={onImageLoad}
-                    className="max-h-[60vh] lg:max-h-[calc(100vh-220px)] object-contain transition-transform"
-                    style={{ transform: `scale(${scaleX}, ${scaleY}) rotate(${rotate}deg)` }}
+                    animate={{ rotate, scaleX, scaleY }}
+                    transition={{ type: "spring", stiffness: 200, damping: 22 }}
+                    className="max-h-[60vh] lg:max-h-[calc(100vh-220px)] object-contain"
                   />
                 </ReactCrop>
               </motion.div>
@@ -292,9 +293,9 @@ const ImageCropper = () => {
         </motion.div>
 
         {/* Controls sidebar */}
-        <div className="w-full lg:w-[350px] xl:w-[400px] shrink-0 space-y-6">
+        <div className={`w-full lg:w-[350px] xl:w-[400px] shrink-0 space-y-6 transition-all duration-300 ${!file ? 'opacity-50 pointer-events-none grayscale-[0.5]' : ''}`}>
           
-          <div className={`bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6 transition-all duration-300 ${!file ? 'opacity-50 pointer-events-none grayscale-[0.5]' : ''}`}>
+          <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6">
             
             {/* Transform Controls */}
             {!croppedBlob && (
@@ -350,7 +351,7 @@ const ImageCropper = () => {
                       onClick={() => handleAspectChange(preset.value, preset.circ)}
                       className={`w-full text-left px-3.5 py-3 text-xs font-semibold rounded-xl transition-all border shadow-sm active:scale-[0.98] ${
                         aspect === preset.value && !isCircular
-                          ? 'bg-purple-500/10 border-purple-500/50 text-purple-600 dark:text-purple-400' 
+                          ? 'bg-primary/10 border-primary/30 text-primary' 
                           : 'bg-muted/30 border-border/50 text-foreground hover:bg-muted'
                       }`}
                     >
@@ -361,12 +362,12 @@ const ImageCropper = () => {
                     onClick={() => handleAspectChange(1, true)}
                     className={`w-full text-left px-3.5 py-3 text-xs font-semibold rounded-xl transition-all border shadow-sm active:scale-[0.98] flex items-center justify-between ${
                       isCircular 
-                        ? 'bg-purple-500/10 border-purple-500/50 text-purple-600 dark:text-purple-400' 
+                        ? 'bg-primary/10 border-primary/30 text-primary' 
                         : 'bg-muted/30 border-border/50 text-foreground hover:bg-muted'
                     }`}
                   >
                     <span>Circular Profile</span>
-                    <Circle size={12} className={isCircular ? "fill-purple-500 text-purple-500" : "text-muted-foreground"} />
+                    <Circle size={12} className={isCircular ? "fill-primary text-primary" : "text-muted-foreground"} />
                   </button>
                 </div>
               </div>
@@ -380,7 +381,7 @@ const ImageCropper = () => {
               <button 
                 onClick={applyCrop}
                 disabled={!file || isProcessing}
-                className="w-full h-14 bg-purple-500 text-white font-bold rounded-xl hover:bg-purple-600 transition-all flex items-center justify-center gap-2 shadow-[0_1px_2px_rgba(0,0,0,0.1),0_0_0_1px_rgba(255,255,255,0.1)_inset] hover:shadow-[0_4px_12px_rgba(168,85,247,0.3)] disabled:opacity-50 active:scale-[0.98]"
+                className="w-full h-14 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-[0_1px_2px_rgba(0,0,0,0.1),0_0_0_1px_rgba(255,255,255,0.1)_inset] hover:shadow-[0_4px_12px_rgba(var(--primary),0.3)] disabled:opacity-50 active:scale-[0.98]"
               >
                 {isProcessing ? (
                   <>
@@ -398,7 +399,7 @@ const ImageCropper = () => {
                 className={`w-full h-14 font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-[0_1px_2px_rgba(0,0,0,0.1),0_0_0_1px_rgba(255,255,255,0.1)_inset] disabled:opacity-50 active:scale-[0.98] overflow-hidden ${
                   downloadState === 'downloaded' 
                     ? 'bg-green-600 hover:bg-green-700 text-white shadow-[0_4px_12px_rgba(22,163,74,0.3)]' 
-                    : 'bg-purple-500 hover:bg-purple-600 text-white hover:shadow-[0_4px_12px_rgba(168,85,247,0.3)]'
+                    : 'bg-primary hover:bg-primary/90 text-primary-foreground hover:shadow-[0_4px_12px_rgba(var(--primary),0.3)]'
                 }`}
               >
                 <AnimatePresence mode="popLayout" initial={false}>
