@@ -10,7 +10,11 @@ import ImageCropper from './pages/tools/ImageCropper';
 import ImageConverter from './pages/tools/ImageConverter';
 import ImageCollage from './pages/tools/ImageCollage';
 import ImageToPdf from './pages/tools/ImageToPdf';
+import ImageWatermark from './pages/tools/ImageWatermark';
+import ImageColorExtractor from './pages/tools/ImageColorExtractor';
 import WordCounter from './pages/tools/WordCounter';
+import VoiceHelper from './pages/tools/VoiceHelper';
+import TextAnalyzer from './pages/tools/TextAnalyzer';
 import UuidGenerator from './pages/tools/UuidGenerator';
 import PasswordGenerator from './pages/tools/PasswordGenerator';
 import CaseConverter from './pages/tools/CaseConverter';
@@ -86,6 +90,8 @@ function AnimatedRoutes() {
         <Route element={<Layout />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/tools/word-counter" element={<WordCounter />} />
+          <Route path="tools/voice-helper" element={<VoiceHelper />} />
+          <Route path="tools/text-analyzer" element={<TextAnalyzer />} />
           <Route path="/tools/uuid-generator" element={<UuidGenerator />} />
           <Route path="tools/password-generator" element={<PasswordGenerator />} />
           <Route path="tools/case-converter" element={<CaseConverter />} />
@@ -104,6 +110,8 @@ function AnimatedRoutes() {
           <Route path="tools/image-converter" element={<ImageConverter />} />
           <Route path="tools/image-collage" element={<ImageCollage />} />
           <Route path="tools/image-to-pdf" element={<ImageToPdf />} />
+          <Route path="tools/image-watermark" element={<ImageWatermark />} />
+          <Route path="tools/image-color-extractor" element={<ImageColorExtractor />} />
           
           {/* New Dev Tools Routes */}
           <Route path="tools/api-key-generator" element={<ApiKeyGenerator />} />
