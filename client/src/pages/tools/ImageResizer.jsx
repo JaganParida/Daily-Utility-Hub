@@ -191,7 +191,7 @@ const ImageResizer = () => {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ duration: 0.3 }}
-                className="flex-1 flex flex-col w-full h-full overflow-hidden"
+                className="flex-1 flex flex-col w-full h-full overflow-hidden min-h-0"
               >
               <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-4 gap-2 px-1 shrink-0">
                 <div className="flex flex-col">
@@ -203,7 +203,7 @@ const ImageResizer = () => {
                 </div>
               </div>
               
-              <motion.div layout className="w-full flex-1 bg-muted/10 rounded-xl border border-border p-4 md:p-6 relative flex items-center justify-center overflow-hidden">
+              <motion.div layout className="w-full flex-1 bg-muted/10 rounded-xl border border-border p-4 md:p-6 relative flex items-center justify-center overflow-hidden min-h-0">
                 {/* Visual feedback of bounding box */}
                 <motion.div layout className="relative flex items-center justify-center max-w-full max-h-full transition-all duration-500 ease-out">
                   {/* Invisible SVG spacer scaled to 4000px max dimension so it ALWAYS expands to fill the screen bounds (max-w-full and max-h) without being a tiny dot for small dimensions */}
