@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react';
 import { FileText, Download, Loader2, Trash2, ArrowUp, ArrowDown, Settings2, ChevronDown, CheckCircle, Layers } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DropzoneComponent from '../../components/DropzoneComponent';
-import { jsPDF } from 'jspdf';
+import { jsPDF } from 'jszip'; // wait, jsPDF is from jspdf, JSZip is from jszip
+import JSZip from 'jszip';
+import { jsPDF as JsPdfDoc } from 'jspdf';
 import { toast } from 'react-hot-toast';
 
 const PAGE_SIZES = [
@@ -23,6 +25,7 @@ const ImageToPdf = () => {
   const [pdfOrientation, setPdfOrientation] = useState('p'); // 'p' portrait, 'l' landscape
   const [pageSize, setPageSize] = useState('a4');
   const [margin, setMargin] = useState(10); // mm
+  const [exportMode, setExportMode] = useState('combined'); // 'combined' | 'separate'
 
   // Cleanup URLs on unmount
   useEffect(() => {
@@ -65,44 +68,99 @@ const ImageToPdf = () => {
   const generatePDF = async () => {
     if (!images.length) return;
     setDownloadState('generating');
+    
+    // Yield to the event loop for 150ms so the button morph state renders smoothly before CPU-heavy PDF generation starts
+    await new Promise(resolve => setTimeout(resolve, 150));
+    
     const startTime = Date.now();
 
     try {
-      const doc = new jsPDF(pdfOrientation, 'mm', pageSize);
-      const pageWidth  = doc.internal.pageSize.getWidth();
-      const pageHeight = doc.internal.pageSize.getHeight();
-      const usableW = pageWidth  - margin * 2;
-      const usableH = pageHeight - margin * 2;
+      if (exportMode === 'combined') {
+        // Combined mode: Single multi-page PDF document
+        const doc = new JsPdfDoc(pdfOrientation, 'mm', pageSize);
+        const pageWidth  = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
+        const usableW = pageWidth  - margin * 2;
+        const usableH = pageHeight - margin * 2;
 
-      for (let i = 0; i < images.length; i++) {
-        const { url, file } = images[i];
-        const img = await new Promise((resolve, reject) => {
-          const image = new Image();
-          image.onload = () => resolve(image);
-          image.onerror = reject;
-          image.src = url;
-        });
+        for (let i = 0; i < images.length; i++) {
+          const { url, file } = images[i];
+          const img = await new Promise((resolve, reject) => {
+            const image = new Image();
+            image.onload = () => resolve(image);
+            image.onerror = reject;
+            image.src = url;
+          });
 
-        if (i > 0) doc.addPage();
+          if (i > 0) doc.addPage();
 
-        const imgRatio  = img.width / img.height;
-        const pageRatio = usableW / usableH;
-        let finalW = usableW, finalH = usableH;
-        if (imgRatio > pageRatio) finalH = usableW / imgRatio;
-        else                      finalW = usableH * imgRatio;
+          const imgRatio  = img.width / img.height;
+          const pageRatio = usableW / usableH;
+          let finalW = usableW, finalH = usableH;
+          if (imgRatio > pageRatio) finalH = usableW / imgRatio;
+          else                      finalW = usableH * imgRatio;
 
-        const x = margin + (usableW - finalW) / 2;
-        const y = margin + (usableH - finalH) / 2;
-        const imgType = file.type === 'image/png' ? 'PNG' : 'JPEG';
-        doc.addImage(img, imgType, x, y, finalW, finalH);
+          const x = margin + (usableW - finalW) / 2;
+          const y = margin + (usableH - finalH) / 2;
+          const imgType = file.type === 'image/png' ? 'PNG' : 'JPEG';
+          doc.addImage(img, imgType, x, y, finalW, finalH);
+        }
+
+        const elapsed = Date.now() - startTime;
+        if (elapsed < 900) await new Promise(r => setTimeout(r, 900 - elapsed));
+
+        doc.save('converted_document.pdf');
+      } else {
+        // Separate mode: Create individual single-page PDFs, bundle them in a ZIP archive
+        const zip = new JSZip();
+
+        for (let i = 0; i < images.length; i++) {
+          const { url, file } = images[i];
+          const img = await new Promise((resolve, reject) => {
+            const image = new Image();
+            image.onload = () => resolve(image);
+            image.onerror = reject;
+            image.src = url;
+          });
+
+          const singleDoc = new JsPdfDoc(pdfOrientation, 'mm', pageSize);
+          const pageWidth  = singleDoc.internal.pageSize.getWidth();
+          const pageHeight = singleDoc.internal.pageSize.getHeight();
+          const usableW = pageWidth  - margin * 2;
+          const usableH = pageHeight - margin * 2;
+
+          const imgRatio  = img.width / img.height;
+          const pageRatio = usableW / usableH;
+          let finalW = usableW, finalH = usableH;
+          if (imgRatio > pageRatio) finalH = usableW / imgRatio;
+          else                      finalW = usableH * imgRatio;
+
+          const x = margin + (usableW - finalW) / 2;
+          const y = margin + (usableH - finalH) / 2;
+          const imgType = file.type === 'image/png' ? 'PNG' : 'JPEG';
+          singleDoc.addImage(img, imgType, x, y, finalW, finalH);
+
+          // Get raw PDF output as array buffer and save it to the zip file
+          const pdfOutput = singleDoc.output('arraybuffer');
+          const originalNameBase = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
+          zip.file(`${originalNameBase}.pdf`, pdfOutput);
+        }
+
+        const elapsed = Date.now() - startTime;
+        if (elapsed < 900) await new Promise(r => setTimeout(r, 900 - elapsed));
+
+        const content = await zip.generateAsync({ type: 'blob' });
+        const zipUrl = URL.createObjectURL(content);
+        const link = document.createElement('a');
+        link.href = zipUrl;
+        link.download = `pdf_documents_${Date.now()}.zip`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(zipUrl);
       }
 
-      // Enforce minimum delay so the spinner looks intentional
-      const elapsed = Date.now() - startTime;
-      if (elapsed < 900) await new Promise(r => setTimeout(r, 900 - elapsed));
-
-      doc.save('converted_document.pdf');
-      toast.success('PDF generated successfully!');
+      toast.success('PDF documents exported successfully!');
       setDownloadState('done');
       setTimeout(() => setDownloadState('idle'), 3000);
     } catch (err) {
@@ -174,11 +232,11 @@ const ImageToPdf = () => {
                     {images.map((img, idx) => (
                       <motion.div
                         layout
-                        key={img.url || `${img.file?.name}-${idx}`}
+                        key={img.url}
                         initial={{ opacity: 0, scale: 0.95, y: 8 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.18 } }}
-                        className="flex items-center gap-3 bg-muted/30 p-2.5 rounded-xl border border-border/50 group hover:border-primary/40 transition-all shadow-sm"
+                        className="flex items-center gap-3 bg-muted/30 p-2.5 rounded-xl border border-border/50 group hover:border-primary/40 transition-colors duration-200 shadow-sm"
                       >
                         {/* Page number */}
                         <span className="w-6 text-center text-xs font-bold text-muted-foreground shrink-0">{idx + 1}</span>
@@ -242,6 +300,33 @@ const ImageToPdf = () => {
             <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground border-b border-border pb-3 flex items-center gap-2">
               <Settings2 size={15} /> Document Layout
             </h3>
+
+            {/* Export Mode Selection */}
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-foreground">Export Mode</label>
+              <div className="flex p-1.5 bg-muted/30 rounded-xl border border-border/50 shadow-inner relative gap-1">
+                {[
+                  { id: 'combined', label: 'Single PDF' },
+                  { id: 'separate', label: 'Separate PDFs (ZIP)' }
+                ].map(mode => (
+                  <button
+                    key={mode.id}
+                    onClick={() => setExportMode(mode.id)}
+                    className={`flex-1 relative z-10 py-2.5 text-xs font-bold rounded-lg transition-colors ${
+                      exportMode === mode.id ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    {exportMode === mode.id && (
+                      <motion.div
+                        layoutId="export-active"
+                        className="absolute inset-0 bg-background border border-border rounded-lg shadow-sm -z-10"
+                      />
+                    )}
+                    {mode.label}
+                  </button>
+                ))}
+              </div>
+            </div>
 
             {/* Paper Size */}
             <div className="space-y-2">
@@ -351,7 +436,7 @@ const ImageToPdf = () => {
                 disabled:opacity-50 active:scale-[0.98] overflow-hidden
                 ${downloadState === 'done'
                   ? 'bg-green-600 hover:bg-green-700 text-white shadow-[0_4px_12px_rgba(22,163,74,0.3)]'
-                  : 'bg-primary hover:bg-primary/90 text-primary-foreground'
+                  : 'bg-primary hover:bg-primary/90 text-primary-foreground hover:shadow-[0_4px_12px_rgba(var(--primary),0.3)]'
                 }`}
             >
               <AnimatePresence mode="popLayout" initial={false}>
@@ -361,7 +446,7 @@ const ImageToPdf = () => {
                     transition={{ type: 'spring', stiffness: 300, damping: 20 }}
                     className="flex items-center gap-2"
                   >
-                    <CheckCircle size={20} /> Generated!
+                    <CheckCircle size={20} /> Exported!
                   </motion.div>
                 ) : downloadState === 'generating' ? (
                   <motion.div key="generating"
@@ -369,7 +454,7 @@ const ImageToPdf = () => {
                     transition={{ type: 'spring', stiffness: 300, damping: 20 }}
                     className="flex items-center gap-2"
                   >
-                    <Loader2 size={20} className="animate-spin" /> Generating PDF…
+                    <Loader2 size={20} className="animate-spin" /> {exportMode === 'combined' ? 'Generating PDF…' : 'Generating ZIP…'}
                   </motion.div>
                 ) : (
                   <motion.div key="idle"
@@ -377,7 +462,7 @@ const ImageToPdf = () => {
                     transition={{ type: 'spring', stiffness: 300, damping: 20 }}
                     className="flex items-center gap-2"
                   >
-                    <Download size={20} /> Generate PDF
+                    <Download size={20} /> {exportMode === 'combined' ? 'Generate PDF' : 'Generate PDFs (ZIP)'}
                   </motion.div>
                 )}
               </AnimatePresence>

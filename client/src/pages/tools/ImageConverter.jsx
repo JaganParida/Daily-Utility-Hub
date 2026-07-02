@@ -187,8 +187,8 @@ const ImageConverter = () => {
                         initial={{ opacity: 0, scale: 0.95, y: 10 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
-                        key={img.url || `${img.name}-${idx}`} 
-                        className="flex items-center gap-4 bg-muted/30 p-2.5 rounded-xl border border-border/50 group hover:border-primary/40 transition-all shadow-sm"
+                        key={img.url} 
+                        className="flex items-center gap-4 bg-muted/30 p-2.5 rounded-xl border border-border/50 group hover:border-primary/40 transition-colors duration-200 shadow-sm"
                       >
                         <img src={img.url} className="w-11 h-11 object-cover rounded-lg border border-border/50 shadow-sm" />
                         <div className="flex-1 truncate">
