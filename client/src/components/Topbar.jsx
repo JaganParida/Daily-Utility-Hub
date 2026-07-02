@@ -129,7 +129,7 @@ const Topbar = () => {
 
 
   return (
-    <header className="h-16 flex items-center justify-between px-4 md:px-8 bg-transparent border-b border-border/10 z-50 relative">
+    <header className="h-16 flex items-center justify-between px-4 md:px-8 bg-transparent z-50 relative">
       
       {/* LEFT: Logo & Back Button */}
       <div className="flex items-center gap-2 md:gap-4 shrink-0">
