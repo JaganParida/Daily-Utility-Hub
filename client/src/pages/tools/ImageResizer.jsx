@@ -217,7 +217,7 @@ const ImageResizer = () => {
                       layout
                       src={image.url} 
                       alt="Preview" 
-                      className="w-full h-full object-contain drop-shadow-md"
+                      className="w-full h-full object-fill drop-shadow-md"
                     />
                     {!maintainRatio && (
                       <motion.div layout className="absolute inset-0 border-[3px] border-red-500 border-dashed pointer-events-none z-10 shadow-[inset_0_0_30px_rgba(239,68,68,0.4)]"></motion.div>
@@ -234,7 +234,7 @@ const ImageResizer = () => {
         </motion.div>
 
         {/* Controls */}
-        <div className="w-full lg:w-[350px] xl:w-[400px] shrink-0 flex flex-col gap-6 h-full overflow-y-auto pb-4 custom-scrollbar">
+        <div className="w-full lg:w-[350px] xl:w-[400px] shrink-0 flex flex-col gap-6 h-full overflow-y-auto pb-4 custom-scrollbar min-h-0">
           <div className={`bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6 transition-all duration-300 ${!image ? 'opacity-50 pointer-events-none grayscale-[0.5]' : ''}`}>
             
             <div>
