@@ -81,9 +81,12 @@ const Dashboard = () => {
     .filter(Boolean)
     .slice(0, displayLimit);
 
+  const isPinLimitReached = pinnedTools.length >= displayLimit;
+
   const renderToolCard = (tool) => {
     const Icon = tool.icon;
     const isPinned = pinnedTools.includes(tool.to);
+    const showPinButton = isPinned || !isPinLimitReached;
     
     // Extract color classes (e.g. "text-emerald-500 bg-emerald-500/10")
     const colorClasses = tool.color.split(' ');
@@ -126,22 +129,23 @@ const Dashboard = () => {
         </Link>
         
         {/* PIN BUTTON (Lifted outside the overlay so it doesn't get covered) */}
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            togglePin(tool.to);
-          }}
-          className={`absolute top-4 right-4 p-2 rounded-xl transition-all duration-300 z-30 ${
-            isPinned 
-              ? 'text-indigo-500 bg-indigo-500/10 hover:bg-indigo-500/20 shadow-sm' 
-              : 'text-muted-foreground hover:bg-muted/80 hover:text-foreground opacity-0 group-hover:opacity-100 focus:opacity-100 scale-90 group-hover:scale-100'
-          }`}
-          title={isPinned ? "Unpin Tool" : "Pin Tool"}
-        >
-          <Pin size={18} className={isPinned ? "fill-current" : ""} />
-        </button>
-
+        {showPinButton && (
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              togglePin(tool.to);
+            }}
+            className={`absolute top-4 right-4 p-2 rounded-xl transition-all duration-300 z-30 ${
+              isPinned 
+                ? 'text-indigo-500 bg-indigo-500/10 hover:bg-indigo-500/20 shadow-sm' 
+                : 'text-muted-foreground hover:bg-muted/80 hover:text-foreground opacity-0 group-hover:opacity-100 focus:opacity-100 scale-90 group-hover:scale-100'
+            }`}
+            title={isPinned ? "Unpin Tool" : "Pin Tool"}
+          >
+            <Pin size={18} className={isPinned ? "fill-current" : ""} />
+          </button>
+        )}
       </div>
     );
   };
