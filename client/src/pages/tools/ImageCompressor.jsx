@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { Image as ImageIcon, Download, RefreshCw, Settings2, ArrowRight, ArrowRightLeft, Check, Loader2 } from 'lucide-react';
+import { UploadCloud, Download, Image as ImageIcon, RefreshCw, Loader2, Check, ArrowRightLeft, Settings2, ChevronDown, CheckCircle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import DropzoneComponent from '../../components/DropzoneComponent';
 import imageCompression from 'browser-image-compression';
 import { toast } from 'react-hot-toast';
@@ -207,82 +208,110 @@ const ImageCompressor = () => {
 
           {/* Controls Sidebar */}
           <div className="w-full lg:w-[350px] xl:w-[400px] shrink-0 space-y-6">
-            <div className="bg-card border border-border p-6 rounded-xl shadow-sm">
-              <h3 className="text-sm font-bold uppercase tracking-wider text-foreground mb-6 flex items-center gap-2 border-b border-border pb-4">
-                <Settings2 size={18} className="text-muted-foreground" /> Compression Settings
+            <div className={`bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6 transition-all duration-300 ${!originalFile ? 'opacity-50 pointer-events-none grayscale-[0.5]' : ''}`}>
+              <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-2 border-b border-border pb-3">
+                <Settings2 size={16} /> Compression Settings
               </h3>
               
-              <div className="space-y-7">
+              <div className="space-y-6">
                 
                 {/* Strategy Tabs */}
-                <div className="flex bg-muted/40 rounded-lg border border-border p-1">
-                  <button 
-                    onClick={() => setStrategy('size')}
-                    className={`flex-1 py-2.5 text-sm font-semibold rounded-md transition-all ${strategy === 'size' ? 'bg-background shadow-sm text-foreground border border-border/50' : 'text-muted-foreground hover:text-foreground border border-transparent'}`}
-                  >
-                    Target Size
-                  </button>
-                  <button 
-                    onClick={() => setStrategy('quality')}
-                    className={`flex-1 py-2.5 text-sm font-semibold rounded-md transition-all ${strategy === 'quality' ? 'bg-background shadow-sm text-foreground border border-border/50' : 'text-muted-foreground hover:text-foreground border border-transparent'}`}
-                  >
-                    Target Quality
-                  </button>
+                <div className="flex p-1.5 bg-muted/30 rounded-xl border border-border/50 shadow-inner relative">
+                  {['size', 'quality'].map((mode) => (
+                    <button 
+                      key={mode}
+                      onClick={() => setStrategy(mode)}
+                      className={`flex-1 relative z-10 py-2.5 text-sm font-bold rounded-lg transition-colors ${strategy === mode ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                    >
+                      {strategy === mode && (
+                        <motion.div layoutId="strategy-active" className="absolute inset-0 bg-background border border-border rounded-lg shadow-sm -z-10" />
+                      )}
+                      {mode === 'size' ? 'Target Size' : 'Target Quality'}
+                    </button>
+                  ))}
                 </div>
 
                 {/* Strategy Context Controls */}
                 {strategy === 'size' ? (
                   <div className="space-y-3 animate-in fade-in">
-                    <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider">Max File Size</label>
+                    <label className="text-sm font-semibold text-foreground">Max File Size</label>
                     <div className="flex gap-3">
                       <input 
                         type="number" 
                         value={targetSize}
                         onChange={(e) => setTargetSize(e.target.value)}
-                        className="w-full p-3 bg-background border border-border rounded-lg text-base text-foreground focus:ring-1 focus:ring-primary outline-none transition-all font-mono"
+                        className="w-full p-3 bg-background border border-border rounded-xl text-sm text-foreground focus:ring-2 focus:ring-primary/50 outline-none transition-all font-mono shadow-sm"
                       />
-                      <select 
-                        value={sizeUnit}
-                        onChange={(e) => setSizeUnit(e.target.value)}
-                        className="p-3 bg-background border border-border rounded-lg text-base text-foreground focus:ring-1 focus:ring-primary outline-none transition-all font-medium w-24 shrink-0"
-                      >
-                         <option value="KB">KB</option>
-                         <option value="MB">MB</option>
-                      </select>
+                      <div className="relative group w-28 shrink-0">
+                        <select 
+                          value={sizeUnit}
+                          onChange={(e) => setSizeUnit(e.target.value)}
+                          className="w-full appearance-none p-3 pl-4 pr-8 bg-muted/20 border border-border/50 group-hover:border-border rounded-xl text-sm text-foreground focus:ring-2 focus:ring-primary/50 outline-none transition-all font-semibold cursor-pointer shadow-sm"
+                        >
+                           <option value="KB">KB</option>
+                           <option value="MB">MB</option>
+                        </select>
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground group-hover:text-foreground transition-colors">
+                          <ChevronDown size={16} />
+                        </div>
+                      </div>
                     </div>
                   </div>
-                ) : (
                   <div className="space-y-4 animate-in fade-in">
                     <div className="flex justify-between items-center">
-                      <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Quality Level</label>
-                      <span className="text-sm font-bold text-foreground">{quality}%</span>
+                      <label className="text-sm font-semibold text-foreground">Quality Level</label>
+                      <span className="text-xs font-bold bg-primary/10 text-primary border border-primary/20 px-2 py-1 rounded-md">{quality}%</span>
                     </div>
-                    <div className="relative pt-2">
+                    <div className="relative group pt-2 pb-2">
                       <input 
                         type="range" 
                         min="1" 
                         max="100" 
                         value={quality}
                         onChange={(e) => setQuality(Number(e.target.value))}
-                        className="w-full h-1.5 bg-muted/60 rounded-full appearance-none outline-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-lg hover:[&::-webkit-slider-thumb]:scale-125 transition-all [&::-webkit-slider-thumb]:transition-transform"
+                        className="w-full h-2.5 rounded-full appearance-none cursor-pointer outline-none transition-all"
+                        style={{
+                          background: `linear-gradient(to right, var(--primary) ${quality}%, var(--muted) ${quality}%)`,
+                        }}
                       />
+                      <style dangerouslySetInnerHTML={{__html: `
+                        input[type=range]::-webkit-slider-thumb {
+                          appearance: none;
+                          width: 20px;
+                          height: 20px;
+                          border-radius: 50%;
+                          background: white;
+                          border: 2px solid var(--primary);
+                          cursor: pointer;
+                          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                          transition: transform 0.1s;
+                        }
+                        input[type=range]:hover::-webkit-slider-thumb {
+                          transform: scale(1.15);
+                        }
+                      `}} />
                     </div>
                   </div>
                 )}
 
                 {/* Max Dimensions */}
-                <div className="pt-5 border-t border-border">
-                  <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Max Dimensions</label>
-                  <select 
-                    value={maxWidthOrHeight}
-                    onChange={(e) => setMaxWidthOrHeight(Number(e.target.value))}
-                    className="w-full p-3 bg-background border border-border rounded-lg text-base text-foreground focus:ring-1 focus:ring-primary outline-none transition-all font-medium"
-                  >
-                    <option value={4000}>Original (No scaling)</option>
-                    <option value={1920}>1920px (Full HD)</option>
-                    <option value={1280}>1280px (HD)</option>
-                    <option value={800}>800px (Web Optimized)</option>
-                  </select>
+                <div className="pt-4 border-t border-border/50 space-y-3">
+                  <label className="text-sm font-semibold text-foreground">Max Dimensions</label>
+                  <div className="relative group">
+                    <select 
+                      value={maxWidthOrHeight}
+                      onChange={(e) => setMaxWidthOrHeight(Number(e.target.value))}
+                      className="w-full appearance-none bg-muted/20 border border-border/50 group-hover:border-border p-3 pl-4 pr-10 rounded-xl text-sm font-medium text-foreground focus:ring-2 focus:ring-primary/50 outline-none transition-all cursor-pointer shadow-sm"
+                    >
+                      <option value={4000} className="bg-background text-foreground">Original (No scaling)</option>
+                      <option value={1920} className="bg-background text-foreground">1920px (Full HD)</option>
+                      <option value={1280} className="bg-background text-foreground">1280px (HD)</option>
+                      <option value={800} className="bg-background text-foreground">800px (Web Optimized)</option>
+                    </select>
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground group-hover:text-foreground transition-colors">
+                      <ChevronDown size={18} />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -291,20 +320,57 @@ const ImageCompressor = () => {
               <button 
                 onClick={handleDownload}
                 disabled={!compressedFile || isCompressing || downloadState !== 'idle'}
-                className={`w-full py-3.5 font-bold text-base rounded-lg transition-all flex items-center justify-center gap-2 disabled:opacity-80 ${
+                className={`w-full h-14 font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-[0_1px_2px_rgba(0,0,0,0.1),0_0_0_1px_rgba(255,255,255,0.1)_inset] disabled:opacity-50 disabled:hover:shadow-none active:scale-[0.98] overflow-hidden ${
                   downloadState === 'downloaded' 
-                    ? 'bg-emerald-500 text-white shadow-emerald-500/20 shadow-lg scale-[0.98]' 
-                    : 'bg-foreground text-background hover:bg-foreground/90'
+                    ? 'bg-green-600 hover:bg-green-700 text-white shadow-[0_4px_12px_rgba(22,163,74,0.3)]' 
+                    : 'bg-primary hover:bg-primary/90 text-primary-foreground hover:shadow-[0_4px_12px_rgba(var(--primary),0.3)]'
                 }`}
               >
-                {downloadState === 'idle' && <><Download size={18} /> Download</>}
-                {downloadState === 'downloading' && <><Loader2 size={18} className="animate-spin" /> Downloading...</>}
-                {downloadState === 'downloaded' && <><Check size={18} /> Downloaded!</>}
+                <AnimatePresence mode="popLayout" initial={false}>
+                  {downloadState === 'downloaded' ? (
+                    <motion.div
+                      key="success"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                      className="flex items-center gap-2"
+                    >
+                      <CheckCircle size={20} />
+                      Downloaded!
+                    </motion.div>
+                  ) : downloadState === 'downloading' ? (
+                    <motion.div
+                      key="generating"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                      className="flex items-center gap-2"
+                    >
+                      <Loader2 size={20} className="animate-spin" />
+                      Downloading...
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="idle"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                      className="flex items-center gap-2"
+                    >
+                      <Download size={20} />
+                      Download Image
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </button>
               
               <button 
                 onClick={clear}
-                className="w-full py-3.5 bg-muted/50 border border-border text-foreground font-bold text-base rounded-lg hover:bg-muted transition-colors flex items-center justify-center gap-2"
+                disabled={isCompressing || !originalFile}
+                className="w-full py-3.5 bg-muted/20 hover:bg-muted/50 border border-border/50 hover:border-border text-foreground font-semibold rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 active:scale-[0.98]"
               >
                 <RefreshCw size={18} /> Upload New
               </button>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FileText, Download, RefreshCw, Trash2, ArrowUp, ArrowDown, Settings2, ChevronDown } from 'lucide-react';
+import { FileText, Download, RefreshCw, Trash2, ArrowUp, ArrowDown, Settings2, ChevronDown, CheckCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DropzoneComponent from '../../components/DropzoneComponent';
 import { jsPDF } from 'jspdf';
@@ -19,6 +19,7 @@ const PAGE_SIZES = [
 const ImageToPdf = () => {
   const [images, setImages] = useState([]); // Array of { file, url }
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   
   const [pdfOrientation, setPdfOrientation] = useState('p'); // 'p' for portrait, 'l' for landscape
   const [pageSize, setPageSize] = useState('a4');
@@ -116,6 +117,8 @@ const ImageToPdf = () => {
 
       doc.save('converted_document.pdf');
       toast.success('PDF Generated successfully!');
+      setIsSuccess(true);
+      setTimeout(() => setIsSuccess(false), 3000);
     } catch (error) {
       console.error(error);
       toast.error('Failed to generate PDF');
@@ -216,7 +219,7 @@ const ImageToPdf = () => {
 
         {/* Settings Sidebar */}
         <div className="w-full lg:w-[350px] xl:w-[400px] shrink-0 space-y-6">
-          <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6">
+          <div className={`bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6 transition-all duration-300 ${images.length === 0 ? 'opacity-50 pointer-events-none grayscale-[0.5]' : ''}`}>
             
             <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground border-b border-border pb-3 flex items-center gap-2">
               <Settings2 size={16} /> Document Layout
@@ -303,16 +306,57 @@ const ImageToPdf = () => {
           <div className="space-y-3">
             <button 
               onClick={generatePDF}
-              disabled={isGenerating || images.length === 0}
-              className="w-full py-3.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-[0_1px_2px_rgba(0,0,0,0.1),0_0_0_1px_rgba(255,255,255,0.1)_inset] hover:shadow-[0_4px_12px_rgba(220,38,38,0.3),0_0_0_1px_rgba(255,255,255,0.2)_inset] disabled:opacity-50 disabled:hover:shadow-none active:scale-[0.98]"
+              disabled={isGenerating || isSuccess || images.length === 0}
+              className={`w-full h-14 font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-[0_1px_2px_rgba(0,0,0,0.1),0_0_0_1px_rgba(255,255,255,0.1)_inset] disabled:opacity-50 disabled:hover:shadow-none active:scale-[0.98] overflow-hidden ${
+                isSuccess 
+                  ? 'bg-green-600 hover:bg-green-700 text-white shadow-[0_4px_12px_rgba(22,163,74,0.3)]' 
+                  : 'bg-red-600 hover:bg-red-700 text-white hover:shadow-[0_4px_12px_rgba(220,38,38,0.3)]'
+              }`}
             >
-              {isGenerating ? <RefreshCw size={18} className="animate-spin" /> : <Download size={18} />}
-              {isGenerating ? 'Generating...' : 'Generate PDF'}
+              <AnimatePresence mode="popLayout" initial={false}>
+                {isSuccess ? (
+                  <motion.div
+                    key="success"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                    className="flex items-center gap-2"
+                  >
+                    <CheckCircle size={20} />
+                    Generated!
+                  </motion.div>
+                ) : isGenerating ? (
+                  <motion.div
+                    key="generating"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                    className="flex items-center gap-2"
+                  >
+                    <RefreshCw size={20} className="animate-spin" />
+                    Generating...
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="idle"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                    className="flex items-center gap-2"
+                  >
+                    <Download size={20} />
+                    Generate PDF
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </button>
             <button 
               onClick={clear}
               disabled={isGenerating || images.length === 0}
-              className="w-full py-3 bg-muted/20 hover:bg-muted/50 border border-border/50 hover:border-border text-foreground font-semibold rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 active:scale-[0.98]"
+              className="w-full py-3.5 bg-muted/20 hover:bg-muted/50 border border-border/50 hover:border-border text-foreground font-semibold rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 active:scale-[0.98]"
             >
               <Trash2 size={18} /> Clear Queue
             </button>
