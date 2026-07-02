@@ -217,16 +217,23 @@ const ImageCollage = () => {
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         
         {/* Main Preview Area */}
-        <div className="flex-1 w-full bg-card border border-border p-4 md:p-6 rounded-xl shadow-sm flex flex-col min-h-[50vh] relative">
+        <div className="flex-1 w-full h-[60vh] min-h-[400px] max-h-[700px] bg-card border border-border p-4 md:p-6 rounded-xl shadow-sm flex flex-col relative">
           
-          <div className="flex-1 w-full bg-muted/10 rounded-xl border border-border/50 flex flex-col items-center justify-center p-2 md:p-4 overflow-hidden relative">
+          <div className="flex-1 w-full h-full bg-muted/10 rounded-xl border border-border/50 flex flex-col items-center justify-center p-2 md:p-4 overflow-hidden relative">
             
-            {/* The actual Collage DOM Node to be screenshotted */}
-            <div 
-              ref={collageRef}
-              className={`grid w-full aspect-square md:aspect-[4/3] overflow-hidden ${template.gridClass}`}
-              style={{ gap: `${gap}px`, backgroundColor: bgColor, padding: `${gap}px` }}
-            >
+            {/* Bounding box to ensure the grid never overflows vertically or horizontally */}
+            <div className="relative flex items-center justify-center max-w-full max-h-full h-full">
+              
+              {/* Invisible SVG spacers force the container to maintain a perfect aspect ratio without overflowing */}
+              <svg viewBox="0 0 4 3" className="hidden md:block h-full w-auto max-w-full max-h-full pointer-events-none opacity-0" />
+              <svg viewBox="0 0 1 1" className="block md:hidden h-full w-auto max-w-full max-h-full pointer-events-none opacity-0" />
+              
+              {/* The actual Collage DOM Node to be screenshotted */}
+              <div 
+                ref={collageRef}
+                className={`absolute inset-0 grid overflow-hidden shadow-sm ${template.gridClass}`}
+                style={{ gap: `${gap}px`, backgroundColor: bgColor, padding: `${gap}px` }}
+              >
               {Array.from({ length: template.slots }).map((_, idx) => (
                 <div 
                   key={idx}
@@ -272,6 +279,7 @@ const ImageCollage = () => {
                   )}
                 </div>
               ))}
+              </div>
             </div>
 
             {isGenerating && (
