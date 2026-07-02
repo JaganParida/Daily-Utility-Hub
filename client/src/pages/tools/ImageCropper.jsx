@@ -159,7 +159,7 @@ const ImageCropper = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="max-w-[1600px] mx-auto w-full px-2 md:px-8">
       <div className="mb-6 flex items-center gap-3">
         <div className="p-2 bg-purple-500/10 text-purple-500 rounded-lg shadow-sm">
           <Crop size={28} />
@@ -172,11 +172,10 @@ const ImageCropper = () => {
 
       <canvas ref={canvasRef} className="hidden" />
 
-      <div className="space-y-6">
-        <div className="grid lg:grid-cols-[1fr_350px] gap-6">
+      <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
           
           {/* Cropper Area */}
-          <div className="bg-card border border-border p-6 rounded-2xl shadow-sm overflow-hidden flex flex-col items-center justify-center min-h-[500px] relative">
+          <div className="flex-1 w-full bg-card border border-border p-4 md:p-6 rounded-xl shadow-sm flex flex-col items-center justify-center min-h-[50vh] relative">
             {!file ? (
               <div className="w-full h-full flex flex-col justify-center">
                 <DropzoneComponent 
@@ -218,7 +217,7 @@ const ImageCropper = () => {
             </div>
 
             {/* Controls sidebar */}
-            <div className="space-y-6">
+            <div className="w-full lg:w-[350px] xl:w-[400px] shrink-0 space-y-6">
               
               <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6">
                 
@@ -322,9 +321,8 @@ const ImageCropper = () => {
               </div>
 
             </div>
-          </div>
         </div>
-      </div>
+    </div>
   );
 };
 
