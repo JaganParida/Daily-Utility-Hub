@@ -167,7 +167,7 @@ const TextLineEditor = () => {
 
         {/* Right: Controls Sidebar */}
         <div className={`w-full lg:w-[350px] xl:w-[400px] shrink-0 transition-all duration-300 ${!hasText ? 'opacity-50 pointer-events-none grayscale-[0.5]' : ''}`}>
-          <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-5 lg:h-[calc(100vh-250px)] lg:max-h-[620px] lg:min-h-[520px] overflow-y-auto custom-scrollbar">
+          <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-5">
             
             {/* Case Sensitive Switch */}
             <div className="flex items-center justify-between pb-3 border-b border-border/50">

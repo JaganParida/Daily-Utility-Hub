@@ -238,7 +238,7 @@ const FindAndReplace = () => {
 
         {/* Right: Sidebar Panel */}
         <div className={`w-full lg:w-[320px] xl:w-[350px] shrink-0 transition-all duration-300 ${!hasText ? 'opacity-50 pointer-events-none grayscale-[0.5]' : ''}`}>
-          <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6 lg:h-[calc(100vh-250px)] lg:max-h-[620px] lg:min-h-[520px] overflow-y-auto custom-scrollbar flex flex-col">
+          <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6 flex flex-col">
             
             {/* Occurrences Stats */}
             <div className="space-y-2">
