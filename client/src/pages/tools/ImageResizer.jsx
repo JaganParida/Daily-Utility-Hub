@@ -183,10 +183,10 @@ const ImageResizer = () => {
                 </div>
               </div>
               
-              <div className="w-full h-auto max-h-[45vh] min-h-[250px] bg-muted/10 rounded-xl border border-border flex items-center justify-center p-4 overflow-hidden relative">
+              <div className="w-full flex-1 min-h-[250px] max-h-[45vh] bg-muted/10 rounded-xl border border-border flex items-center justify-center p-4 relative">
                 {/* Visual feedback of bounding box */}
                 <div 
-                  className="relative flex items-center justify-center bg-black/20 dark:bg-black/40 ring-1 ring-border/50 shadow-2xl transition-all duration-300 ease-out"
+                  className="relative flex items-center justify-center bg-black/20 dark:bg-black/40 shadow-2xl transition-all duration-300 ease-out"
                   style={{
                     aspectRatio: `${width > 0 ? width : 1} / ${height > 0 ? height : 1}`,
                     maxHeight: '100%',
@@ -199,10 +199,10 @@ const ImageResizer = () => {
                     className="w-full h-full object-fill drop-shadow-md"
                   />
                   {!maintainRatio && (
-                    <div className="absolute inset-0 border-[3px] border-red-500 shadow-[inset_0_0_30px_rgba(239,68,68,0.4)] pointer-events-none z-10"></div>
+                    <div className="absolute inset-0 border-4 border-red-500 border-dashed opacity-80 pointer-events-none z-10"></div>
                   )}
                   {maintainRatio && (
-                    <div className="absolute inset-0 border-2 border-emerald-500/30 pointer-events-none z-10"></div>
+                    <div className="absolute inset-0 border-2 border-emerald-500/20 pointer-events-none z-10"></div>
                   )}
                 </div>
               </div>
