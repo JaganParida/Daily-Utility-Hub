@@ -148,7 +148,7 @@ const ImageConverter = () => {
             title="Drag & drop images to convert (Batch Upload Supported)"
           />
 
-          <AnimatePresence>
+          <AnimatePresence mode="popLayout">
             {images.length > 0 && (
               <motion.div 
                 layout

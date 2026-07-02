@@ -152,7 +152,7 @@ const ImageToPdf = () => {
             title="Drag & drop images here"
           />
 
-          <AnimatePresence>
+          <AnimatePresence mode="popLayout">
           {images.length > 0 && (
             <motion.div 
               layout
