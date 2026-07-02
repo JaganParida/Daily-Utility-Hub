@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Mic, MicOff, Volume2, VolumeX, Download, Trash2, Copy, Play, Pause, RefreshCw, ChevronDown, CheckCircle, Award } from 'lucide-react';
+import { Mic, MicOff, Volume2, VolumeX, Download, Trash2, Copy, Play, Pause, RefreshCw, ChevronDown, CheckCircle, Award, Sliders } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 
