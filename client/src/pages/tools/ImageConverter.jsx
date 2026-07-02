@@ -245,7 +245,7 @@ const ImageConverter = () => {
                     {Math.round(quality * 100)}%
                   </span>
                 </div>
-                <div className="relative group pt-1 pb-1">
+                <div className="relative pt-2 pb-1">
                   <input 
                     type="range" 
                     min="0.1" 
@@ -253,25 +253,40 @@ const ImageConverter = () => {
                     step="0.05"
                     value={quality}
                     onChange={(e) => setQuality(Number(e.target.value))}
-                    className="w-full h-2.5 rounded-full appearance-none cursor-pointer outline-none transition-all"
+                    className="converter-quality-slider w-full cursor-pointer outline-none"
                     style={{
-                      background: `linear-gradient(to right, var(--primary) ${quality * 100}%, var(--muted) ${quality * 100}%)`,
+                      WebkitAppearance: 'none',
+                      appearance: 'none',
+                      height: '10px',
+                      borderRadius: '999px',
+                      background: `linear-gradient(to right, var(--primary) ${(quality - 0.1) / 0.9 * 100}%, color-mix(in srgb, var(--muted) 60%, transparent) ${(quality - 0.1) / 0.9 * 100}%)`,
                     }}
                   />
                   <style dangerouslySetInnerHTML={{__html: `
-                    input[type=range]::-webkit-slider-thumb {
+                    .converter-quality-slider::-webkit-slider-thumb {
+                      -webkit-appearance: none;
                       appearance: none;
-                      width: 20px;
-                      height: 20px;
+                      width: 22px;
+                      height: 22px;
                       border-radius: 50%;
-                      background: white;
-                      border: 2px solid var(--primary);
+                      background: #ffffff;
+                      border: 2.5px solid var(--primary);
                       cursor: pointer;
-                      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-                      transition: transform 0.1s;
+                      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+                      transition: transform 0.15s ease, box-shadow 0.15s ease;
                     }
-                    input[type=range]:hover::-webkit-slider-thumb {
-                      transform: scale(1.15);
+                    .converter-quality-slider::-webkit-slider-thumb:hover {
+                      transform: scale(1.2);
+                      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                    }
+                    .converter-quality-slider::-moz-range-thumb {
+                      width: 22px;
+                      height: 22px;
+                      border-radius: 50%;
+                      background: #ffffff;
+                      border: 2.5px solid var(--primary);
+                      cursor: pointer;
+                      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
                     }
                   `}} />
                 </div>
