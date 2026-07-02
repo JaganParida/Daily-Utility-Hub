@@ -220,76 +220,56 @@ const ImageCropper = () => {
         {/* Cropper Area */}
         <motion.div 
           layout
-          className={`flex-1 w-full bg-card border border-border rounded-2xl shadow-sm flex flex-col relative transition-all duration-500 ease-out ${!file ? 'min-h-[50vh] items-stretch p-0' : 'min-h-0 items-center justify-center p-4 md:p-6'}`}
+          className={`flex-1 w-full bg-card border border-border rounded-2xl shadow-sm flex flex-col relative transition-all duration-500 ease-out ${!file ? 'min-h-[50vh] items-stretch p-4 md:p-5' : 'min-h-0 items-center justify-center p-4 md:p-6'}`}
         >
-          <AnimatePresence mode="popLayout" initial={false}>
-            {!file ? (
-              <motion.div 
-                key="dropzone"
-                layout
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.3 }}
-                className="w-full h-full flex flex-col justify-center"
+          {!file ? (
+            <div 
+              className="flex-1 w-full h-full flex flex-col"
+            >
+              <DropzoneComponent 
+                className="flex-1 h-full w-full justify-center"
+                onFilesAccepted={handleFilesAccepted} 
+                accept={{ 'image/*': ['.jpeg', '.jpg', '.png', '.webp'] }} 
+                maxFiles={1}
+                title="Drag & drop an image to crop"
+              />
+            </div>
+          ) : !croppedBlob ? (
+            <div 
+              className="flex flex-col items-center justify-center max-w-full min-h-0"
+            >
+              <ReactCrop
+                crop={crop}
+                onChange={(_, percentCrop) => setCrop(percentCrop)}
+                onComplete={(c) => setCompletedCrop(c)}
+                aspect={aspect}
+                circularCrop={isCircular}
+                className="max-h-[60vh] lg:max-h-[calc(100vh-220px)] overflow-hidden rounded-xl border border-border/50"
               >
-                <DropzoneComponent 
-                  className="flex-1 h-full w-full justify-center"
-                  onFilesAccepted={handleFilesAccepted} 
-                  accept={{ 'image/*': ['.jpeg', '.jpg', '.png', '.webp'] }} 
-                  maxFiles={1}
-                  title="Drag & drop an image to crop"
+                <motion.img
+                  ref={imgRef}
+                  alt="Crop target"
+                  src={imgSrc}
+                  onLoad={onImageLoad}
+                  animate={{ rotate, scaleX, scaleY }}
+                  transition={{ type: "spring", stiffness: 200, damping: 22 }}
+                  className="max-h-[60vh] lg:max-h-[calc(100vh-220px)] object-contain"
                 />
-              </motion.div>
-            ) : !croppedBlob ? (
-              <motion.div 
-                key="cropper"
-                layout
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.3 }}
-                className="flex flex-col items-center justify-center max-w-full min-h-0"
-              >
-                <ReactCrop
-                  crop={crop}
-                  onChange={(_, percentCrop) => setCrop(percentCrop)}
-                  onComplete={(c) => setCompletedCrop(c)}
-                  aspect={aspect}
-                  circularCrop={isCircular}
-                  className="max-h-[60vh] lg:max-h-[calc(100vh-220px)] overflow-hidden rounded-xl border border-border/50"
-                >
-                  <motion.img
-                    ref={imgRef}
-                    alt="Crop target"
-                    src={imgSrc}
-                    onLoad={onImageLoad}
-                    animate={{ rotate, scaleX, scaleY }}
-                    transition={{ type: "spring", stiffness: 200, damping: 22 }}
-                    className="max-h-[60vh] lg:max-h-[calc(100vh-220px)] object-contain"
-                  />
-                </ReactCrop>
-              </motion.div>
-            ) : (
-              <motion.div 
-                key="result"
-                layout
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.3 }}
-                className="flex flex-col items-center w-full h-full justify-center min-h-0"
-              >
-                <div className="bg-muted/10 p-4 md:p-8 rounded-2xl border border-border w-full flex justify-center max-h-[60vh] lg:max-h-[calc(100vh-220px)] overflow-hidden">
-                  <img 
-                    src={croppedUrl} 
-                    alt="Cropped result" 
-                    className="max-h-full object-contain drop-shadow-md rounded-lg"
-                  />
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+              </ReactCrop>
+            </div>
+          ) : (
+            <div 
+              className="flex flex-col items-center w-full h-full justify-center min-h-0"
+            >
+              <div className="bg-muted/10 p-4 md:p-8 rounded-2xl border border-border w-full flex justify-center max-h-[60vh] lg:max-h-[calc(100vh-220px)] overflow-hidden">
+                <img 
+                  src={croppedUrl} 
+                  alt="Cropped result" 
+                  className="max-h-full object-contain drop-shadow-md rounded-lg"
+                />
+              </div>
+            </div>
+          )}
         </motion.div>
 
         {/* Controls sidebar */}
