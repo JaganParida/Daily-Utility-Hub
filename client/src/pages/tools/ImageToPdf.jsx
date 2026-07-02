@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FileText, Download, RefreshCw, Trash2, ArrowUp, ArrowDown, Settings2 } from 'lucide-react';
+import { FileText, Download, RefreshCw, Trash2, ArrowUp, ArrowDown, Settings2, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DropzoneComponent from '../../components/DropzoneComponent';
 import { jsPDF } from 'jspdf';
@@ -223,53 +223,79 @@ const ImageToPdf = () => {
             </h3>
             
             {/* Paper Size */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Paper Size</label>
-              <select 
-                value={pageSize}
-                onChange={(e) => setPageSize(e.target.value)}
-                className="w-full p-2.5 bg-background border border-border rounded-md text-sm font-medium text-foreground focus:ring-2 focus:ring-red-500 outline-none transition-all"
-              >
-                {PAGE_SIZES.map(size => (
-                  <option key={size.id} value={size.id}>{size.name}</option>
-                ))}
-              </select>
+            <div className="space-y-3">
+              <label className="text-sm font-semibold text-foreground">Paper Size</label>
+              <div className="relative group">
+                <select 
+                  value={pageSize}
+                  onChange={(e) => setPageSize(e.target.value)}
+                  className="w-full appearance-none bg-muted/20 border border-border/50 group-hover:border-border p-3 pl-4 pr-10 rounded-xl text-sm font-medium text-foreground focus:ring-2 focus:ring-red-500/50 outline-none transition-all cursor-pointer shadow-sm"
+                >
+                  {PAGE_SIZES.map(size => (
+                    <option key={size.id} value={size.id} className="bg-background text-foreground">{size.name}</option>
+                  ))}
+                </select>
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground group-hover:text-foreground transition-colors">
+                  <ChevronDown size={18} />
+                </div>
+              </div>
             </div>
 
             {/* Orientation */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Orientation</label>
-              <div className="flex gap-2 p-1 bg-muted/50 rounded-lg border border-border">
-                <button 
-                  onClick={() => setPdfOrientation('p')}
-                  className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${pdfOrientation === 'p' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
-                >
-                  Portrait
-                </button>
-                <button 
-                  onClick={() => setPdfOrientation('l')}
-                  className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${pdfOrientation === 'l' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
-                >
-                  Landscape
-                </button>
+            <div className="space-y-3">
+              <label className="text-sm font-semibold text-foreground">Orientation</label>
+              <div className="flex p-1.5 bg-muted/30 rounded-xl border border-border/50 shadow-inner relative">
+                {['p', 'l'].map(mode => (
+                  <button
+                    key={mode}
+                    onClick={() => setPdfOrientation(mode)}
+                    className={`flex-1 relative z-10 py-2.5 text-sm font-bold rounded-lg transition-colors ${pdfOrientation === mode ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                  >
+                    {pdfOrientation === mode && (
+                      <motion.div layoutId="orientation-active" className="absolute inset-0 bg-background border border-border rounded-lg shadow-sm -z-10" />
+                    )}
+                    {mode === 'p' ? 'Portrait' : 'Landscape'}
+                  </button>
+                ))}
               </div>
             </div>
 
             {/* Margins */}
-            <div className="space-y-2 pt-2 border-t border-border">
+            <div className="space-y-4 pt-4 border-t border-border/50">
               <div className="flex justify-between items-center">
-                <label className="text-sm font-medium text-foreground">White Margin</label>
-                <span className="text-xs font-bold bg-red-500/10 text-red-500 px-2 py-0.5 rounded-md">{margin} mm</span>
+                <label className="text-sm font-semibold text-foreground">White Margin</label>
+                <span className="text-xs font-bold bg-red-500/10 text-red-500 border border-red-500/20 px-2 py-1 rounded-md">{margin} mm</span>
               </div>
-              <input 
-                type="range" 
-                min="0" 
-                max="50" 
-                value={margin}
-                onChange={(e) => setMargin(Number(e.target.value))}
-                className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-red-500"
-              />
-              <p className="text-xs text-muted-foreground mt-1">Leave empty white space around images (like a printer).</p>
+              <div className="relative group pt-2 pb-2">
+                <input 
+                  type="range" 
+                  min="0" 
+                  max="50" 
+                  value={margin}
+                  onChange={(e) => setMargin(Number(e.target.value))}
+                  className="w-full h-2.5 rounded-full appearance-none cursor-pointer outline-none transition-all"
+                  style={{
+                    background: `linear-gradient(to right, rgb(239 68 68) ${(margin / 50) * 100}%, var(--muted) ${(margin / 50) * 100}%)`,
+                  }}
+                />
+                <style dangerouslySetInnerHTML={{__html: `
+                  input[type=range]::-webkit-slider-thumb {
+                    appearance: none;
+                    width: 20px;
+                    height: 20px;
+                    border-radius: 50%;
+                    background: white;
+                    border: 2px solid rgb(239 68 68);
+                    cursor: pointer;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                    transition: transform 0.1s;
+                  }
+                  input[type=range]:hover::-webkit-slider-thumb {
+                    transform: scale(1.15);
+                  }
+                `}} />
+              </div>
+              <p className="text-xs text-muted-foreground/80 leading-relaxed">Leave empty white space around images (like a printer bounding box).</p>
             </div>
 
           </div>
@@ -278,17 +304,17 @@ const ImageToPdf = () => {
             <button 
               onClick={generatePDF}
               disabled={isGenerating || images.length === 0}
-              className="w-full py-3 bg-red-500 text-white font-medium rounded-xl hover:bg-red-600 transition-colors flex items-center justify-center gap-2 shadow-sm shadow-red-500/20 disabled:opacity-50"
+              className="w-full py-3.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-[0_1px_2px_rgba(0,0,0,0.1),0_0_0_1px_rgba(255,255,255,0.1)_inset] hover:shadow-[0_4px_12px_rgba(220,38,38,0.3),0_0_0_1px_rgba(255,255,255,0.2)_inset] disabled:opacity-50 disabled:hover:shadow-none active:scale-[0.98]"
             >
               {isGenerating ? <RefreshCw size={18} className="animate-spin" /> : <Download size={18} />}
-              Generate PDF
+              {isGenerating ? 'Generating...' : 'Generate PDF'}
             </button>
             <button 
               onClick={clear}
               disabled={isGenerating || images.length === 0}
-              className="w-full py-3 bg-background border border-border text-foreground font-medium rounded-xl hover:bg-muted transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+              className="w-full py-3 bg-muted/20 hover:bg-muted/50 border border-border/50 hover:border-border text-foreground font-semibold rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 active:scale-[0.98]"
             >
-              <RefreshCw size={18} /> Clear All
+              <Trash2 size={18} /> Clear Queue
             </button>
           </div>
         </div>
