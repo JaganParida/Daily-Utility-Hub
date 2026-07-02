@@ -1,5 +1,6 @@
 import { User, LogOut, Search, ArrowLeft, Layers } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useHotkeys } from 'react-hotkeys-hook';
@@ -129,7 +130,12 @@ const Topbar = () => {
 
 
   return (
-    <header className="h-16 flex items-center justify-between px-4 md:px-8 bg-transparent z-50 relative">
+    <motion.header 
+      initial={{ y: -20, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
+      className="h-16 flex items-center justify-between px-4 md:px-8 bg-transparent z-50 relative"
+    >
       
       {/* LEFT: Logo & Back Button */}
       <div className="flex items-center gap-2 md:gap-4 shrink-0">
@@ -222,7 +228,7 @@ const Topbar = () => {
           </Link>
         )}
       </div>
-    </header>
+    </motion.header>
   );
 };
 

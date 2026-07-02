@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { Type, Hash, Key, Layers, AlignLeft, Image as ImageIcon, Expand, Crop, ArrowRightLeft, LayoutGrid, FileText, Braces, Search, Calculator, TrendingUp, Percent, Landmark, FolderArchive, Pin, Clock, ArrowRight } from 'lucide-react';
 import PageTransition from '../components/PageTransition';
 import { useAnalytics } from '../hooks/useAnalytics';
@@ -83,6 +84,29 @@ const Dashboard = () => {
 
   const isPinLimitReached = pinnedTools.length >= displayLimit;
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.05
+      }
+    }
+  };
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: {
+        type: "spring",
+        stiffness: 300,
+        damping: 24
+      }
+    }
+  };
+
   const renderToolCard = (tool) => {
     const Icon = tool.icon;
     const isPinned = pinnedTools.includes(tool.to);
@@ -95,10 +119,15 @@ const Dashboard = () => {
     const borderColor = textColor.replace('text-', 'border-') + '/50';
 
     return (
-      <div key={tool.name} className="group relative">
+      <motion.div 
+        key={tool.name} 
+        variants={cardVariants}
+        whileHover={{ y: -5, transition: { type: "spring", stiffness: 400, damping: 10 } }}
+        className="group relative"
+      >
         <Link 
           to={tool.to}
-          className={`relative flex flex-col h-full p-6 transition-all duration-300 bg-card/40 hover:bg-card/80 backdrop-blur-md border border-border/50 hover:${borderColor} rounded-2xl shadow-sm hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:hover:shadow-[0_8px_30px_rgba(255,255,255,0.03)] overflow-hidden hover:-translate-y-1`}
+          className={`relative flex flex-col h-full p-6 transition-colors duration-300 bg-card/40 hover:bg-card/80 backdrop-blur-md border border-border/50 hover:${borderColor} rounded-2xl shadow-sm hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:hover:shadow-[0_8px_30px_rgba(255,255,255,0.03)] overflow-hidden`}
         >
           {/* Subtle gradient background on hover */}
           <div className={`absolute inset-0 opacity-0 group-hover:opacity-[0.05] transition-opacity duration-500 ${tool.color.split(' ')[1].replace('/10', '')} pointer-events-none rounded-2xl`}></div>
@@ -137,20 +166,25 @@ const Dashboard = () => {
             <ArrowRight size={16} className="ml-2 transition-transform group-hover:translate-x-1" />
           </div>
         </Link>
-      </div>
+      </motion.div>
     );
   };
 
   return (
     <PageTransition className="space-y-12 max-w-[1600px] mx-auto pb-20 px-4 md:px-8">
-      <div className="text-center space-y-6 pt-16 md:pt-28 pb-12">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="text-center space-y-6 pt-16 md:pt-28 pb-12"
+      >
         <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-foreground">
           Welcome to <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">Daily Utility Hub</span>
         </h1>
         <p className="text-muted-foreground text-lg md:text-xl max-w-3xl mx-auto font-medium">
           Your all-in-one platform for everyday utilities. Select a tool below to get started. No installation required.
         </p>
-      </div>
+      </motion.div>
 
       <div className="space-y-16">
         {/* Dynamic Analytics Sections */}
@@ -160,9 +194,15 @@ const Dashboard = () => {
               <div className="p-2 bg-indigo-500/10 rounded-lg"><Pin size={22} className="fill-current" /></div>
               Pinned Tools
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
+            <motion.div 
+              variants={containerVariants}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-50px" }}
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6"
+            >
               {pinnedToolObjects.map(renderToolCard)}
-            </div>
+            </motion.div>
           </div>
         )}
 
@@ -172,9 +212,15 @@ const Dashboard = () => {
               <div className="p-2 bg-muted rounded-lg"><Clock size={22} className="text-muted-foreground" /></div>
               Recently Used
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
+            <motion.div 
+              variants={containerVariants}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-50px" }}
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6"
+            >
               {recentToolObjects.map(renderToolCard)}
-            </div>
+            </motion.div>
           </div>
         )}
 
@@ -184,9 +230,15 @@ const Dashboard = () => {
             <h2 className="text-xl md:text-2xl font-bold text-foreground mb-8 border-b border-border/50 pb-4">
               {categoryName}
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
+            <motion.div 
+              variants={containerVariants}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-50px" }}
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6"
+            >
               {tools.map(renderToolCard)}
-            </div>
+            </motion.div>
           </div>
         ))}
       </div>
