@@ -163,7 +163,7 @@ const ImageResizer = () => {
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         
         {/* Preview Area */}
-        <motion.div layout className="flex-1 w-full bg-card border border-border p-4 md:p-5 rounded-lg shadow-sm flex flex-col h-[calc(100vh-140px)] min-h-[500px] lg:sticky lg:top-6">
+        <motion.div layout className="flex-1 w-full bg-card border border-border p-4 md:p-5 rounded-lg shadow-sm flex flex-col h-[calc(100vh-220px)] min-h-[500px] lg:sticky lg:top-6">
           <AnimatePresence mode="popLayout" initial={false}>
             {!image ? (
               <motion.div 
