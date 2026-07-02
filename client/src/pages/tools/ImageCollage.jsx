@@ -145,7 +145,9 @@ const ImageCollage = () => {
 
   const handleWheel = (e, slotIndex) => {
     if (!images[slotIndex]) return;
-    e.preventDefault();
+    if (e.cancelable) {
+      e.preventDefault();
+    }
     const zoomFactor = -e.deltaY * 0.005;
     setImages(prev => {
       const currentScale = prev[slotIndex].scale;
@@ -168,7 +170,8 @@ const ImageCollage = () => {
       const url = await toJpeg(collageRef.current, {
         quality: 0.95,
         pixelRatio: 2,
-        backgroundColor: bgColor
+        backgroundColor: bgColor,
+        skipFonts: true
       });
       
       const link = document.createElement('a');
