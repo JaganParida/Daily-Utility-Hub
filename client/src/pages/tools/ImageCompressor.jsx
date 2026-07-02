@@ -130,17 +130,16 @@ const ImageCompressor = () => {
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         
-        {/* Main Preview Area */}
-        <div className="flex-1 w-full bg-card border border-border p-4 md:p-6 rounded-lg shadow-sm flex flex-col">
+        {/* Upload Area / Workspace */}
+        <div className={`flex-1 w-full rounded-2xl flex flex-col min-h-[50vh] relative ${!originalFile ? '' : 'bg-card border border-border p-4 md:p-6 shadow-sm'}`}>
           {!originalFile ? (
-            <div className="flex flex-col justify-center h-full min-h-[400px]">
-              <DropzoneComponent 
-                onFilesAccepted={handleFilesAccepted} 
-                accept={{ 'image/*': ['.jpeg', '.jpg', '.png', '.webp'] }} 
-                maxFiles={1}
-                title="Drag & drop an image to compress"
-              />
-            </div>
+            <DropzoneComponent 
+              className="flex-1 justify-center bg-card shadow-sm"
+              onFilesAccepted={handleFilesAccepted} 
+              accept={{ 'image/*': ['.jpeg', '.jpg', '.png', '.webp'] }} 
+              maxFiles={1}
+              title="Drag & drop an image to compress"
+            />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-4 md:gap-6 items-center w-full">
               
