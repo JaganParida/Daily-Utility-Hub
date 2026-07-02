@@ -152,7 +152,7 @@ const ImageCompressor = () => {
         </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-6 w-full items-stretch">
+      <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         
         {/* Upload Area / Workspace */}
         <motion.div 
