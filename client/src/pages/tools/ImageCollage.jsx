@@ -189,8 +189,10 @@ const ImageCollage = () => {
 
         {/* Preview Canvas */}
         <div className="flex-1 w-full bg-card border border-border p-4 md:p-5 rounded-2xl shadow-sm flex flex-col relative">
-          <div className="w-full bg-muted/10 rounded-xl border border-border/50 flex items-center justify-center overflow-hidden relative"
-               style={{ aspectRatio: '4/3', minHeight: 320 }}>
+          <div
+            className="w-full bg-muted/10 rounded-xl border border-border/50 overflow-hidden relative"
+            style={{ height: 'calc(100vh - 260px)', maxHeight: 620, minHeight: 280 }}
+          >
 
             {/* Collage grid (screenshotted) */}
             <div
