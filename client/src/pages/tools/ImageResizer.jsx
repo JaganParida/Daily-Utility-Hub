@@ -160,7 +160,7 @@ const ImageResizer = () => {
         </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-6 w-full items-stretch">
+      <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         
         {/* Preview Area */}
         <motion.div layout className="flex-1 w-full bg-card border border-border p-4 md:p-5 rounded-lg shadow-sm flex flex-col">
@@ -203,31 +203,32 @@ const ImageResizer = () => {
                 </div>
               </div>
               
-              <div className="w-full h-[60vh] min-h-[300px] max-h-[700px] bg-muted/10 rounded-xl border border-border p-4 md:p-6 relative flex items-center justify-center">
+              <motion.div layout className="w-full min-h-[300px] bg-muted/10 rounded-xl border border-border p-4 md:p-6 relative flex items-center justify-center">
                 {/* Visual feedback of bounding box */}
-                <div className="relative flex items-center justify-center max-w-full max-h-full transition-all duration-500 ease-out">
+                <motion.div layout className="relative flex items-center justify-center max-w-full transition-all duration-500 ease-out">
                   {/* Invisible SVG spacer to drive perfect, glitch-free animatable aspect ratio sizing */}
                   <img 
                     src={`data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='${width > 0 ? width : 1}' height='${height > 0 ? height : 1}' viewBox='0 0 ${width > 0 ? width : 1} ${height > 0 ? height : 1}'%3E%3C/svg%3E`}
                     alt="spacer"
-                    className="max-w-full max-h-full opacity-0 pointer-events-none block transition-all duration-500 ease-out"
-                    style={{ maxHeight: '100%', maxWidth: '100%' }}
+                    className="max-w-full opacity-0 pointer-events-none block transition-all duration-500 ease-out"
+                    style={{ maxHeight: '65vh' }}
                   />
-                  <div className="absolute inset-0 bg-black/20 dark:bg-black/40 shadow-2xl transition-all duration-500 ease-out overflow-hidden">
-                    <img 
+                  <motion.div layout className="absolute inset-0 bg-black/20 dark:bg-black/40 shadow-2xl transition-all duration-500 ease-out overflow-hidden">
+                    <motion.img 
+                      layout
                       src={image.url} 
                       alt="Preview" 
                       className="w-full h-full object-fill drop-shadow-md"
                     />
                     {!maintainRatio && (
-                      <div className="absolute inset-0 border-[3px] border-red-500 border-dashed pointer-events-none z-10 shadow-[inset_0_0_30px_rgba(239,68,68,0.4)]"></div>
+                      <motion.div layout className="absolute inset-0 border-[3px] border-red-500 border-dashed pointer-events-none z-10 shadow-[inset_0_0_30px_rgba(239,68,68,0.4)]"></motion.div>
                     )}
                     {maintainRatio && (
-                      <div className="absolute inset-0 border-2 border-emerald-500/20 pointer-events-none z-10"></div>
+                      <motion.div layout className="absolute inset-0 border-2 border-emerald-500/20 pointer-events-none z-10"></motion.div>
                     )}
-                  </div>
-                </div>
-              </div>
+                  </motion.div>
+                </motion.div>
+              </motion.div>
             </motion.div>
             )}
           </AnimatePresence>
@@ -322,7 +323,9 @@ const ImageResizer = () => {
               </div>
             </div>
 
-            <div className="flex flex-col gap-3 pt-4 border-t border-border/50">
+          </div>
+
+          <div className="flex flex-col gap-3">
               <button 
                 onClick={processResize}
                 disabled={!image || isProcessing || downloadState !== 'idle'}
@@ -383,7 +386,6 @@ const ImageResizer = () => {
             </div>
           </div>
         </div>
-      </div>
       
       {/* Hidden canvas for processing */}
       <canvas ref={canvasRef} className="hidden" />
