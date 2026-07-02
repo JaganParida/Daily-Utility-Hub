@@ -109,9 +109,9 @@ const WordCounter = () => {
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         {/* Left: Input Text Editor */}
-        <div className="flex-1 w-full bg-card border border-border p-4 md:p-5 rounded-2xl shadow-sm flex flex-col relative">
-          <div className="flex flex-col gap-4">
-            <div className="flex justify-between items-center px-1">
+        <div className="flex-1 w-full bg-card border border-border p-4 md:p-5 rounded-2xl shadow-sm flex flex-col relative lg:h-[calc(100vh-250px)] lg:max-h-[620px] lg:min-h-[520px]">
+          <div className="flex-1 flex flex-col gap-4 min-h-0">
+            <div className="flex justify-between items-center px-1 shrink-0">
               <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Paste Document Content</span>
               <div className="flex items-center gap-3">
                 <button
@@ -135,11 +135,11 @@ const WordCounter = () => {
               value={text}
               onChange={(e) => setText(e.target.value)}
               placeholder="Start typing or paste your content here..."
-              className="w-full h-[calc(100vh-320px)] min-h-[300px] max-h-[500px] bg-muted/10 border border-border/50 p-4 rounded-xl text-sm font-medium text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all shadow-inner custom-scrollbar resize-none"
+              className="w-full flex-1 bg-muted/10 border border-border/50 p-4 rounded-xl text-sm font-medium text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all shadow-inner custom-scrollbar resize-none min-h-0"
             />
 
             {/* Quick Metrics Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1 shrink-0">
               {[
                 { name: 'Words',      value: stats.words },
                 { name: 'Characters', value: stats.characters },
