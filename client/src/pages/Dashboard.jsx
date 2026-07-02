@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Type, Hash, Key, Layers, AlignLeft, Image as ImageIcon, Expand, Crop, ArrowRightLeft, LayoutGrid, FileText, Braces, Search, Calculator, TrendingUp, Percent, Landmark, FolderArchive, Pin, Clock, ArrowRight } from 'lucide-react';
+import { Type, Hash, Key, Layers, AlignLeft, Image as ImageIcon, Expand, Crop, ArrowRightLeft, LayoutGrid, FileText, Braces, Search, Calculator, TrendingUp, Percent, Landmark, FolderArchive, Pin, Clock, ArrowRight, Stamp, Palette } from 'lucide-react';
 import PageTransition from '../components/PageTransition';
 import { useAnalytics } from '../hooks/useAnalytics';
 import { useAuth } from '../context/AuthContext';
@@ -14,6 +14,8 @@ const Dashboard = () => {
       { name: 'Image Converter', description: 'Convert between PNG, JPEG, WEBP, and BMP.', icon: ArrowRightLeft, to: '/tools/image-converter', color: 'text-orange-500 bg-orange-500/10' },
       { name: 'Image Collage', description: 'Combine multiple images into stunning grid collages.', icon: LayoutGrid, to: '/tools/image-collage', color: 'text-yellow-500 bg-yellow-500/10' },
       { name: 'Image to PDF', description: 'Convert multiple images into a multi-page PDF.', icon: FileText, to: '/tools/image-to-pdf', color: 'text-red-500 bg-red-500/10' },
+      { name: 'Image Watermark', description: 'Add text or logo watermarks, or erase them using Magic Brush.', icon: Stamp, to: '/tools/image-watermark', color: 'text-pink-500 bg-pink-500/10' },
+      { name: 'Color Extractor', description: 'Pick colors and generate palette swatch codes.', icon: Palette, to: '/tools/image-color-extractor', color: 'text-teal-500 bg-teal-500/10' },
     ],
     'Text Tools': [
       { name: 'Word Counter', description: 'Count words, characters, and sentences in your text.', icon: Type, to: '/tools/word-counter', color: 'text-blue-500 bg-blue-500/10' },
