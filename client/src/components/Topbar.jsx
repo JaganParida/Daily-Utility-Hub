@@ -132,15 +132,15 @@ const Topbar = () => {
     <header className="h-16 flex items-center justify-between px-4 md:px-8 glass-header border-b border-border/50 bg-card/40 backdrop-blur-2xl">
       
       {/* LEFT: Logo & Back Button */}
-      <div className="flex items-center gap-4 shrink-0 w-48">
+      <div className="flex items-center gap-2 md:gap-4 shrink-0">
         {location.pathname !== '/dashboard' && location.pathname !== '/' ? (
           <button 
             onClick={() => navigate('/dashboard')}
-            className="flex items-center gap-2 font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 px-3 py-2 rounded-full transition-colors"
+            className="flex items-center gap-2 font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 px-2 md:px-3 py-2 rounded-full transition-colors whitespace-nowrap"
             title="Back to Dashboard"
           >
             <ArrowLeft size={20} />
-            <span className="hidden sm:inline-block">Back to Dashboard</span>
+            <span className="hidden sm:inline-block">Dashboard</span>
           </button>
         ) : (
           <Link to="/" className="flex items-center gap-2 font-bold text-lg tracking-tight hover:opacity-80 transition-opacity">
