@@ -145,23 +145,23 @@ const ImageToPdf = () => {
         
         <div className="flex-1 w-full bg-card border border-border p-4 md:p-6 rounded-xl shadow-sm flex flex-col min-h-[50vh] relative space-y-6">
           <DropzoneComponent 
-            className={images.length === 0 ? "flex-1 justify-center" : "shrink-0"}
+            className="flex-1"
             onFilesAccepted={handleFilesAccepted} 
             accept={{ 'image/*': ['.jpeg', '.jpg', '.png', '.webp'] }} 
             maxFiles={50}
             title="Drag & drop images here"
           />
 
-          <AnimatePresence mode="popLayout">
+          <AnimatePresence>
           {images.length > 0 && (
             <motion.div 
-              layout
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.4, ease: "easeOut" }}
-              className="bg-muted/10 border border-border p-4 md:p-6 rounded-xl shadow-inner flex-1 flex flex-col"
+              initial={{ opacity: 0, height: 0, overflow: 'hidden' }}
+              animate={{ opacity: 1, height: 'auto', overflow: 'visible' }}
+              exit={{ opacity: 0, height: 0, overflow: 'hidden' }}
+              transition={{ duration: 0.4, ease: "easeInOut" }}
+              className="flex flex-col"
             >
+              <div className="bg-muted/10 border border-border p-4 md:p-6 rounded-xl shadow-inner flex-1 flex flex-col">
               <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4">Pages ({images.length})</h3>
               <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
                 {images.map((img, idx) => (
@@ -199,6 +199,7 @@ const ImageToPdf = () => {
                     </div>
                   </div>
                 ))}
+              </div>
               </div>
             </motion.div>
           )}

@@ -36,9 +36,8 @@ const DropzoneComponent = ({
   });
 
   return (
-    <motion.div layout className={`w-full flex flex-col ${className}`}>
-      <motion.div
-        layout
+    <div className={`w-full flex flex-col ${className}`}>
+      <div
         {...getRootProps()}
         className={`relative w-full h-full min-h-[160px] flex-1 p-8 md:p-12 border-2 border-dashed rounded-2xl transition-colors duration-300 ease-out cursor-pointer flex flex-col items-center justify-center text-center overflow-hidden
           ${isDragReject ? 'border-red-500 bg-red-500/10' : 
@@ -63,7 +62,7 @@ const DropzoneComponent = ({
             {subtitle} (Max size: {Math.round(maxSize / 1024 / 1024)}MB)
           </p>
         </div>
-      </motion.div>
+      </div>
 
       {/* Selected Files Preview */}
       {value && value.length > 0 && (
@@ -105,7 +104,7 @@ const DropzoneComponent = ({
           </div>
         </div>
       )}
-    </motion.div>
+    </div>
   );
 };
 
