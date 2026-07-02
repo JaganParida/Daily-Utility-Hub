@@ -124,7 +124,7 @@ const ImageConverter = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="max-w-[1600px] mx-auto w-full px-2 md:px-8">
       <div className="mb-6 flex items-center gap-3">
         <div className="p-2 bg-pink-500/10 text-pink-500 rounded-lg shadow-sm">
           <ArrowRightLeft size={28} />
@@ -135,10 +135,10 @@ const ImageConverter = () => {
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-[1fr_350px] gap-6">
+      <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         
         {/* Upload Area */}
-        <div className="space-y-6">
+        <div className="flex-1 w-full bg-card border border-border p-4 md:p-6 rounded-xl shadow-sm flex flex-col min-h-[50vh] relative space-y-6">
           <DropzoneComponent 
             onFilesAccepted={handleFilesAccepted} 
             accept={{ 'image/*': ['.jpeg', '.jpg', '.png', '.webp', '.bmp', '.gif'] }} 
@@ -147,7 +147,7 @@ const ImageConverter = () => {
           />
 
           {images.length > 0 && (
-            <div className="bg-card border border-border p-6 rounded-2xl shadow-sm">
+            <div className="bg-muted/10 border border-border p-4 md:p-6 rounded-xl shadow-inner flex-1 flex flex-col">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                   <Layers size={16} /> Batch Queue ({images.length})
@@ -177,7 +177,7 @@ const ImageConverter = () => {
         </div>
 
         {/* Settings Area */}
-        <div className="space-y-6">
+        <div className="w-full lg:w-[350px] xl:w-[400px] shrink-0 space-y-6">
           <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6">
             
             <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground border-b border-border pb-3 flex items-center gap-2">
