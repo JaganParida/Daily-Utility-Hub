@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Type, Hash, Key, Layers, AlignLeft, Image as ImageIcon, Expand, Crop, ArrowRightLeft, LayoutGrid, FileText, Braces, Search, Calculator, TrendingUp, Percent, Landmark, FolderArchive, Pin, Clock } from 'lucide-react';
+import { Type, Hash, Key, Layers, AlignLeft, Image as ImageIcon, Expand, Crop, ArrowRightLeft, LayoutGrid, FileText, Braces, Search, Calculator, TrendingUp, Percent, Landmark, FolderArchive, Pin, Clock, ArrowRight } from 'lucide-react';
 import PageTransition from '../components/PageTransition';
 import { useAnalytics } from '../hooks/useAnalytics';
 import { useAuth } from '../context/AuthContext';
@@ -95,57 +95,48 @@ const Dashboard = () => {
     const borderColor = textColor.replace('text-', 'border-') + '/50';
 
     return (
-      <div key={tool.name} className="group relative h-64">
-        
-        {/* Outer link wrapper to ensure full card clickability */}
+      <div key={tool.name} className="group relative">
         <Link 
           to={tool.to}
-          className={`relative block w-full h-full transition-all duration-500 bg-card/60 backdrop-blur-md border border-border/60 rounded-3xl hover:${borderColor} shadow-sm group-hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:group-hover:shadow-[0_8px_30px_rgba(255,255,255,0.05)] overflow-hidden`}
+          className={`relative flex flex-col h-full p-6 transition-all duration-300 bg-card/40 hover:bg-card/80 backdrop-blur-md border border-border/50 hover:${borderColor} rounded-3xl shadow-sm hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:hover:shadow-[0_8px_30px_rgba(255,255,255,0.03)] overflow-hidden hover:-translate-y-1`}
         >
-          {/* Subtle background glow */}
-          <div className={`absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-[0.03] transition-opacity duration-500 ${tool.color.split(' ')[1].replace('/10', '')}`}></div>
+          {/* Subtle gradient background on hover */}
+          <div className={`absolute inset-0 opacity-0 group-hover:opacity-[0.05] transition-opacity duration-500 ${tool.color.split(' ')[1].replace('/10', '')} pointer-events-none`}></div>
           
-          {/* BASE CONTENT (Always visible, stays behind overlay) */}
-          <div className="absolute inset-0 p-6 flex flex-col">
-            <div className={`w-16 h-16 rounded-2xl ${tool.color} flex items-center justify-center mb-6 shadow-inner transition-transform duration-500 shrink-0 group-hover:scale-90 group-hover:rotate-3`}>
-              <Icon size={32} />
+          <div className="flex items-start justify-between mb-5">
+            <div className={`w-14 h-14 rounded-2xl ${tool.color} flex items-center justify-center shadow-inner transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3 shrink-0`}>
+              <Icon size={28} />
             </div>
-            <h3 className="font-bold text-xl text-foreground tracking-tight pr-8">{tool.name}</h3>
-            <div className="mt-auto flex items-center text-sm font-medium text-muted-foreground group-hover:text-primary transition-colors group-hover:opacity-0">
-              Hover for details &rarr;
-            </div>
+            
+            {/* PIN BUTTON (Inside Link but with stopPropagation) */}
+            {showPinButton && (
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  togglePin(tool.to);
+                }}
+                className={`p-2 rounded-xl transition-all duration-300 z-30 ${
+                  isPinned 
+                    ? 'text-indigo-500 bg-indigo-500/10 hover:bg-indigo-500/20 shadow-sm' 
+                    : 'text-muted-foreground hover:bg-muted/80 hover:text-foreground opacity-0 group-hover:opacity-100 focus:opacity-100 scale-90 group-hover:scale-100'
+                }`}
+                title={isPinned ? "Unpin Tool" : "Pin Tool"}
+              >
+                <Pin size={18} className={isPinned ? "fill-current" : ""} />
+              </button>
+            )}
           </div>
-
-          {/* SLIDE-UP OVERLAY (Shows Description) */}
-          <div className="absolute inset-0 p-6 flex flex-col items-center justify-center text-center translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] bg-card/95 backdrop-blur-xl z-20">
-             <div className={`w-12 h-12 rounded-full ${tool.color} flex items-center justify-center mb-4 opacity-70`}>
-                <Icon size={20} />
-             </div>
-             <p className="text-foreground text-sm leading-relaxed mb-6 font-medium">{tool.description}</p>
-             <span className="px-5 py-2 bg-primary text-primary-foreground font-semibold text-sm rounded-full transition-transform hover:scale-105 flex items-center gap-2 shadow-sm">
-                Launch Tool
-             </span>
+          
+          <h3 className="font-bold text-xl text-foreground tracking-tight mb-3 group-hover:text-primary transition-colors">{tool.name}</h3>
+          
+          <p className="text-muted-foreground text-sm leading-relaxed mb-6 flex-grow font-medium">{tool.description}</p>
+          
+          <div className="mt-auto flex items-center font-semibold text-sm text-muted-foreground group-hover:text-primary transition-colors">
+            Launch Tool 
+            <ArrowRight size={16} className="ml-2 transition-transform group-hover:translate-x-1" />
           </div>
         </Link>
-        
-        {/* PIN BUTTON (Lifted outside the overlay so it doesn't get covered) */}
-        {showPinButton && (
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              togglePin(tool.to);
-            }}
-            className={`absolute top-4 right-4 p-2 rounded-xl transition-all duration-300 z-30 ${
-              isPinned 
-                ? 'text-indigo-500 bg-indigo-500/10 hover:bg-indigo-500/20 shadow-sm' 
-                : 'text-muted-foreground hover:bg-muted/80 hover:text-foreground opacity-0 group-hover:opacity-100 focus:opacity-100 scale-90 group-hover:scale-100'
-            }`}
-            title={isPinned ? "Unpin Tool" : "Pin Tool"}
-          >
-            <Pin size={18} className={isPinned ? "fill-current" : ""} />
-          </button>
-        )}
       </div>
     );
   };
