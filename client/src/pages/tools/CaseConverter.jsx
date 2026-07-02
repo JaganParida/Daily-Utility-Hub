@@ -1,18 +1,23 @@
 import { useState } from 'react';
-import { Type, Copy, Check, Terminal, Sparkles } from 'lucide-react';
+import { Type, Copy, Trash2, CheckCircle, Terminal, Sparkles, Sliders } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
+
+const MINOR_WORDS = new Set(['a', 'an', 'the', 'and', 'but', 'for', 'or', 'nor', 'in', 'on', 'at', 'to', 'by', 'of', 'with', 'from']);
 
 const CaseConverter = () => {
   const [text, setText] = useState('');
-  const [copied, setCopied] = useState(false);
+  const [copiedState, setCopiedState] = useState(false);
   const [activeCase, setActiveCase] = useState(null);
 
   const convertCase = (type) => {
     setActiveCase(type);
-    if (!text) return;
+    if (!text.trim()) return;
     
     let result = '';
-    const words = text.split(/[\s_-]+/); // Split by space, underscore, or hyphen
+    const cleanText = text.trim();
+    // Split words by space, hyphens, or underscores
+    const words = cleanText.split(/[\s_-]+/);
 
     switch (type) {
       case 'UPPERCASE':
@@ -22,10 +27,20 @@ const CaseConverter = () => {
         result = text.toLowerCase();
         break;
       case 'Title Case':
-        result = text.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+        result = text
+          .toLowerCase()
+          .split(' ')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ');
         break;
       case 'Sentence case':
-        result = text.toLowerCase().replace(/(^\s*\w|[.!?]\s*\w)/g, c => c.toUpperCase());
+        result = text
+          .toLowerCase()
+          .replace(/(^\s*\w|[.!?]\s*\w)/g, c => c.toUpperCase());
+        break;
+      case 'slugify':
+        // URL slug case: e.g. "This is a title" -> "this-is-a-title"
+        result = words.map(w => w.toLowerCase().replace(/[^a-z0-9]/g, '')).filter(w => w.length > 0).join('-');
         break;
       case 'camelCase':
         result = words.map((w, i) => i === 0 ? w.toLowerCase() : w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join('');
@@ -50,14 +65,15 @@ const CaseConverter = () => {
     }
 
     setText(result);
+    toast.success(`Converted to ${type}!`);
   };
 
   const handleCopy = () => {
-    if (!text) return;
+    if (!text.trim()) return;
     navigator.clipboard.writeText(text);
-    setCopied(true);
+    setCopiedState(true);
     toast.success('Text copied to clipboard!');
-    setTimeout(() => setCopied(false), 2000);
+    setTimeout(() => setCopiedState(false), 2000);
   };
 
   const clearText = () => {
@@ -66,115 +82,132 @@ const CaseConverter = () => {
     toast.success('Text cleared');
   };
 
-  const standardCases = ['UPPERCASE', 'lowercase', 'Title Case', 'Sentence case'];
+  const standardCases = ['UPPERCASE', 'lowercase', 'Title Case', 'Sentence case', 'slugify'];
   const developerCases = ['camelCase', 'PascalCase', 'snake_case', 'kebab-case'];
   const funCases = ['aLtErNaTiNg', 'InVeRsE'];
 
+  const hasText = text.trim().length > 0;
+
   return (
-    <div className="max-w-6xl mx-auto flex flex-col min-h-[calc(100vh-140px)] lg:h-[calc(100vh-140px)] lg:min-h-[700px]">
-      <div className="mb-6 flex items-center gap-3 shrink-0">
-        <div className="p-2 bg-indigo-500/10 text-indigo-500 rounded-lg shadow-sm">
-          <Type size={28} />
+    <div className="max-w-[1600px] mx-auto w-full px-2 md:px-8">
+      {/* Header */}
+      <div className="mb-6 flex items-center gap-3">
+        <div className="p-2 bg-primary/10 text-primary rounded-lg shadow-sm">
+          <Type size={24} />
         </div>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Advanced Case Converter</h1>
-          <p className="text-muted-foreground mt-1 text-sm">Convert text instantly between standard, developer, and fun cases.</p>
+          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">Advanced Case Converter</h1>
+          <p className="text-muted-foreground mt-1 text-xs md:text-sm">Transform blocks of text instantly between standard, developer, and fun cases.</p>
         </div>
       </div>
 
-      <div className="flex-1 grid lg:grid-cols-[300px_1fr] gap-6 min-h-0">
-        
-        {/* Controls Sidebar */}
-        <div className="bg-card border border-border rounded-2xl shadow-sm p-6 overflow-y-auto custom-scrollbar flex flex-col gap-6">
-          
-          <div>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2 border-b border-border pb-2">
-              <Type size={14} /> Standard Cases
-            </h3>
-            <div className="flex flex-col gap-2">
-              {standardCases.map((type) => (
+      <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
+        {/* Left: Editor Area */}
+        <div className="flex-1 w-full bg-card border border-border p-4 md:p-5 rounded-2xl shadow-sm flex flex-col relative">
+          <div className="flex flex-col gap-4">
+            <div className="flex justify-between items-center px-1">
+              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Editor Content</span>
+              <div className="flex items-center gap-3">
                 <button
-                  key={type}
-                  onClick={() => convertCase(type)}
-                  className={`w-full text-left px-4 py-2.5 rounded-lg border font-medium transition-all ${
-                    activeCase === type 
-                      ? 'bg-indigo-500/10 border-indigo-500 text-indigo-600 dark:text-indigo-400 shadow-sm' 
-                      : 'border-transparent bg-muted/50 hover:bg-indigo-500/10 hover:border-indigo-500/30 hover:text-indigo-600 dark:hover:text-indigo-400'
-                  }`}
+                  onClick={handleCopy}
+                  disabled={!hasText}
+                  className="text-xs font-semibold text-muted-foreground hover:text-foreground flex items-center gap-1 disabled:opacity-40"
                 >
-                  {type}
+                  {copiedState ? <CheckCircle size={13} className="text-green-500" /> : <Copy size={13} />} Copy
                 </button>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2 border-b border-border pb-2">
-              <Terminal size={14} /> Developer Cases
-            </h3>
-            <div className="flex flex-col gap-2">
-              {developerCases.map((type) => (
                 <button
-                  key={type}
-                  onClick={() => convertCase(type)}
-                  className={`w-full text-left px-4 py-2.5 rounded-lg border font-medium transition-all font-mono text-sm ${
-                    activeCase === type 
-                      ? 'bg-orange-500/10 border-orange-500 text-orange-600 dark:text-orange-400 shadow-sm' 
-                      : 'border-transparent bg-muted/50 hover:bg-orange-500/10 hover:border-orange-500/30 hover:text-orange-600 dark:hover:text-orange-400'
-                  }`}
+                  onClick={clearText}
+                  disabled={!hasText}
+                  className="text-xs font-semibold text-red-500 hover:text-red-600 flex items-center gap-1 disabled:opacity-40"
                 >
-                  {type}
+                  <Trash2 size={13} /> Clear
                 </button>
-              ))}
+              </div>
             </div>
-          </div>
 
-          <div>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2 border-b border-border pb-2">
-              <Sparkles size={14} /> Fun Cases
-            </h3>
-            <div className="flex flex-col gap-2">
-              {funCases.map((type) => (
-                <button
-                  key={type}
-                  onClick={() => convertCase(type)}
-                  className={`w-full text-left px-4 py-2.5 rounded-lg border font-medium transition-all ${
-                    activeCase === type 
-                      ? 'bg-pink-500/10 border-pink-500 text-pink-600 dark:text-pink-400 shadow-sm' 
-                      : 'border-transparent bg-muted/50 hover:bg-pink-500/10 hover:border-pink-500/30 hover:text-pink-600 dark:hover:text-pink-400'
-                  }`}
-                >
-                  {type}
-                </button>
-              ))}
-            </div>
+            <textarea
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              placeholder="Paste or type your text here, then choose a case option from the sidebar..."
+              className="w-full h-[calc(100vh-270px)] min-h-[300px] max-h-[500px] bg-muted/10 border border-border/50 p-4 rounded-xl text-sm font-medium text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all shadow-inner custom-scrollbar resize-none"
+            />
           </div>
-
         </div>
 
-        {/* Editor Area */}
-        <div className="bg-card border border-border rounded-2xl shadow-sm flex flex-col overflow-hidden">
-          <div className="p-4 border-b border-border bg-muted/30 flex justify-between items-center shrink-0">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Editor</h3>
-            <div className="flex items-center gap-2">
-              <button onClick={clearText} className="text-xs font-medium text-red-500 hover:bg-red-500/10 px-3 py-1.5 rounded-md transition-colors">
-                Clear
-              </button>
-              <button onClick={handleCopy} className="text-xs font-medium text-indigo-500 hover:bg-indigo-500/10 px-3 py-1.5 rounded-md transition-colors flex items-center gap-1">
-                {copied ? <Check size={14} /> : <Copy size={14} />} Copy
-              </button>
+        {/* Right: Controls Sidebar */}
+        <div className={`w-full lg:w-[350px] xl:w-[400px] shrink-0 space-y-6 transition-all duration-300 ${!hasText ? 'opacity-50 pointer-events-none grayscale-[0.5]' : ''}`}>
+          <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-5">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground border-b border-border pb-3 flex items-center gap-2">
+              <Sliders size={15} /> Case Converters
+            </h3>
+
+            {/* Standard Cases */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                <Type size={13} className="text-primary" /> Standard Formats
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                {standardCases.map((type) => (
+                  <button
+                    key={type}
+                    onClick={() => convertCase(type)}
+                    className={`py-2 px-3 text-xs font-semibold rounded-lg border transition-all active:scale-[0.97] text-center ${
+                      activeCase === type
+                        ? 'border-primary/50 bg-primary/10 text-primary font-bold'
+                        : 'border-border/50 bg-muted/20 hover:bg-muted text-foreground'
+                    }`}
+                  >
+                    {type}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Developer Cases */}
+            <div className="space-y-2 pt-3 border-t border-border/50">
+              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                <Terminal size={13} className="text-primary" /> Developer Formats
+              </label>
+              <div className="grid grid-cols-2 gap-2 font-mono">
+                {developerCases.map((type) => (
+                  <button
+                    key={type}
+                    onClick={() => convertCase(type)}
+                    className={`py-2 px-3 text-[10px] font-bold rounded-lg border transition-all active:scale-[0.97] text-center ${
+                      activeCase === type
+                        ? 'border-primary/50 bg-primary/10 text-primary font-bold'
+                        : 'border-border/50 bg-muted/20 hover:bg-muted text-foreground'
+                    }`}
+                  >
+                    {type}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Fun Cases */}
+            <div className="space-y-2 pt-3 border-t border-border/50">
+              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                <Sparkles size={13} className="text-primary" /> Stylized Formats
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                {funCases.map((type) => (
+                  <button
+                    key={type}
+                    onClick={() => convertCase(type)}
+                    className={`py-2 px-3 text-xs font-semibold rounded-lg border transition-all active:scale-[0.97] text-center ${
+                      activeCase === type
+                        ? 'border-primary/50 bg-primary/10 text-primary font-bold'
+                        : 'border-border/50 bg-muted/20 hover:bg-muted text-foreground'
+                    }`}
+                  >
+                    {type}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-          
-          <textarea
-            className="w-full flex-1 p-6 bg-transparent resize-none text-foreground text-lg leading-relaxed placeholder:text-muted-foreground focus:outline-none focus:ring-0 custom-scrollbar"
-            placeholder="Type or paste your text here, then select a case from the sidebar..."
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            spellCheck="false"
-          />
         </div>
-
       </div>
     </div>
   );
