@@ -98,8 +98,8 @@ const ImageResizer = () => {
     setIsProcessing(true);
     setDownloadState('downloading');
     
-    // Slight delay to allow UI to show processing state
-    await new Promise(res => setTimeout(res, 50));
+    // Artificial delay to allow UI to show processing animation smoothly
+    await new Promise(res => setTimeout(res, 1200));
 
     try {
       const img = new Image();
