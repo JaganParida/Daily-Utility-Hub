@@ -183,29 +183,29 @@ const ImageResizer = () => {
                 </div>
               </div>
               
-              <div className="w-full flex-1 min-h-[250px] max-h-[45vh] bg-muted/10 rounded-xl border border-border flex items-center justify-center p-4 overflow-hidden relative">
+              <div className="w-full h-[45vh] min-h-[250px] max-h-[400px] bg-muted/10 rounded-xl border border-border p-4 relative flex items-center justify-center">
                 {/* Visual feedback of bounding box */}
-                <div className="relative flex items-center justify-center max-w-full max-h-full">
-                  {/* Invisible placeholder to force perfect bounding box size without CSS aspect-ratio quirks */}
+                <div 
+                  className="relative flex items-center justify-center bg-black/20 dark:bg-black/40 shadow-2xl transition-all duration-300 ease-out overflow-hidden"
+                  style={{
+                    aspectRatio: `${width > 0 ? width : 1} / ${height > 0 ? height : 1}`,
+                    width: width >= height ? '100%' : 'auto',
+                    height: height >= width ? '100%' : 'auto',
+                    maxWidth: '100%',
+                    maxHeight: '100%',
+                  }}
+                >
                   <img 
-                    src={`data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='${width > 0 ? width : 1}' height='${height > 0 ? height : 1}' viewBox='0 0 ${width > 0 ? width : 1} ${height > 0 ? height : 1}'%3E%3C/svg%3E`}
-                    alt="spacer"
-                    className="max-w-full max-h-full opacity-0 pointer-events-none block"
-                    style={{ maxHeight: '100%', maxWidth: '100%' }}
+                    src={image.url} 
+                    alt="Preview" 
+                    className="w-full h-full object-fill drop-shadow-md"
                   />
-                  <div className="absolute inset-0 bg-black/20 dark:bg-black/40 shadow-2xl transition-all duration-300 ease-out overflow-hidden">
-                    <img 
-                      src={image.url} 
-                      alt="Preview" 
-                      className="w-full h-full object-fill drop-shadow-md"
-                    />
-                    {!maintainRatio && (
-                      <div className="absolute inset-0 border-[3px] border-red-500 border-dashed pointer-events-none z-10 shadow-[inset_0_0_20px_rgba(239,68,68,0.3)]"></div>
-                    )}
-                    {maintainRatio && (
-                      <div className="absolute inset-0 border-2 border-emerald-500/20 pointer-events-none z-10"></div>
-                    )}
-                  </div>
+                  {!maintainRatio && (
+                    <div className="absolute inset-0 border-[3px] border-red-500 border-dashed pointer-events-none z-10 shadow-[inset_0_0_30px_rgba(239,68,68,0.4)]"></div>
+                  )}
+                  {maintainRatio && (
+                    <div className="absolute inset-0 border-2 border-emerald-500/20 pointer-events-none z-10"></div>
+                  )}
                 </div>
               </div>
             </div>
