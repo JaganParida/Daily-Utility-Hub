@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Type, Copy, Check, Search, IterationCcw } from 'lucide-react';
+import { Search, Copy, Trash2, CheckCircle, HelpCircle, RefreshCw } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 const FindAndReplace = () => {
@@ -7,16 +7,16 @@ const FindAndReplace = () => {
   const [findText, setFindText] = useState('');
   const [replaceText, setReplaceText] = useState('');
   
-  // Options
+  // Search Options
   const [matchCase, setMatchCase] = useState(false);
   const [useRegex, setUseRegex] = useState(false);
   const [wholeWord, setWholeWord] = useState(false);
   
   const [copied, setCopied] = useState(false);
-  const [matchCount, setMatchCount] = useState(0);
 
   const getReplacedText = () => {
-    if (!text || !findText) return text;
+    if (!text) return '';
+    if (!findText) return text;
     
     try {
       let searchPattern;
@@ -25,7 +25,6 @@ const FindAndReplace = () => {
       if (useRegex) {
         searchPattern = new RegExp(findText, flags);
       } else {
-        // Escape special characters for string literal search
         let escapedFind = findText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         if (wholeWord) {
           searchPattern = new RegExp(`\\b${escapedFind}\\b`, flags);
@@ -36,8 +35,7 @@ const FindAndReplace = () => {
 
       return text.replace(searchPattern, replaceText);
     } catch (e) {
-      // Return original text if regex is invalid while typing
-      return text;
+      return text; // Return original text if regex is invalid while typing
     }
   };
 
@@ -72,130 +70,231 @@ const FindAndReplace = () => {
     if (!replacedOutput) return;
     navigator.clipboard.writeText(replacedOutput);
     setCopied(true);
-    toast.success('Text copied to clipboard!');
+    toast.success('Copied output to clipboard!');
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const applyPreset = (presetName) => {
+    if (!text) return;
+    let newText = text;
+    let message = '';
+
+    switch (presetName) {
+      case 'double-spaces':
+        newText = text.replace(/ +/g, ' ');
+        message = 'Removed double spaces';
+        break;
+      case 'html-tags':
+        newText = text.replace(/<[^>]*>/g, '');
+        message = 'Stripped HTML tags';
+        break;
+      case 'emails':
+        newText = text.replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, '');
+        message = 'Stripped email addresses';
+        break;
+      case 'linebreaks':
+        newText = text.replace(/\r?\n|\r/g, ' ');
+        message = 'Collapsed line breaks';
+        break;
+      case 'numbers':
+        newText = text.replace(/\d+/g, '');
+        message = 'Removed all digits';
+        break;
+      case 'punctuation':
+        newText = text.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, '');
+        message = 'Removed punctuation';
+        break;
+      default:
+        break;
+    }
+
+    setText(newText);
+    toast.success(message);
   };
 
   const clearAll = () => {
     setText('');
     setFindText('');
     setReplaceText('');
-    toast.success('Fields cleared');
+    toast.success('Cleared all fields');
   };
 
+  const hasText = text.trim().length > 0;
+
   return (
-    <div className="max-w-6xl mx-auto flex flex-col min-h-[calc(100vh-140px)] lg:h-[calc(100vh-140px)] lg:min-h-[700px]">
-      <div className="mb-6 flex items-center gap-3 shrink-0">
-        <div className="p-2 bg-cyan-500/10 text-cyan-500 rounded-lg shadow-sm">
-          <Search size={28} />
+    <div className="max-w-[1600px] mx-auto w-full px-2 md:px-8">
+      {/* Header */}
+      <div className="mb-6 flex items-center gap-3">
+        <div className="p-2 bg-primary/10 text-primary rounded-lg shadow-sm">
+          <Search size={24} />
         </div>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Advanced Find & Replace</h1>
-          <p className="text-muted-foreground mt-1 text-sm">Find and replace text with Regex support, Match Case, and Whole Word options.</p>
+          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">Advanced Find & Replace</h1>
+          <p className="text-muted-foreground mt-1 text-xs md:text-sm">Find and replace patterns in real-time, supporting Case Sensitivity, Whole Words, and Regular Expressions (Regex).</p>
         </div>
       </div>
 
-      <div className="flex-1 grid lg:grid-cols-[1fr_300px] gap-6 min-h-0">
+      <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         
-        {/* Editor Area */}
-        <div className="bg-card border border-border rounded-2xl shadow-sm flex flex-col overflow-hidden">
+        {/* Left: Input/Output Split Editor Area */}
+        <div className="flex-1 w-full bg-card border border-border rounded-2xl shadow-sm flex flex-col overflow-hidden lg:h-[calc(100vh-250px)] lg:max-h-[620px] lg:min-h-[520px]">
           
-          <div className="p-4 sm:p-6 border-b border-border bg-muted/20 space-y-4 shrink-0">
+          {/* Find & Replace Controls inside Left Card (Shrink-0) */}
+          <div className="p-4 md:p-5 border-b border-border bg-muted/20 space-y-4 shrink-0">
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
-                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 block">Find</label>
+                <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5 block">Find Text / Pattern</label>
                 <input
                   type="text"
-                  className="w-full bg-background border border-border rounded-xl px-4 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20"
-                  placeholder="Text to find..."
+                  disabled={!hasText}
+                  className="w-full bg-background border border-border/60 rounded-xl px-4 py-2 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all disabled:opacity-50"
+                  placeholder={useRegex ? "Enter regex (e.g. \\d+)" : "Search term..."}
                   value={findText}
                   onChange={(e) => setFindText(e.target.value)}
                 />
               </div>
               <div>
-                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 block">Replace With</label>
+                <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5 block">Replace With</label>
                 <input
                   type="text"
-                  className="w-full bg-background border border-border rounded-xl px-4 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20"
-                  placeholder="Replacement text..."
+                  disabled={!hasText}
+                  className="w-full bg-background border border-border/60 rounded-xl px-4 py-2 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all disabled:opacity-50"
+                  placeholder="Substitution term..."
                   value={replaceText}
                   onChange={(e) => setReplaceText(e.target.value)}
                 />
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-4">
-              <label className="flex items-center gap-2 cursor-pointer group">
-                <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${matchCase ? 'bg-cyan-500 border-cyan-500' : 'bg-background border-border group-hover:border-cyan-500/50'}`}>
-                  {matchCase && <Check size={12} className="text-white" />}
-                </div>
-                <input type="checkbox" className="hidden" checked={matchCase} onChange={(e) => setMatchCase(e.target.checked)} />
-                <span className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">Match Case</span>
+            {/* Checkbox Options */}
+            <div className="flex flex-wrap items-center gap-4 pt-1">
+              <label className={`flex items-center gap-2 cursor-pointer group select-none ${!hasText ? 'opacity-45' : ''}`}>
+                <input 
+                  type="checkbox" 
+                  disabled={!hasText}
+                  checked={matchCase} 
+                  onChange={(e) => setMatchCase(e.target.checked)}
+                  className="w-4 h-4 text-primary border-border rounded focus:ring-primary focus:ring-offset-background cursor-pointer disabled:cursor-not-allowed" 
+                />
+                <span className="text-xs font-semibold text-muted-foreground group-hover:text-foreground transition-colors">Match Case</span>
               </label>
               
-              <label className="flex items-center gap-2 cursor-pointer group">
-                <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${wholeWord && !useRegex ? 'bg-cyan-500 border-cyan-500' : 'bg-background border-border group-hover:border-cyan-500/50'} ${useRegex ? 'opacity-50' : ''}`}>
-                  {wholeWord && !useRegex && <Check size={12} className="text-white" />}
-                </div>
-                <input type="checkbox" className="hidden" disabled={useRegex} checked={wholeWord} onChange={(e) => setWholeWord(e.target.checked)} />
-                <span className={`text-sm font-medium transition-colors ${useRegex ? 'text-muted-foreground/50 line-through' : 'text-muted-foreground group-hover:text-foreground'}`}>Whole Word</span>
+              <label className={`flex items-center gap-2 cursor-pointer group select-none ${!hasText || useRegex ? 'opacity-40' : ''}`}>
+                <input 
+                  type="checkbox" 
+                  disabled={!hasText || useRegex}
+                  checked={wholeWord} 
+                  onChange={(e) => setWholeWord(e.target.checked)}
+                  className="w-4 h-4 text-primary border-border rounded focus:ring-primary focus:ring-offset-background cursor-pointer disabled:cursor-not-allowed" 
+                />
+                <span className={`text-xs font-semibold transition-colors ${useRegex ? 'line-through' : 'group-hover:text-foreground text-muted-foreground'}`}>Whole Word</span>
               </label>
 
-              <label className="flex items-center gap-2 cursor-pointer group">
-                <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${useRegex ? 'bg-cyan-500 border-cyan-500' : 'bg-background border-border group-hover:border-cyan-500/50'}`}>
-                  {useRegex && <Check size={12} className="text-white" />}
-                </div>
-                <input type="checkbox" className="hidden" checked={useRegex} onChange={(e) => setUseRegex(e.target.checked)} />
-                <span className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">Use Regex</span>
+              <label className={`flex items-center gap-2 cursor-pointer group select-none ${!hasText ? 'opacity-45' : ''}`}>
+                <input 
+                  type="checkbox" 
+                  disabled={!hasText}
+                  checked={useRegex} 
+                  onChange={(e) => setUseRegex(e.target.checked)}
+                  className="w-4 h-4 text-primary border-border rounded focus:ring-primary focus:ring-offset-background cursor-pointer disabled:cursor-not-allowed" 
+                />
+                <span className="text-xs font-semibold text-muted-foreground group-hover:text-foreground transition-colors">Use Regex</span>
               </label>
             </div>
           </div>
 
-          <div className="flex-1 grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-border min-h-[400px]">
-             {/* Input */}
-             <div className="flex flex-col relative h-full">
-               <div className="absolute top-3 right-3 text-xs font-bold text-muted-foreground uppercase tracking-wider bg-card/80 backdrop-blur px-2 py-1 rounded">Input</div>
-               <textarea
-                 className="w-full h-full p-6 bg-transparent resize-none text-foreground text-sm leading-relaxed placeholder:text-muted-foreground focus:outline-none focus:ring-0 custom-scrollbar"
-                 placeholder="Paste your source text here..."
-                 value={text}
-                 onChange={(e) => setText(e.target.value)}
-                 spellCheck="false"
-               />
-             </div>
-             {/* Output */}
-             <div className="flex flex-col relative h-full bg-muted/10">
-               <div className="absolute top-3 right-3 text-xs font-bold text-cyan-500 uppercase tracking-wider bg-card/80 backdrop-blur px-2 py-1 rounded border border-cyan-500/20">Output</div>
-               <textarea
-                 className="w-full h-full p-6 bg-transparent resize-none text-foreground text-sm leading-relaxed placeholder:text-muted-foreground focus:outline-none focus:ring-0 custom-scrollbar"
-                 value={replacedOutput}
-                 readOnly
-                 placeholder="Replaced text will appear here..."
-               />
-             </div>
+          {/* Input & Output Textareas split */}
+          <div className="flex-1 min-h-0 grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-border">
+            {/* Input column */}
+            <div className="flex flex-col relative h-full min-h-0">
+              <div className="absolute top-3 right-3 text-[10px] font-bold text-muted-foreground uppercase tracking-wider bg-card/90 border border-border/40 px-2 py-0.5 rounded shadow-sm z-10 select-none">
+                Input Text
+              </div>
+              <textarea
+                className="w-full h-full p-5 bg-transparent resize-none text-foreground text-sm font-mono leading-relaxed placeholder:text-muted-foreground focus:outline-none focus:ring-0 custom-scrollbar min-h-0"
+                placeholder="Paste your source text here..."
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                spellCheck="false"
+              />
+            </div>
+            
+            {/* Output column */}
+            <div className="flex flex-col relative h-full bg-muted/10 min-h-0">
+              <div className="absolute top-3 right-3 text-[10px] font-bold text-primary uppercase tracking-wider bg-card/90 border border-primary/20 px-2 py-0.5 rounded shadow-sm z-10 select-none">
+                Replaced Output
+              </div>
+              <textarea
+                className="w-full h-full p-5 bg-transparent resize-none text-foreground text-sm font-mono leading-relaxed placeholder:text-muted-foreground focus:outline-none focus:ring-0 custom-scrollbar min-h-0"
+                value={replacedOutput}
+                readOnly
+                placeholder="Replaced output will be generated here in real-time..."
+                spellCheck="false"
+              />
+            </div>
           </div>
           
         </div>
 
-        {/* Sidebar */}
-        <div className="bg-card border border-border rounded-2xl shadow-sm p-6 flex flex-col gap-6">
-          <div>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-4 flex items-center gap-2 border-b border-border pb-2">
-              <IterationCcw size={14} /> Replace Stats
-            </h3>
-            <div className="bg-cyan-500/5 border border-cyan-500/20 rounded-xl p-6 flex flex-col items-center justify-center text-center">
-              <span className="text-4xl font-black text-cyan-600 dark:text-cyan-400">{currentMatches}</span>
-              <span className="text-sm font-bold uppercase tracking-wider text-muted-foreground mt-2">Occurrences Found</span>
+        {/* Right: Sidebar Panel */}
+        <div className={`w-full lg:w-[320px] xl:w-[350px] shrink-0 transition-all duration-300 ${!hasText ? 'opacity-50 pointer-events-none grayscale-[0.5]' : ''}`}>
+          <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6 lg:h-[calc(100vh-250px)] lg:max-h-[620px] lg:min-h-[520px] overflow-y-auto custom-scrollbar flex flex-col">
+            
+            {/* Occurrences Stats */}
+            <div className="space-y-2">
+              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">Matches Found</span>
+              <div className="bg-muted/30 border border-border/50 rounded-xl p-5 flex flex-col items-center justify-center text-center">
+                <span className={`text-4xl font-extrabold transition-all duration-200 ${currentMatches > 0 ? 'text-primary' : 'text-muted-foreground/60'}`}>
+                  {currentMatches}
+                </span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mt-1">
+                  Occurrences
+                </span>
+              </div>
             </div>
-          </div>
 
-          <div className="mt-auto space-y-3">
-             <button onClick={handleCopy} disabled={!replacedOutput} className="w-full py-3 bg-cyan-500 text-white font-medium rounded-xl hover:bg-cyan-600 transition-colors flex items-center justify-center gap-2 shadow-sm shadow-cyan-500/20 disabled:opacity-50 disabled:shadow-none">
-               {copied ? <Check size={18} /> : <Copy size={18} />} Copy Result
-             </button>
-             <button onClick={clearAll} className="w-full py-3 bg-red-500/10 text-red-500 font-medium rounded-xl hover:bg-red-500/20 transition-colors flex items-center justify-center gap-2">
-               Clear All
-             </button>
+            {/* Quick Presets */}
+            <div className="space-y-2.5">
+              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                <RefreshCw size={13} className="text-primary" /> Quick Presets
+              </span>
+              <div className="grid grid-cols-1 gap-2">
+                {[
+                  { id: 'double-spaces', label: 'Strip Double Spaces' },
+                  { id: 'html-tags',     label: 'Strip HTML Tags' },
+                  { id: 'emails',        label: 'Remove Email Addresses' },
+                  { id: 'linebreaks',    label: 'Collapse Line Breaks' },
+                  { id: 'numbers',       label: 'Remove All Digits' },
+                  { id: 'punctuation',   label: 'Strip Punctuation' }
+                ].map(preset => (
+                  <button
+                    key={preset.id}
+                    onClick={() => applyPreset(preset.id)}
+                    className="w-full text-left py-2 px-3 text-xs font-semibold rounded-lg border border-border/50 bg-muted/20 hover:bg-muted text-foreground transition-all active:scale-[0.98]"
+                  >
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Bottom Actions */}
+            <div className="mt-auto pt-4 border-t border-border/50 space-y-2.5">
+              <button 
+                onClick={handleCopy} 
+                disabled={!replacedOutput || replacedOutput === text} 
+                className="w-full py-2.5 bg-primary hover:bg-primary/95 text-primary-foreground text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 active:scale-[0.98] disabled:opacity-40 disabled:scale-100"
+              >
+                {copied ? <CheckCircle size={14} /> : <Copy size={14} />} Copy Replaced Text
+              </button>
+              <button 
+                onClick={clearAll} 
+                className="w-full py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
+              >
+                <Trash2 size={14} /> Clear All
+              </button>
+            </div>
+
           </div>
         </div>
 
