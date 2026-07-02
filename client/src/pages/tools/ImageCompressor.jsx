@@ -102,7 +102,7 @@ const ImageCompressor = () => {
   };
 
   return (
-    <div className="max-w-5xl mx-auto w-full">
+    <div className="max-w-[1600px] mx-auto w-full px-2 md:px-8">
       <div className="mb-6 flex items-center gap-3">
         <div className="p-2 bg-emerald-500/10 text-emerald-500 rounded-md shadow-sm">
           <ImageIcon size={24} />
@@ -129,18 +129,18 @@ const ImageCompressor = () => {
               
               {/* Original */}
               <div className="flex flex-col items-center w-full min-w-0">
-                <div className="flex justify-between items-center w-full mb-3 px-1">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Original</h3>
-                  <span className="text-sm font-semibold text-foreground">{(originalFile.size / 1024).toFixed(1)} KB</span>
+                <div className="flex justify-between items-center w-full mb-3 px-2">
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Original</h3>
+                  <span className="text-base font-semibold text-foreground">{(originalFile.size / 1024).toFixed(1)} KB</span>
                 </div>
-                <div className="w-full h-48 md:h-64 bg-muted/20 rounded-md p-2 border border-border flex items-center justify-center overflow-hidden relative group">
+                <div className="w-full aspect-square md:aspect-video lg:aspect-auto lg:h-[350px] xl:h-[420px] bg-muted/20 rounded-xl p-4 border border-border flex items-center justify-center overflow-hidden relative group">
                   <img 
                     src={URL.createObjectURL(originalFile)} 
                     alt="Original" 
-                    className="max-h-full max-w-full object-contain drop-shadow-sm transition-transform duration-500 group-hover:scale-105"
+                    className="max-h-full max-w-full object-contain drop-shadow-md transition-transform duration-500 group-hover:scale-105"
                   />
                 </div>
-                <p className="font-medium text-muted-foreground text-xs truncate w-full text-center mt-3 px-2" title={originalFile.name}>
+                <p className="font-medium text-muted-foreground text-sm truncate w-full text-center mt-4 px-2" title={originalFile.name}>
                   {originalFile.name}
                 </p>
               </div>
@@ -152,15 +152,15 @@ const ImageCompressor = () => {
 
               {/* Compressed */}
               <div className="flex flex-col items-center w-full min-w-0">
-                <div className="flex justify-between items-center w-full mb-3 px-1">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-600 flex items-center gap-1.5">
-                    Result {isCompressing && <RefreshCw size={12} className="animate-spin" />}
+                <div className="flex justify-between items-center w-full mb-3 px-2">
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-emerald-600 flex items-center gap-1.5">
+                    Result {isCompressing && <RefreshCw size={14} className="animate-spin" />}
                   </h3>
-                  <span className={`text-sm font-bold transition-colors ${compressedFile ? 'text-emerald-600' : 'text-muted-foreground'}`}>
+                  <span className={`text-base font-bold transition-colors ${compressedFile ? 'text-emerald-600' : 'text-muted-foreground'}`}>
                     {compressedFile ? `${(compressedFile.size / 1024).toFixed(1)} KB` : '...'}
                   </span>
                 </div>
-                <div className="w-full h-48 md:h-64 bg-emerald-500/5 rounded-md p-2 border border-emerald-500/20 flex items-center justify-center relative overflow-hidden group">
+                <div className="w-full aspect-square md:aspect-video lg:aspect-auto lg:h-[350px] xl:h-[420px] bg-emerald-500/5 rounded-xl p-4 border border-emerald-500/20 flex items-center justify-center relative overflow-hidden group">
                   {compressedFile ? (
                     <img 
                       src={URL.createObjectURL(compressedFile)} 
@@ -173,12 +173,12 @@ const ImageCompressor = () => {
                     </div>
                   )}
                 </div>
-                <div className="w-full flex items-center justify-between mt-3 px-2">
-                  <p className="font-medium text-muted-foreground text-xs truncate max-w-[120px]" title={originalFile.name}>
+                <div className="w-full flex items-center justify-between mt-4 px-2">
+                  <p className="font-medium text-muted-foreground text-sm truncate max-w-[200px]" title={originalFile.name}>
                     {compressedFile ? `min_${originalFile.name}` : 'Processing...'}
                   </p>
                   {compressedFile && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-700 text-[10px] font-bold uppercase tracking-wider">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-emerald-500/10 text-emerald-700 text-xs font-bold uppercase tracking-wider">
                       -{getSavings()}%
                     </span>
                   )}
@@ -189,13 +189,13 @@ const ImageCompressor = () => {
           </div>
 
           {/* Controls Sidebar */}
-          <div className="w-full lg:w-[320px] shrink-0 space-y-4">
-            <div className="bg-card border border-border p-5 rounded-lg shadow-sm">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-foreground mb-4 flex items-center gap-2 border-b border-border pb-3">
-                <Settings2 size={16} className="text-muted-foreground" /> Compression Settings
+          <div className="w-full lg:w-[350px] xl:w-[400px] shrink-0 space-y-6">
+            <div className="bg-card border border-border p-6 rounded-xl shadow-sm">
+              <h3 className="text-sm font-bold uppercase tracking-wider text-foreground mb-5 flex items-center gap-2 border-b border-border pb-3">
+                <Settings2 size={18} className="text-muted-foreground" /> Compression Settings
               </h3>
               
-              <div className="space-y-5">
+              <div className="space-y-6">
                 
                 {/* Strategy Tabs */}
                 <div className="flex bg-muted/40 rounded-md border border-border p-0.5">
