@@ -128,13 +128,13 @@ const ImageCompressor = () => {
         </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
+      <div className="flex flex-col lg:flex-row gap-6 w-full items-stretch">
         
         {/* Upload Area / Workspace */}
-        <div className={`flex-1 w-full rounded-2xl flex flex-col min-h-[50vh] relative ${!originalFile ? '' : 'bg-card border border-border p-4 md:p-6 shadow-sm'}`}>
+        <div className="flex-1 w-full bg-card border border-border p-4 md:p-6 rounded-2xl shadow-sm flex flex-col min-h-[50vh] relative">
           {!originalFile ? (
             <DropzoneComponent 
-              className="flex-1 justify-center bg-card shadow-sm"
+              className="flex-1 h-full w-full justify-center"
               onFilesAccepted={handleFilesAccepted} 
               accept={{ 'image/*': ['.jpeg', '.jpg', '.png', '.webp'] }} 
               maxFiles={1}
@@ -247,8 +247,8 @@ const ImageCompressor = () => {
                           onChange={(e) => setSizeUnit(e.target.value)}
                           className="w-full appearance-none p-3 pl-4 pr-8 bg-muted/20 border border-border/50 group-hover:border-border rounded-xl text-sm text-foreground focus:ring-2 focus:ring-primary/50 outline-none transition-all font-semibold cursor-pointer shadow-sm"
                         >
-                           <option value="KB">KB</option>
-                           <option value="MB">MB</option>
+                           <option value="KB" className="bg-background text-foreground">KB</option>
+                           <option value="MB" className="bg-background text-foreground">MB</option>
                         </select>
                         <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground group-hover:text-foreground transition-colors">
                           <ChevronDown size={16} />
