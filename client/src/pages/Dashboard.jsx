@@ -98,10 +98,10 @@ const Dashboard = () => {
       <div key={tool.name} className="group relative">
         <Link 
           to={tool.to}
-          className={`relative flex flex-col h-full p-6 transition-all duration-300 bg-card/40 hover:bg-card/80 backdrop-blur-md border border-border/50 hover:${borderColor} rounded-3xl shadow-sm hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:hover:shadow-[0_8px_30px_rgba(255,255,255,0.03)] overflow-hidden hover:-translate-y-1`}
+          className={`relative flex flex-col h-full p-6 transition-all duration-300 bg-card/40 hover:bg-card/80 backdrop-blur-md border border-border/50 hover:${borderColor} rounded-2xl shadow-sm hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:hover:shadow-[0_8px_30px_rgba(255,255,255,0.03)] overflow-hidden hover:-translate-y-1`}
         >
           {/* Subtle gradient background on hover */}
-          <div className={`absolute inset-0 opacity-0 group-hover:opacity-[0.05] transition-opacity duration-500 ${tool.color.split(' ')[1].replace('/10', '')} pointer-events-none`}></div>
+          <div className={`absolute inset-0 opacity-0 group-hover:opacity-[0.05] transition-opacity duration-500 ${tool.color.split(' ')[1].replace('/10', '')} pointer-events-none rounded-2xl`}></div>
           
           <div className="flex items-start justify-between mb-5">
             <div className={`w-14 h-14 rounded-2xl ${tool.color} flex items-center justify-center shadow-inner transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3 shrink-0`}>

@@ -73,12 +73,20 @@ const Topbar = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const { currentUser: user, logout } = useAuth();
   const searchInputRef = useRef(null);
   const searchContainerRef = useRef(null);
   
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Scroll Logic
+  useEffect(() => {
+    const handleScroll = () => setIsScrolled(window.scrollY > 10);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Search Logic
   useEffect(() => {
@@ -129,7 +137,7 @@ const Topbar = () => {
 
 
   return (
-    <header className="h-16 flex items-center justify-between px-4 md:px-8 glass-header border-b border-border/50 bg-card/40 backdrop-blur-2xl">
+    <header className={`h-16 flex items-center justify-between px-4 md:px-8 bg-card/40 backdrop-blur-2xl transition-all duration-300 ${isScrolled ? 'border-b border-border/50 shadow-sm' : 'border-b border-transparent'}`}>
       
       {/* LEFT: Logo & Back Button */}
       <div className="flex items-center gap-2 md:gap-4 shrink-0">
@@ -155,7 +163,7 @@ const Topbar = () => {
       {/* CENTER: Search Bar */}
       <div className="flex-1 flex justify-center px-4 max-w-2xl">
         <div ref={searchContainerRef} className="flex items-center relative w-full group">
-          <div className="absolute inset-0 bg-indigo-500/20 rounded-full blur-lg transition-all duration-500 group-hover:bg-indigo-500/30 opacity-0 focus-within:opacity-100 group-hover:opacity-100"></div>
+          <div className="absolute inset-0 bg-indigo-500/10 rounded-xl blur-md transition-all duration-500 group-hover:bg-indigo-500/20 opacity-0 focus-within:opacity-100 group-hover:opacity-100"></div>
           <div className="relative w-full flex items-center">
             <Search size={18} className="absolute left-3.5 text-muted-foreground z-10" />
             <input 
@@ -167,7 +175,7 @@ const Topbar = () => {
                 if (searchQuery.trim() !== '') setIsSearchOpen(true);
               }}
               placeholder="Search all tools... (Ctrl+K)"
-              className="w-full bg-card/60 backdrop-blur-md border border-border/60 text-foreground text-sm rounded-full pl-10 pr-4 py-2.5 focus:outline-none focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10 transition-all placeholder:text-muted-foreground relative z-0"
+              className="w-full bg-card/60 backdrop-blur-md border border-border/60 text-foreground text-sm rounded-xl pl-10 pr-4 py-2 focus:outline-none focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/20 transition-all placeholder:text-muted-foreground relative z-0"
             />
           </div>
           
@@ -201,12 +209,12 @@ const Topbar = () => {
       <div className="flex items-center gap-2 sm:gap-4 shrink-0">
         {user ? (
           <div className="flex items-center gap-2 sm:gap-4">
-            <span className="hidden lg:inline-block text-sm font-medium text-foreground bg-muted/30 px-3 py-1.5 rounded-full border border-border/50">
+            <span className="hidden lg:inline-block text-sm font-medium text-foreground bg-muted/30 px-3 py-1.5 rounded-lg border border-border/50">
               Hello, {user.name}
             </span>
             <button 
               onClick={logout}
-              className="flex items-center gap-2 p-2 rounded-full hover:bg-red-500/10 text-muted-foreground hover:text-red-500 transition-colors"
+              className="flex items-center gap-2 p-2 rounded-xl hover:bg-red-500/10 text-muted-foreground hover:text-red-500 transition-colors"
               title="Logout"
             >
               <LogOut size={20} />
@@ -215,7 +223,7 @@ const Topbar = () => {
         ) : (
           <Link 
             to="/login"
-            className="flex items-center gap-2 px-5 py-2 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 font-medium transition-all shadow-sm"
+            className="flex items-center gap-2 px-5 py-2 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-medium transition-all shadow-sm"
           >
             <User size={18} />
             <span className="hidden sm:inline-block text-sm">Sign In</span>
