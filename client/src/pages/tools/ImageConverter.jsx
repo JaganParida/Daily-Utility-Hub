@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FileImage, Download, RefreshCw, Trash2, Layers, DownloadCloud, Settings2, ChevronDown, CheckCircle, FileCode2, ArrowRightLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DropzoneComponent from '../../components/DropzoneComponent';
@@ -18,6 +18,13 @@ const ImageConverter = () => {
   const [quality, setQuality] = useState(0.9);
   const [isConverting, setIsConverting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+
+  // Revoke object URLs on component unmount to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      images.forEach(img => URL.revokeObjectURL(img.url));
+    };
+  }, []);
 
   const handleFilesAccepted = (files) => {
     if (files.length === 0) return;
@@ -49,6 +56,7 @@ const ImageConverter = () => {
   const convertImages = async () => {
     if (images.length === 0) return;
     setIsConverting(true);
+    const startTime = Date.now();
 
     try {
       const formatObj = FORMATS.find(f => f.id === targetFormat);
@@ -110,6 +118,12 @@ const ImageConverter = () => {
         URL.revokeObjectURL(url);
       }
       
+      // Enforce a minimum 1.0 second processing delay for smooth visual feedback
+      const elapsed = Date.now() - startTime;
+      if (elapsed < 1000) {
+        await new Promise(resolve => setTimeout(resolve, 1000 - elapsed));
+      }
+
       toast.success('Images converted successfully!');
       setIsSuccess(true);
       setTimeout(() => setIsSuccess(false), 3000);
@@ -124,19 +138,22 @@ const ImageConverter = () => {
   return (
     <div className="max-w-[1600px] mx-auto w-full px-2 md:px-8">
       <div className="mb-6 flex items-center gap-3">
-        <div className="p-2 bg-pink-500/10 text-pink-500 rounded-lg shadow-sm">
-          <ArrowRightLeft size={28} />
+        <div className="p-2 bg-primary/10 text-primary rounded-lg shadow-sm">
+          <ArrowRightLeft size={24} />
         </div>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Advanced Image Converter</h1>
-          <p className="text-muted-foreground mt-1 text-sm">Batch convert images to WebP, JPEG, PNG, or BMP instantly.</p>
+          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">Advanced Image Converter</h1>
+          <p className="text-muted-foreground mt-1 text-xs md:text-sm">Batch convert images to WebP, JPEG, PNG, or BMP instantly.</p>
         </div>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         
-        {/* Upload Area */}
-        <div className="flex-1 w-full bg-card border border-border p-4 md:p-6 rounded-xl shadow-sm flex flex-col min-h-[50vh] relative space-y-6">
+        {/* Upload Area / Workspace */}
+        <motion.div 
+          layout
+          className={`flex-1 w-full bg-card border border-border rounded-2xl shadow-sm flex flex-col relative transition-all duration-500 ease-out ${images.length === 0 ? 'min-h-[50vh] items-stretch p-4 md:p-5' : 'min-h-0 p-4 md:p-6 space-y-6'}`}
+        >
           <DropzoneComponent 
             className={images.length === 0 ? "flex-1 justify-center" : "shrink-0"}
             onFilesAccepted={handleFilesAccepted} 
@@ -149,65 +166,66 @@ const ImageConverter = () => {
             {images.length > 0 && (
               <motion.div 
                 layout
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.4, ease: "easeOut" }}
-                className="bg-muted/10 border border-border p-4 md:p-6 rounded-xl shadow-inner flex-1 flex flex-col"
+                exit={{ opacity: 0, scale: 0.98 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+                className="bg-muted/10 border border-border p-4 md:p-5 rounded-xl shadow-inner flex-1 flex flex-col min-h-0"
               >
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                  <Layers size={16} /> Batch Queue ({images.length})
-                </h3>
-                <button onClick={clearAll} className="text-xs text-red-500 hover:underline">Clear Queue</button>
-              </div>
-              
-              <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-                <AnimatePresence mode="popLayout">
-                {images.map((img, idx) => (
-                  <motion.div 
-                    layout
-                    initial={{ opacity: 0, scale: 0.8, y: 10 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.8, transition: { duration: 0.2 } }}
-                    key={img.url || `${img.name}-${idx}`} 
-                    className="flex items-center gap-4 bg-muted/50 p-3 rounded-xl border border-border group hover:border-pink-500/50 transition-colors"
-                  >
-                    <img src={img.url} className="w-12 h-12 object-cover rounded-md border border-border/50 shadow-sm" />
-                    <div className="flex-1 truncate">
-                      <p className="font-medium text-sm text-foreground truncate">{img.name}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">{(img.size / 1024).toFixed(1)} KB</p>
-                    </div>
-                    <button 
-                      onClick={() => removeImage(idx)}
-                      className="p-2 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded-md transition-colors"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </motion.div>
-                ))}
-                </AnimatePresence>
-              </div>
+                <div className="flex items-center justify-between mb-4 px-1">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                    <Layers size={14} /> Batch Queue ({images.length})
+                  </h3>
+                  <button onClick={clearAll} className="text-xs text-red-500 hover:text-red-600 font-semibold hover:underline">Clear Queue</button>
+                </div>
+                
+                <div className="space-y-2.5 max-h-[350px] overflow-y-auto pr-1 custom-scrollbar min-h-0">
+                  <AnimatePresence mode="popLayout">
+                    {images.map((img, idx) => (
+                      <motion.div 
+                        layout
+                        initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
+                        key={img.url || `${img.name}-${idx}`} 
+                        className="flex items-center gap-4 bg-muted/30 p-2.5 rounded-xl border border-border/50 group hover:border-primary/40 transition-all shadow-sm"
+                      >
+                        <img src={img.url} className="w-11 h-11 object-cover rounded-lg border border-border/50 shadow-sm" />
+                        <div className="flex-1 truncate">
+                          <p className="font-semibold text-sm text-foreground truncate">{img.name}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5 font-medium">{(img.size / 1024).toFixed(1)} KB</p>
+                        </div>
+                        <button 
+                          onClick={() => removeImage(idx)}
+                          className="p-2 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
-        </div>
+        </motion.div>
 
         {/* Settings Sidebar */}
-        <div className="w-full lg:w-[350px] xl:w-[400px] shrink-0 space-y-6">
-          <div className={`bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6 transition-all duration-300 ${images.length === 0 ? 'opacity-50 pointer-events-none grayscale-[0.5]' : ''}`}>
+        <div className={`w-full lg:w-[350px] xl:w-[400px] shrink-0 space-y-6 transition-all duration-300 ${images.length === 0 ? 'opacity-50 pointer-events-none grayscale-[0.5]' : ''}`}>
+          
+          <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6">
             
             <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground border-b border-border pb-3 flex items-center gap-2">
               <FileCode2 size={16} /> Conversion Settings
             </h3>
             
             <div className="space-y-3">
-              <label className="text-sm font-semibold text-foreground">Format</label>
+              <label className="text-sm font-semibold text-foreground">Target Format</label>
               <div className="relative group">
                 <select 
                   value={targetFormat}
                   onChange={(e) => setTargetFormat(e.target.value)}
-                  className="w-full appearance-none bg-muted/20 border border-border/50 group-hover:border-border p-3 pl-4 pr-10 rounded-xl text-sm font-medium text-foreground focus:ring-2 focus:ring-red-500/50 outline-none transition-all cursor-pointer shadow-sm"
+                  className="w-full appearance-none bg-muted/20 border border-border/50 group-hover:border-border p-3 pl-4 pr-10 rounded-xl text-sm font-semibold text-foreground focus:ring-2 focus:ring-primary/50 outline-none transition-all cursor-pointer shadow-sm"
                 >
                   {FORMATS.map(f => (
                     <option key={f.id} value={f.id} className="bg-background text-foreground">{f.name}</option>
@@ -220,27 +238,49 @@ const ImageConverter = () => {
             </div>
 
             {(targetFormat === 'jpeg' || targetFormat === 'webp') && (
-              <div className="space-y-2 pt-2 border-t border-border">
+              <div className="space-y-4 pt-4 border-t border-border/50">
                 <div className="flex justify-between items-center">
-                  <label className="text-sm font-medium text-foreground">Quality</label>
-                  <span className="text-xs font-bold bg-pink-500/10 text-pink-500 px-2 py-0.5 rounded-md">
+                  <label className="text-sm font-semibold text-foreground">Quality</label>
+                  <span className="text-xs font-bold bg-primary/10 text-primary border border-primary/20 px-2 py-1 rounded-md">
                     {Math.round(quality * 100)}%
                   </span>
                 </div>
-                <input 
-                  type="range" 
-                  min="0.1" 
-                  max="1.0" 
-                  step="0.05"
-                  value={quality}
-                  onChange={(e) => setQuality(Number(e.target.value))}
-                  className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-pink-500"
-                />
-                <p className="text-xs text-muted-foreground mt-1">Lower quality produces significantly smaller file sizes.</p>
+                <div className="relative group pt-1 pb-1">
+                  <input 
+                    type="range" 
+                    min="0.1" 
+                    max="1.0" 
+                    step="0.05"
+                    value={quality}
+                    onChange={(e) => setQuality(Number(e.target.value))}
+                    className="w-full h-2.5 rounded-full appearance-none cursor-pointer outline-none transition-all"
+                    style={{
+                      background: `linear-gradient(to right, var(--primary) ${quality * 100}%, var(--muted) ${quality * 100}%)`,
+                    }}
+                  />
+                  <style dangerouslySetInnerHTML={{__html: `
+                    input[type=range]::-webkit-slider-thumb {
+                      appearance: none;
+                      width: 20px;
+                      height: 20px;
+                      border-radius: 50%;
+                      background: white;
+                      border: 2px solid var(--primary);
+                      cursor: pointer;
+                      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                      transition: transform 0.1s;
+                    }
+                    input[type=range]:hover::-webkit-slider-thumb {
+                      transform: scale(1.15);
+                    }
+                  `}} />
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">Lower quality produces smaller file sizes.</p>
               </div>
             )}
           </div>
 
+          {/* Action Buttons */}
           <div className="space-y-3">
             <button 
               onClick={convertImages}
@@ -248,7 +288,7 @@ const ImageConverter = () => {
               className={`w-full h-14 font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-[0_1px_2px_rgba(0,0,0,0.1),0_0_0_1px_rgba(255,255,255,0.1)_inset] disabled:opacity-50 disabled:hover:shadow-none active:scale-[0.98] overflow-hidden ${
                 isSuccess 
                   ? 'bg-green-600 hover:bg-green-700 text-white shadow-[0_4px_12px_rgba(22,163,74,0.3)]' 
-                  : 'bg-red-600 hover:bg-red-700 text-white hover:shadow-[0_4px_12px_rgba(220,38,38,0.3)]'
+                  : 'bg-primary hover:bg-primary/90 text-primary-foreground hover:shadow-[0_4px_12px_rgba(var(--primary),0.3)]'
               }`}
             >
               <AnimatePresence mode="popLayout" initial={false}>
@@ -262,7 +302,7 @@ const ImageConverter = () => {
                     className="flex items-center gap-2"
                   >
                     <CheckCircle size={20} />
-                    Downloaded!
+                    Converted!
                   </motion.div>
                 ) : isConverting ? (
                   <motion.div
@@ -299,6 +339,7 @@ const ImageConverter = () => {
               <Trash2 size={18} /> Clear Queue
             </button>
           </div>
+
         </div>
 
       </div>
