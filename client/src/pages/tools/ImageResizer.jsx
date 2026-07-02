@@ -13,6 +13,7 @@ const SOCIAL_PRESETS = [
   { name: 'YouTube Thumb', w: 1280, h: 720 },
   { name: 'Twitter Post', w: 1200, h: 675 },
   { name: 'Facebook Cover', w: 820, h: 312 },
+  { name: 'LinkedIn Cover', w: 1584, h: 396 },
 ];
 
 const ImageResizer = () => {
@@ -183,7 +184,7 @@ const ImageResizer = () => {
                 </div>
               </div>
               
-              <div className="w-full h-[45vh] min-h-[250px] max-h-[400px] bg-muted/10 rounded-xl border border-border p-4 relative flex items-center justify-center">
+              <div className="w-full h-[60vh] min-h-[300px] max-h-[700px] bg-muted/10 rounded-xl border border-border p-4 md:p-6 relative flex items-center justify-center">
                 {/* Visual feedback of bounding box */}
                 <div 
                   className="relative flex items-center justify-center bg-black/20 dark:bg-black/40 shadow-2xl transition-all duration-300 ease-out overflow-hidden"
