@@ -163,7 +163,7 @@ const ImageResizer = () => {
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         
         {/* Preview Area */}
-        <motion.div layout className="flex-1 w-full bg-card border border-border p-4 md:p-5 rounded-lg shadow-sm flex flex-col">
+        <motion.div layout className="flex-1 w-full bg-card border border-border p-4 md:p-5 rounded-lg shadow-sm flex flex-col lg:h-[calc(100vh-140px)] min-h-[500px] lg:sticky lg:top-6">
           <AnimatePresence mode="popLayout" initial={false}>
             {!image ? (
               <motion.div 
@@ -173,7 +173,7 @@ const ImageResizer = () => {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ duration: 0.3 }}
-                className="flex-1 h-full w-full flex flex-col justify-center min-h-[300px] md:min-h-[350px]"
+                className="flex-1 h-full w-full flex flex-col justify-center"
               >
                 <DropzoneComponent 
                   className="flex-1 h-full w-full justify-center"
@@ -191,9 +191,9 @@ const ImageResizer = () => {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ duration: 0.3 }}
-                className="flex-1 flex flex-col w-full"
+                className="flex-1 flex flex-col w-full h-full overflow-hidden"
               >
-              <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-4 gap-2 px-1">
+              <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-4 gap-2 px-1 shrink-0">
                 <div className="flex flex-col">
                   <h3 className="font-medium text-foreground text-sm truncate max-w-[300px]" title={image.name}>{image.name}</h3>
                   <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider mt-1">Original: {originalSize.w} × {originalSize.h} px</p>
@@ -203,15 +203,14 @@ const ImageResizer = () => {
                 </div>
               </div>
               
-              <motion.div layout className="w-full min-h-[300px] bg-muted/10 rounded-xl border border-border p-4 md:p-6 relative flex items-center justify-center">
+              <motion.div layout className="w-full flex-1 bg-muted/10 rounded-xl border border-border p-4 md:p-6 relative flex items-center justify-center overflow-hidden">
                 {/* Visual feedback of bounding box */}
-                <motion.div layout className="relative flex items-center justify-center max-w-full transition-all duration-500 ease-out">
+                <motion.div layout className="relative flex items-center justify-center max-w-full max-h-full transition-all duration-500 ease-out">
                   {/* Invisible SVG spacer scaled to 4000px max dimension so it ALWAYS expands to fill the screen bounds (max-w-full and max-h) without being a tiny dot for small dimensions */}
                   <img 
                     src={`data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='${Math.round(((width > 0 ? width : 1) / Math.max(width > 0 ? width : 1, height > 0 ? height : 1)) * 4000)}' height='${Math.round(((height > 0 ? height : 1) / Math.max(width > 0 ? width : 1, height > 0 ? height : 1)) * 4000)}' viewBox='0 0 ${width > 0 ? width : 1} ${height > 0 ? height : 1}'%3E%3C/svg%3E`}
                     alt="spacer"
-                    className="max-w-full opacity-0 pointer-events-none block transition-all duration-500 ease-out"
-                    style={{ maxHeight: '65vh' }}
+                    className="max-w-full max-h-full opacity-0 pointer-events-none block transition-all duration-500 ease-out"
                   />
                   <motion.div layout className="absolute inset-0 bg-black/20 dark:bg-black/40 shadow-2xl transition-all duration-500 ease-out overflow-hidden">
                     <motion.img 
