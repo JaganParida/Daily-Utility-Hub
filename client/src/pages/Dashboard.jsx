@@ -85,7 +85,7 @@ const Dashboard = () => {
     const borderColor = textColor.replace('text-', 'border-') + '/50';
 
     return (
-      <div key={tool.name} className="group relative h-56">
+      <div key={tool.name} className="group relative h-64">
         
         {/* Outer link wrapper to ensure full card clickability */}
         <Link 
@@ -158,7 +158,7 @@ const Dashboard = () => {
               <div className="p-2 bg-indigo-500/10 rounded-lg"><Pin size={22} className="fill-current" /></div>
               Pinned Tools
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
               {pinnedToolObjects.map(renderToolCard)}
             </div>
           </div>
@@ -170,7 +170,7 @@ const Dashboard = () => {
               <div className="p-2 bg-muted rounded-lg"><Clock size={22} className="text-muted-foreground" /></div>
               Recently Used
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
               {recentToolObjects.map(renderToolCard)}
             </div>
           </div>
@@ -182,7 +182,7 @@ const Dashboard = () => {
             <h2 className="text-xl md:text-2xl font-bold text-foreground mb-8 border-b border-border/50 pb-4">
               {categoryName}
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
               {tools.map(renderToolCard)}
             </div>
           </div>
