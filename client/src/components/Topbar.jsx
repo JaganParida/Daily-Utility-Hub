@@ -132,23 +132,23 @@ const Topbar = () => {
     <header className="h-16 flex items-center justify-between px-4 md:px-8 glass-header border-b border-border/50 bg-card/40 backdrop-blur-2xl">
       
       {/* LEFT: Logo & Back Button */}
-      <div className="flex items-center gap-6">
-        <Link to="/" className="flex items-center gap-2 font-bold text-lg tracking-tight hover:opacity-80 transition-opacity">
-          <div className="w-8 h-8 shrink-0 rounded-lg bg-primary flex items-center justify-center text-primary-foreground shadow-sm">
-            <Layers size={18} strokeWidth={2.5} />
-          </div>
-          <span className="hidden sm:inline-block text-foreground truncate">Daily Utility Hub</span>
-        </Link>
-        
-        {location.pathname !== '/dashboard' && (
+      <div className="flex items-center gap-4 shrink-0 w-48">
+        {location.pathname !== '/dashboard' && location.pathname !== '/' ? (
           <button 
             onClick={() => navigate('/dashboard')}
-            className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 px-3 py-1.5 rounded-full transition-colors"
+            className="flex items-center gap-2 font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 px-3 py-2 rounded-full transition-colors"
             title="Back to Dashboard"
           >
-            <ArrowLeft size={16} />
-            <span className="hidden md:inline-block">Dashboard</span>
+            <ArrowLeft size={20} />
+            <span className="hidden sm:inline-block">Back to Dashboard</span>
           </button>
+        ) : (
+          <Link to="/" className="flex items-center gap-2 font-bold text-lg tracking-tight hover:opacity-80 transition-opacity">
+            <div className="w-8 h-8 shrink-0 rounded-lg bg-primary flex items-center justify-center text-primary-foreground shadow-sm">
+              <Layers size={18} strokeWidth={2.5} />
+            </div>
+            <span className="hidden sm:inline-block text-foreground truncate">Daily Utility Hub</span>
+          </Link>
         )}
       </div>
 
