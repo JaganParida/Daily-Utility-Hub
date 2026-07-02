@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { LayoutGrid, Download, RefreshCw, Settings2, Trash2, Plus, Image as ImageIcon } from 'lucide-react';
-import html2canvas from 'html2canvas';
+import { toJpeg } from 'html-to-image';
 import { toast } from 'react-hot-toast';
 
 const TEMPLATES = [
@@ -165,13 +165,12 @@ const ImageCollage = () => {
     await new Promise(res => setTimeout(res, 100));
 
     try {
-      const canvas = await html2canvas(collageRef.current, {
-        scale: 2, // High resolution
-        useCORS: true,
+      const url = await toJpeg(collageRef.current, {
+        quality: 0.95,
+        pixelRatio: 2,
         backgroundColor: bgColor
       });
       
-      const url = canvas.toDataURL('image/jpeg', 0.95);
       const link = document.createElement('a');
       link.href = url;
       link.download = `collage_${Date.now()}.jpg`;
