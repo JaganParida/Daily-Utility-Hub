@@ -13,6 +13,7 @@ const DropzoneComponent = ({
   subtitle = "or click to select files",
   value = [], // Array of File objects
   onRemove,
+  className = "",
 }) => {
 
   const onDrop = useCallback((acceptedFiles, fileRejections) => {
@@ -35,10 +36,10 @@ const DropzoneComponent = ({
   });
 
   return (
-    <div className="w-full">
+    <div className={`w-full flex flex-col transition-all duration-500 ${className}`}>
       <div
         {...getRootProps()}
-        className={`relative w-full p-8 md:p-12 border-2 border-dashed rounded-2xl transition-all duration-300 ease-out cursor-pointer flex flex-col items-center justify-center text-center overflow-hidden
+        className={`relative w-full h-full min-h-[160px] flex-1 p-8 md:p-12 border-2 border-dashed rounded-2xl transition-all duration-300 ease-out cursor-pointer flex flex-col items-center justify-center text-center overflow-hidden
           ${isDragReject ? 'border-red-500 bg-red-500/10' : 
             isDragActive ? 'border-primary bg-primary/10 scale-[1.02]' : 
             'border-border bg-card/50 hover:bg-muted hover:border-primary/50'

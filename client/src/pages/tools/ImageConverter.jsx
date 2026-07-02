@@ -140,6 +140,7 @@ const ImageConverter = () => {
         {/* Upload Area */}
         <div className="flex-1 w-full bg-card border border-border p-4 md:p-6 rounded-xl shadow-sm flex flex-col min-h-[50vh] relative space-y-6">
           <DropzoneComponent 
+            className={images.length === 0 ? "flex-1 justify-center" : "shrink-0"}
             onFilesAccepted={handleFilesAccepted} 
             accept={{ 'image/*': ['.jpeg', '.jpg', '.png', '.webp', '.bmp', '.gif'] }} 
             maxFiles={100}
