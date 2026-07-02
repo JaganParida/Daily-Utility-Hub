@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Image as ImageIcon, Download, RefreshCw, Settings2, ArrowRight } from 'lucide-react';
+import { Image as ImageIcon, Download, RefreshCw, Settings2, ArrowRight, ArrowRightLeft } from 'lucide-react';
 import DropzoneComponent from '../../components/DropzoneComponent';
 import imageCompression from 'browser-image-compression';
 import { toast } from 'react-hot-toast';
@@ -102,14 +102,14 @@ const ImageCompressor = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="max-w-5xl mx-auto w-full">
       <div className="mb-6 flex items-center gap-3">
-        <div className="p-2 bg-emerald-500/10 text-emerald-500 rounded-lg shadow-sm">
-          <ImageIcon size={28} />
+        <div className="p-2 bg-emerald-500/10 text-emerald-500 rounded-md shadow-sm">
+          <ImageIcon size={24} />
         </div>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Advanced Image Compressor</h1>
-          <p className="text-muted-foreground mt-1 text-sm">Real-time compression targeting exact file sizes or quality.</p>
+          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">Advanced Image Compressor</h1>
+          <p className="text-muted-foreground mt-1 text-xs md:text-sm">Real-time compression targeting exact file sizes or quality.</p>
         </div>
       </div>
 
@@ -121,87 +121,93 @@ const ImageCompressor = () => {
           title="Drag & drop an image to compress"
         />
       ) : (
-        <div className="grid lg:grid-cols-[1fr_350px] gap-6">
+        <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
           
           {/* Main Preview Area */}
-          <div className="bg-card border border-border p-6 rounded-2xl shadow-sm flex flex-col space-y-6">
-            <div className="grid md:grid-cols-2 gap-4 flex-1">
+          <div className="flex-1 w-full bg-card border border-border p-4 md:p-6 rounded-lg shadow-sm flex flex-col">
+            <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-4 md:gap-6 items-center w-full">
+              
               {/* Original */}
-              <div className="flex flex-col items-center">
-                <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-3">Original</h3>
-                <div className="w-full h-64 bg-muted/30 rounded-xl p-2 border border-border/50 flex items-center justify-center">
+              <div className="flex flex-col items-center w-full min-w-0">
+                <div className="flex justify-between items-center w-full mb-3 px-1">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Original</h3>
+                  <span className="text-sm font-semibold text-foreground">{(originalFile.size / 1024).toFixed(1)} KB</span>
+                </div>
+                <div className="w-full h-48 md:h-64 bg-muted/20 rounded-md p-2 border border-border flex items-center justify-center overflow-hidden relative group">
                   <img 
                     src={URL.createObjectURL(originalFile)} 
                     alt="Original" 
-                    className="max-h-full max-w-full object-contain rounded-lg shadow-sm"
+                    className="max-h-full max-w-full object-contain drop-shadow-sm transition-transform duration-500 group-hover:scale-105"
                   />
                 </div>
-                <div className="mt-3 text-center">
-                  <p className="font-medium text-foreground text-sm truncate max-w-[200px]">{originalFile.name}</p>
-                  <p className="text-xl font-bold text-muted-foreground mt-1">
-                    {(originalFile.size / 1024).toFixed(1)} KB
-                  </p>
-                </div>
+                <p className="font-medium text-muted-foreground text-xs truncate w-full text-center mt-3 px-2" title={originalFile.name}>
+                  {originalFile.name}
+                </p>
+              </div>
+
+              {/* Separator / Arrow (Hidden on very small screens, visible on md+) */}
+              <div className="hidden md:flex flex-col items-center justify-center text-muted-foreground">
+                <ArrowRightLeft size={20} className="opacity-50" />
               </div>
 
               {/* Compressed */}
-              <div className="flex flex-col items-center relative">
-                <h3 className="text-sm font-bold uppercase tracking-wider text-emerald-500 mb-3 flex items-center gap-2">
-                  Compressed Result {isCompressing && <RefreshCw size={14} className="animate-spin" />}
-                </h3>
-                <div className="w-full h-64 bg-emerald-500/5 rounded-xl p-2 border border-emerald-500/20 flex items-center justify-center relative overflow-hidden">
+              <div className="flex flex-col items-center w-full min-w-0">
+                <div className="flex justify-between items-center w-full mb-3 px-1">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-600 flex items-center gap-1.5">
+                    Result {isCompressing && <RefreshCw size={12} className="animate-spin" />}
+                  </h3>
+                  <span className={`text-sm font-bold transition-colors ${compressedFile ? 'text-emerald-600' : 'text-muted-foreground'}`}>
+                    {compressedFile ? `${(compressedFile.size / 1024).toFixed(1)} KB` : '...'}
+                  </span>
+                </div>
+                <div className="w-full h-48 md:h-64 bg-emerald-500/5 rounded-md p-2 border border-emerald-500/20 flex items-center justify-center relative overflow-hidden group">
                   {compressedFile ? (
                     <img 
                       src={URL.createObjectURL(compressedFile)} 
                       alt="Compressed" 
-                      className={`max-h-full max-w-full object-contain rounded-lg shadow-sm transition-opacity duration-300 ${isCompressing ? 'opacity-50 blur-sm' : 'opacity-100'}`}
+                      className={`max-h-full max-w-full object-contain drop-shadow-sm transition-all duration-500 group-hover:scale-105 ${isCompressing ? 'opacity-50 blur-sm scale-95' : 'opacity-100 scale-100'}`}
                     />
                   ) : (
-                    <div className="text-muted-foreground animate-pulse flex flex-col items-center gap-2">
-                      <RefreshCw size={24} className="animate-spin" />
-                      <span className="text-sm">Processing...</span>
+                    <div className="text-emerald-600/50 flex flex-col items-center gap-2">
+                      <RefreshCw size={20} className="animate-spin" />
                     </div>
                   )}
                 </div>
-                <div className="mt-3 text-center">
-                  <p className="font-medium text-foreground text-sm truncate max-w-[200px]">
-                    {compressedFile ? `min_${originalFile.name}` : '...'}
+                <div className="w-full flex items-center justify-between mt-3 px-2">
+                  <p className="font-medium text-muted-foreground text-xs truncate max-w-[120px]" title={originalFile.name}>
+                    {compressedFile ? `min_${originalFile.name}` : 'Processing...'}
                   </p>
                   {compressedFile && (
-                    <>
-                      <p className="text-xl font-bold text-emerald-500 mt-1">
-                        {(compressedFile.size / 1024).toFixed(1)} KB
-                      </p>
-                      <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 text-xs font-bold uppercase tracking-wide">
-                        <ArrowRight size={12} /> {getSavings()}% Smaller
-                      </div>
-                    </>
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-700 text-[10px] font-bold uppercase tracking-wider">
+                      -{getSavings()}%
+                    </span>
                   )}
                 </div>
               </div>
+
             </div>
           </div>
 
           {/* Controls Sidebar */}
-          <div className="space-y-6">
-            <div className="bg-card border border-border p-6 rounded-2xl shadow-sm">
-              <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4 flex items-center gap-2 border-b border-border pb-3">
-                <Settings2 size={16} /> Strategy
+          <div className="w-full lg:w-[320px] shrink-0 space-y-4">
+            <div className="bg-card border border-border p-5 rounded-lg shadow-sm">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-foreground mb-4 flex items-center gap-2 border-b border-border pb-3">
+                <Settings2 size={16} className="text-muted-foreground" /> Compression Settings
               </h3>
               
-              <div className="space-y-6">
+              <div className="space-y-5">
                 
                 {/* Strategy Tabs */}
-                <div className="flex gap-2 p-1 bg-muted/50 rounded-lg border border-border">
+                <div className="flex bg-muted/40 rounded-md border border-border p-0.5">
                   <button 
                     onClick={() => setStrategy('size')}
-                    className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${strategy === 'size' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                    className={`flex-1 py-1.5 text-xs font-semibold rounded transition-all ${strategy === 'size' ? 'bg-background shadow-sm text-foreground border border-border/50' : 'text-muted-foreground hover:text-foreground border border-transparent'}`}
                   >
                     Target Size
                   </button>
                   <button 
                     onClick={() => setStrategy('quality')}
-                    className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${strategy === 'quality' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                    className={`flex-1 py-1.5 text-xs font-semibold rounded transition-all ${strategy === 'quality' ? 'bg-background shadow-sm text-foreground border border-border/50' : 'text-muted-foreground hover:text-foreground border border-transparent'}`}
                   >
                     Target Quality
                   </button>
@@ -209,31 +215,30 @@ const ImageCompressor = () => {
 
                 {/* Strategy Context Controls */}
                 {strategy === 'size' ? (
-                  <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
-                    <label className="block text-sm font-medium text-foreground">Maximum File Size</label>
+                  <div className="space-y-2 animate-in fade-in">
+                    <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider">Max File Size</label>
                     <div className="flex gap-2">
                       <input 
                         type="number" 
                         value={targetSize}
                         onChange={(e) => setTargetSize(e.target.value)}
-                        className="w-full p-2.5 bg-background border border-border rounded-md text-foreground focus:ring-2 focus:ring-primary outline-none transition-all font-mono"
+                        className="w-full p-2 bg-background border border-border rounded-md text-sm text-foreground focus:ring-1 focus:ring-primary outline-none transition-all font-mono"
                       />
                       <select 
                         value={sizeUnit}
                         onChange={(e) => setSizeUnit(e.target.value)}
-                        className="p-2.5 bg-background border border-border rounded-md text-foreground focus:ring-2 focus:ring-primary outline-none transition-all font-medium w-24 shrink-0"
+                        className="p-2 bg-background border border-border rounded-md text-sm text-foreground focus:ring-1 focus:ring-primary outline-none transition-all font-medium w-20 shrink-0"
                       >
-                        <option value="KB">KB</option>
-                        <option value="MB">MB</option>
+                         <option value="KB">KB</option>
+                         <option value="MB">MB</option>
                       </select>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1">Algorithm will compress until the file is below this size.</p>
                   </div>
                 ) : (
-                  <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
-                    <div className="flex justify-between items-center mb-2">
-                      <label className="text-sm font-medium text-foreground">Quality Level</label>
-                      <span className="text-xs font-bold bg-primary/10 text-primary px-2 py-0.5 rounded-md">{quality}%</span>
+                  <div className="space-y-3 animate-in fade-in">
+                    <div className="flex justify-between items-center">
+                      <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Quality Level</label>
+                      <span className="text-xs font-bold text-foreground">{quality}%</span>
                     </div>
                     <input 
                       type="range" 
@@ -241,47 +246,42 @@ const ImageCompressor = () => {
                       max="100" 
                       value={quality}
                       onChange={(e) => setQuality(Number(e.target.value))}
-                      className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+                      className="w-full h-1.5 bg-muted rounded-full appearance-none cursor-pointer accent-primary"
                     />
-                    <div className="flex justify-between text-[10px] text-muted-foreground mt-1 uppercase font-bold tracking-wider">
-                      <span>Smaller Size</span>
-                      <span>Better Quality</span>
-                    </div>
                   </div>
                 )}
 
                 {/* Max Dimensions */}
                 <div className="pt-4 border-t border-border">
-                  <label className="block text-sm font-medium text-foreground mb-2">Max Width / Height</label>
+                  <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Max Dimensions</label>
                   <select 
                     value={maxWidthOrHeight}
                     onChange={(e) => setMaxWidthOrHeight(Number(e.target.value))}
-                    className="w-full p-2.5 bg-background border border-border rounded-md text-foreground focus:ring-2 focus:ring-primary outline-none transition-all text-sm font-medium"
+                    className="w-full p-2 bg-background border border-border rounded-md text-sm text-foreground focus:ring-1 focus:ring-primary outline-none transition-all font-medium"
                   >
                     <option value={4000}>Original (No scaling)</option>
                     <option value={1920}>1920px (Full HD)</option>
                     <option value={1280}>1280px (HD)</option>
                     <option value={800}>800px (Web Optimized)</option>
-                    <option value={400}>400px (Thumbnail)</option>
                   </select>
                 </div>
               </div>
             </div>
 
-            <div className="space-y-3">
+            <div className="flex flex-col gap-2">
               <button 
                 onClick={handleDownload}
                 disabled={!compressedFile || isCompressing}
-                className="w-full py-3 bg-emerald-500 text-white font-medium rounded-xl hover:bg-emerald-600 transition-colors flex items-center justify-center gap-2 shadow-sm shadow-emerald-500/20 disabled:opacity-50"
+                className="w-full py-2.5 bg-foreground text-background font-bold text-sm rounded-md hover:bg-foreground/90 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
               >
-                <Download size={18} /> Download Image
+                <Download size={16} /> Download
               </button>
               
               <button 
                 onClick={clear}
-                className="w-full py-3 bg-background border border-border text-foreground font-medium rounded-xl hover:bg-muted transition-colors flex items-center justify-center gap-2"
+                className="w-full py-2.5 bg-muted/50 border border-border text-foreground font-semibold text-sm rounded-md hover:bg-muted transition-colors flex items-center justify-center gap-2"
               >
-                <RefreshCw size={18} /> Upload Another
+                <RefreshCw size={16} /> Upload New
               </button>
             </div>
           </div>
