@@ -73,20 +73,12 @@ const Topbar = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
   const { currentUser: user, logout } = useAuth();
   const searchInputRef = useRef(null);
   const searchContainerRef = useRef(null);
   
   const navigate = useNavigate();
   const location = useLocation();
-
-  // Scroll Logic
-  useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 10);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   // Search Logic
   useEffect(() => {
@@ -137,7 +129,7 @@ const Topbar = () => {
 
 
   return (
-    <header className={`h-16 flex items-center justify-between px-4 md:px-8 bg-card/40 backdrop-blur-2xl transition-all duration-300 ${isScrolled ? 'border-b border-border/50 shadow-sm' : 'border-b border-transparent'}`}>
+    <header className="h-16 flex items-center justify-between px-4 md:px-8 bg-transparent border-b border-border/10 z-50 relative">
       
       {/* LEFT: Logo & Back Button */}
       <div className="flex items-center gap-2 md:gap-4 shrink-0">
