@@ -188,7 +188,7 @@ const ImageResizer = () => {
                 <div className="relative flex items-center justify-center max-w-full max-h-full">
                   {/* Invisible placeholder to force perfect bounding box size without CSS aspect-ratio quirks */}
                   <img 
-                    src={`data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${width > 0 ? width : 1} ${height > 0 ? height : 1}'%3E%3C/svg%3E`}
+                    src={`data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='${width > 0 ? width : 1}' height='${height > 0 ? height : 1}' viewBox='0 0 ${width > 0 ? width : 1} ${height > 0 ? height : 1}'%3E%3C/svg%3E`}
                     alt="spacer"
                     className="max-w-full max-h-full opacity-0 pointer-events-none block"
                     style={{ maxHeight: '100%', maxWidth: '100%' }}
