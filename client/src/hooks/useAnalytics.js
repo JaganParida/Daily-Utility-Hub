@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 
 const RECENT_TOOLS_KEY = 'daily_utility_recent_tools';
 const PINNED_TOOLS_KEY = 'daily_utility_pinned_tools';
-const MAX_RECENT = 5; // Number of recent tools to track
+const MAX_RECENT = 8; // Number of recent tools to track
 
 export const useAnalytics = () => {
   const [recentTools, setRecentTools] = useState([]);

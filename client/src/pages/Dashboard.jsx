@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { Type, Hash, Key, Layers, AlignLeft, Image as ImageIcon, Expand, Crop, ArrowRightLeft, LayoutGrid, FileText, Braces, Search, Calculator, TrendingUp, Percent, Landmark, FolderArchive, Pin, Clock } from 'lucide-react';
 import PageTransition from '../components/PageTransition';
 import { useAnalytics } from '../hooks/useAnalytics';
+import { useAuth } from '../context/AuthContext';
 
 const Dashboard = () => {
   const toolCategories = {
@@ -68,11 +69,17 @@ const Dashboard = () => {
   };
 
   const { recentTools, pinnedTools, togglePin } = useAnalytics();
+  const { currentUser } = useAuth();
   
   // Flatten all tools for quick lookup
   const allTools = Object.values(toolCategories).flat();
   const pinnedToolObjects = pinnedTools.map(path => allTools.find(t => t.to === path)).filter(Boolean);
-  const recentToolObjects = recentTools.map(path => allTools.find(t => t.to === path)).filter(Boolean);
+  
+  const displayLimit = currentUser ? 8 : 4;
+  const recentToolObjects = recentTools
+    .map(path => allTools.find(t => t.to === path))
+    .filter(Boolean)
+    .slice(0, displayLimit);
 
   const renderToolCard = (tool) => {
     const Icon = tool.icon;
