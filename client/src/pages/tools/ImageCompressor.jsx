@@ -257,6 +257,7 @@ const ImageCompressor = () => {
                       </div>
                     </div>
                   </div>
+                ) : (
                   <div className="space-y-4 animate-in fade-in">
                     <div className="flex justify-between items-center">
                       <label className="text-sm font-semibold text-foreground">Quality Level</label>
