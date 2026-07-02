@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Image as ImageIcon, Download, RefreshCw, Settings2, ArrowRight, ArrowRightLeft } from 'lucide-react';
+import { Image as ImageIcon, Download, RefreshCw, Settings2, ArrowRight, ArrowRightLeft, Check, Loader2 } from 'lucide-react';
 import DropzoneComponent from '../../components/DropzoneComponent';
 import imageCompression from 'browser-image-compression';
 import { toast } from 'react-hot-toast';
@@ -8,6 +8,7 @@ const ImageCompressor = () => {
   const [originalFile, setOriginalFile] = useState(null);
   const [compressedFile, setCompressedFile] = useState(null);
   const [isCompressing, setIsCompressing] = useState(false);
+  const [downloadState, setDownloadState] = useState('idle'); // 'idle', 'downloading', 'downloaded'
   
   // Advanced Settings
   const [strategy, setStrategy] = useState('quality'); // 'quality' or 'size'
@@ -79,14 +80,27 @@ const ImageCompressor = () => {
 
   const handleDownload = () => {
     if (!compressedFile) return;
-    const url = URL.createObjectURL(compressedFile);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `compressed_${originalFile.name}`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    
+    setDownloadState('downloading');
+    
+    // Simulate processing time for better UX state feedback
+    setTimeout(() => {
+      const url = URL.createObjectURL(compressedFile);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `compressed_${originalFile.name}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+      setDownloadState('downloaded');
+      toast.success('Image downloaded successfully!');
+      
+      setTimeout(() => {
+        setDownloadState('idle');
+      }, 2500);
+    }, 600);
   };
 
   const clear = () => {
@@ -240,14 +254,16 @@ const ImageCompressor = () => {
                       <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Quality Level</label>
                       <span className="text-sm font-bold text-foreground">{quality}%</span>
                     </div>
-                    <input 
-                      type="range" 
-                      min="1" 
-                      max="100" 
-                      value={quality}
-                      onChange={(e) => setQuality(Number(e.target.value))}
-                      className="w-full h-2 bg-muted rounded-full appearance-none cursor-pointer accent-primary"
-                    />
+                    <div className="relative pt-2">
+                      <input 
+                        type="range" 
+                        min="1" 
+                        max="100" 
+                        value={quality}
+                        onChange={(e) => setQuality(Number(e.target.value))}
+                        className="w-full h-1.5 bg-muted/60 rounded-full appearance-none outline-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-lg hover:[&::-webkit-slider-thumb]:scale-125 transition-all [&::-webkit-slider-thumb]:transition-transform"
+                      />
+                    </div>
                   </div>
                 )}
 
@@ -271,10 +287,16 @@ const ImageCompressor = () => {
             <div className="flex flex-col gap-3">
               <button 
                 onClick={handleDownload}
-                disabled={!compressedFile || isCompressing}
-                className="w-full py-3.5 bg-foreground text-background font-bold text-base rounded-lg hover:bg-foreground/90 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                disabled={!compressedFile || isCompressing || downloadState !== 'idle'}
+                className={`w-full py-3.5 font-bold text-base rounded-lg transition-all flex items-center justify-center gap-2 disabled:opacity-80 ${
+                  downloadState === 'downloaded' 
+                    ? 'bg-emerald-500 text-white shadow-emerald-500/20 shadow-lg scale-[0.98]' 
+                    : 'bg-foreground text-background hover:bg-foreground/90'
+                }`}
               >
-                <Download size={18} /> Download
+                {downloadState === 'idle' && <><Download size={18} /> Download</>}
+                {downloadState === 'downloading' && <><Loader2 size={18} className="animate-spin" /> Downloading...</>}
+                {downloadState === 'downloaded' && <><Check size={18} /> Downloaded!</>}
               </button>
               
               <button 
