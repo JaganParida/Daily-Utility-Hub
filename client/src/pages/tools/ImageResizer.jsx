@@ -206,9 +206,9 @@ const ImageResizer = () => {
               <motion.div layout className="w-full min-h-[300px] bg-muted/10 rounded-xl border border-border p-4 md:p-6 relative flex items-center justify-center">
                 {/* Visual feedback of bounding box */}
                 <motion.div layout className="relative flex items-center justify-center max-w-full transition-all duration-500 ease-out">
-                  {/* Invisible SVG spacer to drive perfect, glitch-free animatable aspect ratio sizing */}
+                  {/* Invisible SVG spacer scaled to 4000px max dimension so it ALWAYS expands to fill the screen bounds (max-w-full and max-h) without being a tiny dot for small dimensions */}
                   <img 
-                    src={`data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='${width > 0 ? width : 1}' height='${height > 0 ? height : 1}' viewBox='0 0 ${width > 0 ? width : 1} ${height > 0 ? height : 1}'%3E%3C/svg%3E`}
+                    src={`data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='${Math.round(((width > 0 ? width : 1) / Math.max(width > 0 ? width : 1, height > 0 ? height : 1)) * 4000)}' height='${Math.round(((height > 0 ? height : 1) / Math.max(width > 0 ? width : 1, height > 0 ? height : 1)) * 4000)}' viewBox='0 0 ${width > 0 ? width : 1} ${height > 0 ? height : 1}'%3E%3C/svg%3E`}
                     alt="spacer"
                     className="max-w-full opacity-0 pointer-events-none block transition-all duration-500 ease-out"
                     style={{ maxHeight: '65vh' }}
