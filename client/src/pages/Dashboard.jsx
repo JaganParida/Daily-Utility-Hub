@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Type, Hash, Key, Layers, AlignLeft, Image as ImageIcon, Expand, Crop, ArrowRightLeft, LayoutGrid, FileText, Braces, Search, Calculator, TrendingUp, Percent, Landmark, FolderArchive, Pin, Clock, ArrowRight, Stamp, Palette, Volume2, BarChart2 } from 'lucide-react';
+import { Type, Hash, Key, Layers, AlignLeft, Image as ImageIcon, Expand, Crop, ArrowRightLeft, LayoutGrid, FileText, Braces, Search, Calculator, TrendingUp, Percent, Landmark, FolderArchive, Pin, Clock, ArrowRight, Stamp, Palette, Volume2, FileAudio } from 'lucide-react';
 import PageTransition from '../components/PageTransition';
 import { useAnalytics } from '../hooks/useAnalytics';
 import { useAuth } from '../context/AuthContext';
@@ -25,7 +25,7 @@ const Dashboard = () => {
       { name: 'Text Line Editor', description: 'Sort, deduplicate, and clean up lists of text.', icon: Layers, to: '/tools/text-line-editor', color: 'text-pink-500 bg-pink-500/10' },
       { name: 'Find & Replace', description: 'Find and replace text with Regex support.', icon: Type, to: '/tools/find-replace', color: 'text-cyan-500 bg-cyan-500/10' },
       { name: 'Voice Helper', description: 'Dictate text via mic or read text with system voices.', icon: Volume2, to: '/tools/voice-helper', color: 'text-emerald-500 bg-emerald-500/10' },
-      { name: 'Text Analyzer', description: 'Check essay reading ease, grade level, and sentiment.', icon: BarChart2, to: '/tools/text-analyzer', color: 'text-violet-500 bg-violet-500/10' },
+      { name: 'Audio/Video Captioner', description: 'Extract timestamped text & subtitles from audio & video.', icon: FileAudio, to: '/tools/audio-video-transcriber', color: 'text-violet-500 bg-violet-500/10' },
     ],
     'Developer Tools': [
       { name: 'UUID Generator', description: 'Generate secure v1, v4, and v7 UUIDs in batches.', icon: Hash, to: '/tools/uuid-generator', color: 'text-indigo-500 bg-indigo-500/10' },

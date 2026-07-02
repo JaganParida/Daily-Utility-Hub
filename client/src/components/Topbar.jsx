@@ -17,7 +17,7 @@ const ALL_TOOLS = [
   { name: 'Color Extractor', to: '/tools/image-color-extractor' },
   { name: 'Word Counter', to: '/tools/word-counter' },
   { name: 'Voice Helper', to: '/tools/voice-helper' },
-  { name: 'Text Analyzer', to: '/tools/text-analyzer' },
+  { name: 'Audio/Video Captioner', to: '/tools/audio-video-transcriber' },
   { name: 'Case Converter', to: '/tools/case-converter' },
   { name: 'Lorem Ipsum Generator', to: '/tools/lorem-ipsum' },
   { name: 'Remove Duplicate Lines', to: '/tools/remove-duplicates' },
