@@ -90,68 +90,68 @@ function AnimatedRoutes() {
         <Route element={<Layout />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/tools/word-counter" element={<WordCounter />} />
-          <Route path="tools/voice-helper" element={<VoiceHelper />} />
-          <Route path="tools/text-analyzer" element={<TextAnalyzer />} />
+          <Route path="/tools/voice-helper" element={<VoiceHelper />} />
+          <Route path="/tools/text-analyzer" element={<TextAnalyzer />} />
           <Route path="/tools/uuid-generator" element={<UuidGenerator />} />
-          <Route path="tools/password-generator" element={<PasswordGenerator />} />
-          <Route path="tools/case-converter" element={<CaseConverter />} />
-          <Route path="tools/font-converter" element={<FontConverter />} />
-          <Route path="tools/hash-generator" element={<HashGenerator />} />
-          <Route path="tools/lorem-ipsum" element={<LoremIpsum />} />
-          <Route path="tools/text-line-editor" element={<TextLineEditor />} />
-          <Route path="tools/find-replace" element={<FindAndReplace />} />
-          <Route path="tools/jwt-decoder" element={<JwtDecoder />} />
-          <Route path="tools/regex-tester" element={<RegexTester />} />
-          <Route path="tools/color-picker" element={<ColorPicker />} />
-          <Route path="tools/gradient-generator" element={<GradientGenerator />} />
-          <Route path="tools/image-compressor" element={<ImageCompressor />} />
-          <Route path="tools/image-resizer" element={<ImageResizer />} />
-          <Route path="tools/image-cropper" element={<ImageCropper />} />
-          <Route path="tools/image-converter" element={<ImageConverter />} />
-          <Route path="tools/image-collage" element={<ImageCollage />} />
-          <Route path="tools/image-to-pdf" element={<ImageToPdf />} />
-          <Route path="tools/image-watermark" element={<ImageWatermark />} />
-          <Route path="tools/image-color-extractor" element={<ImageColorExtractor />} />
+          <Route path="/tools/password-generator" element={<PasswordGenerator />} />
+          <Route path="/tools/case-converter" element={<CaseConverter />} />
+          <Route path="/tools/font-converter" element={<FontConverter />} />
+          <Route path="/tools/hash-generator" element={<HashGenerator />} />
+          <Route path="/tools/lorem-ipsum" element={<LoremIpsum />} />
+          <Route path="/tools/text-line-editor" element={<TextLineEditor />} />
+          <Route path="/tools/find-replace" element={<FindAndReplace />} />
+          <Route path="/tools/jwt-decoder" element={<JwtDecoder />} />
+          <Route path="/tools/regex-tester" element={<RegexTester />} />
+          <Route path="/tools/color-picker" element={<ColorPicker />} />
+          <Route path="/tools/gradient-generator" element={<GradientGenerator />} />
+          <Route path="/tools/image-compressor" element={<ImageCompressor />} />
+          <Route path="/tools/image-resizer" element={<ImageResizer />} />
+          <Route path="/tools/image-cropper" element={<ImageCropper />} />
+          <Route path="/tools/image-converter" element={<ImageConverter />} />
+          <Route path="/tools/image-collage" element={<ImageCollage />} />
+          <Route path="/tools/image-to-pdf" element={<ImageToPdf />} />
+          <Route path="/tools/image-watermark" element={<ImageWatermark />} />
+          <Route path="/tools/image-color-extractor" element={<ImageColorExtractor />} />
           
           {/* New Dev Tools Routes */}
-          <Route path="tools/api-key-generator" element={<ApiKeyGenerator />} />
-          <Route path="tools/json-formatter" element={<JsonFormatter />} />
-          <Route path="tools/base64-converter" element={<Base64Converter />} />
-          <Route path="tools/url-converter" element={<UrlConverter />} />
-          <Route path="tools/bcrypt-generator" element={<BcryptGenerator />} />
-          <Route path="tools/cron-parser" element={<CronParser />} />
+          <Route path="/tools/api-key-generator" element={<ApiKeyGenerator />} />
+          <Route path="/tools/json-formatter" element={<JsonFormatter />} />
+          <Route path="/tools/base64-converter" element={<Base64Converter />} />
+          <Route path="/tools/url-converter" element={<UrlConverter />} />
+          <Route path="/tools/bcrypt-generator" element={<BcryptGenerator />} />
+          <Route path="/tools/cron-parser" element={<CronParser />} />
 
           {/* New PDF Tools Routes */}
-          <Route path="tools/pdf-merge" element={<PdfMerge />} />
-          <Route path="tools/pdf-split" element={<PdfSplit />} />
-          <Route path="tools/pdf-watermark" element={<PdfWatermark />} />
-          <Route path="tools/pdf-lock" element={<PdfLock />} />
-          <Route path="tools/pdf-unlock" element={<PdfUnlock />} />
-          <Route path="tools/pdf-metadata" element={<PdfMetadata />} />
-          <Route path="tools/pdf-to-text" element={<PdfToText />} />
-          <Route path="tools/pdf-edit" element={<PdfEdit />} />
-          <Route path="tools/pdf-converter" element={<PdfConverter />} />
+          <Route path="/tools/pdf-merge" element={<PdfMerge />} />
+          <Route path="/tools/pdf-split" element={<PdfSplit />} />
+          <Route path="/tools/pdf-watermark" element={<PdfWatermark />} />
+          <Route path="/tools/pdf-lock" element={<PdfLock />} />
+          <Route path="/tools/pdf-unlock" element={<PdfUnlock />} />
+          <Route path="/tools/pdf-metadata" element={<PdfMetadata />} />
+          <Route path="/tools/pdf-to-text" element={<PdfToText />} />
+          <Route path="/tools/pdf-edit" element={<PdfEdit />} />
+          <Route path="/tools/pdf-converter" element={<PdfConverter />} />
 
           {/* Student & Docs Tools Routes */}
-          <Route path="tools/readme-generator" element={<ReadmeGenerator />} />
-          <Route path="tools/code-to-image" element={<CodeToImage />} />
-          <Route path="tools/image-to-text" element={<ImageToText />} />
-          <Route path="tools/text-diff" element={<TextDiff />} />
-          <Route path="tools/markdown-editor" element={<MarkdownEditor />} />
+          <Route path="/tools/readme-generator" element={<ReadmeGenerator />} />
+          <Route path="/tools/code-to-image" element={<CodeToImage />} />
+          <Route path="/tools/image-to-text" element={<ImageToText />} />
+          <Route path="/tools/text-diff" element={<TextDiff />} />
+          <Route path="/tools/markdown-editor" element={<MarkdownEditor />} />
 
           {/* Finance & Productivity Tools Routes */}
-          <Route path="tools/emi-calculator" element={<EmiCalculator />} />
-          <Route path="tools/sip-calculator" element={<SipCalculator />} />
-          <Route path="tools/gst-calculator" element={<GstCalculator />} />
-          <Route path="tools/tax-calculator" element={<TaxCalculator />} />
+          <Route path="/tools/emi-calculator" element={<EmiCalculator />} />
+          <Route path="/tools/sip-calculator" element={<SipCalculator />} />
+          <Route path="/tools/gst-calculator" element={<GstCalculator />} />
+          <Route path="/tools/tax-calculator" element={<TaxCalculator />} />
 
           {/* Developer & Data Tools */}
-          <Route path="tools/encoder-decoder" element={<EncoderDecoder />} />
+          <Route path="/tools/encoder-decoder" element={<EncoderDecoder />} />
 
           {/* File Management & Sharing Tools Routes */}
-          <Route path="tools/temp-share" element={<TempShare />} />
-          <Route path="tools/batch-renamer" element={<BatchRenamer />} />
-          <Route path="tools/zip-archiver" element={<ZipArchiver />} />
+          <Route path="/tools/temp-share" element={<TempShare />} />
+          <Route path="/tools/batch-renamer" element={<BatchRenamer />} />
+          <Route path="/tools/zip-archiver" element={<ZipArchiver />} />
         </Route>
       </Routes>
     </AnimatePresence>
@@ -171,4 +171,5 @@ function App() {
     </AuthProvider>
   );
 }
+
 export default App;
