@@ -244,7 +244,7 @@ const Home = () => {
   return (
     <PageTransition className="flex flex-col min-h-screen bg-background text-foreground font-sans selection:bg-primary/30">
       {/* 1. HERO SECTION (Minimalist Typography) */}
-      <section className="pt-24 pb-12 sm:pt-48 sm:pb-32 px-4 border-b border-border">
+      <section className="min-h-[85vh] sm:min-h-[88vh] flex flex-col justify-center px-4 border-b border-border py-12">
         <div className="max-w-7xl mx-auto flex flex-col items-start relative z-10 w-full">
           <motion.div
             initial="hidden"
