@@ -29,6 +29,7 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       if (error.response?.status === 401) {
         await firebaseSignOut(auth);
+        localStorage.removeItem('token');
         setCurrentUser(null);
       }
     }
@@ -42,6 +43,9 @@ export const AuthProvider = ({ children }) => {
           const idToken = await firebaseUser.getIdToken();
           // Sync with MongoDB backend using 'refresh' mode (sets session cookie & retrieves profile)
           const response = await api.post('/auth/session', { idToken, mode: 'refresh' });
+          if (response.data.token) {
+            localStorage.setItem('token', response.data.token);
+          }
           setCurrentUser({
             ...response.data,
             uid: firebaseUser.uid,
@@ -50,6 +54,7 @@ export const AuthProvider = ({ children }) => {
         } catch (error) {
           console.error('Auto session sync failed:', error);
           await firebaseSignOut(auth);
+          localStorage.removeItem('token');
           setCurrentUser(null);
         }
       } else {
@@ -57,6 +62,7 @@ export const AuthProvider = ({ children }) => {
         try {
           await api.get('/auth/logout');
         } catch (err) {}
+        localStorage.removeItem('token');
         setCurrentUser(null);
       }
       setLoading(false);
@@ -76,6 +82,10 @@ export const AuthProvider = ({ children }) => {
       const response = await api.post('/auth/session', { idToken, mode: 'register', name });
       toast.success('Successfully registered!');
       
+      if (response.data.token) {
+        localStorage.setItem('token', response.data.token);
+      }
+
       setCurrentUser({
         ...response.data,
         uid: userCredential.user.uid,
@@ -84,6 +94,7 @@ export const AuthProvider = ({ children }) => {
       return response.data;
     } catch (error) {
       await firebaseSignOut(auth);
+      localStorage.removeItem('token');
       handleAuthError(error);
       throw error;
     }
@@ -100,6 +111,10 @@ export const AuthProvider = ({ children }) => {
       const response = await api.post('/auth/session', { idToken, mode: 'login' });
       toast.success('Welcome back!');
       
+      if (response.data.token) {
+        localStorage.setItem('token', response.data.token);
+      }
+
       setCurrentUser({
         ...response.data,
         uid: userCredential.user.uid,
@@ -108,6 +123,7 @@ export const AuthProvider = ({ children }) => {
       return response.data;
     } catch (error) {
       await firebaseSignOut(auth);
+      localStorage.removeItem('token');
       handleAuthError(error);
       throw error;
     }
@@ -124,6 +140,10 @@ export const AuthProvider = ({ children }) => {
       const response = await api.post('/auth/session', { idToken, mode });
       toast.success(mode === 'register' ? 'Successfully registered!' : 'Signed in with Google!');
       
+      if (response.data.token) {
+        localStorage.setItem('token', response.data.token);
+      }
+
       setCurrentUser({
         ...response.data,
         uid: result.user.uid,
@@ -132,6 +152,7 @@ export const AuthProvider = ({ children }) => {
       return response.data;
     } catch (error) {
       await firebaseSignOut(auth);
+      localStorage.removeItem('token');
       handleAuthError(error);
       throw error;
     }
@@ -142,6 +163,7 @@ export const AuthProvider = ({ children }) => {
     try {
       await firebaseSignOut(auth);
       await api.get('/auth/logout');
+      localStorage.removeItem('token');
       setCurrentUser(null);
       toast.success('Logged out successfully');
     } catch (error) {

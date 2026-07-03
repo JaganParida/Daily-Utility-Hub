@@ -142,6 +142,7 @@ exports.syncSession = async (req, res) => {
         _id: user._id,
         name: user.name,
         email: user.email,
+        token: sessionId,
         pinnedTools: user.pinnedTools || [],
         recentHistory: user.recentHistory || [],
         activeSessions: user.activeSessions.map(s => ({
