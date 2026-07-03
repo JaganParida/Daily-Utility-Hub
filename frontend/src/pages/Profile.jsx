@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { 
   User, Shield, Laptop, Smartphone, LogOut, CheckCircle2, 
@@ -10,12 +10,109 @@ import { Link } from 'react-router-dom';
 import { allTools } from '../data/toolCategories';
 import PageTransition from '../components/PageTransition';
 
+const ProfileSkeleton = () => {
+  return (
+    <div className="max-w-[1400px] mx-auto w-full px-4 md:px-8 py-12 animate-pulse">
+      {/* Page Title Skeleton */}
+      <div className="mb-10 flex items-center gap-4">
+        <div className="w-14 h-14 bg-muted rounded-2xl border border-border shrink-0" />
+        <div className="space-y-2">
+          <div className="h-10 w-48 bg-muted rounded-xl" />
+          <div className="h-4 w-72 bg-muted rounded-lg" />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Left Column: Account Details Skeleton */}
+        <div className="lg:col-span-2 space-y-8">
+          <div className="bg-card border border-border p-6 sm:p-8 rounded-3xl flex flex-col gap-6">
+            <div className="h-6 w-36 bg-muted rounded-lg" />
+            <div className="space-y-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="space-y-2">
+                  <div className="h-3 w-16 bg-muted rounded" />
+                  <div className="h-12 w-full bg-muted/40 rounded-xl" />
+                </div>
+                <div className="space-y-2">
+                  <div className="h-3 w-24 bg-muted rounded" />
+                  <div className="h-12 w-full bg-muted/40 rounded-xl" />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="space-y-2">
+                  <div className="h-3 w-20 bg-muted rounded" />
+                  <div className="h-12 w-full bg-muted/40 rounded-xl" />
+                </div>
+                <div className="space-y-2">
+                  <div className="h-3 w-28 bg-muted rounded" />
+                  <div className="h-12 w-full bg-muted/40 rounded-xl" />
+                </div>
+              </div>
+              <div className="h-12 w-32 bg-muted rounded-xl mt-2" />
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column: Sessions & Stats Skeletons */}
+        <div className="space-y-8">
+          {/* Active Devices Card Skeleton */}
+          <div className="bg-card border border-border p-6 rounded-3xl flex flex-col gap-6">
+            <div className="h-6 w-32 bg-muted rounded-lg" />
+            <div className="space-y-4">
+              {[1, 2].map((i) => (
+                <div key={i} className="flex items-center justify-between p-4 border border-border rounded-2xl bg-muted/10">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-muted rounded-xl" />
+                    <div className="space-y-1.5">
+                      <div className="h-4 w-28 bg-muted rounded" />
+                      <div className="h-3 w-20 bg-muted rounded" />
+                    </div>
+                  </div>
+                  <div className="w-20 h-8 bg-muted rounded-lg" />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Analytics Summary Skeleton */}
+          <div className="bg-card border border-border p-6 rounded-3xl flex flex-col gap-6">
+            <div className="h-6 w-36 bg-muted rounded-lg" />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="p-4 border border-border rounded-2xl bg-muted/10 space-y-2">
+                <div className="w-8 h-8 bg-muted rounded-xl" />
+                <div className="h-3 w-16 bg-muted rounded" />
+                <div className="h-6 w-8 bg-muted rounded-lg" />
+              </div>
+              <div className="p-4 border border-border rounded-2xl bg-muted/10 space-y-2">
+                <div className="w-8 h-8 bg-muted rounded-xl" />
+                <div className="h-3 w-16 bg-muted rounded" />
+                <div className="h-6 w-8 bg-muted rounded-lg" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const Profile = () => {
-  const { currentUser: user, updateProfile, terminateSession } = useAuth();
+  const { currentUser: user, loading, updateProfile, terminateSession } = useAuth();
   const [name, setName] = useState(user?.name || '');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
+
+  // Sync profile form input values on page refresh auth load
+  useEffect(() => {
+    if (user?.name) {
+      setName(user.name);
+    }
+  }, [user]);
+
+  if (loading) {
+    return <ProfileSkeleton />;
+  }
 
   if (!user) {
     return (
