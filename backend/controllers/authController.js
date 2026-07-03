@@ -154,7 +154,7 @@ exports.syncSession = async (req, res) => {
       });
   } catch (error) {
     console.error('Session synchronization error:', error);
-    res.status(500).json({ message: 'Internal server error during session sync.' });
+    res.status(500).json({ message: `Internal server error during session sync: ${error.message}` });
   }
 };
 
