@@ -12,6 +12,7 @@ const VoiceHelper = () => {
   const [isListening, setIsListening] = useState(false);
   const [recognitionSupported, setRecognitionSupported] = useState(true);
   const recognitionRef = useRef(null);
+  const isListeningRef = useRef(false);
 
   // TTS (Text to Speech) States
   const [voices, setVoices] = useState([]);
@@ -50,12 +51,21 @@ const VoiceHelper = () => {
       console.error(e);
       if (e.error === 'not-allowed') {
         toast.error('Microphone access denied!');
+        isListeningRef.current = false;
         setIsListening(false);
       }
     };
 
     rec.onend = () => {
-      setIsListening(false);
+      if (isListeningRef.current) {
+        try {
+          rec.start();
+        } catch (err) {
+          console.error('Speech recognition restart failed:', err);
+        }
+      } else {
+        setIsListening(false);
+      }
     };
 
     recognitionRef.current = rec;
@@ -86,11 +96,13 @@ const VoiceHelper = () => {
     }
 
     if (isListening) {
+      isListeningRef.current = false;
       recognitionRef.current.stop();
       setIsListening(false);
       toast.success('Dictation stopped.');
     } else {
       try {
+        isListeningRef.current = true;
         recognitionRef.current.start();
         setIsListening(true);
         toast.success('Listening... Start speaking!');
