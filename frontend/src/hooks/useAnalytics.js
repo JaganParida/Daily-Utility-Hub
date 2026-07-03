@@ -18,13 +18,14 @@ export const useAnalytics = () => {
       const paths = (currentUser.recentHistory || []).map(h => h.toolPath);
       setRecentTools(paths);
     } else {
+      // Guest users: force clear pinning/recents state and local storage
+      setPinnedTools([]);
+      setRecentTools([]);
       try {
-        const storedRecent = JSON.parse(localStorage.getItem(RECENT_TOOLS_KEY)) || [];
-        const storedPinned = JSON.parse(localStorage.getItem(PINNED_TOOLS_KEY)) || [];
-        if (Array.isArray(storedRecent)) setRecentTools(storedRecent);
-        if (Array.isArray(storedPinned)) setPinnedTools(storedPinned);
+        localStorage.removeItem(RECENT_TOOLS_KEY);
+        localStorage.removeItem(PINNED_TOOLS_KEY);
       } catch (e) {
-        console.error('Failed to parse analytics from local storage', e);
+        console.error('Failed to clear analytics from local storage', e);
       }
     }
   }, [currentUser]);
@@ -32,7 +33,10 @@ export const useAnalytics = () => {
   const recordVisit = useCallback(async (toolPath) => {
     if (!toolPath || toolPath === '/') return;
 
-    // Update local storage/state first for instant UI response
+    // Guest users are not allowed to save recents history
+    if (!currentUser) return;
+
+    // Update state first for instant UI response
     setRecentTools(prev => {
       const filtered = prev.filter(path => path !== toolPath);
       const updated = [toolPath, ...filtered].slice(0, MAX_RECENT);
@@ -40,21 +44,21 @@ export const useAnalytics = () => {
       return updated;
     });
 
-    // If authenticated, sync with the server database
-    if (currentUser) {
-      try {
-        await api.post('/auth/analytics/visit', { toolPath });
-        refreshUser();
-      } catch (err) {
-        console.error('Failed to sync history visit to backend:', err);
-      }
+    try {
+      await api.post('/auth/analytics/visit', { toolPath });
+      refreshUser();
+    } catch (err) {
+      console.error('Failed to sync history visit to backend:', err);
     }
   }, [currentUser, refreshUser]);
 
   const togglePin = useCallback(async (toolPath) => {
     if (!toolPath) return;
 
-    // Update local storage/state first for instant UI response
+    // Guest users are not allowed to pin tools
+    if (!currentUser) return;
+
+    // Update state first for instant UI response
     setPinnedTools(prev => {
       const isPinned = prev.includes(toolPath);
       let updated;
@@ -70,14 +74,11 @@ export const useAnalytics = () => {
       return updated;
     });
 
-    // If authenticated, sync with the server database
-    if (currentUser) {
-      try {
-        await api.post('/auth/analytics/pin', { toolPath });
-        refreshUser();
-      } catch (err) {
-        console.error('Failed to sync toggle pin to backend:', err);
-      }
+    try {
+      await api.post('/auth/analytics/pin', { toolPath });
+      refreshUser();
+    } catch (err) {
+      console.error('Failed to sync toggle pin to backend:', err);
     }
   }, [currentUser, refreshUser]);
 
