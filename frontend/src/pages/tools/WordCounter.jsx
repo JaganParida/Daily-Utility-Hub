@@ -66,7 +66,6 @@ const WordCounter = () => {
       
       const sortedKeywords = Object.entries(counts)
         .sort((a, b) => b[1] - a[1])
-        .slice(0, 5)
         .map(([word, count]) => ({ 
           word, 
           count, 
@@ -232,7 +231,7 @@ const WordCounter = () => {
               {!keywords.length ? (
                 <p className="text-xs text-muted-foreground italic text-center py-2.5 bg-muted/10 rounded-xl border border-dashed border-border/50">Not enough words for analysis.</p>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-3 max-h-[350px] overflow-y-auto pr-1.5 no-scrollbar">
                   {keywords.map((kw, i) => (
                     <motion.div 
                       key={i} 
