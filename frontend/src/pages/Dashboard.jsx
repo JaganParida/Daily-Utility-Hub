@@ -431,79 +431,10 @@ const Dashboard = () => {
               <h3 className="text-lg md:text-xl font-bold tracking-tight text-foreground">
                 See what's new
               </h3>
-              <span className="text-sm font-semibold text-primary hover:text-primary/80 transition-colors cursor-pointer">
-                Featured utilities
-              </span>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
-              {/* 1. Recommended Developer Tool */}
-              <div className="group relative col-span-1 h-full">
-                <Link
-                  to="/tools/json-formatter"
-                  className="block h-full bg-card border border-border hover:border-primary/50 rounded-xl p-6 transition-all duration-300 shadow-sm hover:shadow overflow-hidden relative"
-                >
-                  <div className="absolute top-0 right-0 p-6 opacity-[0.03] group-hover:opacity-[0.05] group-hover:scale-110 transition-all duration-500 pointer-events-none">
-                    <Braces size={100} />
-                  </div>
-
-                  <div className="relative z-10 h-full flex flex-col">
-                    <div className="w-fit px-2.5 py-0.5 bg-emerald-500/10 text-emerald-500 text-[10px] font-bold tracking-widest uppercase rounded mb-4 border border-emerald-500/20">
-                      Developer Pick
-                    </div>
-                    <h2 className="text-2xl font-bold text-foreground mb-2 group-hover:text-emerald-500 transition-colors tracking-tight">
-                      JSON Formatter
-                    </h2>
-                    <p className="text-muted-foreground text-sm max-w-[90%] mb-6 leading-relaxed">
-                      Format, validate, and minify JSON data instantly with a
-                      beautiful editor.
-                    </p>
-
-                    <div className="mt-auto flex items-center text-sm font-semibold text-emerald-500 group-hover:text-emerald-500/80 transition-colors">
-                      Launch Formatter{" "}
-                      <ArrowRight
-                        size={16}
-                        className="ml-2 group-hover:translate-x-1 transition-transform"
-                      />
-                    </div>
-                  </div>
-                </Link>
-              </div>
-
-              {/* 2. Recommended PDF Tool */}
-              <div className="group relative col-span-1 h-full">
-                <Link
-                  to="/tools/pdf-edit"
-                  className="block h-full bg-card border border-border hover:border-primary/50 rounded-xl p-6 transition-all duration-300 shadow-sm hover:shadow overflow-hidden relative"
-                >
-                  <div className="absolute top-0 right-0 p-6 opacity-[0.03] group-hover:opacity-[0.05] group-hover:scale-110 transition-all duration-500 pointer-events-none">
-                    <FileText size={100} />
-                  </div>
-
-                  <div className="relative z-10 h-full flex flex-col">
-                    <div className="w-fit px-2.5 py-0.5 bg-primary/10 text-primary text-[10px] font-bold tracking-widest uppercase rounded mb-4 border border-primary/20">
-                      Featured Tool
-                    </div>
-                    <h2 className="text-2xl font-bold text-foreground mb-2 group-hover:text-primary transition-colors tracking-tight">
-                      PDF Editor
-                    </h2>
-                    <p className="text-muted-foreground text-sm max-w-[90%] mb-6 leading-relaxed">
-                      Edit, merge, split, and organize your PDF files with
-                      powerful, easy-to-use tools.
-                    </p>
-
-                    <div className="mt-auto flex items-center text-sm font-semibold text-primary group-hover:text-primary/80 transition-colors">
-                      Launch Editor{" "}
-                      <ArrowRight
-                        size={16}
-                        className="ml-2 group-hover:translate-x-1 transition-transform"
-                      />
-                    </div>
-                  </div>
-                </Link>
-              </div>
-
-              {/* 3. Recommended Image Tool */}
+              {/* 1. Recommended Image Tool */}
               <div className="group relative col-span-1 h-full">
                 <Link
                   to="/tools/image-compressor"
@@ -514,19 +445,82 @@ const Dashboard = () => {
                   </div>
 
                   <div className="relative z-10 h-full flex flex-col">
-                    <div className="w-fit px-2.5 py-0.5 bg-primary/10 text-primary text-[10px] font-bold tracking-widest uppercase rounded mb-4 border border-primary/20">
+                    <div className="w-fit px-2.5 py-0.5 bg-emerald-500/10 text-emerald-500 text-[10px] font-bold tracking-widest uppercase rounded mb-4 border border-emerald-500/20">
                       Most Popular
                     </div>
-                    <h2 className="text-2xl font-bold text-foreground mb-2 group-hover:text-primary transition-colors tracking-tight">
+                    <h2 className="text-2xl font-bold text-foreground mb-2 group-hover:text-emerald-500 transition-colors tracking-tight">
                       Image Compressor
                     </h2>
                     <p className="text-muted-foreground text-sm max-w-[90%] mb-6 leading-relaxed">
-                      Reduce image file sizes instantly without losing visible
-                      quality. Perfect for web optimization.
+                      Reduce image file sizes instantly without losing visible quality. Perfect for web optimization.
+                    </p>
+
+                    <div className="mt-auto flex items-center text-sm font-semibold text-emerald-500 group-hover:text-emerald-500/80 transition-colors">
+                      Launch Compressor{" "}
+                      <ArrowRight
+                        size={16}
+                        className="ml-2 group-hover:translate-x-1 transition-transform"
+                      />
+                    </div>
+                  </div>
+                </Link>
+              </div>
+
+              {/* 2. Recommended Audio/Video Tool */}
+              <div className="group relative col-span-1 h-full">
+                <Link
+                  to="/tools/audio-video-transcriber"
+                  className="block h-full bg-card border border-border hover:border-primary/50 rounded-xl p-6 transition-all duration-300 shadow-sm hover:shadow overflow-hidden relative"
+                >
+                  <div className="absolute top-0 right-0 p-6 opacity-[0.03] group-hover:opacity-[0.05] group-hover:scale-110 transition-all duration-500 pointer-events-none">
+                    <FileAudio size={100} />
+                  </div>
+
+                  <div className="relative z-10 h-full flex flex-col">
+                    <div className="w-fit px-2.5 py-0.5 bg-primary/10 text-primary text-[10px] font-bold tracking-widest uppercase rounded mb-4 border border-primary/20">
+                      Featured Tool
+                    </div>
+                    <h2 className="text-2xl font-bold text-foreground mb-2 group-hover:text-primary transition-colors tracking-tight">
+                      Audio/Video Captioner
+                    </h2>
+                    <p className="text-muted-foreground text-sm max-w-[90%] mb-6 leading-relaxed">
+                      Extract timestamped text & subtitles from audio & video instantly.
                     </p>
 
                     <div className="mt-auto flex items-center text-sm font-semibold text-primary group-hover:text-primary/80 transition-colors">
-                      Launch Compressor{" "}
+                      Launch Captioner{" "}
+                      <ArrowRight
+                        size={16}
+                        className="ml-2 group-hover:translate-x-1 transition-transform"
+                      />
+                    </div>
+                  </div>
+                </Link>
+              </div>
+
+              {/* 3. Recommended PDF Tool */}
+              <div className="group relative col-span-1 h-full">
+                <Link
+                  to="/tools/pdf-unlock"
+                  className="block h-full bg-card border border-border hover:border-primary/50 rounded-xl p-6 transition-all duration-300 shadow-sm hover:shadow overflow-hidden relative"
+                >
+                  <div className="absolute top-0 right-0 p-6 opacity-[0.03] group-hover:opacity-[0.05] group-hover:scale-110 transition-all duration-500 pointer-events-none">
+                    <FileText size={100} />
+                  </div>
+
+                  <div className="relative z-10 h-full flex flex-col">
+                    <div className="w-fit px-2.5 py-0.5 bg-primary/10 text-primary text-[10px] font-bold tracking-widest uppercase rounded mb-4 border border-primary/20">
+                      Security Pick
+                    </div>
+                    <h2 className="text-2xl font-bold text-foreground mb-2 group-hover:text-primary transition-colors tracking-tight">
+                      Unlock PDF
+                    </h2>
+                    <p className="text-muted-foreground text-sm max-w-[90%] mb-6 leading-relaxed">
+                      Remove password protection and restrictions from a PDF document instantly.
+                    </p>
+
+                    <div className="mt-auto flex items-center text-sm font-semibold text-primary group-hover:text-primary/80 transition-colors">
+                      Launch Unlocker{" "}
                       <ArrowRight
                         size={16}
                         className="ml-2 group-hover:translate-x-1 transition-transform"
