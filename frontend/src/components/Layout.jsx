@@ -154,6 +154,7 @@ const Layout = () => {
         text.includes('upload new') ||
         text.includes('upload another') ||
         text.includes('generate') ||
+        text.includes('regenerate') ||
         ariaLabel.includes('clear') ||
         ariaLabel.includes('reset') ||
         title.includes('clear') ||
