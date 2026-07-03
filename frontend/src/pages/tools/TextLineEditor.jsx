@@ -17,12 +17,12 @@ const TextLineEditor = () => {
   const [customSeparator, setCustomSeparator] = useState('');
 
   const getLineCount = () => {
-    return text === '' ? 0 : text.split('\n').length;
+    return text === '' ? 0 : text.split(/\r?\n/).length;
   };
 
   const processLines = (action, payload = {}) => {
     if (!text.trim()) return;
-    let lines = text.split('\n');
+    let lines = text.split(/\r?\n/);
 
     switch (action) {
       case 'sort-asc':
@@ -171,9 +171,9 @@ const TextLineEditor = () => {
 
         {/* Right: Controls Sidebar */}
         <motion.div 
-          animate={{ opacity: hasText ? 1 : 0.5 }}
+          animate={{ opacity: hasText ? 1 : 0.75 }}
           transition={{ duration: 0.25 }}
-          className={`w-full lg:w-[350px] xl:w-[400px] shrink-0 transition-all duration-300 ${!hasText ? 'pointer-events-none grayscale-[0.5]' : ''}`}
+          className="w-full lg:w-[350px] xl:w-[400px] shrink-0 transition-all duration-300"
         >
           <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-5">
             
@@ -182,7 +182,8 @@ const TextLineEditor = () => {
               <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Case Sensitive</span>
               <button
                 onClick={() => setCaseSensitive(!caseSensitive)}
-                className={`w-10 h-6 rounded-full p-1 transition-all ${
+                disabled={!hasText}
+                className={`w-10 h-6 rounded-full p-1 transition-all disabled:opacity-40 ${
                   caseSensitive ? 'bg-primary' : 'bg-muted border border-border/60'
                 }`}
               >
@@ -208,10 +209,11 @@ const TextLineEditor = () => {
                 ].map(op => (
                   <motion.button 
                     key={op.id}
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.97 }}
+                    whileHover={hasText ? { scale: 1.03 } : {}}
+                    whileTap={hasText ? { scale: 0.97 } : {}}
                     onClick={() => processLines(op.id)} 
-                    className="py-2.5 px-3 text-xs font-semibold rounded-xl border border-border/50 bg-muted/20 hover:bg-muted text-foreground transition-all flex items-center justify-center gap-1"
+                    disabled={!hasText}
+                    className="py-2.5 px-3 text-xs font-semibold rounded-xl border border-border/50 bg-muted/20 hover:bg-muted text-foreground transition-all flex items-center justify-center gap-1 active:bg-primary/10 active:border-primary disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     {op.icon && <op.icon size={11} />}
                     {op.label}
@@ -233,10 +235,11 @@ const TextLineEditor = () => {
                 ].map(op => (
                   <motion.button 
                     key={op.id}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                    whileHover={hasText ? { scale: 1.02 } : {}}
+                    whileTap={hasText ? { scale: 0.98 } : {}}
                     onClick={() => processLines(op.id)} 
-                    className="py-2.5 px-3.5 text-xs font-semibold rounded-xl border border-border/50 bg-muted/20 hover:bg-muted text-foreground transition-all text-left"
+                    disabled={!hasText}
+                    className="py-2.5 px-3.5 text-xs font-semibold rounded-xl border border-border/50 bg-muted/20 hover:bg-muted text-foreground transition-all text-left active:bg-primary/10 active:border-primary disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     {op.label}
                   </motion.button>
@@ -255,21 +258,24 @@ const TextLineEditor = () => {
                   placeholder="Prefix..."
                   value={prefix}
                   onChange={(e) => setPrefix(e.target.value)}
-                  className="bg-muted/20 border border-border/50 p-3 px-4 rounded-xl text-sm font-semibold text-foreground outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-muted-foreground"
+                  disabled={!hasText}
+                  className="bg-muted/20 border border-border/50 p-3 px-4 rounded-xl text-sm font-semibold text-foreground outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-muted-foreground disabled:opacity-40 disabled:cursor-not-allowed"
                 />
                 <input
                   type="text"
                   placeholder="Suffix..."
                   value={suffix}
                   onChange={(e) => setSuffix(e.target.value)}
-                  className="bg-muted/20 border border-border/50 p-3 px-4 rounded-xl text-sm font-semibold text-foreground outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-muted-foreground"
+                  disabled={!hasText}
+                  className="bg-muted/20 border border-border/50 p-3 px-4 rounded-xl text-sm font-semibold text-foreground outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-muted-foreground disabled:opacity-40 disabled:cursor-not-allowed"
                 />
               </div>
               <motion.button 
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                whileHover={hasText ? { scale: 1.02 } : {}}
+                whileTap={hasText ? { scale: 0.98 } : {}}
                 onClick={() => processLines('add-prefix-suffix')}
-                className="w-full py-3 bg-muted/20 hover:bg-muted/50 border border-border/50 text-foreground font-semibold rounded-xl transition-all flex items-center justify-center gap-1 active:scale-[0.98]"
+                disabled={!hasText}
+                className="w-full py-3 bg-muted/20 hover:bg-muted/50 border border-border/50 text-foreground font-semibold rounded-xl transition-all flex items-center justify-center gap-1 active:bg-primary/10 active:border-primary disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Apply Prefix/Suffix
               </motion.button>
@@ -285,28 +291,31 @@ const TextLineEditor = () => {
                 placeholder="Find substring..."
                 value={filterQuery}
                 onChange={(e) => setFilterQuery(e.target.value)}
-                className="w-full bg-muted/20 border border-border/50 p-3 px-4 rounded-xl text-sm font-semibold text-foreground outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-muted-foreground"
+                disabled={!hasText}
+                className="w-full bg-muted/20 border border-border/50 p-3 px-4 rounded-xl text-sm font-semibold text-foreground outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-muted-foreground disabled:opacity-40 disabled:cursor-not-allowed"
               />
               <div className="flex bg-muted/30 p-1 rounded-xl border border-border/50 gap-1">
                 <button
                   onClick={() => setFilterMode('keep')}
-                  className={`flex-1 py-2 text-xs font-bold rounded-lg transition-colors ${filterMode === 'keep' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                  disabled={!hasText}
+                  className={`flex-1 py-2 text-xs font-bold rounded-lg transition-colors disabled:opacity-40 ${filterMode === 'keep' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
                 >
                   Keep Matching
                 </button>
                 <button
                   onClick={() => setFilterMode('remove')}
-                  className={`flex-1 py-2 text-xs font-bold rounded-lg transition-colors ${filterMode === 'remove' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                  disabled={!hasText}
+                  className={`flex-1 py-2 text-xs font-bold rounded-lg transition-colors disabled:opacity-40 ${filterMode === 'remove' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
                 >
                   Remove Matching
                 </button>
               </div>
               <motion.button 
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                whileHover={hasText && filterQuery ? { scale: 1.02 } : {}}
+                whileTap={hasText && filterQuery ? { scale: 0.98 } : {}}
                 onClick={() => processLines('filter-lines')}
-                disabled={!filterQuery}
-                className="w-full py-3 bg-muted/20 hover:bg-muted/50 border border-border/50 text-foreground font-semibold rounded-xl transition-all flex items-center justify-center gap-1 active:scale-[0.98] disabled:opacity-40"
+                disabled={!hasText || !filterQuery}
+                className="w-full py-3 bg-muted/20 hover:bg-muted/50 border border-border/50 text-foreground font-semibold rounded-xl transition-all flex items-center justify-center gap-1 active:bg-primary/10 active:border-primary disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Filter Lines
               </motion.button>
@@ -326,13 +335,14 @@ const TextLineEditor = () => {
                 ].map(sep => (
                   <motion.button
                     key={sep.id}
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.97 }}
+                    whileHover={hasText ? { scale: 1.03 } : {}}
+                    whileTap={hasText ? { scale: 0.97 } : {}}
                     onClick={() => setJoinSeparator(sep.id)}
-                    className={`py-2.5 px-3 text-xs font-semibold rounded-xl border transition-all text-center ${
+                    disabled={!hasText}
+                    className={`py-2.5 px-3 text-xs font-semibold rounded-xl border transition-all text-center disabled:opacity-40 disabled:cursor-not-allowed ${
                       joinSeparator === sep.id
-                        ? 'border-primary/50 bg-primary/10 text-primary font-bold'
-                        : 'border-border/50 bg-muted/20 hover:bg-muted text-foreground'
+                        ? 'border-primary bg-primary/10 text-primary font-bold shadow-sm'
+                        : 'border-border/50 bg-muted/20 hover:bg-muted text-foreground active:bg-primary/10 active:border-primary'
                     }`}
                   >
                     {sep.label}
@@ -345,14 +355,16 @@ const TextLineEditor = () => {
                   placeholder="Custom separator..."
                   value={customSeparator}
                   onChange={(e) => setCustomSeparator(e.target.value)}
-                  className="w-full bg-muted/20 border border-border/50 p-3 px-4 rounded-xl text-sm font-semibold text-foreground outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-muted-foreground"
+                  disabled={!hasText}
+                  className="w-full bg-muted/20 border border-border/50 p-3 px-4 rounded-xl text-sm font-semibold text-foreground outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-muted-foreground disabled:opacity-40 disabled:cursor-not-allowed"
                 />
               )}
               <motion.button 
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                whileHover={hasText ? { scale: 1.02 } : {}}
+                whileTap={hasText ? { scale: 0.98 } : {}}
                 onClick={() => processLines('join-lines')}
-                className="w-full h-14 font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-[0_1px_2px_rgba(0,0,0,0.1),0_0_0_1px_rgba(255,255,255,0.1)_inset] bg-primary hover:bg-primary/90 text-primary-foreground hover:shadow-[0_4px_12px_rgba(var(--primary),0.3)] active:scale-[0.98]"
+                disabled={!hasText}
+                className="w-full h-14 font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-[0_1px_2px_rgba(0,0,0,0.1),0_0_0_1px_rgba(255,255,255,0.1)_inset] bg-primary hover:bg-primary/90 text-primary-foreground hover:shadow-[0_4px_12px_rgba(var(--primary),0.3)] active:bg-primary/95 disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Join Lines
               </motion.button>
