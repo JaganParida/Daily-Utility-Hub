@@ -77,11 +77,16 @@ const Topbar = ({ isScrolled }) => {
           <motion.div layout className="flex items-center gap-2 sm:gap-3">
             <Link
               to="/profile"
-              className="hidden sm:inline-flex items-center text-sm font-bold text-foreground bg-muted/50 hover:bg-muted px-4 py-2 rounded-full border border-border/80 shadow-sm backdrop-blur-sm transition-colors cursor-pointer"
+              className="flex items-center gap-2 text-sm font-bold text-foreground bg-card hover:bg-muted/80 px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-full border border-border hover:border-primary/30 shadow-sm transition-all duration-300 cursor-pointer"
               title="View Profile Settings"
             >
-              <span className="w-2 h-2 rounded-full bg-emerald-500 mr-2"></span>
-              {user.name}
+              <div className="w-6 h-6 rounded-full bg-primary/15 text-primary flex items-center justify-center font-black text-[11px] shrink-0 border border-primary/20">
+                {(user.name || user.displayName || user.email || 'U').charAt(0).toUpperCase()}
+              </div>
+              <span className="hidden sm:inline-block max-w-[120px] truncate text-foreground/90 hover:text-foreground">
+                {user.name || user.displayName || user.email || 'Profile'}
+              </span>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0 shadow-[0_0_8px_rgba(16,185,129,0.6)]"></span>
             </Link>
             <button
               onClick={logout}
