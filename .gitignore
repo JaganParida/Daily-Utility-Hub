@@ -3,6 +3,6 @@ node_modules
 dist
 build
 tmp
-server/tmp
-client/dist
+backend/tmp
+frontend/dist
 .DS_Store
