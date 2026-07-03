@@ -21,12 +21,14 @@ const circularCategories = [
 
 const Dashboard = () => {
   const { pinnedTools, togglePin, recentTools = [] } = useAnalytics();
+  const { currentUser } = useAuth();
   const context = useOutletContext();
   const isScrolled = context?.isScrolled || false;
   const setIsScrolled = context?.setIsScrolled;
   
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [recentFilter, setRecentFilter] = useState('recent');
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const observerRef = useRef(null);
 
   // Category horizontal nav scroll controls
@@ -131,7 +133,7 @@ const Dashboard = () => {
   const renderToolCard = (tool) => {
     const Icon = tool.icon;
     const isPinned = pinnedTools.includes(tool.to);
-    const showPinButton = isPinned || !isPinLimitReached;
+    const showPinButton = !currentUser || isPinned || !isPinLimitReached;
     
     // Extract color classes (e.g. "text-emerald-500 bg-emerald-500/10")
     const colorClasses = tool.color.split(' ');
@@ -163,12 +165,16 @@ const Dashboard = () => {
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    togglePin(tool.to);
+                    if (!currentUser) {
+                      setIsAuthModalOpen(true);
+                    } else {
+                      togglePin(tool.to);
+                    }
                   }}
                   className={`transition-all duration-300 z-30 flex items-center ${
                     isPinned 
                       ? 'px-2.5 py-0.5 bg-primary/10 text-primary text-[10px] font-bold tracking-widest uppercase rounded border border-primary/20 shadow-sm' 
-                      : 'px-2.5 py-0.5 bg-muted/50 hover:bg-muted text-muted-foreground text-[10px] font-bold tracking-widest uppercase rounded border border-border opacity-0 group-hover:opacity-100'
+                      : 'px-2.5 py-0.5 bg-muted/50 hover:bg-muted text-muted-foreground text-[10px] font-bold tracking-widest uppercase rounded border border-border opacity-100 sm:opacity-0 sm:group-hover:opacity-100'
                   }`}
                   title={isPinned ? "Unpin Tool" : "Pin Tool"}
                 >
@@ -406,7 +412,7 @@ const Dashboard = () => {
         </motion.div>
           
           {/* Canva-Style Recents & Pinned Hub */}
-          {(pinnedToolObjects.length > 0 || recentToolObjects.length > 0) && (
+          {currentUser && (pinnedToolObjects.length > 0 || recentToolObjects.length > 0) && (
             <div className="mb-16 border-b border-border/20 pb-12">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
                 <div>
@@ -503,6 +509,64 @@ const Dashboard = () => {
         </div>
       </div>
       <CommandPalette isOpen={isPaletteOpen} onClose={() => setIsPaletteOpen(false)} />
+
+      {/* Auth Prompt Modal */}
+      <AnimatePresence>
+        {isAuthModalOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsAuthModalOpen(false)}
+              className="absolute inset-0 bg-background/80 backdrop-blur-sm"
+            />
+            
+            {/* Modal Card */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ duration: 0.2 }}
+              className="relative w-full max-w-sm bg-card border border-border rounded-2xl p-6 shadow-xl flex flex-col items-center text-center gap-5 z-10"
+            >
+              <div className="w-12 h-12 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0 animate-bounce">
+                <Pin size={22} className="fill-current" />
+              </div>
+              
+              <div>
+                <h3 className="text-xl font-black text-foreground tracking-tight">Save Your Favorites</h3>
+                <p className="text-muted-foreground text-sm mt-2 leading-relaxed">
+                  Pin your most-used tools and sync them across all your devices by registering a free account.
+                </p>
+              </div>
+              
+              <div className="flex flex-col w-full gap-2.5">
+                <Link
+                  to="/register"
+                  className="w-full py-2.5 px-4 bg-primary text-primary-foreground hover:bg-primary/90 font-bold rounded-xl transition-all active:scale-98 text-center text-sm shadow-md"
+                >
+                  Create Free Account
+                </Link>
+                <Link
+                  to="/login"
+                  className="w-full py-2.5 px-4 bg-muted hover:bg-muted/80 text-foreground font-semibold rounded-xl border border-border transition-all active:scale-98 text-center text-sm"
+                >
+                  Sign In
+                </Link>
+              </div>
+              
+              <button
+                onClick={() => setIsAuthModalOpen(false)}
+                className="text-xs text-muted-foreground hover:text-foreground underline transition-colors cursor-pointer"
+              >
+                Continue as Guest
+              </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
