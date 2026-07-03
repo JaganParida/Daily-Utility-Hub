@@ -4,6 +4,8 @@ import { toast } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../lib/api';
 import * as pdfjsLib from 'pdfjs-dist';
+import { PDFDocument } from 'pdf-lib';
+import JSZip from 'jszip';
 
 // Setup pdfjs worker using unpkg CDN
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
@@ -173,39 +175,52 @@ const PdfSplit = () => {
       return;
     }
 
-    const formData = new FormData();
-    formData.append('pdf', file);
-    formData.append('pages', pages);
-    formData.append('mode', splitMode);
-
-    let toastId;
+    let toastId = toast.loading(splitMode === 'split' ? 'Splitting PDF locally...' : 'Extracting pages locally...');
     try {
       setIsProcessing(true);
-      toastId = toast.loading(splitMode === 'split' ? 'Splitting PDF into separate pages...' : 'Extracting PDF pages securely...');
       
-      const response = await api.post('/pdf/split', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-        responseType: 'blob'
-      });
+      const fileBytes = new Uint8Array(await file.arrayBuffer());
+      const originalDoc = await PDFDocument.load(fileBytes);
+      
+      let finalBytes;
+      let extension = '.pdf';
+      
+      if (splitMode === 'extract') {
+        const newDoc = await PDFDocument.create();
+        const zeroIndexedPages = selectedPages.map(p => p - 1);
+        const copiedPages = await newDoc.copyPages(originalDoc, zeroIndexedPages);
+        copiedPages.forEach((page) => newDoc.addPage(page));
+        finalBytes = await newDoc.save();
+      } else {
+        const zip = new JSZip();
+        for (const pageNum of selectedPages) {
+          const singleDoc = await PDFDocument.create();
+          const [copiedPage] = await singleDoc.copyPages(originalDoc, [pageNum - 1]);
+          singleDoc.addPage(copiedPage);
+          const singleBytes = await singleDoc.save();
+          zip.file(`${file.name.replace('.pdf', '')}_page_${pageNum}.pdf`, singleBytes);
+        }
+        finalBytes = await zip.generateAsync({ type: 'blob' });
+        extension = '.zip';
+      }
 
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const fileBlob = finalBytes instanceof Blob ? finalBytes : new Blob([finalBytes], { type: 'application/octet-stream' });
+      const url = window.URL.createObjectURL(fileBlob);
       const link = document.createElement('a');
       link.href = url;
       
-      const extension = splitMode === 'split' ? '.zip' : '.pdf';
       const fileSuffix = splitMode === 'split' ? '_split' : '_extracted';
       link.setAttribute('download', `${file.name.replace('.pdf', '')}${fileSuffix}${extension}`);
-      
       document.body.appendChild(link);
       link.click();
       link.remove();
+      window.URL.revokeObjectURL(url);
       
       toast.success(splitMode === 'split' ? 'PDF split into separate files!' : 'Pages extracted successfully!', { id: toastId });
       document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
       console.error(error);
-      const backendMsg = error.response?.data?.message || 'Failed to process PDF.';
-      toast.error(backendMsg, { id: toastId });
+      toast.error('Failed to process PDF. The file might be encrypted.', { id: toastId });
     } finally {
       setIsProcessing(false);
     }

@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 import api from '../../lib/api';
 import * as pdfjsLib from 'pdfjs-dist';
+import { PDFDocument } from 'pdf-lib';
 
 // Setup pdfjs worker using unpkg CDN
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
@@ -111,32 +112,30 @@ const PdfMetadata = () => {
       return;
     }
 
-    const formData = new FormData();
-    formData.append('pdf', file);
-    formData.append('title', metadata.title);
-    formData.append('author', metadata.author);
-    formData.append('subject', metadata.subject);
-    formData.append('creator', metadata.creator);
-    formData.append('producer', metadata.producer);
-    formData.append('keywords', metadata.keywords);
-
-    let toastId;
+    let toastId = toast.loading('Updating PDF metadata locally...');
     try {
       setIsProcessing(true);
-      toastId = toast.loading('Updating metadata securely on server...');
       
-      const response = await api.post('/pdf/metadata', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-        responseType: 'blob'
-      });
-
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const fileBytes = new Uint8Array(await file.arrayBuffer());
+      const pdfDoc = await PDFDocument.load(fileBytes);
+      
+      if (metadata.title) pdfDoc.setTitle(metadata.title);
+      if (metadata.author) pdfDoc.setAuthor(metadata.author);
+      if (metadata.subject) pdfDoc.setSubject(metadata.subject);
+      if (metadata.creator) pdfDoc.setCreator(metadata.creator);
+      if (metadata.producer) pdfDoc.setProducer(metadata.producer);
+      if (metadata.keywords) pdfDoc.setKeywords(metadata.keywords.split(',').map(k => k.trim()));
+      
+      const updatedBytes = await pdfDoc.save();
+      
+      const url = window.URL.createObjectURL(new Blob([updatedBytes], { type: 'application/pdf' }));
       const link = document.createElement('a');
       link.href = url;
       link.setAttribute('download', `${file.name.replace('.pdf', '')}_updated.pdf`);
       document.body.appendChild(link);
       link.click();
       link.remove();
+      window.URL.revokeObjectURL(url);
       
       toast.success('Metadata updated successfully!', { id: toastId });
       setFile(null);
@@ -151,8 +150,7 @@ const PdfMetadata = () => {
       document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
       console.error(error);
-      const errMsg = error.response?.data?.message || 'Failed to update metadata.';
-      toast.error(errMsg, { id: toastId });
+      toast.error('Failed to update metadata. The file might be encrypted.', { id: toastId });
     } finally {
       setIsProcessing(false);
     }

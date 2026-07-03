@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 import api from '../../lib/api';
 import DropzoneComponent from '../../components/DropzoneComponent';
+import { PDFDocument, rgb, degrees, StandardFonts } from 'pdf-lib';
 
 const PdfWatermark = () => {
   const [file, setFile] = useState(null);
@@ -52,39 +53,78 @@ const PdfWatermark = () => {
       return;
     }
 
-    const formData = new FormData();
-    formData.append('pdf', file);
-    formData.append('watermarkText', watermarkText);
-    formData.append('color', color);
-    formData.append('opacity', opacity);
-    formData.append('fontSize', fontSize);
-    formData.append('rotation', rotation);
-    formData.append('position', position);
-
-    let toastId;
+    let toastId = toast.loading('Applying watermark locally in browser...');
     try {
       setIsProcessing(true);
-      toastId = toast.loading('Applying watermark securely on server...');
       
-      const response = await api.post('/pdf/watermark', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-        responseType: 'blob'
+      const fileBytes = new Uint8Array(await file.arrayBuffer());
+      const pdfDoc = await PDFDocument.load(fileBytes);
+      const pages = pdfDoc.getPages();
+      
+      const helveticaFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
+      
+      const hexToRgbFloat = (hex) => {
+        const cleanHex = hex.replace('#', '');
+        const r = parseInt(cleanHex.substring(0, 2), 16) / 255;
+        const g = parseInt(cleanHex.substring(2, 4), 16) / 255;
+        const b = parseInt(cleanHex.substring(4, 6), 16) / 255;
+        return rgb(r, g, b);
+      };
+      
+      const watermarkColor = hexToRgbFloat(color);
+      const textWidth = helveticaFont.widthOfTextAtSize(watermarkText, fontSize);
+      const textHeight = helveticaFont.heightAtSize(fontSize);
+      
+      pages.forEach(page => {
+        const { width, height } = page.getSize();
+        
+        let x = 0;
+        let y = 0;
+        
+        if (position === 'center') {
+          x = (width - textWidth) / 2;
+          y = (height - textHeight) / 2;
+        } else if (position === 'top-left') {
+          x = 40;
+          y = height - 40 - textHeight;
+        } else if (position === 'top-right') {
+          x = width - 40 - textWidth;
+          y = height - 40 - textHeight;
+        } else if (position === 'bottom-left') {
+          x = 40;
+          y = 40;
+        } else if (position === 'bottom-right') {
+          x = width - 40 - textWidth;
+          y = 40;
+        }
+        
+        page.drawText(watermarkText, {
+          x,
+          y,
+          size: fontSize,
+          font: helveticaFont,
+          color: watermarkColor,
+          opacity: parseFloat(opacity),
+          rotate: degrees(parseFloat(rotation)),
+        });
       });
-
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+      
+      const watermarkedBytes = await pdfDoc.save();
+      
+      const url = window.URL.createObjectURL(new Blob([watermarkedBytes], { type: 'application/pdf' }));
       const link = document.createElement('a');
       link.href = url;
       link.setAttribute('download', `${file.name.replace('.pdf', '')}_watermarked.pdf`);
       document.body.appendChild(link);
       link.click();
       link.remove();
+      window.URL.revokeObjectURL(url);
       
       toast.success('Watermark applied successfully!', { id: toastId });
       document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
       console.error(error);
-      const backendMsg = error.response?.data?.message || 'Failed to apply watermark.';
-      toast.error(backendMsg, { id: toastId });
+      toast.error('Failed to apply watermark. The file might be encrypted.', { id: toastId });
     } finally {
       setIsProcessing(false);
     }

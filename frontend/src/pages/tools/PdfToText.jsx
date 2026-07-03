@@ -3,6 +3,10 @@ import { Type, UploadCloud, FileText, CheckCircle2, Copy, Check, Download, Eye, 
 import { toast } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../lib/api';
+import * as pdfjsLib from 'pdfjs-dist';
+
+// Setup pdfjs worker using unpkg CDN
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
 
 const PdfToText = () => {
   const [file, setFile] = useState(null);
@@ -73,27 +77,43 @@ const PdfToText = () => {
       return;
     }
 
-    const formData = new FormData();
-    formData.append('pdf', file);
-
-    let toastId;
+    let toastId = toast.loading('Extracting text locally in browser...');
     try {
       setIsProcessing(true);
-      toastId = toast.loading('Extracting text from PDF...');
       
-      const response = await api.post('/pdf/extract-text', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
       
-      setExtractedText(response.data.text || 'No text found in this document (it might be a scanned image).');
-      setPagesCount(response.data.pages || 0);
+      let text = '';
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const textContent = await page.getTextContent();
+        
+        const lines = {};
+        textContent.items.forEach(item => {
+          const y = Math.round(item.transform[5]);
+          if (!lines[y]) lines[y] = [];
+          lines[y].push(item);
+        });
+        
+        const sortedY = Object.keys(lines).sort((a, b) => b - a);
+        let pageText = '';
+        sortedY.forEach(y => {
+          const lineItems = lines[y].sort((a, b) => a.transform[4] - b.transform[4]);
+          pageText += lineItems.map(item => item.str).join(' ') + '\n';
+        });
+        
+        text += `--- Page ${i} ---\n${pageText}\n\n`;
+      }
+      
+      setExtractedText(text.trim() || 'No text found in this document (it might be a scanned image).');
+      setPagesCount(pdf.numPages);
       
       toast.success('Text extracted successfully!', { id: toastId });
       document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
       console.error(error);
-      const errMsg = error.response?.data?.message || 'Failed to extract text. The file might be encrypted.';
-      toast.error(errMsg, { id: toastId });
+      toast.error('Failed to extract text. The file might be encrypted.', { id: toastId });
     } finally {
       setIsProcessing(false);
     }

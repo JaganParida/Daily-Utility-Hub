@@ -3,6 +3,7 @@ import { Lock, UploadCloud, FileText, CheckCircle2, Eye, EyeOff, ShieldCheck, Sh
 import { toast } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../lib/api';
+import { encryptPDF } from '@pdfsmaller/pdf-encrypt';
 
 const PdfLock = () => {
   const [file, setFile] = useState(null);
@@ -87,30 +88,26 @@ const PdfLock = () => {
       return;
     }
 
-    const formData = new FormData();
-    formData.append('pdf', file);
-    formData.append('password', password);
-    formData.append('restrictPrinting', restrictPrinting);
-    formData.append('restrictModifying', restrictModifying);
-    formData.append('restrictCopying', restrictCopying);
-
-    let toastId;
+    let toastId = toast.loading('Encrypting PDF locally in browser...');
     try {
       setIsProcessing(true);
-      toastId = toast.loading('Encrypting PDF securely on server...');
       
-      const response = await api.post('/pdf/lock', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-        responseType: 'blob'
+      const fileBytes = new Uint8Array(await file.arrayBuffer());
+      const encryptedBytes = await encryptPDF(fileBytes, password, {
+        ownerPassword: `${password}_owner_restrict`,
+        allowPrinting: !restrictPrinting,
+        allowModifying: !restrictModifying,
+        allowCopying: !restrictCopying,
       });
-
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+      
+      const url = window.URL.createObjectURL(new Blob([encryptedBytes], { type: 'application/pdf' }));
       const link = document.createElement('a');
       link.href = url;
       link.setAttribute('download', `${file.name.replace('.pdf', '')}_locked.pdf`);
       document.body.appendChild(link);
       link.click();
       link.remove();
+      window.URL.revokeObjectURL(url);
       
       toast.success('PDF locked successfully!', { id: toastId });
       setPassword('');
@@ -119,8 +116,7 @@ const PdfLock = () => {
       document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
       console.error(error);
-      const errMsg = error.response?.data?.message || 'Failed to lock PDF.';
-      toast.error(errMsg, { id: toastId });
+      toast.error('Failed to encrypt PDF. The file might already be encrypted.', { id: toastId });
     } finally {
       setIsProcessing(false);
     }

@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { UploadCloud, FileText, CheckCircle2, GripVertical, Trash2, Eye, X, ExternalLink, Loader2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import api from '../../lib/api';
+import { PDFDocument } from 'pdf-lib';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -134,40 +135,39 @@ const PdfMerge = () => {
 
   const handleMerge = async () => {
     if (files.length < 2) {
-      toast.error('Please add at least 2 PDFs to merge');
+      toast.error('Please add at least two PDF files to merge');
       return;
     }
 
-    const formData = new FormData();
-    files.forEach(item => {
-      formData.append('pdfs', item.file);
-    });
-
-    let toastId;
+    let toastId = toast.loading('Merging PDFs locally in browser...');
     try {
       setIsProcessing(true);
-      toastId = toast.loading('Merging PDFs securely on server...');
       
-      const response = await api.post('/pdf/merge', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-        responseType: 'blob'
-      });
-
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const mergedPdf = await PDFDocument.create();
+      
+      for (const item of files) {
+        const fileBytes = new Uint8Array(await item.file.arrayBuffer());
+        const srcPdf = await PDFDocument.load(fileBytes);
+        const copiedPages = await mergedPdf.copyPages(srcPdf, srcPdf.getPageIndices());
+        copiedPages.forEach((page) => mergedPdf.addPage(page));
+      }
+      
+      const mergedBytes = await mergedPdf.save();
+      
+      const url = window.URL.createObjectURL(new Blob([mergedBytes], { type: 'application/pdf' }));
       const link = document.createElement('a');
       link.href = url;
       link.setAttribute('download', 'merged_document.pdf');
       document.body.appendChild(link);
       link.click();
       link.remove();
+      window.URL.revokeObjectURL(url);
       
       toast.success('PDFs merged successfully!', { id: toastId });
       document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
       console.error(error);
-      const backendMsg = error.response?.data?.message || 'Failed to merge PDFs.';
-      const details = error.response?.data?.details ? ` (${error.response.data.details})` : '';
-      toast.error(backendMsg + details, { id: toastId });
+      toast.error('Failed to merge PDFs. One of the documents might be encrypted.', { id: toastId });
     } finally {
       setIsProcessing(false);
     }
