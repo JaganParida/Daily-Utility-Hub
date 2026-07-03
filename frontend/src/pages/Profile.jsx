@@ -99,8 +99,6 @@ const ProfileSkeleton = () => {
 const Profile = () => {
   const { currentUser: user, loading, updateProfile, terminateSession } = useAuth();
   const [name, setName] = useState(user?.name || '');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
 
   // Sync profile form input values on page refresh auth load
@@ -124,20 +122,10 @@ const Profile = () => {
 
   const handleUpdate = async (e) => {
     e.preventDefault();
-    if (password && password.length < 6) {
-      toast.error('Password must be at least 6 characters long');
-      return;
-    }
-    if (password !== confirmPassword) {
-      toast.error('Passwords do not match');
-      return;
-    }
 
     setIsUpdating(true);
     try {
-      await updateProfile(name, password || undefined);
-      setPassword('');
-      setConfirmPassword('');
+      await updateProfile(name);
     } catch (err) {
       // Error handled by AuthContext
     } finally {
@@ -203,40 +191,6 @@ const Profile = () => {
                     disabled
                     value={user.email}
                     className="appearance-none rounded-xl relative block w-full px-4 py-3 border border-border/50 text-muted-foreground bg-muted/40 cursor-not-allowed sm:text-sm"
-                  />
-                </div>
-              </div>
-
-              <div className="w-full h-px bg-border my-6"></div>
-
-              <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4 flex items-center gap-2">
-                <Key size={14} /> Change Password
-              </h3>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <div>
-                  <label className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground ml-1 mb-1.5 block">
-                    New Password
-                  </label>
-                  <input
-                    type="password"
-                    placeholder="•••••••• (Min 6 characters)"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="appearance-none rounded-xl relative block w-full px-4 py-3 border border-border placeholder-muted-foreground/30 text-foreground bg-muted/20 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary sm:text-sm transition-colors"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground ml-1 mb-1.5 block">
-                    Confirm New Password
-                  </label>
-                  <input
-                    type="password"
-                    placeholder="••••••••"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="appearance-none rounded-xl relative block w-full px-4 py-3 border border-border placeholder-muted-foreground/30 text-foreground bg-muted/20 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary sm:text-sm transition-colors"
                   />
                 </div>
               </div>

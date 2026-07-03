@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { LogIn, Loader2, ArrowLeft, Layers } from 'lucide-react';
+import { LogIn, Loader2, ArrowLeft, Layers, Eye, EyeOff } from 'lucide-react';
 import PageTransition from '../../components/PageTransition';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   
@@ -50,7 +51,11 @@ const Login = () => {
         {/* Brand Header */}
         <div className="mb-8 text-center flex flex-col items-center">
           <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-5 border border-primary/20">
-            <Layers className="text-primary" size={24} />
+            <svg className="w-6 h-6 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.8} strokeLinecap="round" strokeLinejoin="round">
+              <polygon points="12 2 2 7 12 12 22 7 12 2" />
+              <polyline points="2 17 12 22 22 17" />
+              <polyline points="2 12 12 17 22 12" />
+            </svg>
           </div>
           <h2 className="text-3xl font-black text-foreground tracking-tight mb-2">
             Welcome back
@@ -110,14 +115,23 @@ const Login = () => {
                     Forgot password?
                   </Link>
                 </div>
-                <input
-                  type="password" required
-                  className="appearance-none rounded-xl relative block w-full px-4 py-3 border border-border placeholder-muted-foreground/50 text-foreground bg-muted/20 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary sm:text-sm transition-colors"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  disabled={isSubmitting || isGoogleLoading}
-                />
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"} required
+                    className="appearance-none rounded-xl relative block w-full px-4 py-3 pr-12 border border-border placeholder-muted-foreground/50 text-foreground bg-muted/20 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary sm:text-sm transition-colors"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    disabled={isSubmitting || isGoogleLoading}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
               </div>
             </div>
 

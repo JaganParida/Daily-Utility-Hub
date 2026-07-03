@@ -59,7 +59,11 @@ const Topbar = ({ isScrolled }) => {
               layout
               className="w-10 h-10 shrink-0 rounded-xl bg-foreground flex items-center justify-center text-background shadow-md transition-transform group-hover:scale-105"
             >
-              <Layers size={22} strokeWidth={2.5} />
+              <svg className="w-[22px] h-[22px] text-background" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.8} strokeLinecap="round" strokeLinejoin="round">
+                <polygon points="12 2 2 7 12 12 22 7 12 2" />
+                <polyline points="2 17 12 22 22 17" />
+                <polyline points="2 12 12 17 22 12" />
+              </svg>
             </motion.div>
             <span className="hidden sm:inline-block font-black text-2xl tracking-tighter text-foreground whitespace-nowrap">
               UtilityHub
