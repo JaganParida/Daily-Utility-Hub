@@ -56,7 +56,8 @@ const TempShare = () => {
 
       const data = response.data;
       
-      const shareUrl = `http://localhost:5000/api/share/download/${data.fileId}`;
+      const backendBaseUrl = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace(/\/api$/, '') : 'http://localhost:5000';
+      const shareUrl = `${backendBaseUrl}/api/share/download/${data.fileId}`;
       setSharedLink(shareUrl);
       setExpiresAt(data.expiresAt);
       
