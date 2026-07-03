@@ -138,7 +138,7 @@ const Layout = () => {
     const handleGlobalClearClick = (e) => {
       if (!isSmallDevice()) return;
 
-      const button = e.target.closest('button') || e.target.closest('[role="button"]');
+      const button = e.target.closest('button') || e.target.closest('[role="button"]') || e.target.closest('input[type="button"]') || e.target.closest('input[type="submit"]');
       if (!button) return;
 
       const text = (button.innerText || button.textContent || '').toLowerCase();
