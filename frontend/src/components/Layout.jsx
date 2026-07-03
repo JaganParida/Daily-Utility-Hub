@@ -144,6 +144,8 @@ const Layout = () => {
         text.includes('start over') || 
         text.includes('cancel') ||
         text.includes('trash') ||
+        text.includes('upload new') ||
+        text.includes('upload another') ||
         ariaLabel.includes('clear') ||
         ariaLabel.includes('reset') ||
         title.includes('clear') ||
