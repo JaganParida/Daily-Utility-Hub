@@ -292,10 +292,10 @@ exports.unlockPdf = async (req, res) => {
               const ft = obj.get(PDFName.of('FT'));
               
               if ((type && type.toString() === '/Sig') || (ft && ft.toString() === '/Sig')) {
-                signatureRefs.add(ref);
+                signatureRefs.add(ref.toString());
                 signatureCount++;
                 // Safely clear dictionary keys to invalidate signature references
-                const keys = obj.keys();
+                const keys = Array.from(obj.keys());
                 keys.forEach(k => obj.delete(k));
               }
             }
@@ -307,10 +307,15 @@ exports.unlockPdf = async (req, res) => {
             if (acroFormRef) {
               const acroForm = pdfDoc.context.lookup(acroFormRef);
               if (acroForm instanceof PDFDict) {
-                const fields = acroForm.get(PDFName.of('Fields'));
-                if (fields instanceof PDFArray) {
-                  const newFields = fields.asArray().filter(ref => !signatureRefs.has(ref));
-                  acroForm.set(PDFName.of('Fields'), pdfDoc.context.obj(newFields));
+                const fieldsRef = acroForm.get(PDFName.of('Fields'));
+                if (fieldsRef) {
+                  const fields = pdfDoc.context.lookup(fieldsRef);
+                  if (fields instanceof PDFArray) {
+                    const filtered = fields.asArray().filter(ref => !signatureRefs.has(ref.toString()));
+                    const arr = fields.asArray();
+                    arr.length = 0;
+                    filtered.forEach(item => arr.push(item));
+                  }
                 }
               }
             }
@@ -318,10 +323,15 @@ exports.unlockPdf = async (req, res) => {
             // Remove from `/Annots` in pages
             const pages = pdfDoc.getPages();
             pages.forEach(page => {
-              const annots = page.node.get(PDFName.of('Annots'));
-              if (annots instanceof PDFArray) {
-                const newAnnots = annots.asArray().filter(ref => !signatureRefs.has(ref));
-                page.node.set(PDFName.of('Annots'), page.node.context.obj(newAnnots));
+              const annotsRef = page.node.get(PDFName.of('Annots'));
+              if (annotsRef) {
+                const annots = pdfDoc.context.lookup(annotsRef);
+                if (annots instanceof PDFArray) {
+                  const filtered = annots.asArray().filter(ref => !signatureRefs.has(ref.toString()));
+                  const arr = annots.asArray();
+                  arr.length = 0;
+                  filtered.forEach(item => arr.push(item));
+                }
               }
             });
 
