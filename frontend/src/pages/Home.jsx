@@ -306,14 +306,14 @@ const Home = () => {
       </section>
 
       {/* 3. INTERACTIVE FEATURES (Hover Tabs replacing grid) */}
-      <section className="py-32 px-4 bg-background">
+      <section className="py-16 sm:py-32 px-4 bg-background">
         <div className="max-w-7xl mx-auto">
           <motion.div
             initial="hidden"
             whileInView="show"
             viewport={{ once: true, margin: "-100px" }}
             variants={fadeUp}
-            className="mb-24"
+            className="mb-12 sm:mb-24"
           >
             <h2 className="text-5xl md:text-7xl font-black tracking-tighter mb-6">
               Designed for <br />
@@ -330,14 +330,14 @@ const Home = () => {
       </section>
 
       {/* 4. HOW IT WORKS (Sticky Scroll style replacing grid) */}
-      <section className="py-32 px-4 bg-card border-y border-border">
+      <section className="py-16 sm:py-32 px-4 bg-card border-y border-border">
         <div className="max-w-7xl mx-auto">
           <motion.div
             initial="hidden"
             whileInView="show"
             viewport={{ once: true, margin: "-100px" }}
             variants={fadeUp}
-            className="mb-32 text-center"
+            className="mb-16 sm:mb-32 text-center"
           >
             <h2 className="text-5xl md:text-7xl font-black tracking-tighter mb-6">
               A frictionless <br />
@@ -350,7 +350,7 @@ const Home = () => {
       </section>
 
       {/* 5. TOOL CATEGORIES (Modern layout) */}
-      <section className="py-32 px-4 bg-background">
+      <section className="py-16 sm:py-32 px-4 bg-background">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-20">
             <div>
@@ -414,7 +414,7 @@ const Home = () => {
       </section>
 
       {/* 6. PREMIUM COMPARISON TABLE */}
-      <section className="py-32 px-4 bg-[#0a0a0a] text-zinc-100 relative overflow-hidden">
+      <section className="py-16 sm:py-32 px-4 bg-[#0a0a0a] text-zinc-100 relative overflow-hidden">
         {/* Subtle background glow */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-primary/10 blur-[120px] rounded-full pointer-events-none" />
 
@@ -513,7 +513,7 @@ const Home = () => {
             </div>
 
             {!currentUser && (
-              <div className="flex justify-center mt-20">
+              <div className="flex justify-center mt-10 sm:mt-20">
                 <Link
                   to="/register"
                   className="px-8 md:px-10 py-4 md:py-5 bg-primary text-primary-foreground hover:bg-primary/90 font-bold rounded-full transition-all text-lg md:text-xl hover:scale-105 active:scale-95 shadow-[0_0_40px_rgba(var(--primary-rgb),0.3)] flex items-center gap-3"
@@ -527,14 +527,14 @@ const Home = () => {
       </section>
 
       {/* 7. INTERACTIVE FAQ */}
-      <section className="py-32 px-4 bg-background">
+      <section className="py-16 sm:py-32 px-4 bg-background">
         <div className="max-w-4xl mx-auto">
           <motion.div
             initial="hidden"
             whileInView="show"
             viewport={{ once: true }}
             variants={fadeUp}
-            className="mb-20"
+            className="mb-10 sm:mb-20"
           >
             <h2 className="text-5xl md:text-7xl font-black tracking-tighter">
               Questions?
