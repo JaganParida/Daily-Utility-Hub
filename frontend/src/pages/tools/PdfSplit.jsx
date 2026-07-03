@@ -3,6 +3,10 @@ import { UploadCloud, FileText, CheckCircle2, Scissors, HelpCircle, Loader2, Eye
 import { toast } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../lib/api';
+import * as pdfjsLib from 'pdfjs-dist';
+
+// Setup pdfjs worker using unpkg CDN
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
 
 const numbersToRangeString = (nums) => {
   if (nums.length === 0) return '';
@@ -83,32 +87,29 @@ const PdfSplit = () => {
   };
 
   const inspectFile = async (selectedFile) => {
-    const formData = new FormData();
-    formData.append('pdf', selectedFile);
-    
     setIsInspecting(true);
     const toastId = toast.loading('Reading PDF properties...');
     try {
-      const { data } = await api.post('/pdf/inspect', formData);
+      const arrayBuffer = await selectedFile.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
       setIsInspecting(false);
-      
-      if (data.isEncrypted) {
-        toast.error('This PDF is encrypted. Please decrypt (unlock) it first.', { id: toastId });
-        return;
-      }
       
       setFile(selectedFile);
       setPreviewUrl(URL.createObjectURL(selectedFile));
-      setTotalPages(data.pageCount);
+      setTotalPages(pdf.numPages);
       // Select all pages by default
-      const allPages = Array.from({ length: data.pageCount }, (_, i) => i + 1);
+      const allPages = Array.from({ length: pdf.numPages }, (_, i) => i + 1);
       setSelectedPages(allPages);
       setPages(numbersToRangeString(allPages));
-      toast.success(`PDF loaded: ${data.pageCount} pages detected`, { id: toastId });
+      toast.success(`PDF loaded: ${pdf.numPages} pages detected`, { id: toastId });
     } catch (e) {
       setIsInspecting(false);
       console.error(e);
-      toast.error('Failed to parse PDF file.', { id: toastId });
+      if (e.name === 'PasswordException' || e.message?.toLowerCase().includes('password') || e.message?.toLowerCase().includes('decrypt') || e.message?.toLowerCase().includes('authenticate')) {
+        toast.error('This PDF is encrypted. Please decrypt (unlock) it first.', { id: toastId });
+      } else {
+        toast.error('Failed to parse PDF file.', { id: toastId });
+      }
     }
   };
   

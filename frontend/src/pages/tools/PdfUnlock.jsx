@@ -15,6 +15,10 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 import api from '../../lib/api';
+import * as pdfjsLib from 'pdfjs-dist';
+
+// Setup pdfjs worker using unpkg CDN
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
 
 const PdfUnlock = () => {
   const [file, setFile] = useState(null);
@@ -49,32 +53,32 @@ const PdfUnlock = () => {
   };
 
   const inspectFile = async (selectedFile) => {
-    const formData = new FormData();
-    formData.append('pdf', selectedFile);
-    
     setIsInspecting(true);
     const toastId = toast.loading('Inspecting file protection...');
     try {
-      const { data } = await api.post('/pdf/inspect', formData);
+      const arrayBuffer = await selectedFile.arrayBuffer();
+      // Try loading without password to check if encrypted
+      await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
       setIsInspecting(false);
       
       setFile(selectedFile);
       setPreviewUrl(URL.createObjectURL(selectedFile));
-      setIsEncrypted(data.isEncrypted);
-      
-      if (!data.isEncrypted) {
-        toast.success('This PDF has no password protection.', { id: toastId });
-      } else {
-        toast.success('Encrypted PDF detected. Enter password to unlock.', { id: toastId });
-      }
+      setIsEncrypted(false);
+      toast.success('This PDF has no password protection.', { id: toastId });
     } catch (e) {
       setIsInspecting(false);
-      console.error(e);
-      // Fallback: assume it might be encrypted
       setFile(selectedFile);
       setPreviewUrl(URL.createObjectURL(selectedFile));
-      setIsEncrypted(true);
-      toast.dismiss(toastId);
+      
+      if (e.name === 'PasswordException' || e.message?.toLowerCase().includes('password') || e.message?.toLowerCase().includes('decrypt') || e.message?.toLowerCase().includes('authenticate')) {
+        setIsEncrypted(true);
+        toast.success('Encrypted PDF detected. Enter password to unlock.', { id: toastId });
+      } else {
+        console.error(e);
+        // Fallback: assume it might be encrypted
+        setIsEncrypted(true);
+        toast.dismiss(toastId);
+      }
     }
   };
 

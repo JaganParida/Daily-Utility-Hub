@@ -3,6 +3,10 @@ import { Settings, UploadCloud, FileText, CheckCircle2, Loader2, Eye, ExternalLi
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 import api from '../../lib/api';
+import * as pdfjsLib from 'pdfjs-dist';
+
+// Setup pdfjs worker using unpkg CDN
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
 
 const PdfMetadata = () => {
   const [file, setFile] = useState(null);
@@ -39,40 +43,37 @@ const PdfMetadata = () => {
   };
 
   const inspectFile = async (selectedFile) => {
-    const formData = new FormData();
-    formData.append('pdf', selectedFile);
-    
     setIsInspecting(true);
     const toastId = toast.loading('Reading PDF metadata...');
     try {
-      const { data } = await api.post('/pdf/inspect', formData);
-      setIsInspecting(false);
-      
-      if (data.isEncrypted) {
-        toast.error('This PDF is encrypted. Please decrypt it first.', { id: toastId });
-        return;
-      }
+      const arrayBuffer = await selectedFile.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      const meta = await pdf.getMetadata();
+      const info = meta.info || {};
 
+      setIsInspecting(false);
       setFile(selectedFile);
       setPreviewUrl(URL.createObjectURL(selectedFile));
       setMetadata({
-        title: data.metadata.title || '',
-        author: data.metadata.author || '',
-        subject: data.metadata.subject || '',
-        creator: data.metadata.creator || '',
-        producer: data.metadata.producer || '',
-        keywords: Array.isArray(data.metadata.keywords) 
-          ? data.metadata.keywords.join(', ') 
-          : (data.metadata.keywords || '')
+        title: info.Title || '',
+        author: info.Author || '',
+        subject: info.Subject || '',
+        creator: info.Creator || '',
+        producer: info.Producer || '',
+        keywords: info.Keywords || ''
       });
       toast.success('PDF metadata loaded successfully!', { id: toastId });
     } catch (e) {
       setIsInspecting(false);
       console.error(e);
-      // Fallback
-      setFile(selectedFile);
-      setPreviewUrl(URL.createObjectURL(selectedFile));
-      toast.dismiss(toastId);
+      if (e.name === 'PasswordException' || e.message?.toLowerCase().includes('password') || e.message?.toLowerCase().includes('decrypt') || e.message?.toLowerCase().includes('authenticate')) {
+        toast.error('This PDF is encrypted. Please decrypt it first.', { id: toastId });
+      } else {
+        // Fallback
+        setFile(selectedFile);
+        setPreviewUrl(URL.createObjectURL(selectedFile));
+        toast.dismiss(toastId);
+      }
     }
   };
 

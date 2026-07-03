@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Lock, UploadCloud, FileText, CheckCircle2, Eye, EyeOff, ShieldCheck, ShieldAlert, ExternalLink } from 'lucide-react';
+import { Lock, UploadCloud, FileText, CheckCircle2, Eye, EyeOff, ShieldCheck, ShieldAlert, ExternalLink, Loader2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../lib/api';
