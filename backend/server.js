@@ -37,6 +37,18 @@ app.use(cors({
 // Set security headers
 app.use(helmet());
 
+// Redefine query as writable for Express 5 compatibility with mongoSanitize and hpp
+app.use((req, res, next) => {
+  if (req.query) {
+    Object.defineProperty(req, 'query', {
+      value: { ...req.query },
+      writable: true,
+      configurable: true
+    });
+  }
+  next();
+});
+
 // Prevent NoSQL Injection
 app.use(mongoSanitize());
 // We will handle XSS on the client-side and use DOMPurify when necessary.
