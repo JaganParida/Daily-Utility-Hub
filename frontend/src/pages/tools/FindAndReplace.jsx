@@ -242,9 +242,9 @@ const FindAndReplace = () => {
 
         {/* Right: Sidebar Panel */}
         <motion.div 
-          animate={{ opacity: hasText ? 1 : 0.5 }}
+          animate={{ opacity: hasText ? 1 : 0.75 }}
           transition={{ duration: 0.25 }}
-          className={`w-full lg:w-[320px] xl:w-[350px] shrink-0 transition-all duration-300 ${!hasText ? 'pointer-events-none grayscale-[0.5]' : ''}`}
+          className="w-full lg:w-[320px] xl:w-[350px] shrink-0 transition-all duration-300"
         >
           <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6 flex flex-col">
             
@@ -277,10 +277,11 @@ const FindAndReplace = () => {
                 ].map(preset => (
                   <motion.button
                     key={preset.id}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                    whileHover={hasText ? { scale: 1.02 } : {}}
+                    whileTap={hasText ? { scale: 0.98 } : {}}
                     onClick={() => applyPreset(preset.id)}
-                    className="w-full text-left py-2.5 px-3.5 text-xs font-semibold rounded-xl border border-border/50 bg-muted/20 hover:bg-muted text-foreground transition-all"
+                    disabled={!hasText}
+                    className="w-full text-left py-2.5 px-3.5 text-xs font-semibold rounded-xl border border-border/50 bg-muted/20 hover:bg-muted text-foreground transition-all active:bg-primary/10 active:border-primary disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     {preset.label}
                   </motion.button>
@@ -291,8 +292,8 @@ const FindAndReplace = () => {
             {/* Bottom Actions */}
             <div className="mt-auto pt-4 border-t border-border/50 space-y-2.5">
               <motion.button 
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                whileHover={replacedOutput && replacedOutput !== text ? { scale: 1.02 } : {}}
+                whileTap={replacedOutput && replacedOutput !== text ? { scale: 0.98 } : {}}
                 onClick={handleCopy} 
                 disabled={!replacedOutput || replacedOutput === text} 
                 className="w-full h-14 font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-[0_1px_2px_rgba(0,0,0,0.1),0_0_0_1px_rgba(255,255,255,0.1)_inset] bg-primary hover:bg-primary/90 text-primary-foreground hover:shadow-[0_4px_12px_rgba(var(--primary),0.3)] disabled:opacity-40 active:scale-[0.98]"
@@ -300,10 +301,11 @@ const FindAndReplace = () => {
                 {copied ? <CheckCircle size={16} /> : <Copy size={16} />} Copy Replaced Text
               </motion.button>
               <motion.button 
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                whileHover={hasText ? { scale: 1.02 } : {}}
+                whileTap={hasText ? { scale: 0.98 } : {}}
                 onClick={clearAll} 
-                className="w-full py-3 bg-destructive/10 hover:bg-destructive/20 border border-destructive/20 hover:border-destructive/30 text-destructive font-semibold rounded-xl transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
+                disabled={!hasText}
+                className="w-full py-3 bg-destructive/10 hover:bg-destructive/20 border border-destructive/20 hover:border-destructive/30 text-destructive font-semibold rounded-xl transition-all flex items-center justify-center gap-2 active:bg-destructive/30 disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <Trash2 size={16} /> Clear All
               </motion.button>
