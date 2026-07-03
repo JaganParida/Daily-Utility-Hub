@@ -29,7 +29,7 @@ const Login = () => {
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
     try {
-      await loginWithGoogle();
+      await loginWithGoogle('login');
       navigate('/dashboard');
     } catch (error) {
       // Error handled by AuthContext toast

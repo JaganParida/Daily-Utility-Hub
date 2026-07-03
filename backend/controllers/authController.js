@@ -1,6 +1,36 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
+const jwksRsa = require('jwks-rsa');
 const crypto = require('crypto');
+
+// Setup Google Firebase JWKS signing key client
+const jwksClient = jwksRsa({
+  jwksUri: 'https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com',
+  cache: true,
+  rateLimit: true
+});
+
+function getKey(header, callback) {
+  jwksClient.getSigningKey(header.kid, function(err, key) {
+    if (err) return callback(err);
+    const signingKey = key.getPublicKey() || key.rsaPublicKey;
+    callback(null, signingKey);
+  });
+}
+
+// Verification helper for Firebase RS256 JWT ID tokens
+const verifyFirebaseToken = (idToken) => {
+  return new Promise((resolve, reject) => {
+    jwt.verify(idToken, getKey, {
+      issuer: 'https://securetoken.google.com/daily-utility-hub',
+      audience: 'daily-utility-hub',
+      algorithms: ['RS256']
+    }, (err, decoded) => {
+      if (err) reject(err);
+      else resolve(decoded);
+    });
+  });
+};
 
 // Helper to parse User-Agent header into a friendly device name
 const getDeviceName = (userAgentString) => {
@@ -13,127 +43,118 @@ const getDeviceName = (userAgentString) => {
   return 'Web Browser';
 };
 
-// Generate JWT, register session with User-Agent, enforce 2-device limit, set httpOnly cookie
-const sendTokenResponse = async (user, userAgent, statusCode, res) => {
-  const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-    expiresIn: '30d',
-  });
-
-  const deviceName = getDeviceName(userAgent);
-
-  // Add session metadata
-  user.activeSessions.push({
-    token,
-    deviceName,
-    lastActive: new Date()
-  });
-
-  // Strict 2-device session limit (FIFO: First-In, First-Out)
-  if (user.activeSessions.length > 2) {
-    user.activeSessions = user.activeSessions.slice(user.activeSessions.length - 2);
-  }
-
-  await user.save();
-
-  // Configure cookie options
-  const isProd = process.env.NODE_ENV === 'production';
-  const options = {
-    expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-    httpOnly: true, // Safeguards against XSS extraction
-    secure: isProd, // Production HTTPS only
-    sameSite: isProd ? 'none' : 'lax' // Cross-domain cookie support in prod
-  };
-
-  res
-    .status(statusCode)
-    .cookie('token', token, options)
-    .json({
-      success: true,
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-    });
-};
-
-// @desc    Register user
-// @route   POST /api/auth/register
+// @desc    Verify Firebase ID token, sync user record in MongoDB, enforce 2-device session limit
+// @route   POST /api/auth/session
 // @access  Public
-exports.registerUser = async (req, res) => {
+exports.syncSession = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
-
-    if (!name || !email || !password) {
-      return res.status(400).json({ message: 'Please add all fields' });
-    }
-
-    const userExists = await User.findOne({ email });
-    if (userExists) {
-      return res.status(400).json({ message: 'User already exists' });
-    }
-
-    const user = await User.create({
-      name,
-      email,
-      password,
-    });
-
-    await sendTokenResponse(user, req.headers['user-agent'], 201, res);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-// @desc    Authenticate a user
-// @route   POST /api/auth/login
-// @access  Public
-exports.loginUser = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    const user = await User.findOne({ email }).select('+password');
-    if (user && (await user.matchPassword(password))) {
-      await sendTokenResponse(user, req.headers['user-agent'], 200, res);
-    } else {
-      res.status(401).json({ message: 'Invalid credentials' });
-    }
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-// @desc    Verify Google token & authenticate user
-// @route   POST /api/auth/google
-// @access  Public
-exports.googleLoginUser = async (req, res) => {
-  try {
-    const { idToken } = req.body;
+    const { idToken, mode, name: registerName } = req.body;
     if (!idToken) {
-      return res.status(400).json({ message: 'Google ID token required.' });
+      return res.status(400).json({ message: 'Authentication token required.' });
     }
 
-    // Call Google's token verification API
-    const response = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${idToken}`);
-    if (!response.ok) {
-      return res.status(401).json({ message: 'Google authentication failed.' });
+    // 1. Verify token against Google's certificates
+    let decoded;
+    try {
+      decoded = await verifyFirebaseToken(idToken);
+    } catch (err) {
+      console.error('Firebase token verification failed:', err);
+      return res.status(401).json({ message: 'Invalid or expired credentials.' });
     }
 
-    const payload = await response.json();
-    const { email, name } = payload;
+    const { email, name } = decoded;
 
+    // 2. Query MongoDB by email
     let user = await User.findOne({ email });
-    if (!user) {
-      // Create account with randomized credentials for Google users
-      const randomPassword = crypto.randomBytes(16).toString('hex');
+
+    // Mode validation
+    if (mode === 'login') {
+      if (!user) {
+        return res.status(404).json({ message: 'No account associated with this email. Please register first.' });
+      }
+    } else if (mode === 'register') {
+      if (user) {
+        return res.status(400).json({ message: 'Account already exists. Please log in instead.' });
+      }
+      
+      // Create user record in MongoDB
       user = await User.create({
-        name: name || email.split('@')[0],
+        name: registerName || name || email.split('@')[0],
         email,
-        password: randomPassword
+        password: crypto.randomBytes(16).toString('hex') // secure placeholder; auth managed by Firebase
       });
+    } else {
+      // Auto-fallback / refresh / oauth sync
+      if (!user) {
+        user = await User.create({
+          name: name || email.split('@')[0],
+          email,
+          password: crypto.randomBytes(16).toString('hex')
+        });
+      }
     }
 
-    await sendTokenResponse(user, req.headers['user-agent'], 200, res);
+    // Initialize arrays if they don't exist (protects legacy database users)
+    if (!user.activeSessions) user.activeSessions = [];
+    if (!user.pinnedTools) user.pinnedTools = [];
+    if (!user.recentHistory) user.recentHistory = [];
+
+    // 3. Manage local session identifier cookie
+    let sessionId = req.cookies.token;
+    let sessionExists = sessionId && user.activeSessions.some(s => s.token === sessionId);
+
+    if (!sessionExists) {
+      // Generate new session token
+      sessionId = crypto.randomBytes(32).toString('hex');
+      
+      // Add to user sessions
+      user.activeSessions.push({
+        token: sessionId,
+        deviceName: getDeviceName(req.headers['user-agent']),
+        lastActive: new Date()
+      });
+
+      // Enforce active session limit of 2 devices (FIFO)
+      if (user.activeSessions.length > 2) {
+        user.activeSessions = user.activeSessions.slice(user.activeSessions.length - 2);
+      }
+
+      await user.save();
+    } else {
+      // Update last active timestamp
+      await User.updateOne(
+        { _id: user._id, 'activeSessions.token': sessionId },
+        { $set: { 'activeSessions.$.lastActive': new Date() } }
+      );
+    }
+
+    // Set cookie
+    const isProd = process.env.NODE_ENV === 'production';
+    const options = {
+      expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      httpOnly: true, // Safeguards against XSS extraction
+      secure: isProd, // Production HTTPS only
+      sameSite: isProd ? 'none' : 'lax' // Cross-domain cookie support in prod
+    };
+
+    res
+      .cookie('token', sessionId, options)
+      .json({
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        pinnedTools: user.pinnedTools || [],
+        recentHistory: user.recentHistory || [],
+        activeSessions: user.activeSessions.map(s => ({
+          _id: s._id,
+          deviceName: s.deviceName,
+          lastActive: s.lastActive,
+          isCurrent: s.token === sessionId
+        }))
+      });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Session synchronization error:', error);
+    res.status(500).json({ message: 'Internal server error during session sync.' });
   }
 };
 
@@ -142,7 +163,7 @@ exports.googleLoginUser = async (req, res) => {
 // @access  Private (protect)
 exports.logoutUser = async (req, res) => {
   try {
-    const token = req.cookies.token || (req.headers.authorization && req.headers.authorization.split(' ')[1]);
+    const token = req.token;
     
     if (token && req.user) {
       // Remove this specific session token from user list
@@ -179,7 +200,7 @@ exports.getUserProfile = async (req, res) => {
       email: req.user.email,
       pinnedTools: req.user.pinnedTools || [],
       recentHistory: req.user.recentHistory || [],
-      activeSessions: req.user.activeSessions.map(s => ({
+      activeSessions: (req.user.activeSessions || []).map(s => ({
         _id: s._id,
         deviceName: s.deviceName,
         lastActive: s.lastActive,
@@ -191,7 +212,7 @@ exports.getUserProfile = async (req, res) => {
   }
 };
 
-// @desc    Update user profile name / password
+// @desc    Update user profile name
 // @route   PUT /api/auth/profile
 // @access  Private
 exports.updateUserProfile = async (req, res) => {
@@ -201,14 +222,8 @@ exports.updateUserProfile = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    const { name, password } = req.body;
+    const { name } = req.body;
     if (name) user.name = name;
-    if (password) {
-      if (password.length < 6) {
-        return res.status(400).json({ message: 'Password must be at least 6 characters' });
-      }
-      user.password = password;
-    }
 
     await user.save();
     res.json({ success: true, name: user.name, email: user.email });
@@ -229,7 +244,7 @@ exports.logoutSession = async (req, res) => {
     }
 
     // Filter out the requested session
-    user.activeSessions = user.activeSessions.filter(s => s._id.toString() !== sessionId);
+    user.activeSessions = (user.activeSessions || []).filter(s => s._id.toString() !== sessionId);
     await user.save();
 
     res.json({ success: true, message: 'Device logged out successfully.' });
@@ -254,10 +269,10 @@ exports.recordAnalyticsVisit = async (req, res) => {
     }
 
     // Reorder history so that latest visit goes to the top
-    user.recentHistory = user.recentHistory.filter(h => h.toolPath !== toolPath);
+    user.recentHistory = (user.recentHistory || []).filter(h => h.toolPath !== toolPath);
     user.recentHistory.unshift({ toolPath, visitedAt: new Date() });
 
-    // Strict free-tier limits: cap history list at 20 items to prevent MongoDB storage bloat
+    // Strict limits: cap history list at 20 items to prevent MongoDB storage bloat
     if (user.recentHistory.length > 20) {
       user.recentHistory = user.recentHistory.slice(0, 20);
     }
@@ -284,11 +299,11 @@ exports.updateAnalyticsPin = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    const isPinned = user.pinnedTools.includes(toolPath);
+    const isPinned = (user.pinnedTools || []).includes(toolPath);
     if (isPinned) {
       user.pinnedTools = user.pinnedTools.filter(p => p !== toolPath);
     } else {
-      // Strict free-tier limits: cap pinned tools at 12 items
+      // Strict limits: cap pinned tools at 12 items
       if (user.pinnedTools.length >= 12) {
         return res.status(400).json({ message: 'Bookmark limit reached (maximum 12).' });
       }

@@ -29,7 +29,7 @@ const Register = () => {
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
     try {
-      await loginWithGoogle();
+      await loginWithGoogle('register');
       navigate('/dashboard');
     } catch (error) {
       // Error handled by AuthContext toast
