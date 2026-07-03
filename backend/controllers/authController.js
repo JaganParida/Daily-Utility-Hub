@@ -83,14 +83,13 @@ exports.syncSession = async (req, res) => {
         email,
         password: crypto.randomBytes(16).toString('hex') // secure placeholder; auth managed by Firebase
       });
-    } else {
-      // Auto-fallback / refresh / oauth sync
+    } else if (mode === 'refresh') {
       if (!user) {
-        user = await User.create({
-          name: name || email.split('@')[0],
-          email,
-          password: crypto.randomBytes(16).toString('hex')
-        });
+        return res.status(401).json({ message: 'Session expired or user deleted.' });
+      }
+    } else {
+      if (!user) {
+        return res.status(401).json({ message: 'Authentication required.' });
       }
     }
 

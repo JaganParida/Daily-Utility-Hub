@@ -36,8 +36,10 @@ app.use(cors({
   credentials: true
 }));
 
-// Set security headers
-app.use(helmet());
+// Set security headers (Allow cross-origin popups for Firebase Auth interaction)
+app.use(helmet({
+  crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' }
+}));
 
 // Redefine query as writable for Express 5 compatibility with mongoSanitize and hpp
 app.use((req, res, next) => {
