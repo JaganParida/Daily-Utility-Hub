@@ -14,7 +14,7 @@ const { protect } = require('../middleware/authMiddleware');
 // Unified session sync route (verifies Firebase token, registers device session, sets cookie)
 router.post('/session', syncSession);
 
-router.get('/logout', protect, logoutUser);
+router.get('/logout', logoutUser);
 
 router.get('/profile', protect, getUserProfile);
 

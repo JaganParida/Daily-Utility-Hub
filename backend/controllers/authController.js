@@ -160,16 +160,17 @@ exports.syncSession = async (req, res) => {
 
 // @desc    Logout user / clear session in database & cookie
 // @route   GET /api/auth/logout
-// @access  Private (protect)
+// @access  Public (graceful lookup)
 exports.logoutUser = async (req, res) => {
   try {
-    const token = req.token;
+    const token = req.cookies.token || (req.headers.authorization && req.headers.authorization.split(' ')[1]);
     
-    if (token && req.user) {
-      // Remove this specific session token from user list
-      await User.findByIdAndUpdate(req.user.id, {
-        $pull: { activeSessions: { token } }
-      });
+    if (token) {
+      // Remove this specific session token from user active list
+      await User.findOneAndUpdate(
+        { 'activeSessions.token': token },
+        { $pull: { activeSessions: { token } } }
+      );
     }
 
     res.clearCookie('token', {

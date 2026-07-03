@@ -1,10 +1,10 @@
-const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
+// Verify cookie session token directly against active sessions list in MongoDB
 const protect = async (req, res, next) => {
   let token;
 
-  // Read from cookies (first choice for web clients) or authorization header (API fallback)
+  // Read session token from cookie (web) or Auth header (API fallback)
   if (req.cookies && req.cookies.token) {
     token = req.cookies.token;
   } else if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
@@ -16,27 +16,26 @@ const protect = async (req, res, next) => {
   }
 
   try {
-    // Decode token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    // Verify token exists in the user's active sessions array in the database
-    const user = await User.findOne({ _id: decoded.id, 'activeSessions.token': token });
+    // Look up user holding this active session token in the database
+    const user = await User.findOne({ 'activeSessions.token': token });
 
     if (!user) {
-      // Clear cookie if session is revoked or invalid
-      res.clearCookie('token');
+      res.clearCookie('token', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+      });
       return res.status(401).json({ message: 'Session expired or logged out from this device.' });
     }
 
-    // Attach user and current session token to the request
+    // Attach user and current session token signature to the request
     req.user = user;
     req.token = token;
 
     next();
   } catch (error) {
     console.error('Session verification error:', error);
-    res.clearCookie('token');
-    return res.status(401).json({ message: 'Not authorized, token failed.' });
+    return res.status(500).json({ message: 'Server authentication verification error.' });
   }
 };
 
@@ -55,9 +54,7 @@ const softProtect = async (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findOne({ _id: decoded.id, 'activeSessions.token': token });
-    
+    const user = await User.findOne({ 'activeSessions.token': token });
     if (user) {
       req.user = user;
       req.token = token;
