@@ -1,14 +1,11 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { 
-  createUserWithEmailAndPassword, 
-  signInWithEmailAndPassword, 
   signInWithPopup, 
-  signOut, 
-  onAuthStateChanged,
-  sendPasswordResetEmail
+  signOut as firebaseSignOut
 } from 'firebase/auth';
 import { auth, googleProvider } from '../lib/firebase';
 import { toast } from 'react-hot-toast';
+import api from '../lib/api';
 
 const AuthContext = createContext();
 
@@ -20,11 +17,30 @@ export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Sign Up with Email
-  const signupWithEmail = async (email, password) => {
+  // Sync profile data from backend
+  const fetchProfile = async () => {
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      return userCredential;
+      const response = await api.get('/auth/profile');
+      setCurrentUser(response.data);
+    } catch (error) {
+      setCurrentUser(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Run on mount to fetch session
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
+  // Sign Up with Email
+  const signupWithEmail = async (email, password, name) => {
+    try {
+      const response = await api.post('/auth/register', { name, email, password });
+      toast.success('Successfully registered!');
+      await fetchProfile();
+      return response.data;
     } catch (error) {
       handleAuthError(error);
       throw error;
@@ -34,19 +50,32 @@ export const AuthProvider = ({ children }) => {
   // Sign In with Email
   const loginWithEmail = async (email, password) => {
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      return userCredential;
+      const response = await api.post('/auth/login', { email, password });
+      toast.success('Welcome back!');
+      await fetchProfile();
+      return response.data;
     } catch (error) {
       handleAuthError(error);
       throw error;
     }
   };
 
-  // Google Sign In
+  // Google Sign In (Hybrid exchange)
   const loginWithGoogle = async () => {
     try {
+      // 1. Get ID Token from Google popup via Firebase Auth client
       const result = await signInWithPopup(auth, googleProvider);
-      return result;
+      const idToken = await result.user.getIdToken();
+
+      // 2. Exchange token with Express backend to register active session and cookie
+      const response = await api.post('/auth/google', { idToken });
+      toast.success('Signed in with Google!');
+      await fetchProfile();
+      
+      // Clean up Firebase client auth state so it doesn't conflict
+      await firebaseSignOut(auth);
+      
+      return response.data;
     } catch (error) {
       handleAuthError(error);
       throw error;
@@ -56,61 +85,43 @@ export const AuthProvider = ({ children }) => {
   // Logout
   const logout = async () => {
     try {
-      await signOut(auth);
-      toast.success('Successfully logged out');
+      await api.get('/auth/logout');
+      setCurrentUser(null);
+      toast.success('Logged out successfully');
     } catch (error) {
       console.error(error);
       toast.error('Failed to log out');
     }
   };
 
-  // Password Reset
-  const resetPassword = async (email) => {
+  // Profile Update Helper
+  const updateProfile = async (name, password) => {
     try {
-      await sendPasswordResetEmail(auth, email);
-      toast.success('Password reset email sent!');
+      const response = await api.put('/auth/profile', { name, password });
+      toast.success('Profile updated successfully!');
+      await fetchProfile();
+      return response.data;
     } catch (error) {
       handleAuthError(error);
       throw error;
     }
   };
 
-  const handleAuthError = (error) => {
-    // Graceful error messages
-    switch (error.code) {
-      case 'auth/invalid-email':
-        toast.error('Invalid email address format.');
-        break;
-      case 'auth/user-not-found':
-        toast.error('No account found with this email.');
-        break;
-      case 'auth/wrong-password':
-        toast.error('Incorrect password.');
-        break;
-      case 'auth/email-already-in-use':
-        toast.error('An account already exists with this email.');
-        break;
-      case 'auth/weak-password':
-        toast.error('Password is too weak. Please use at least 6 characters.');
-        break;
-      case 'auth/invalid-api-key':
-        toast.error('Firebase API key is missing or invalid. Check your .env file!');
-        break;
-      default:
-        console.error(error);
-        toast.error(error.message || 'Authentication failed. Please try again.');
+  // Logout Session Helper (terminates another device session)
+  const terminateSession = async (sessionId) => {
+    try {
+      await api.delete(`/auth/sessions/${sessionId}`);
+      toast.success('Session terminated.');
+      await fetchProfile();
+    } catch (error) {
+      toast.error('Failed to terminate session.');
     }
   };
 
-  // Listen to auth state changes
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setCurrentUser(user);
-      setLoading(false);
-    });
-
-    return unsubscribe;
-  }, []);
+  const handleAuthError = (error) => {
+    const msg = error.response?.data?.message || 'Authentication failed. Please try again.';
+    toast.error(msg);
+  };
 
   const value = {
     currentUser,
@@ -118,7 +129,9 @@ export const AuthProvider = ({ children }) => {
     loginWithEmail,
     loginWithGoogle,
     logout,
-    resetPassword
+    updateProfile,
+    terminateSession,
+    refreshUser: fetchProfile
   };
 
   return (

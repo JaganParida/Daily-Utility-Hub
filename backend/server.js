@@ -30,7 +30,7 @@ app.use(cookieParser());
 
 // Enable CORS (Configure strictly for production)
 app.use(cors({
-  origin: 'http://localhost:5173', // Frontend URL
+  origin: process.env.CLIENT_URL || 'http://localhost:5173', // Frontend URL
   credentials: true
 }));
 

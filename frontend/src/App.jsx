@@ -1,8 +1,9 @@
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import PinnedTools from './pages/PinnedTools';
 import RecentTools from './pages/RecentTools';
+import Profile from './pages/Profile';
 import Home from './pages/Home';
 
 // Image Tools
@@ -88,6 +89,13 @@ import { AuthProvider } from './context/AuthContext';
 import { Toaster } from 'react-hot-toast';
 import { AnimatePresence } from 'framer-motion';
 
+import { useAuth } from './context/AuthContext';
+
+const ProtectedRoute = ({ children }) => {
+  const { currentUser } = useAuth();
+  return currentUser ? children : <Navigate to="/login" replace />;
+};
+
 function AnimatedRoutes() {
   const location = useLocation();
   
@@ -106,6 +114,7 @@ function AnimatedRoutes() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/pinned" element={<PinnedTools />} />
           <Route path="/recent" element={<RecentTools />} />
+          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/tools/word-counter" element={<WordCounter />} />
           <Route path="/tools/voice-helper" element={<VoiceHelper />} />
           <Route path="/tools/audio-video-transcriber" element={<AudioVideoTranscriber />} />

@@ -22,6 +22,38 @@ const userSchema = new mongoose.Schema(
       minlength: 6,
       select: false,
     },
+    activeSessions: [
+      {
+        token: {
+          type: String,
+          required: true
+        },
+        deviceName: {
+          type: String,
+          default: 'Unknown Device'
+        },
+        lastActive: {
+          type: Date,
+          default: Date.now
+        }
+      }
+    ],
+    pinnedTools: {
+      type: [String],
+      default: []
+    },
+    recentHistory: [
+      {
+        toolPath: {
+          type: String,
+          required: true
+        },
+        visitedAt: {
+          type: Date,
+          default: Date.now
+        }
+      }
+    ],
   },
   {
     timestamps: true,
