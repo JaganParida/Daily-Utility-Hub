@@ -292,7 +292,7 @@ const JwtDecoder = () => {
       className="max-w-[1600px] mx-auto w-full px-2 md:px-8"
     >
       {/* ── Header ──────────────────────────────────────────────────────── */}
-      <div className="mb-8 flex flex-col sm:flex-row items-start sm:items-center gap-4 pt-4 sm:pt-0">
+      <div className="mb-6 flex items-center gap-3">
         <div className="p-2.5 bg-primary/10 text-primary rounded-xl shadow-sm shrink-0">
           <Key size={24} />
         </div>
@@ -314,11 +314,11 @@ const JwtDecoder = () => {
 
           {/* ── Token Input Card ──────────────────────────────────────── */}
           <div className="bg-card border border-border/80 p-6 md:p-6 rounded-2xl shadow-sm">
-            <div className="flex items-center justify-between border-b border-border/80 pb-3 mb-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-border/80 pb-3 mb-5 gap-3">
               <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                 <FileJson size={16} /> Encoded Token
               </h3>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 self-end sm:self-auto">
                 <button
                   onClick={handlePaste}
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-muted/20 hover:bg-muted/40 border border-border/50 hover:border-border text-foreground text-xs font-semibold rounded-lg transition-all active:scale-[0.97] cursor-pointer"
