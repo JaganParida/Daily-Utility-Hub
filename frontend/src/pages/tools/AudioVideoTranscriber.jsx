@@ -195,6 +195,8 @@ const AudioVideoTranscriber = () => {
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
     toast.success(`Downloaded ${filename}`);
+    // Scroll viewport to top on mobile after download
+    document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const copyTextOnly = () => {
@@ -212,6 +214,8 @@ const AudioVideoTranscriber = () => {
     setSegments([]);
     setActiveSubtitle('');
     toast.success('Fields reset');
+    // Scroll viewport to top on mobile when reset
+    document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const hasFile = file !== null;

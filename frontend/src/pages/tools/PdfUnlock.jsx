@@ -44,6 +44,8 @@ const PdfUnlock = () => {
       URL.revokeObjectURL(previewUrl);
       setPreviewUrl(null);
     }
+    // Scroll viewport to top on mobile when cleared
+    document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const inspectFile = async (selectedFile) => {
@@ -135,10 +137,11 @@ const PdfUnlock = () => {
       document.body.appendChild(link);
       link.click();
       link.remove();
-      
       toast.success('PDF unlocked successfully!', { id: toastId });
       setPassword('');
       setFile(null);
+      // Scroll viewport to top on mobile after download
+      document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
       console.error(error);
       const errMsg = error.response?.data?.message || 'Failed to unlock PDF. Is the password correct?';

@@ -77,9 +77,33 @@ const ImageCropper = () => {
   };
 
   function onImageLoad(e) {
+    const { width, height } = e.currentTarget;
     if (aspect) {
-      const { width, height } = e.currentTarget;
-      setCrop(centerAspectCrop(width, height, aspect));
+      const initialCrop = centerAspectCrop(width, height, aspect);
+      setCrop(initialCrop);
+      setCompletedCrop({
+        unit: 'px',
+        width: (initialCrop.width / 100) * width,
+        height: (initialCrop.height / 100) * height,
+        x: (initialCrop.x / 100) * width,
+        y: (initialCrop.y / 100) * height
+      });
+    } else {
+      const defaultCrop = {
+        unit: '%',
+        width: 90,
+        height: 90,
+        x: 5,
+        y: 5
+      };
+      setCrop(defaultCrop);
+      setCompletedCrop({
+        unit: 'px',
+        width: width * 0.9,
+        height: height * 0.9,
+        x: width * 0.05,
+        y: height * 0.05
+      });
     }
   }
 
@@ -90,9 +114,31 @@ const ImageCropper = () => {
     if (imgRef.current) {
       const { width, height } = imgRef.current;
       if (newAspect) {
-        setCrop(centerAspectCrop(width, height, newAspect));
+        const newCrop = centerAspectCrop(width, height, newAspect);
+        setCrop(newCrop);
+        setCompletedCrop({
+          unit: 'px',
+          width: (newCrop.width / 100) * width,
+          height: (newCrop.height / 100) * height,
+          x: (newCrop.x / 100) * width,
+          y: (newCrop.y / 100) * height
+        });
       } else {
-        setCrop(undefined);
+        const defaultCrop = {
+          unit: '%',
+          width: 90,
+          height: 90,
+          x: 5,
+          y: 5
+        };
+        setCrop(defaultCrop);
+        setCompletedCrop({
+          unit: 'px',
+          width: width * 0.9,
+          height: height * 0.9,
+          x: width * 0.05,
+          y: height * 0.05
+        });
       }
     }
   };
@@ -187,6 +233,8 @@ const ImageCropper = () => {
       
       setTimeout(() => {
         setDownloadState('idle');
+        // Scroll viewport to top on mobile after download resets
+        document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
       }, 2500);
     }, 850);
   };
@@ -199,6 +247,8 @@ const ImageCropper = () => {
     setRotate(0);
     setScaleX(1);
     setScaleY(1);
+    // Scroll viewport to top on mobile when cleared
+    document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (

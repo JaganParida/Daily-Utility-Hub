@@ -124,6 +124,8 @@ const ImageCompressor = () => {
       
       setTimeout(() => {
         setDownloadState('idle');
+        // Scroll viewport to top on mobile after download resets
+        document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
       }, 2500);
     }, 600);
   };
@@ -132,6 +134,8 @@ const ImageCompressor = () => {
     setOriginalFile(null);
     setCompressedFile(null);
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    // Scroll viewport to top on mobile when cleared
+    document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const getSavings = () => {
