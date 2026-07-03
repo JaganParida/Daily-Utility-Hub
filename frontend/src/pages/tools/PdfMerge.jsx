@@ -177,6 +177,14 @@ const PdfMerge = () => {
 
   return (
     <div className="max-w-[1600px] mx-auto w-full px-2 md:px-8">
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        onChange={handleFileSelect} 
+        className="hidden" 
+        multiple 
+        accept=".pdf,application/pdf" 
+      />
       {/* Header Container */}
       <div className="mb-6 flex items-center gap-3">
         <div className="p-2 bg-primary/10 text-primary rounded-md shadow-sm">
@@ -216,14 +224,6 @@ const PdfMerge = () => {
                       : 'border-border bg-card hover:border-primary/50 hover:bg-muted/20'
                   }`}
                 >
-                  <input 
-                    type="file" 
-                    ref={fileInputRef} 
-                    onChange={handleFileSelect} 
-                    className="hidden" 
-                    multiple 
-                    accept=".pdf,application/pdf" 
-                  />
                   <div className="w-16 h-16 bg-primary/10 text-primary rounded-2xl flex items-center justify-center mb-4 pointer-events-none shadow-sm transition-transform duration-300 group-hover:scale-110">
                     <UploadCloud size={32} />
                   </div>
@@ -262,14 +262,6 @@ const PdfMerge = () => {
                     >
                       + Add Files
                     </button>
-                    <input 
-                      type="file" 
-                      ref={fileInputRef} 
-                      onChange={handleFileSelect} 
-                      className="hidden" 
-                      multiple 
-                      accept=".pdf,application/pdf" 
-                    />
                   </div>
                 </div>
 
