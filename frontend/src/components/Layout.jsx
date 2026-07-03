@@ -87,7 +87,7 @@ const Layout = () => {
         )}
 
         <main ref={mainRef} onScroll={handleScroll} className="flex-1 overflow-y-auto flex flex-col relative z-10 scroll-smooth">
-          <div className={`flex-1 flex flex-col ${showBackButton ? 'pt-8 md:pt-12' : 'p-0'}`}>
+          <div className={`flex-1 flex flex-col ${showBackButton ? 'pt-4 pb-32 md:pt-12 md:pb-12' : 'p-0'}`}>
             <Outlet context={{ isScrolled, setIsScrolled }} />
           </div>
         </main>
