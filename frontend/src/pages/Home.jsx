@@ -244,7 +244,7 @@ const Home = () => {
   return (
     <PageTransition className="flex flex-col min-h-screen bg-background text-foreground font-sans selection:bg-primary/30">
       {/* 1. HERO SECTION (Minimalist Typography) */}
-      <section className="pt-32 pb-20 sm:pt-48 sm:pb-32 px-4 border-b border-border">
+      <section className="pt-24 pb-12 sm:pt-48 sm:pb-32 px-4 border-b border-border">
         <div className="max-w-7xl mx-auto flex flex-col items-start relative z-10 w-full">
           <motion.div
             initial="hidden"
@@ -272,12 +272,12 @@ const Home = () => {
                 professionals. 50+ tools executing instantly in your browser.
               </p>
 
-              <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto shrink-0 mt-2 md:mt-0">
+              <div className="flex flex-row items-center gap-4 w-auto shrink-0 mt-1 md:mt-0">
                 <Link
                   to="/dashboard"
-                  className="px-8 py-4 sm:py-5 bg-foreground hover:bg-foreground/90 text-background font-bold rounded-full transition-all flex items-center gap-3 text-base sm:text-lg w-full sm:w-auto justify-center hover:scale-105 active:scale-95 shadow-xl"
+                  className="px-6 py-3.5 sm:px-8 sm:py-5 bg-foreground hover:bg-foreground/90 text-background font-bold rounded-full transition-all flex items-center gap-3 text-sm sm:text-lg w-fit justify-center hover:scale-105 active:scale-95 shadow-xl"
                 >
-                  Enter Platform <ArrowUpRight size={20} />
+                  Enter Platform <ArrowUpRight size={18} />
                 </Link>
               </div>
             </motion.div>
@@ -286,9 +286,9 @@ const Home = () => {
       </section>
 
       {/* 2. HIGHLIGHTS BANNER (No Cards, pure typography) */}
-      <section className="py-6 sm:py-8 border-b border-border bg-muted/10 overflow-hidden">
+      <section className="py-5 sm:py-8 border-b border-border bg-muted/10 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 md:px-8">
-          <div className="flex flex-col sm:flex-row flex-wrap justify-between items-start sm:items-center gap-5 sm:gap-8 text-foreground font-bold text-xs min-[400px]:text-sm md:text-lg uppercase tracking-widest w-full">
+          <div className="flex flex-col sm:flex-row flex-wrap justify-between items-start sm:items-center gap-3.5 sm:gap-8 text-foreground font-bold text-xs min-[400px]:text-sm md:text-lg uppercase tracking-widest w-full">
             <div className="flex items-center gap-3">
               <ShieldCheck className="text-primary w-5 h-5 sm:w-6 sm:h-6 shrink-0" />{" "}
               100% Free Access
