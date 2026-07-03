@@ -176,14 +176,17 @@ const VoiceHelper = () => {
           <Volume2 size={24} />
         </div>
         <div>
-          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">Voice Assistant & Reader</h1>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter text-foreground">Voice Assistant & Reader</h1>
           <p className="text-muted-foreground mt-1 text-xs md:text-sm">Transcribe your voice into text in real-time, or listen to written documents using neural speech synthesis.</p>
         </div>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         {/* Left: Text Input / Dictation Area */}
-        <div className="flex-1 w-full bg-card border border-border p-4 md:p-5 rounded-2xl shadow-sm flex flex-col relative">
+        <motion.div 
+          layout
+          className="flex-1 w-full bg-card border border-border p-4 md:p-5 rounded-2xl shadow-sm flex flex-col relative"
+        >
           <div className="flex flex-col gap-3">
             {/* Tool Mode selector Tabs */}
             <div className="flex p-1 bg-muted/40 rounded-xl border border-border/50 self-start gap-1">
@@ -197,14 +200,14 @@ const VoiceHelper = () => {
                     setActiveTab(tab.id);
                     handleStopSpeaking();
                   }}
-                  className={`flex items-center gap-2 py-2 px-4 text-xs font-bold rounded-lg transition-all relative ${
+                  className={`flex items-center gap-2 py-2 px-4 text-xs font-bold rounded-xl transition-all relative ${
                     activeTab === tab.id ? 'text-foreground font-extrabold' : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
                   {activeTab === tab.id && (
                     <motion.div
                       layoutId="voice-tab-active"
-                      className="absolute inset-0 bg-background border border-border rounded-lg shadow-sm -z-10"
+                      className="absolute inset-0 bg-background border border-border rounded-xl shadow-sm -z-10"
                     />
                   )}
                   <tab.icon size={14} />
@@ -259,10 +262,13 @@ const VoiceHelper = () => {
               </AnimatePresence>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Right: Controls Sidebar */}
-        <div className="w-full lg:w-[350px] xl:w-[400px] shrink-0 space-y-6">
+        <motion.div 
+          layout
+          className="w-full lg:w-[350px] xl:w-[400px] shrink-0 space-y-6"
+        >
           <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6">
             <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground border-b border-border pb-3 flex items-center gap-2">
               <Sliders size={15} /> Voice Settings
@@ -272,7 +278,10 @@ const VoiceHelper = () => {
               {activeTab === 'stt' ? (
                 <motion.div
                   key="stt-settings"
-                  initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                  initial={{ opacity: 0, x: 10 }} 
+                  animate={{ opacity: 1, x: 0 }} 
+                  exit={{ opacity: 0, x: -10 }}
+                  transition={{ duration: 0.2 }}
                   className="space-y-5"
                 >
                   <div className="p-3.5 bg-muted/30 border border-border/50 rounded-xl space-y-2">
@@ -285,12 +294,14 @@ const VoiceHelper = () => {
                   </div>
 
                   {/* Micro action button */}
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                     onClick={toggleListening}
-                    className={`w-full py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-sm ${
+                    className={`w-full h-14 rounded-xl font-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-sm ${
                       isListening
                         ? 'bg-red-500 hover:bg-red-600 text-white shadow-red-500/25 ring-4 ring-red-500/10'
-                        : 'bg-primary hover:bg-primary/90 text-primary-foreground hover:shadow-[0_4px_12px_rgba(var(--primary),0.3)]'
+                        : 'bg-primary hover:bg-primary/90 text-primary-foreground hover:shadow-[0_4px_12px_rgba(var(--primary),0.3)] shadow-[0_1px_2px_rgba(0,0,0,0.1),0_0_0_1px_rgba(255,255,255,0.1)_inset]'
                     }`}
                   >
                     {isListening ? (
@@ -302,104 +313,115 @@ const VoiceHelper = () => {
                         <Mic size={18} /> Start Recording
                       </>
                     )}
-                  </button>
+                  </motion.button>
                 </motion.div>
               ) : (
                 <motion.div
                   key="tts-settings"
-                  initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                  initial={{ opacity: 0, x: 10 }} 
+                  animate={{ opacity: 1, x: 0 }} 
+                  exit={{ opacity: 0, x: -10 }}
+                  transition={{ duration: 0.2 }}
                   className="space-y-5"
                 >
                   {/* Select Voice */}
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Choose Speaker Voice</label>
-                    <div className="relative">
+                  <div className="space-y-3">
+                    <label className="text-sm font-semibold text-foreground">Choose Speaker Voice</label>
+                    <div className="relative group">
                       <select
                         value={selectedVoice}
                         onChange={(e) => setSelectedVoice(e.target.value)}
-                        className="w-full appearance-none bg-muted/20 border border-border/50 p-2.5 pr-10 rounded-xl text-xs font-semibold text-foreground outline-none focus:border-primary transition-all cursor-pointer shadow-sm"
+                        className="w-full appearance-none bg-muted/20 border border-border/50 group-hover:border-border p-3 pl-4 pr-10 rounded-xl text-sm font-semibold text-foreground focus:ring-2 focus:ring-primary/50 outline-none transition-all cursor-pointer shadow-sm"
                       >
                         {voices.map(v => (
-                          <option key={v.name} value={v.name}>
+                          <option key={v.name} value={v.name} className="bg-background text-foreground">
                             {v.name} ({v.lang})
                           </option>
                         ))}
                       </select>
-                      <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground" />
+                      <ChevronDown size={18} className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground group-hover:text-foreground transition-colors" />
                     </div>
                   </div>
 
                   {/* Rate (Speed) slider */}
-                  <div className="space-y-2">
+                  <div className="space-y-4">
                     <div className="flex justify-between items-center">
-                      <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Reading Speed</label>
-                      <span className="text-xs font-bold bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 rounded">{rate}x</span>
+                      <label className="text-sm font-semibold text-foreground">Reading Speed</label>
+                      <span className="text-xs font-bold bg-primary/10 text-primary border border-primary/20 px-2 py-1 rounded-md">{rate}x</span>
                     </div>
-                    <input
-                      type="range"
-                      min="0.5"
-                      max="2"
-                      step="0.1"
-                      value={rate}
-                      onChange={(e) => setRate(Number(e.target.value))}
-                      className="v-slider w-full cursor-pointer outline-none"
-                      style={{
-                        WebkitAppearance: 'none',
-                        appearance: 'none',
-                        height: '8px',
-                        borderRadius: '999px',
-                        background: `linear-gradient(to right, var(--primary) ${((rate - 0.5) / 1.5) * 100}%, var(--muted) ${((rate - 0.5) / 1.5) * 100}%)`,
-                      }}
-                    />
+                    <div className="relative pt-2 pb-1">
+                      <input
+                        type="range"
+                        min="0.5"
+                        max="2"
+                        step="0.1"
+                        value={rate}
+                        onChange={(e) => setRate(Number(e.target.value))}
+                        className="v-slider w-full cursor-pointer outline-none"
+                        style={{
+                          WebkitAppearance: 'none',
+                          appearance: 'none',
+                          height: '10px',
+                          borderRadius: '999px',
+                          background: `linear-gradient(to right, var(--primary) ${((rate - 0.5) / 1.5) * 100}%, color-mix(in srgb, var(--muted) 60%, transparent) ${((rate - 0.5) / 1.5) * 100}%)`,
+                        }}
+                      />
+                    </div>
                   </div>
 
                   {/* Pitch slider */}
-                  <div className="space-y-2">
+                  <div className="space-y-4">
                     <div className="flex justify-between items-center">
-                      <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Voice Pitch</label>
-                      <span className="text-xs font-bold bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 rounded">{pitch}x</span>
+                      <label className="text-sm font-semibold text-foreground">Voice Pitch</label>
+                      <span className="text-xs font-bold bg-primary/10 text-primary border border-primary/20 px-2 py-1 rounded-md">{pitch}x</span>
                     </div>
-                    <input
-                      type="range"
-                      min="0.5"
-                      max="2"
-                      step="0.1"
-                      value={pitch}
-                      onChange={(e) => setPitch(Number(e.target.value))}
-                      className="v-slider w-full cursor-pointer outline-none"
-                      style={{
-                        WebkitAppearance: 'none',
-                        appearance: 'none',
-                        height: '8px',
-                        borderRadius: '999px',
-                        background: `linear-gradient(to right, var(--primary) ${((pitch - 0.5) / 1.5) * 100}%, var(--muted) ${((pitch - 0.5) / 1.5) * 100}%)`,
-                      }}
-                    />
+                    <div className="relative pt-2 pb-1">
+                      <input
+                        type="range"
+                        min="0.5"
+                        max="2"
+                        step="0.1"
+                        value={pitch}
+                        onChange={(e) => setPitch(Number(e.target.value))}
+                        className="v-slider w-full cursor-pointer outline-none"
+                        style={{
+                          WebkitAppearance: 'none',
+                          appearance: 'none',
+                          height: '10px',
+                          borderRadius: '999px',
+                          background: `linear-gradient(to right, var(--primary) ${((pitch - 0.5) / 1.5) * 100}%, color-mix(in srgb, var(--muted) 60%, transparent) ${((pitch - 0.5) / 1.5) * 100}%)`,
+                        }}
+                      />
+                    </div>
                   </div>
 
                   {/* Action buttons (Play/Pause + Stop) */}
                   <div className="flex gap-2.5 pt-2">
-                    <button
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
                       onClick={handleSpeak}
-                      className="flex-1 py-3 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 active:scale-[0.98] shadow-sm"
+                      className="flex-1 h-14 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 active:scale-[0.98] shadow-sm shadow-[0_1px_2px_rgba(0,0,0,0.1),0_0_0_1px_rgba(255,255,255,0.1)_inset]"
                     >
                       {isPlaying ? (
                         <>
-                          <Pause size={16} /> Pause Voice
+                          <Pause size={18} /> Pause Voice
                         </>
                       ) : (
                         <>
-                          <Play size={16} /> Speak Text
+                          <Play size={18} /> Speak Text
                         </>
                       )}
-                    </button>
+                    </motion.button>
                     {synthRef.current?.speaking && (
-                      <button
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
                         onClick={handleStopSpeaking}
-                        className="py-3 px-4 bg-muted/30 hover:bg-muted/60 border border-border text-foreground font-bold rounded-xl transition-all flex items-center justify-center active:scale-[0.98]"
+                        className="h-14 px-5 bg-muted/20 hover:bg-muted/50 border border-border/50 text-foreground font-bold rounded-xl transition-all flex items-center justify-center active:scale-[0.98]"
                       >
-                        <VolumeX size={16} />
-                      </button>
+                        <VolumeX size={18} />
+                      </motion.button>
                     )}
                   </div>
                 </motion.div>
@@ -411,26 +433,27 @@ const VoiceHelper = () => {
               .v-slider::-webkit-slider-thumb {
                 -webkit-appearance: none;
                 appearance: none;
-                width: 18px;
-                height: 18px;
+                width: 22px;
+                height: 22px;
                 border-radius: 50%;
                 background: #ffffff;
-                border: 2px solid var(--primary);
+                border: 2.5px solid var(--primary);
                 cursor: pointer;
-                box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-                transition: transform 0.1s ease;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+                transition: transform 0.15s ease, box-shadow 0.15s ease;
               }
               .v-slider::-webkit-slider-thumb:hover {
-                transform: scale(1.25);
+                transform: scale(1.2);
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
               }
               .v-slider::-moz-range-thumb {
-                width: 18px;
-                height: 18px;
+                width: 22px;
+                height: 22px;
                 border-radius: 50%;
                 background: #ffffff;
-                border: 2px solid var(--primary);
+                border: 2.5px solid var(--primary);
                 cursor: pointer;
-                box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+                box-shadow: 0 2px 8px rgba(0,0,0,0.25);
               }
             `}} />
           </div>
@@ -438,32 +461,38 @@ const VoiceHelper = () => {
           {/* Global Operations Card */}
           <div className="space-y-3">
             <div className="grid grid-cols-2 gap-2.5">
-              <button
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={handleCopy}
                 disabled={!text.trim()}
-                className="py-3 bg-muted/20 hover:bg-muted/50 border border-border/50 text-foreground font-semibold rounded-xl transition-all flex items-center justify-center gap-1.5 disabled:opacity-40 active:scale-[0.98]"
+                className="py-3.5 bg-muted/20 hover:bg-muted/50 border border-border/50 text-foreground font-semibold rounded-xl transition-all flex items-center justify-center gap-1.5 disabled:opacity-40"
               >
                 {copiedState ? <CheckCircle size={16} className="text-green-500" /> : <Copy size={16} />}
                 Copy Text
-              </button>
-              <button
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={handleDownload}
                 disabled={!text.trim()}
-                className="py-3 bg-muted/20 hover:bg-muted/50 border border-border/50 text-foreground font-semibold rounded-xl transition-all flex items-center justify-center gap-1.5 disabled:opacity-40 active:scale-[0.98]"
+                className="py-3.5 bg-muted/20 hover:bg-muted/50 border border-border/50 text-foreground font-semibold rounded-xl transition-all flex items-center justify-center gap-1.5 disabled:opacity-40"
               >
                 <Download size={16} />
                 Download TXT
-              </button>
+              </motion.button>
             </div>
-            <button
+            <motion.button
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
               onClick={clearText}
               disabled={!text.trim()}
-              className="w-full py-3.5 bg-muted/20 hover:bg-red-500/10 hover:text-red-500 border border-border/50 hover:border-red-500/30 text-foreground font-semibold rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-40 active:scale-[0.98]"
+              className="w-full py-3.5 bg-destructive/10 hover:bg-destructive/20 border border-destructive/20 text-destructive font-semibold rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-40"
             >
               <Trash2 size={16} /> Clear Text
-            </button>
+            </motion.button>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

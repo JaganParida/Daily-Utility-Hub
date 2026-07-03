@@ -96,14 +96,17 @@ const CaseConverter = () => {
           <Type size={24} />
         </div>
         <div>
-          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">Advanced Case Converter</h1>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter text-foreground">Advanced Case Converter</h1>
           <p className="text-muted-foreground mt-1 text-xs md:text-sm">Transform blocks of text instantly between standard, developer, and fun cases.</p>
         </div>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         {/* Left: Editor Area */}
-        <div className="flex-1 w-full bg-card border border-border p-4 md:p-5 rounded-2xl shadow-sm flex flex-col relative lg:h-[calc(100vh-250px)] lg:max-h-[620px] lg:min-h-[520px]">
+        <motion.div 
+          layout
+          className="flex-1 w-full bg-card border border-border p-4 md:p-5 rounded-2xl shadow-sm flex flex-col relative lg:h-[calc(100vh-250px)] lg:max-h-[620px] lg:min-h-[520px]"
+        >
           <div className="flex-1 flex flex-col gap-4 min-h-0">
             <div className="flex justify-between items-center px-1 shrink-0">
               <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Editor Content</span>
@@ -111,14 +114,14 @@ const CaseConverter = () => {
                 <button
                   onClick={handleCopy}
                   disabled={!hasText}
-                  className="text-xs font-semibold text-muted-foreground hover:text-foreground flex items-center gap-1 disabled:opacity-40"
+                  className="text-xs font-semibold text-muted-foreground hover:text-foreground flex items-center gap-1 disabled:opacity-40 transition-colors"
                 >
                   {copiedState ? <CheckCircle size={13} className="text-green-500" /> : <Copy size={13} />} Copy
                 </button>
                 <button
                   onClick={clearText}
                   disabled={!hasText}
-                  className="text-xs font-semibold text-red-500 hover:text-red-600 flex items-center gap-1 disabled:opacity-40"
+                  className="text-xs font-semibold text-red-500 hover:text-red-600 flex items-center gap-1 disabled:opacity-40 transition-colors"
                 >
                   <Trash2 size={13} /> Clear
                 </button>
@@ -132,10 +135,14 @@ const CaseConverter = () => {
               className="w-full flex-1 bg-muted/10 border border-border/50 p-4 rounded-xl text-sm font-medium text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all shadow-inner custom-scrollbar resize-none min-h-0"
             />
           </div>
-        </div>
+        </motion.div>
 
         {/* Right: Controls Sidebar */}
-        <div className={`w-full lg:w-[350px] xl:w-[400px] shrink-0 space-y-6 transition-all duration-300 ${!hasText ? 'opacity-50 pointer-events-none grayscale-[0.5]' : ''}`}>
+        <motion.div 
+          animate={{ opacity: hasText ? 1 : 0.5 }}
+          transition={{ duration: 0.25 }}
+          className={`w-full lg:w-[350px] xl:w-[400px] shrink-0 space-y-6 transition-all duration-300 ${!hasText ? 'pointer-events-none grayscale-[0.5]' : ''}`}
+        >
           <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-5">
             <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground border-b border-border pb-3 flex items-center gap-2">
               <Sliders size={15} /> Case Converters
@@ -148,17 +155,19 @@ const CaseConverter = () => {
               </label>
               <div className="grid grid-cols-2 gap-2">
                 {standardCases.map((type) => (
-                  <button
+                  <motion.button
                     key={type}
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
                     onClick={() => convertCase(type)}
-                    className={`py-2 px-3 text-xs font-semibold rounded-lg border transition-all active:scale-[0.97] text-center ${
+                    className={`py-2.5 px-3 text-xs font-semibold rounded-xl border transition-all text-center ${
                       activeCase === type
                         ? 'border-primary/50 bg-primary/10 text-primary font-bold'
                         : 'border-border/50 bg-muted/20 hover:bg-muted text-foreground'
                     }`}
                   >
                     {type}
-                  </button>
+                  </motion.button>
                 ))}
               </div>
             </div>
@@ -170,17 +179,19 @@ const CaseConverter = () => {
               </label>
               <div className="grid grid-cols-2 gap-2 font-mono">
                 {developerCases.map((type) => (
-                  <button
+                  <motion.button
                     key={type}
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
                     onClick={() => convertCase(type)}
-                    className={`py-2 px-3 text-[10px] font-bold rounded-lg border transition-all active:scale-[0.97] text-center ${
+                    className={`py-2.5 px-3 text-[10px] font-bold rounded-xl border transition-all text-center ${
                       activeCase === type
                         ? 'border-primary/50 bg-primary/10 text-primary font-bold'
                         : 'border-border/50 bg-muted/20 hover:bg-muted text-foreground'
                     }`}
                   >
                     {type}
-                  </button>
+                  </motion.button>
                 ))}
               </div>
             </div>
@@ -192,22 +203,24 @@ const CaseConverter = () => {
               </label>
               <div className="grid grid-cols-2 gap-2">
                 {funCases.map((type) => (
-                  <button
+                  <motion.button
                     key={type}
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
                     onClick={() => convertCase(type)}
-                    className={`py-2 px-3 text-xs font-semibold rounded-lg border transition-all active:scale-[0.97] text-center ${
+                    className={`py-2.5 px-3 text-xs font-semibold rounded-xl border transition-all text-center ${
                       activeCase === type
                         ? 'border-primary/50 bg-primary/10 text-primary font-bold'
                         : 'border-border/50 bg-muted/20 hover:bg-muted text-foreground'
                     }`}
                   >
                     {type}
-                  </button>
+                  </motion.button>
                 ))}
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

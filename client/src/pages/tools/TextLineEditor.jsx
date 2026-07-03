@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Layers, Copy, Trash2, CheckCircle, ArrowDownAZ, ArrowDownZA, Shuffle, Delete, Type, Plus, Filter, Link2 } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 
 const TextLineEditor = () => {
@@ -120,14 +121,17 @@ const TextLineEditor = () => {
           <Layers size={24} />
         </div>
         <div>
-          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">Advanced Text Line Editor</h1>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter text-foreground">Advanced Text Line Editor</h1>
           <p className="text-muted-foreground mt-1 text-xs md:text-sm">Clean, sort, deduplicate, filter, or join line-based data and lists instantly.</p>
         </div>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         {/* Left: Editor Area */}
-        <div className="flex-1 w-full bg-card border border-border p-4 md:p-5 rounded-2xl shadow-sm flex flex-col relative lg:h-[calc(100vh-250px)] lg:max-h-[620px] lg:min-h-[520px]">
+        <motion.div 
+          layout
+          className="flex-1 w-full bg-card border border-border p-4 md:p-5 rounded-2xl shadow-sm flex flex-col relative lg:h-[calc(100vh-250px)] lg:max-h-[620px] lg:min-h-[520px]"
+        >
           <div className="flex-1 flex flex-col gap-4 min-h-0">
             <div className="flex justify-between items-center px-1 shrink-0">
               <div className="flex items-center gap-2">
@@ -140,14 +144,14 @@ const TextLineEditor = () => {
                 <button
                   onClick={handleCopy}
                   disabled={!hasText}
-                  className="text-xs font-semibold text-muted-foreground hover:text-foreground flex items-center gap-1 disabled:opacity-40"
+                  className="text-xs font-semibold text-muted-foreground hover:text-foreground flex items-center gap-1 disabled:opacity-40 transition-colors"
                 >
                   {copiedState ? <CheckCircle size={13} className="text-green-500" /> : <Copy size={13} />} Copy
                 </button>
                 <button
                   onClick={clearText}
                   disabled={!hasText}
-                  className="text-xs font-semibold text-red-500 hover:text-red-600 flex items-center gap-1 disabled:opacity-40"
+                  className="text-xs font-semibold text-red-500 hover:text-red-600 flex items-center gap-1 disabled:opacity-40 transition-colors"
                 >
                   <Trash2 size={13} /> Clear
                 </button>
@@ -163,10 +167,14 @@ const TextLineEditor = () => {
               wrap="off"
             />
           </div>
-        </div>
+        </motion.div>
 
         {/* Right: Controls Sidebar */}
-        <div className={`w-full lg:w-[350px] xl:w-[400px] shrink-0 transition-all duration-300 ${!hasText ? 'opacity-50 pointer-events-none grayscale-[0.5]' : ''}`}>
+        <motion.div 
+          animate={{ opacity: hasText ? 1 : 0.5 }}
+          transition={{ duration: 0.25 }}
+          className={`w-full lg:w-[350px] xl:w-[400px] shrink-0 transition-all duration-300 ${!hasText ? 'pointer-events-none grayscale-[0.5]' : ''}`}
+        >
           <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-5">
             
             {/* Case Sensitive Switch */}
@@ -192,18 +200,23 @@ const TextLineEditor = () => {
                 <ArrowDownAZ size={13} className="text-primary" /> Sort & Shuffle
               </label>
               <div className="grid grid-cols-2 gap-2">
-                <button onClick={() => processLines('sort-asc')} className="py-2 px-2.5 text-xs font-semibold rounded-lg border border-border/50 bg-muted/20 hover:bg-muted text-foreground transition-all active:scale-[0.97]">
-                  Sort A-Z
-                </button>
-                <button onClick={() => processLines('sort-desc')} className="py-2 px-2.5 text-xs font-semibold rounded-lg border border-border/50 bg-muted/20 hover:bg-muted text-foreground transition-all active:scale-[0.97]">
-                  Sort Z-A
-                </button>
-                <button onClick={() => processLines('sort-length')} className="py-2 px-2.5 text-xs font-semibold rounded-lg border border-border/50 bg-muted/20 hover:bg-muted text-foreground transition-all active:scale-[0.97]">
-                  By Length
-                </button>
-                <button onClick={() => processLines('shuffle')} className="py-2 px-2.5 text-xs font-semibold rounded-lg border border-border/50 bg-muted/20 hover:bg-muted text-foreground transition-all active:scale-[0.97] flex items-center justify-center gap-1">
-                  <Shuffle size={11} /> Shuffle
-                </button>
+                {[
+                  { id: 'sort-asc', label: 'Sort A-Z' },
+                  { id: 'sort-desc', label: 'Sort Z-A' },
+                  { id: 'sort-length', label: 'By Length' },
+                  { id: 'shuffle', label: 'Shuffle', icon: Shuffle }
+                ].map(op => (
+                  <motion.button 
+                    key={op.id}
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => processLines(op.id)} 
+                    className="py-2.5 px-3 text-xs font-semibold rounded-xl border border-border/50 bg-muted/20 hover:bg-muted text-foreground transition-all flex items-center justify-center gap-1"
+                  >
+                    {op.icon && <op.icon size={11} />}
+                    {op.label}
+                  </motion.button>
+                ))}
               </div>
             </div>
 
@@ -213,15 +226,21 @@ const TextLineEditor = () => {
                 <Delete size={13} className="text-primary" /> Clean & Trim
               </label>
               <div className="flex flex-col gap-2">
-                <button onClick={() => processLines('remove-dupes')} className="py-2 px-3 text-xs font-semibold rounded-lg border border-border/50 bg-muted/20 hover:bg-muted text-foreground transition-all text-left active:scale-[0.98]">
-                  Remove Duplicate Lines
-                </button>
-                <button onClick={() => processLines('remove-empty')} className="py-2 px-3 text-xs font-semibold rounded-lg border border-border/50 bg-muted/20 hover:bg-muted text-foreground transition-all text-left active:scale-[0.98]">
-                  Remove Empty Lines
-                </button>
-                <button onClick={() => processLines('trim')} className="py-2 px-3 text-xs font-semibold rounded-lg border border-border/50 bg-muted/20 hover:bg-muted text-foreground transition-all text-left active:scale-[0.98]">
-                  Trim Whitespace Borders
-                </button>
+                {[
+                  { id: 'remove-dupes', label: 'Remove Duplicate Lines' },
+                  { id: 'remove-empty', label: 'Remove Empty Lines' },
+                  { id: 'trim', label: 'Trim Whitespace Borders' }
+                ].map(op => (
+                  <motion.button 
+                    key={op.id}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => processLines(op.id)} 
+                    className="py-2.5 px-3.5 text-xs font-semibold rounded-xl border border-border/50 bg-muted/20 hover:bg-muted text-foreground transition-all text-left"
+                  >
+                    {op.label}
+                  </motion.button>
+                ))}
               </div>
             </div>
 
@@ -236,22 +255,24 @@ const TextLineEditor = () => {
                   placeholder="Prefix..."
                   value={prefix}
                   onChange={(e) => setPrefix(e.target.value)}
-                  className="bg-muted/30 border border-border/50 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-foreground outline-none focus:border-primary"
+                  className="bg-muted/20 border border-border/50 p-3 px-4 rounded-xl text-sm font-semibold text-foreground outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-muted-foreground"
                 />
                 <input
                   type="text"
                   placeholder="Suffix..."
                   value={suffix}
                   onChange={(e) => setSuffix(e.target.value)}
-                  className="bg-muted/30 border border-border/50 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-foreground outline-none focus:border-primary"
+                  className="bg-muted/20 border border-border/50 p-3 px-4 rounded-xl text-sm font-semibold text-foreground outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-muted-foreground"
                 />
               </div>
-              <button 
+              <motion.button 
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => processLines('add-prefix-suffix')}
-                className="w-full py-2 bg-muted hover:bg-muted/80 text-foreground text-xs font-bold rounded-lg border border-border/50 transition-all flex items-center justify-center gap-1 active:scale-[0.98]"
+                className="w-full py-3 bg-muted/20 hover:bg-muted/50 border border-border/50 text-foreground font-semibold rounded-xl transition-all flex items-center justify-center gap-1 active:scale-[0.98]"
               >
                 Apply Prefix/Suffix
-              </button>
+              </motion.button>
             </div>
 
             {/* Substring Filtering */}
@@ -264,29 +285,31 @@ const TextLineEditor = () => {
                 placeholder="Find substring..."
                 value={filterQuery}
                 onChange={(e) => setFilterQuery(e.target.value)}
-                className="w-full bg-muted/30 border border-border/50 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-foreground outline-none focus:border-primary"
+                className="w-full bg-muted/20 border border-border/50 p-3 px-4 rounded-xl text-sm font-semibold text-foreground outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-muted-foreground"
               />
-              <div className="flex bg-muted/30 p-0.5 rounded-lg border border-border/50 gap-0.5">
+              <div className="flex bg-muted/30 p-1 rounded-xl border border-border/50 gap-1">
                 <button
                   onClick={() => setFilterMode('keep')}
-                  className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-colors ${filterMode === 'keep' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                  className={`flex-1 py-2 text-xs font-bold rounded-lg transition-colors ${filterMode === 'keep' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
                 >
                   Keep Matching
                 </button>
                 <button
                   onClick={() => setFilterMode('remove')}
-                  className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-colors ${filterMode === 'remove' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                  className={`flex-1 py-2 text-xs font-bold rounded-lg transition-colors ${filterMode === 'remove' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
                 >
                   Remove Matching
                 </button>
               </div>
-              <button 
+              <motion.button 
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => processLines('filter-lines')}
                 disabled={!filterQuery}
-                className="w-full py-2 bg-muted hover:bg-muted/80 text-foreground text-xs font-bold rounded-lg border border-border/50 transition-all flex items-center justify-center gap-1 active:scale-[0.98] disabled:opacity-40"
+                className="w-full py-3 bg-muted/20 hover:bg-muted/50 border border-border/50 text-foreground font-semibold rounded-xl transition-all flex items-center justify-center gap-1 active:scale-[0.98] disabled:opacity-40"
               >
                 Filter Lines
-              </button>
+              </motion.button>
             </div>
 
             {/* Line Joining */}
@@ -301,17 +324,19 @@ const TextLineEditor = () => {
                   { id: 'newline', label: 'Newline' },
                   { id: 'custom',  label: 'Custom' }
                 ].map(sep => (
-                  <button
+                  <motion.button
                     key={sep.id}
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
                     onClick={() => setJoinSeparator(sep.id)}
-                    className={`py-1.5 px-2 text-xs font-semibold rounded-lg border transition-all active:scale-[0.97] text-center ${
+                    className={`py-2.5 px-3 text-xs font-semibold rounded-xl border transition-all text-center ${
                       joinSeparator === sep.id
                         ? 'border-primary/50 bg-primary/10 text-primary font-bold'
                         : 'border-border/50 bg-muted/20 hover:bg-muted text-foreground'
                     }`}
                   >
                     {sep.label}
-                  </button>
+                  </motion.button>
                 ))}
               </div>
               {joinSeparator === 'custom' && (
@@ -320,19 +345,21 @@ const TextLineEditor = () => {
                   placeholder="Custom separator..."
                   value={customSeparator}
                   onChange={(e) => setCustomSeparator(e.target.value)}
-                  className="w-full bg-muted/30 border border-border/50 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-foreground outline-none focus:border-primary"
+                  className="w-full bg-muted/20 border border-border/50 p-3 px-4 rounded-xl text-sm font-semibold text-foreground outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-muted-foreground"
                 />
               )}
-              <button 
+              <motion.button 
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => processLines('join-lines')}
-                className="w-full py-2 bg-primary hover:bg-primary/95 text-primary-foreground text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1 active:scale-[0.98]"
+                className="w-full h-14 font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-[0_1px_2px_rgba(0,0,0,0.1),0_0_0_1px_rgba(255,255,255,0.1)_inset] bg-primary hover:bg-primary/90 text-primary-foreground hover:shadow-[0_4px_12px_rgba(var(--primary),0.3)] active:scale-[0.98]"
               >
                 Join Lines
-              </button>
+              </motion.button>
             </div>
 
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

@@ -134,21 +134,24 @@ const LoremIpsum = () => {
           <AlignLeft size={24} />
         </div>
         <div>
-          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">Advanced Lorem Ipsum Generator</h1>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter text-foreground">Advanced Lorem Ipsum Generator</h1>
           <p className="text-muted-foreground mt-1 text-xs md:text-sm">Generate structured layout filler text, code mock snippets, or scholarly statements.</p>
         </div>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         {/* Left: Output Preview Area */}
-        <div className="flex-1 w-full bg-card border border-border p-4 md:p-5 rounded-2xl shadow-sm flex flex-col relative lg:h-[calc(100vh-250px)] lg:max-h-[620px] lg:min-h-[520px]">
+        <motion.div 
+          layout
+          className="flex-1 w-full bg-card border border-border p-4 md:p-5 rounded-2xl shadow-sm flex flex-col relative lg:h-[calc(100vh-250px)] lg:max-h-[620px] lg:min-h-[520px]"
+        >
           <div className="flex-1 flex flex-col gap-4 min-h-0">
             <div className="flex justify-between items-center px-1 shrink-0">
               <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Generated Output</span>
               <button
                 onClick={handleCopy}
                 disabled={!text}
-                className="text-xs font-semibold text-primary hover:text-primary/80 flex items-center gap-1 disabled:opacity-40"
+                className="text-xs font-semibold text-primary hover:text-primary/80 flex items-center gap-1 disabled:opacity-40 transition-colors"
               >
                 {copiedState ? <CheckCircle size={13} className="text-green-500" /> : <Copy size={13} />} Copy Output
               </button>
@@ -164,12 +167,12 @@ const LoremIpsum = () => {
               />
             ) : (
               <div className="flex-1 flex flex-col items-center justify-center text-center p-6 border border-dashed border-border/60 rounded-xl bg-muted/5 min-h-0">
-                <FileText size={32} className="text-muted-foreground/40 mb-2" />
-                <p className="text-xs text-muted-foreground">Adjust settings and click <span className="font-bold text-primary">Generate Text</span> to preview output.</p>
+                <FileText size={32} className="text-muted-foreground/40 mb-2 animate-bounce" />
+                <p className="text-xs text-muted-foreground">Adjust settings and click <span className="font-bold text-primary">Generate Content</span> to preview output.</p>
               </div>
             )}
           </div>
-        </div>
+        </motion.div>
 
         {/* Right: Generator Settings Sidebar */}
         <div className="w-full lg:w-[350px] xl:w-[400px] shrink-0 space-y-6">
@@ -191,10 +194,12 @@ const LoremIpsum = () => {
                 ].map(mode => {
                   const Icon = mode.icon;
                   return (
-                    <button
+                    <motion.button
                       key={mode.id}
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.97 }}
                       onClick={() => setContentType(mode.id)}
-                      className={`py-2 px-1 text-xs font-semibold rounded-lg border transition-all active:scale-[0.97] flex flex-col items-center gap-1 ${
+                      className={`py-2.5 px-1 text-xs font-semibold rounded-xl border transition-all flex flex-col items-center gap-1 ${
                         contentType === mode.id
                           ? 'border-primary/50 bg-primary/10 text-primary font-bold'
                           : 'border-border/50 bg-muted/20 hover:bg-muted text-foreground'
@@ -202,7 +207,7 @@ const LoremIpsum = () => {
                     >
                       <Icon size={14} />
                       {mode.label}
-                    </button>
+                    </motion.button>
                   );
                 })}
               </div>
@@ -220,35 +225,75 @@ const LoremIpsum = () => {
                   { id: 'sentences',  label: 'Sentences' },
                   { id: 'lists',      label: 'List Items' }
                 ].map(format => (
-                  <button
+                  <motion.button
                     key={format.id}
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
                     onClick={() => setFormatType(format.id)}
-                    className={`py-2 px-2.5 text-xs font-semibold rounded-lg border transition-all active:scale-[0.97] text-center ${
+                    className={`py-2.5 px-2.5 text-xs font-semibold rounded-xl border transition-all text-center ${
                       formatType === format.id
                         ? 'border-primary/50 bg-primary/10 text-primary font-bold'
                         : 'border-border/50 bg-muted/20 hover:bg-muted text-foreground'
                     }`}
                   >
                     {format.label}
-                  </button>
+                  </motion.button>
                 ))}
               </div>
             </div>
 
             {/* Quantity Slider */}
-            <div className="space-y-2 pt-3 border-t border-border/50">
-              <div className="flex justify-between items-center text-xs">
-                <span className="font-bold text-muted-foreground uppercase tracking-wider">Quantity</span>
-                <span className="font-bold text-primary font-mono bg-primary/10 px-2 py-0.5 rounded-md border border-primary/20">{quantity}</span>
+            <div className="space-y-4 pt-3 border-t border-border/50">
+              <div className="flex justify-between items-center">
+                <label className="text-sm font-semibold text-foreground">Quantity</label>
+                <span className="text-xs font-bold bg-primary/10 text-primary border border-primary/20 px-2 py-1 rounded-md">
+                  {quantity}
+                </span>
               </div>
-              <input
-                type="range"
-                min="1"
-                max={formatType === 'words' ? 300 : formatType === 'sentences' ? 30 : 15}
-                value={quantity}
-                onChange={(e) => setQuantity(parseInt(e.target.value))}
-                className="w-full h-1.5 bg-muted rounded-full appearance-none cursor-pointer accent-primary"
-              />
+              <div className="relative pt-2 pb-1">
+                <input
+                  type="range"
+                  min="1"
+                  max={formatType === 'words' ? 300 : formatType === 'sentences' ? 30 : 15}
+                  value={quantity}
+                  onChange={(e) => setQuantity(parseInt(e.target.value))}
+                  className="lorem-quantity-slider w-full cursor-pointer outline-none"
+                  style={{
+                    WebkitAppearance: 'none',
+                    appearance: 'none',
+                    height: '10px',
+                    borderRadius: '999px',
+                    background: `linear-gradient(to right, var(--primary) ${(quantity - 1) / ((formatType === 'words' ? 300 : formatType === 'sentences' ? 30 : 15) - 1) * 100}%, color-mix(in srgb, var(--muted) 60%, transparent) ${(quantity - 1) / ((formatType === 'words' ? 300 : formatType === 'sentences' ? 30 : 15) - 1) * 100}%)`,
+                  }}
+                />
+                <style dangerouslySetInnerHTML={{__html: `
+                  .lorem-quantity-slider::-webkit-slider-thumb {
+                    -webkit-appearance: none;
+                    appearance: none;
+                    width: 22px;
+                    height: 22px;
+                    border-radius: 50%;
+                    background: #ffffff;
+                    border: 2.5px solid var(--primary);
+                    cursor: pointer;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+                    transition: transform 0.15s ease, box-shadow 0.15s ease;
+                  }
+                  .lorem-quantity-slider::-webkit-slider-thumb:hover {
+                    transform: scale(1.2);
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                  }
+                  .lorem-quantity-slider::-moz-range-thumb {
+                    width: 22px;
+                    height: 22px;
+                    border-radius: 50%;
+                    background: #ffffff;
+                    border: 2.5px solid var(--primary);
+                    cursor: pointer;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+                  }
+                `}} />
+              </div>
             </div>
 
             {/* Output Wrapper Format */}
@@ -261,17 +306,19 @@ const LoremIpsum = () => {
                   { id: 'plain', label: 'Plain Text' },
                   { id: 'html',  label: 'HTML Tags' }
                 ].map(out => (
-                  <button
+                  <motion.button
                     key={out.id}
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
                     onClick={() => setOutputFormat(out.id)}
-                    className={`py-2 px-2.5 text-xs font-semibold rounded-lg border transition-all active:scale-[0.97] text-center ${
+                    className={`py-2.5 px-2.5 text-xs font-semibold rounded-xl border transition-all text-center ${
                       outputFormat === out.id
                         ? 'border-primary/50 bg-primary/10 text-primary font-bold'
                         : 'border-border/50 bg-muted/20 hover:bg-muted text-foreground'
                     }`}
                   >
                     {out.label}
-                  </button>
+                  </motion.button>
                 ))}
               </div>
             </div>
@@ -297,12 +344,14 @@ const LoremIpsum = () => {
 
             {/* Actions */}
             <div className="pt-4 border-t border-border/50">
-              <button
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={handleGenerate}
-                className="w-full py-3 bg-primary hover:bg-primary/95 text-primary-foreground font-bold rounded-xl transition-all flex items-center justify-center gap-2 active:scale-[0.98] shadow-sm shadow-primary/20"
+                className="w-full h-14 font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-[0_1px_2px_rgba(0,0,0,0.1),0_0_0_1px_rgba(255,255,255,0.1)_inset] bg-primary hover:bg-primary/90 text-primary-foreground hover:shadow-[0_4px_12px_rgba(var(--primary),0.3)] active:scale-[0.98]"
               >
                 <RotateCcw size={16} /> Generate Content
-              </button>
+              </motion.button>
             </div>
 
           </div>

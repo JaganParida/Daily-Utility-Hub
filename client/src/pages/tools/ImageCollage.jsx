@@ -180,7 +180,7 @@ const ImageCollage = () => {
           <LayoutGrid size={24} />
         </div>
         <div>
-          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">Ultimate Collage Maker</h1>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter text-foreground">Ultimate Collage Maker</h1>
           <p className="text-muted-foreground mt-1 text-xs md:text-sm">Choose a layout, click slots to add photos, drag to pan, scroll to zoom.</p>
         </div>
       </div>

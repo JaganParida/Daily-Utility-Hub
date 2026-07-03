@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
-import { UploadCloud, FileText, CheckCircle2, GripVertical, Trash2, Eye, X, ExternalLink } from 'lucide-react';
+import { UploadCloud, FileText, CheckCircle2, GripVertical, Trash2, Eye, X, ExternalLink, Loader2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import axios from 'axios';
+import api from '../../lib/api';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const SortableItem = ({ id, file, index, removeFile, onPreview }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
@@ -16,28 +17,40 @@ const SortableItem = ({ id, file, index, removeFile, onPreview }) => {
   };
 
   return (
-    <div ref={setNodeRef} style={style} className={`flex items-center gap-3 p-3 bg-card border ${isDragging ? 'border-red-500 shadow-lg' : 'border-border'} hover:border-red-500/50 rounded-xl group transition-all`}>
-      <button {...attributes} {...listeners} className="p-2 text-muted-foreground hover:text-foreground cursor-grab active:cursor-grabbing shrink-0">
+    <div 
+      ref={setNodeRef} 
+      style={style} 
+      className={`flex items-center gap-3 p-3 bg-card border rounded-xl group transition-all duration-200 ${
+        isDragging 
+          ? 'border-primary bg-primary/5 shadow-lg shadow-primary/10 scale-[1.01]' 
+          : 'border-border/80 hover:border-primary/40 hover:bg-muted/10'
+      }`}
+    >
+      <button 
+        {...attributes} 
+        {...listeners} 
+        className="p-2 text-muted-foreground hover:text-foreground cursor-grab active:cursor-grabbing shrink-0 transition-colors"
+      >
         <GripVertical size={18} />
       </button>
-      <div className="w-10 h-10 bg-red-500/10 text-red-500 rounded-lg flex items-center justify-center shrink-0">
-        <span className="font-bold">{index + 1}</span>
+      <div className="w-10 h-10 bg-primary/10 text-primary border border-primary/20 rounded-lg flex items-center justify-center shrink-0">
+        <span className="font-bold text-sm">{index + 1}</span>
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold text-foreground truncate" title={file.name}>{file.name}</p>
-        <p className="text-xs text-muted-foreground">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+        <p className="text-xs text-muted-foreground mt-0.5">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
       </div>
-      <div className="flex items-center gap-1 shrink-0">
+      <div className="flex items-center gap-1.5 shrink-0 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
         <button 
           onClick={() => onPreview(file)} 
-          className="p-2 text-blue-500/50 hover:text-blue-500 hover:bg-blue-500/10 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+          className="p-2 text-primary/70 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors cursor-pointer"
           title="Preview File"
         >
           <Eye size={18} />
         </button>
         <button 
           onClick={() => removeFile(id)} 
-          className="p-2 text-red-500/50 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+          className="p-2 text-destructive/70 hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors cursor-pointer"
           title="Remove File"
         >
           <Trash2 size={18} />
@@ -135,7 +148,7 @@ const PdfMerge = () => {
       setIsProcessing(true);
       toastId = toast.loading('Merging PDFs securely on server...');
       
-      const response = await axios.post('http://localhost:5000/api/pdf/merge', formData, {
+      const response = await api.post('/pdf/merge', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         responseType: 'blob'
       });
@@ -159,142 +172,265 @@ const PdfMerge = () => {
     }
   };
 
+  const totalSize = files.reduce((acc, item) => acc + item.file.size, 0);
+  const formattedTotalSize = (totalSize / 1024 / 1024).toFixed(2);
+
   return (
-    <div className="max-w-6xl mx-auto px-4 py-4 lg:py-6 flex flex-col min-h-0">
-      <div className="mb-6 flex items-center gap-3 shrink-0">
-        <div className="p-2 bg-red-500/10 text-red-500 rounded-lg shadow-sm">
-          <FileText size={28} />
+    <div className="max-w-[1600px] mx-auto w-full px-2 md:px-8">
+      {/* Header Container */}
+      <div className="mb-6 flex items-center gap-3">
+        <div className="p-2 bg-primary/10 text-primary rounded-md shadow-sm">
+          <FileText size={24} />
         </div>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Interactive PDF Merge</h1>
-          <p className="text-muted-foreground mt-1 text-sm">Drag, drop, and rearrange multiple PDF files securely.</p>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter text-foreground">Interactive PDF Merge</h1>
+          <p className="text-muted-foreground mt-1 text-xs md:text-sm">Drag, drop, and rearrange multiple PDF files securely.</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-6 items-start">
-        
+      <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         {/* Upload & List Area */}
-        <div className="flex flex-col gap-6 w-full min-h-0">
-          
-          <div 
-            onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}
-            onClick={() => fileInputRef.current?.click()}
-            className={`border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center cursor-pointer transition-all ${
-              isDragging ? 'border-red-500 bg-red-500/5' : 'border-border bg-card hover:border-red-500/50 hover:bg-muted/30'
-            }`}
-          >
-            <input type="file" ref={fileInputRef} onChange={handleFileSelect} className="hidden" multiple accept=".pdf,application/pdf" />
-            <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center text-red-500 mb-4 pointer-events-none">
-              <UploadCloud size={32} />
-            </div>
-            <h3 className="text-lg font-bold text-foreground mb-1 pointer-events-none">Upload PDFs</h3>
-            <p className="text-sm text-muted-foreground text-center pointer-events-none">
-              Drag & drop PDF files here or click to browse.
-            </p>
-          </div>
-
-          {/* Interactive Drag List */}
-          {files.length > 0 && (
-            <div className="bg-muted/20 border border-border rounded-2xl p-4 flex flex-col min-h-0 flex-1">
-              <div className="flex justify-between items-center mb-4 shrink-0 px-2">
-                <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Reorder Files ({files.length})</h3>
-                <div className="flex items-center gap-3">
-                  <span className="text-xs text-muted-foreground italic hidden sm:inline">Drag the handles to sort</span>
-                  <button 
-                    onClick={() => fileInputRef.current?.click()}
-                    className="text-xs text-blue-500 hover:underline font-bold"
-                  >
-                    + Add Files
-                  </button>
-                  <button onClick={() => setFiles([])} className="text-xs text-red-500 hover:underline font-bold">Clear All</button>
+        <motion.div 
+          layout
+          className={`flex-1 w-full bg-card border border-border p-4 md:p-6 rounded-2xl shadow-sm flex flex-col relative transition-all duration-500 ease-out ${files.length === 0 ? 'min-h-[50vh]' : 'min-h-0'}`}
+        >
+          <AnimatePresence mode="popLayout" initial={false}>
+            {files.length === 0 ? (
+              <motion.div
+                key="dropzone"
+                layout
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.3 }}
+                className="flex-1 h-full w-full flex flex-col justify-center"
+              >
+                <div 
+                  onDragOver={handleDragOver} 
+                  onDragLeave={handleDragLeave} 
+                  onDrop={handleDrop}
+                  onClick={() => fileInputRef.current?.click()}
+                  className={`flex-1 h-full w-full border-2 border-dashed rounded-2xl p-6 md:p-10 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 relative group min-h-[300px] ${
+                    isDragging 
+                      ? 'border-primary bg-primary/5 scale-[0.99] shadow-inner' 
+                      : 'border-border bg-card hover:border-primary/50 hover:bg-muted/20'
+                  }`}
+                >
+                  <input 
+                    type="file" 
+                    ref={fileInputRef} 
+                    onChange={handleFileSelect} 
+                    className="hidden" 
+                    multiple 
+                    accept=".pdf,application/pdf" 
+                  />
+                  <div className="w-16 h-16 bg-primary/10 text-primary rounded-2xl flex items-center justify-center mb-4 pointer-events-none shadow-sm transition-transform duration-300 group-hover:scale-110">
+                    <UploadCloud size={32} />
+                  </div>
+                  <h3 className="text-lg font-bold text-foreground mb-2 pointer-events-none text-center">
+                    Upload your PDF files
+                  </h3>
+                  <p className="text-sm text-muted-foreground text-center max-w-sm pointer-events-none leading-relaxed">
+                    Drag and drop PDF files here, or <span className="text-primary font-semibold hover:underline">browse files</span>.
+                  </p>
+                  <p className="text-xs text-muted-foreground/60 mt-3 pointer-events-none text-center">
+                    Supports multiple PDF files. Files are processed securely.
+                  </p>
                 </div>
+              </motion.div>
+            ) : (
+              <motion.div 
+                key="files-list"
+                layout
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.3 }}
+                className="flex flex-col min-h-0 w-full"
+              >
+                <div className="flex justify-between items-center pb-3 mb-5 border-b border-border">
+                  <div>
+                    <h3 className="font-bold text-foreground">Reorder Documents</h3>
+                    <p className="text-xs text-muted-foreground mt-0.5">Drag handles to rearrange your merge order.</p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs text-muted-foreground italic hidden sm:inline">Drag the handles to sort</span>
+                    <button 
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isProcessing}
+                      className="px-3 py-1.5 bg-primary/10 text-primary hover:bg-primary/20 disabled:opacity-50 text-xs font-bold rounded-lg transition-colors flex items-center gap-1 cursor-pointer disabled:cursor-not-allowed"
+                    >
+                      + Add Files
+                    </button>
+                    <input 
+                      type="file" 
+                      ref={fileInputRef} 
+                      onChange={handleFileSelect} 
+                      className="hidden" 
+                      multiple 
+                      accept=".pdf,application/pdf" 
+                    />
+                  </div>
+                </div>
+
+                <div className="overflow-y-auto max-h-[500px] custom-scrollbar pr-1 flex flex-col gap-2">
+                  <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                    <SortableContext items={files.map(f => f.id)} strategy={verticalListSortingStrategy}>
+                      {files.map((item, index) => (
+                        <SortableItem 
+                          key={item.id} 
+                          id={item.id} 
+                          file={item.file} 
+                          index={index} 
+                          removeFile={removeFile} 
+                          onPreview={handlePreview} 
+                        />
+                      ))}
+                    </SortableContext>
+                  </DndContext>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+
+        {/* Action Panel Sidebar */}
+        <div className="w-full lg:w-[350px] xl:w-[400px] shrink-0 space-y-6">
+          <div className={`bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6 transition-all duration-300 ${files.length === 0 ? 'opacity-50 pointer-events-none grayscale-[0.5]' : ''}`}>
+            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-2 border-b border-border pb-3">
+              <FileText size={16} /> Merge Details
+            </h3>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="p-4 bg-muted/20 border border-border/50 rounded-xl text-center">
+                <p className="text-xs text-muted-foreground font-medium">Selected Files</p>
+                <p className="text-2xl font-extrabold text-foreground mt-1">{files.length}</p>
               </div>
-              <div className="overflow-y-auto custom-scrollbar pr-2 flex flex-col gap-2">
-                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                  <SortableContext items={files.map(f => f.id)} strategy={verticalListSortingStrategy}>
-                    {files.map((item, index) => (
-                      <SortableItem key={item.id} id={item.id} file={item.file} index={index} removeFile={removeFile} onPreview={handlePreview} />
-                    ))}
-                  </SortableContext>
-                </DndContext>
+              <div className="p-4 bg-muted/20 border border-border/50 rounded-xl text-center">
+                <p className="text-xs text-muted-foreground font-medium">Total Size</p>
+                <p className="text-2xl font-extrabold text-foreground mt-1">{formattedTotalSize} MB</p>
               </div>
             </div>
-          )}
 
-        </div>
-
-        {/* Action Panel */}
-        <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6 lg:sticky lg:top-6 w-full lg:w-[350px] shrink-0">
-          <div>
-            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4">Merge Details</h3>
-            <div className="space-y-4 text-sm text-foreground">
+            <div className="space-y-4 text-sm text-muted-foreground bg-muted/10 p-4 rounded-xl border border-border/30">
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="text-emerald-500 mt-0.5 shrink-0" size={16} />
                 <p>Order is determined from top to bottom.</p>
               </div>
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="text-emerald-500 mt-0.5 shrink-0" size={16} />
-                <p>Original files are 100% untouched.</p>
+                <p>Original files are untouched.</p>
               </div>
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="text-emerald-500 mt-0.5 shrink-0" size={16} />
-                <p>Processed securely; we delete all files after merging.</p>
+                <p>Processed securely in-memory.</p>
               </div>
             </div>
           </div>
           
-          <button 
-            onClick={handleMerge}
-            disabled={files.length < 2 || isProcessing}
-            className="w-full py-3 bg-red-500 text-white font-medium rounded-xl hover:bg-red-600 transition-colors flex items-center justify-center gap-2 shadow-sm shadow-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <FileText size={18} />
-            {isProcessing ? 'Merging...' : `Merge ${files.length} PDFs`}
-          </button>
-        </div>
+          <div className="flex flex-col gap-3">
+            <button 
+              onClick={handleMerge}
+              disabled={files.length < 2 || isProcessing}
+              className={`w-full h-14 font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-[0_1px_2px_rgba(0,0,0,0.1),0_0_0_1px_rgba(255,255,255,0.1)_inset] disabled:opacity-50 disabled:hover:shadow-none active:scale-[0.98] overflow-hidden ${
+                isProcessing
+                  ? 'bg-primary/70 text-primary-foreground cursor-not-allowed'
+                  : 'bg-primary hover:bg-primary/90 text-primary-foreground hover:shadow-[0_4px_12px_rgba(var(--primary),0.3)]'
+              }`}
+            >
+              <AnimatePresence mode="popLayout" initial={false}>
+                {isProcessing ? (
+                  <motion.div
+                    key="generating"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                    className="flex items-center gap-2"
+                  >
+                    <Loader2 className="animate-spin" size={20} />
+                    Merging PDFs...
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="idle"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                    className="flex items-center gap-2"
+                  >
+                    <FileText size={20} />
+                    Merge {files.length} PDFs
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </button>
 
+            <button 
+              onClick={() => setFiles([])} 
+              disabled={isProcessing || files.length === 0}
+              className="w-full py-3.5 bg-muted/20 hover:bg-muted/50 border border-border/50 hover:border-border text-foreground font-semibold rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 active:scale-[0.98]"
+            >
+              <Trash2 size={18} /> Clear All
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Preview Modal Overlay */}
-      {previewFile && previewUrl && (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-card border border-border rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in-50 zoom-in-95 duration-200">
-            <div className="p-4 border-b border-border flex items-center justify-between shrink-0 bg-muted/30">
-              <div className="min-w-0 flex-1">
-                <h3 className="font-bold text-foreground truncate" title={previewFile.name}>{previewFile.name}</h3>
-                <p className="text-xs text-muted-foreground mt-0.5">{(previewFile.size / 1024 / 1024).toFixed(2)} MB</p>
+      <AnimatePresence>
+        {previewFile && previewUrl && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          >
+            <motion.div 
+              initial={{ scale: 0.95, y: 15 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 15 }}
+              transition={{ type: "spring", duration: 0.4 }}
+              className="bg-card border border-border/80 rounded-2xl w-full max-w-4xl h-[85vh] flex flex-col shadow-2xl overflow-hidden"
+            >
+              <div className="p-4 border-b border-border/80 flex items-center justify-between shrink-0 bg-muted/20">
+                <div className="min-w-0 flex-1">
+                  <h3 className="font-bold text-foreground truncate" title={previewFile.name}>{previewFile.name}</h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">{(previewFile.size / 1024 / 1024).toFixed(2)} MB</p>
+                </div>
+                <div className="flex items-center gap-3 shrink-0 ml-4">
+                  <a 
+                    href={previewUrl} target="_blank" rel="noreferrer"
+                    className="text-xs text-primary hover:underline flex items-center gap-1 font-semibold animate-pulse"
+                  >
+                    Open in New Tab <ExternalLink size={12} />
+                  </a>
+                  <button 
+                    onClick={closePreview}
+                    className="p-1.5 hover:bg-muted rounded-lg text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
               </div>
-              <div className="flex items-center gap-3 shrink-0 ml-4">
-                <a 
-                  href={previewUrl} target="_blank" rel="noreferrer"
-                  className="text-xs text-blue-500 hover:underline flex items-center gap-1 font-semibold"
+              <div className="flex-1 min-h-0 bg-muted/10 p-4">
+                <object 
+                  data={previewUrl} 
+                  type="application/pdf" 
+                  className="w-full h-full rounded-xl overflow-hidden border border-border/80"
                 >
-                  Open in New Tab <ExternalLink size={12} />
-                </a>
-                <button 
-                  onClick={closePreview}
-                  className="p-1.5 hover:bg-muted rounded-lg text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <X size={18} />
-                </button>
+                  <iframe src={previewUrl} className="w-full h-full border-none" title="PDF Preview">
+                    <div className="p-6 text-center text-sm text-muted-foreground">
+                      Your browser doesn't support inline PDF previews. Please click "Open in New Tab" to view it.
+                    </div>
+                  </iframe>
+                </object>
               </div>
-            </div>
-            <div className="flex-1 min-h-0 bg-muted/10 p-4">
-              <object 
-                data={previewUrl} 
-                type="application/pdf" 
-                className="w-full h-full rounded-xl overflow-hidden border border-border"
-              >
-                <iframe src={previewUrl} className="w-full h-full border-none" title="PDF Preview">
-                  <div className="p-6 text-center text-sm text-muted-foreground">
-                    Your browser doesn't support inline PDF previews. Please click "Open in New Tab" to view it.
-                  </div>
-                </iframe>
-              </object>
-            </div>
-          </div>
-        </div>
-      )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
-import { Type, UploadCloud, FileText, CheckCircle2, Copy, Check, Download, Eye, ExternalLink } from 'lucide-react';
+import { Type, UploadCloud, FileText, CheckCircle2, Copy, Check, Download, Eye, EyeOff, ExternalLink, X, Loader2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import axios from 'axios';
+import { motion, AnimatePresence } from 'framer-motion';
+import api from '../../lib/api';
 
 const PdfToText = () => {
   const [file, setFile] = useState(null);
@@ -79,7 +80,7 @@ const PdfToText = () => {
       setIsProcessing(true);
       toastId = toast.loading('Extracting text from PDF...');
       
-      const response = await axios.post('http://localhost:5000/api/pdf/extract-text', formData, {
+      const response = await api.post('/pdf/extract-text', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       
@@ -118,139 +119,163 @@ const PdfToText = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-4 lg:py-6 flex flex-col min-h-0">
+    <div className="max-w-[1600px] mx-auto w-full px-2 md:px-8">
       <div className="mb-6 flex items-center gap-3 shrink-0">
-        <div className="p-2 bg-pink-500/10 text-pink-500 rounded-lg shadow-sm">
-          <Type size={28} />
+        <div className="p-2 bg-primary/10 text-primary rounded-md shadow-sm">
+          <Type size={24} />
         </div>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Extract Text from PDF</h1>
-          <p className="text-muted-foreground mt-1 text-sm">Convert your PDF documents into editable raw text plain files.</p>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter text-foreground">Extract Text from PDF</h1>
+          <p className="text-muted-foreground mt-1 text-xs md:text-sm">Convert your PDF documents into editable raw text plain files.</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-6 items-start">
+      <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         
         {/* Upload & Form Area */}
-        <div className="flex flex-col gap-6 w-full min-h-0">
-          
-          {/* Dropzone */}
-          {!file ? (
-            <div 
-              onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}
-              onClick={() => fileInputRef.current?.click()}
-              className={`border-2 border-dashed rounded-2xl p-10 flex flex-col items-center justify-center cursor-pointer transition-all h-64 ${
-                isDragging ? 'border-pink-500 bg-pink-500/5' : 'border-border bg-card hover:border-pink-500/50 hover:bg-muted/30'
-              }`}
-            >
-              <input type="file" ref={fileInputRef} onChange={handleFileSelect} className="hidden" accept=".pdf,application/pdf" />
-              <div className="w-16 h-16 bg-pink-500/10 rounded-full flex items-center justify-center text-pink-500 mb-4 pointer-events-none">
-                <UploadCloud size={32} />
-              </div>
-              <h3 className="text-lg font-bold text-foreground mb-1 pointer-events-none">Upload a PDF</h3>
-              <p className="text-sm text-muted-foreground text-center pointer-events-none">
-                Drag & drop a PDF file here or click to browse.
-              </p>
-            </div>
-          ) : (
-            <div className="bg-card border border-border rounded-2xl shadow-sm p-6 flex flex-col gap-4 shrink-0 min-w-0">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-4 min-w-0 w-full sm:w-auto">
-                  <div className="w-12 h-12 bg-pink-500/10 text-pink-500 rounded-xl flex items-center justify-center shrink-0">
-                    <FileText size={24} />
+        <motion.div 
+          layout
+          className={`flex-1 w-full bg-card border border-border p-4 md:p-6 rounded-2xl shadow-sm flex flex-col relative transition-all duration-500 ease-out ${!file ? 'min-h-[50vh]' : 'min-h-0'}`}
+        >
+          <AnimatePresence mode="popLayout" initial={false}>
+            {!file ? (
+              <motion.div
+                key="dropzone"
+                layout
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.3 }}
+                className="flex-1 h-full w-full flex flex-col justify-center"
+              >
+                <div 
+                  onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}
+                  onClick={() => fileInputRef.current?.click()}
+                  className={`flex-1 h-full w-full border-2 border-dashed rounded-2xl p-6 md:p-10 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 relative group min-h-[300px] ${
+                    isDragging ? 'border-primary bg-primary/5 scale-[0.99] shadow-inner' : 'border-border bg-card hover:border-primary/50 hover:bg-muted/20'
+                  }`}
+                >
+                  <input type="file" ref={fileInputRef} onChange={handleFileSelect} className="hidden" accept=".pdf,application/pdf" />
+                  <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center text-primary mb-4 shadow-sm transition-transform duration-300 group-hover:scale-110 pointer-events-none">
+                    <UploadCloud size={32} />
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <h3 className="font-bold text-foreground text-lg truncate w-full" title={file.name}>{file.name}</h3>
-                    <p className="text-muted-foreground text-sm">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                  <h3 className="text-lg font-bold text-foreground mb-2 pointer-events-none text-center">Upload a PDF</h3>
+                  <p className="text-sm text-muted-foreground text-center pointer-events-none max-w-sm leading-relaxed">
+                    Drag & drop a PDF file here, or <span className="text-primary font-semibold hover:underline">browse files</span>.
+                  </p>
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="workspace"
+                layout
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.3 }}
+                className="flex flex-col min-h-0 w-full space-y-6"
+              >
+                <div className="bg-card border border-border rounded-2xl shadow-sm p-6 flex flex-col gap-4 shrink-0 min-w-0">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div className="flex items-center gap-4 min-w-0 w-full sm:w-auto">
+                      <div className="w-12 h-12 bg-primary/10 text-primary rounded-xl flex items-center justify-center shrink-0">
+                        <FileText size={24} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="font-bold text-foreground text-lg truncate w-full" title={file.name}>{file.name}</h3>
+                        <p className="text-muted-foreground text-sm">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
+                      <button
+                        onClick={() => setShowPreview(!showPreview)}
+                        className="text-xs bg-muted hover:bg-muted/80 text-foreground px-3.5 py-2 rounded-xl transition-all font-bold flex items-center gap-1.5 border border-border shadow-sm"
+                      >
+                        {showPreview ? <EyeOff size={14} /> : <Eye size={14} />}
+                        {showPreview ? 'Hide Preview' : 'Interactive Preview'}
+                      </button>
+                      <button 
+                        onClick={handleClear} 
+                        className="text-xs text-red-400 bg-red-950/10 border border-red-900/20 hover:bg-red-950/20 px-3.5 py-2 rounded-xl transition-all font-semibold flex items-center gap-1.5"
+                      >
+                        Remove
+                      </button>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
-                  <button
-                    onClick={() => setShowPreview(!showPreview)}
-                    className="text-xs bg-muted hover:bg-muted/80 text-foreground px-3 py-1.5 rounded-lg transition-colors font-bold flex items-center gap-1.5"
-                  >
-                    <Eye size={14} />
-                    {showPreview ? 'Hide Preview' : 'Show Preview'}
-                  </button>
-                  <button 
-                    onClick={handleClear} 
-                    className="text-xs text-red-500 hover:bg-red-500/10 px-3 py-1.5 rounded-lg transition-colors font-semibold"
-                  >
-                    Change File
-                  </button>
-                </div>
-              </div>
 
-              {showPreview && previewUrl && (
-                <div className="border-t border-border pt-4 w-full flex flex-col gap-3">
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Interactive Document Preview</h4>
-                    <a 
-                      href={previewUrl} target="_blank" rel="noreferrer"
-                      className="text-xs text-blue-500 hover:underline flex items-center gap-1 font-semibold"
-                    >
-                      Open in New Tab <ExternalLink size={12} />
-                    </a>
-                  </div>
-                  <div className="w-full h-[400px] md:h-[500px] border border-border rounded-xl overflow-hidden bg-muted/10 relative">
-                    <object 
-                      data={previewUrl} 
-                      type="application/pdf" 
-                      className="w-full h-full"
-                    >
-                      <iframe src={previewUrl} className="w-full h-full border-none" title="PDF Preview">
-                        <div className="p-6 text-center text-sm text-muted-foreground">
-                          Your browser doesn't support inline PDF previews. Please click "Open in New Tab" to view it.
-                        </div>
-                      </iframe>
-                    </object>
-                  </div>
+                  {showPreview && previewUrl && (
+                    <div className="border-t border-border pt-4 w-full flex flex-col gap-3">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Interactive Document Preview</h4>
+                        <a 
+                          href={previewUrl} target="_blank" rel="noreferrer"
+                          className="text-xs text-blue-500 hover:underline flex items-center gap-1 font-semibold"
+                        >
+                          Open in New Tab <ExternalLink size={12} />
+                        </a>
+                      </div>
+                      <div className="w-full h-[400px] md:h-[500px] border border-border rounded-xl overflow-hidden bg-muted/5 relative">
+                        <object 
+                          data={previewUrl} 
+                          type="application/pdf" 
+                          className="w-full h-full"
+                        >
+                          <iframe src={previewUrl} className="w-full h-full border-none" title="PDF Preview">
+                            <div className="p-6 text-center text-sm text-muted-foreground">
+                              Your browser doesn't support inline PDF previews. Please click "Open in New Tab" to view it.
+                            </div>
+                          </iframe>
+                        </object>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          )}
 
-          {extractedText && (
-             <div className="bg-card border border-border p-6 rounded-2xl shadow-sm flex flex-col min-h-0 flex-1 relative overflow-hidden">
-                <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 mb-4 shrink-0">
-                  <div>
-                    <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Extracted Text ({pagesCount} Pages)</h3>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Words: {words.toLocaleString()} &bull; Characters: {chars.toLocaleString()}
-                    </p>
+                {extractedText && (
+                  <div className="bg-card border border-border p-6 rounded-2xl shadow-sm flex flex-col min-h-0 flex-1 relative overflow-hidden mt-6">
+                    <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 mb-4 shrink-0">
+                      <div>
+                        <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Extracted Text ({pagesCount} Pages)</h3>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Words: {words.toLocaleString()} &bull; Characters: {chars.toLocaleString()}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button 
+                          onClick={copyToClipboard}
+                          className="text-xs bg-muted hover:bg-muted/80 text-foreground px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-bold"
+                        >
+                          {copied ? <Check size={14} className="text-emerald-500"/> : <Copy size={14}/>}
+                          {copied ? 'Copied' : 'Copy'}
+                        </button>
+                        <button 
+                          onClick={downloadTextFile}
+                          className="text-xs bg-pink-500 hover:bg-pink-600 text-white px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 font-bold"
+                        >
+                          <Download size={14} /> Download TXT
+                        </button>
+                      </div>
+                    </div>
+                    <textarea
+                      readOnly
+                      value={extractedText}
+                      className="w-full flex-1 min-h-[250px] lg:min-h-0 bg-background border border-border rounded-xl p-4 text-sm text-foreground focus:outline-none custom-scrollbar resize-none font-mono"
+                      placeholder="Extracted text will appear here..."
+                    />
                   </div>
-                  <div className="flex items-center gap-2">
-                    <button 
-                      onClick={copyToClipboard}
-                      className="text-xs bg-muted hover:bg-muted/80 text-foreground px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-bold"
-                    >
-                      {copied ? <Check size={14} className="text-emerald-500"/> : <Copy size={14}/>}
-                      {copied ? 'Copied' : 'Copy'}
-                    </button>
-                    <button 
-                      onClick={downloadTextFile}
-                      className="text-xs bg-pink-500 hover:bg-pink-600 text-white px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 font-bold"
-                    >
-                      <Download size={14} /> Download TXT
-                    </button>
-                  </div>
-                </div>
-                <textarea
-                  readOnly
-                  value={extractedText}
-                  className="w-full flex-1 min-h-[250px] lg:min-h-0 bg-background border border-border rounded-xl p-4 text-sm text-foreground focus:outline-none custom-scrollbar resize-none font-mono"
-                  placeholder="Extracted text will appear here..."
-                />
-             </div>
-          )}
-
-        </div>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
 
         {/* Action Panel */}
-        <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6 lg:sticky lg:top-6 w-full lg:w-[350px] shrink-0">
-          <div>
-            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4">Extraction Details</h3>
-            <div className="space-y-4 text-sm text-foreground">
+        <div className="w-full lg:w-[350px] xl:w-[400px] shrink-0 space-y-6 lg:sticky lg:top-6">
+          <div className={`bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6 transition-all duration-300 ${!file ? 'opacity-50 pointer-events-none grayscale-[0.5]' : ''}`}>
+            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground border-b border-border pb-3 mb-4 flex items-center gap-2">
+              <Type size={16} /> Extraction Details
+            </h3>
+            <div className="space-y-4 text-sm text-muted-foreground bg-muted/10 p-4 rounded-xl border border-border/30">
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="text-emerald-500 mt-0.5 shrink-0" size={16} />
                 <p>Scrapes selectable text layer instantly from the PDF.</p>
@@ -266,14 +291,45 @@ const PdfToText = () => {
             </div>
           </div>
           
-          <button 
-            onClick={handleExtract}
-            disabled={!file || isProcessing || extractedText.length > 0}
-            className="w-full py-3 bg-pink-500 text-white font-medium rounded-xl hover:bg-pink-600 transition-colors flex items-center justify-center gap-2 shadow-sm shadow-pink-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Type size={18} />
-            {isProcessing ? 'Extracting...' : 'Extract Text Now'}
-          </button>
+          <div className="flex flex-col gap-3">
+            <button 
+              onClick={handleExtract}
+              disabled={!file || isProcessing || extractedText.length > 0}
+              className={`w-full h-14 font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-[0_1px_2px_rgba(0,0,0,0.1),0_0_0_1px_rgba(255,255,255,0.1)_inset] disabled:opacity-50 disabled:hover:shadow-none active:scale-[0.98] overflow-hidden ${
+                isProcessing
+                  ? 'bg-primary/70 text-primary-foreground cursor-not-allowed'
+                  : 'bg-primary hover:bg-primary/90 text-primary-foreground hover:shadow-[0_4px_12px_rgba(var(--primary),0.3)]'
+              }`}
+            >
+              <AnimatePresence mode="popLayout" initial={false}>
+                {isProcessing ? (
+                  <motion.div
+                    key="generating"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                    className="flex items-center gap-2"
+                  >
+                    <Loader2 className="animate-spin" size={20} />
+                    Extracting...
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="idle"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                    className="flex items-center gap-2"
+                  >
+                    <Type size={20} />
+                    <span>Extract Text Now</span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </button>
+          </div>
         </div>
 
       </div>

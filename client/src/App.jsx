@@ -1,6 +1,8 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
+import PinnedTools from './pages/PinnedTools';
+import RecentTools from './pages/RecentTools';
 import Home from './pages/Home';
 
 // Image Tools
@@ -14,7 +16,7 @@ import ImageWatermark from './pages/tools/ImageWatermark';
 import ImageColorExtractor from './pages/tools/ImageColorExtractor';
 import WordCounter from './pages/tools/WordCounter';
 import VoiceHelper from './pages/tools/VoiceHelper';
-import TextAnalyzer from './pages/tools/TextAnalyzer';
+import AudioVideoTranscriber from './pages/tools/AudioVideoTranscriber';
 import UuidGenerator from './pages/tools/UuidGenerator';
 import PasswordGenerator from './pages/tools/PasswordGenerator';
 import CaseConverter from './pages/tools/CaseConverter';
@@ -36,6 +38,9 @@ import UrlConverter from './pages/tools/UrlConverter';
 import BcryptGenerator from './pages/tools/BcryptGenerator';
 import CronParser from './pages/tools/CronParser';
 import EncoderDecoder from './pages/tools/EncoderDecoder';
+import HtmlPreviewer from './pages/tools/HtmlPreviewer';
+import MarkdownPreviewer from './pages/tools/MarkdownPreviewer';
+import TypeConverter from './pages/tools/TypeConverter';
 
 // PDF Tools
 import PdfEdit from './pages/tools/PdfEdit';
@@ -47,6 +52,9 @@ import PdfLock from './pages/tools/PdfLock';
 import PdfUnlock from './pages/tools/PdfUnlock';
 import PdfMetadata from './pages/tools/PdfMetadata';
 import PdfToText from './pages/tools/PdfToText';
+import PdfCompressor from './pages/tools/PdfCompressor';
+import PdfOrganizer from './pages/tools/PdfOrganizer';
+import PdfAudioReader from './pages/tools/PdfAudioReader';
 
 // Student & Docs Tools
 import ReadmeGenerator from './pages/tools/ReadmeGenerator';
@@ -54,6 +62,11 @@ import CodeToImage from './pages/tools/CodeToImage';
 import ImageToText from './pages/tools/ImageToText';
 import TextDiff from './pages/tools/TextDiff';
 import MarkdownEditor from './pages/tools/MarkdownEditor';
+import TextAnalyzer from './pages/tools/TextAnalyzer';
+import CitationGenerator from './pages/tools/CitationGenerator';
+import PomodoroHub from './pages/tools/PomodoroHub';
+import HtmlSandbox from './pages/tools/HtmlSandbox';
+
 
 // Finance & Productivity
 import EmiCalculator from './pages/tools/EmiCalculator';
@@ -65,6 +78,7 @@ import TaxCalculator from './pages/tools/TaxCalculator';
 import TempShare from './pages/tools/TempShare';
 import BatchRenamer from './pages/tools/BatchRenamer';
 import ZipArchiver from './pages/tools/ZipArchiver';
+import FileVault from './pages/tools/FileVault';
 
 // Auth
 import Login from './pages/auth/Login';
@@ -85,13 +99,16 @@ function AnimatedRoutes() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/tools/html-previewer/sandbox" element={<HtmlSandbox />} />
 
         {/* App Pages (With Sidebar & Topbar) */}
         <Route element={<Layout />}>
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/pinned" element={<PinnedTools />} />
+          <Route path="/recent" element={<RecentTools />} />
           <Route path="/tools/word-counter" element={<WordCounter />} />
           <Route path="/tools/voice-helper" element={<VoiceHelper />} />
-          <Route path="/tools/text-analyzer" element={<TextAnalyzer />} />
+          <Route path="/tools/audio-video-transcriber" element={<AudioVideoTranscriber />} />
           <Route path="/tools/uuid-generator" element={<UuidGenerator />} />
           <Route path="/tools/password-generator" element={<PasswordGenerator />} />
           <Route path="/tools/case-converter" element={<CaseConverter />} />
@@ -120,6 +137,9 @@ function AnimatedRoutes() {
           <Route path="/tools/url-converter" element={<UrlConverter />} />
           <Route path="/tools/bcrypt-generator" element={<BcryptGenerator />} />
           <Route path="/tools/cron-parser" element={<CronParser />} />
+          <Route path="/tools/html-previewer" element={<HtmlPreviewer />} />
+          <Route path="/tools/markdown-previewer" element={<MarkdownPreviewer />} />
+          <Route path="/tools/type-converter" element={<TypeConverter />} />
 
           {/* New PDF Tools Routes */}
           <Route path="/tools/pdf-merge" element={<PdfMerge />} />
@@ -131,6 +151,9 @@ function AnimatedRoutes() {
           <Route path="/tools/pdf-to-text" element={<PdfToText />} />
           <Route path="/tools/pdf-edit" element={<PdfEdit />} />
           <Route path="/tools/pdf-converter" element={<PdfConverter />} />
+          <Route path="/tools/pdf-compressor" element={<PdfCompressor />} />
+          <Route path="/tools/pdf-organizer" element={<PdfOrganizer />} />
+          <Route path="/tools/pdf-audio-reader" element={<PdfAudioReader />} />
 
           {/* Student & Docs Tools Routes */}
           <Route path="/tools/readme-generator" element={<ReadmeGenerator />} />
@@ -138,6 +161,9 @@ function AnimatedRoutes() {
           <Route path="/tools/image-to-text" element={<ImageToText />} />
           <Route path="/tools/text-diff" element={<TextDiff />} />
           <Route path="/tools/markdown-editor" element={<MarkdownEditor />} />
+          <Route path="/tools/text-analyzer" element={<TextAnalyzer />} />
+          <Route path="/tools/citation-generator" element={<CitationGenerator />} />
+          <Route path="/tools/pomodoro-hub" element={<PomodoroHub />} />
 
           {/* Finance & Productivity Tools Routes */}
           <Route path="/tools/emi-calculator" element={<EmiCalculator />} />
@@ -148,10 +174,11 @@ function AnimatedRoutes() {
           {/* Developer & Data Tools */}
           <Route path="/tools/encoder-decoder" element={<EncoderDecoder />} />
 
-          {/* File Management & Sharing Tools Routes */}
+          {/* File & Storage Tools */}
           <Route path="/tools/temp-share" element={<TempShare />} />
           <Route path="/tools/batch-renamer" element={<BatchRenamer />} />
           <Route path="/tools/zip-archiver" element={<ZipArchiver />} />
+          <Route path="/tools/file-vault" element={<FileVault />} />
         </Route>
       </Routes>
     </AnimatePresence>

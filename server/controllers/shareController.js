@@ -17,24 +17,43 @@ if (!fs.existsSync(dataFilePath)) {
   fs.writeFileSync(dataFilePath, JSON.stringify([]));
 }
 
-// Load metadata helper
-const loadMetadata = () => {
+// Queue for serializing write operations to prevent race conditions
+let writeQueue = Promise.resolve();
+
+// Load metadata helper (async)
+const loadMetadata = async () => {
   try {
-    const data = fs.readFileSync(dataFilePath, 'utf8');
+    const data = await fs.promises.readFile(dataFilePath, 'utf8');
     return JSON.parse(data || '[]');
   } catch (err) {
     console.error('Error reading shared files index:', err);
+    // Handle JSON parsing errors to prevent wiping DB index or server crashes
+    if (err instanceof SyntaxError) {
+      const backupPath = `${dataFilePath}.corrupt-${Date.now()}`;
+      try {
+        await fs.promises.rename(dataFilePath, backupPath);
+        console.warn(`Corrupt database backed up to ${backupPath}`);
+      } catch (backupErr) {
+        console.error('Failed to backup corrupt database:', backupErr);
+      }
+    }
     return [];
   }
 };
 
-// Save metadata helper
-const saveMetadata = (data) => {
-  try {
-    fs.writeFileSync(dataFilePath, JSON.stringify(data, null, 2));
-  } catch (err) {
-    console.error('Error writing shared files index:', err);
-  }
+// Save metadata helper (async & queued)
+const saveMetadata = async (data) => {
+  return new Promise((resolve, reject) => {
+    writeQueue = writeQueue.then(async () => {
+      try {
+        await fs.promises.writeFile(dataFilePath, JSON.stringify(data, null, 2), 'utf8');
+        resolve();
+      } catch (err) {
+        console.error('Error writing shared files index:', err);
+        reject(err);
+      }
+    });
+  });
 };
 
 // POST: Upload a temporary file
@@ -51,7 +70,7 @@ exports.uploadFile = async (req, res) => {
     const uploadedAt = Date.now();
     const expiresAt = uploadedAt + (hours * 60 * 60 * 1000);
 
-    const metadata = loadMetadata();
+    const metadata = await loadMetadata();
     const newEntry = {
       id: fileId,
       filename: req.file.filename,
@@ -63,7 +82,7 @@ exports.uploadFile = async (req, res) => {
     };
 
     metadata.push(newEntry);
-    saveMetadata(metadata);
+    await saveMetadata(metadata);
 
     return res.status(200).json({
       success: true,
@@ -81,7 +100,7 @@ exports.uploadFile = async (req, res) => {
 exports.downloadFile = async (req, res) => {
   try {
     const { id } = req.params;
-    const metadata = loadMetadata();
+    const metadata = await loadMetadata();
     const fileEntry = metadata.find(entry => entry.id === id);
 
     if (!fileEntry) {
@@ -106,9 +125,9 @@ exports.downloadFile = async (req, res) => {
 };
 
 // Cron/Cleanup scheduled routine to sweep expired files
-exports.runCleanup = () => {
+exports.runCleanup = async () => {
   try {
-    const metadata = loadMetadata();
+    const metadata = await loadMetadata();
     const now = Date.now();
     
     const validEntries = [];
@@ -127,7 +146,7 @@ exports.runCleanup = () => {
     }
 
     if (deletedCount > 0) {
-      saveMetadata(validEntries);
+      await saveMetadata(validEntries);
       console.log(`[Temp Cleanup Cron] Swept and deleted ${deletedCount} expired temporary files.`);
     }
   } catch (err) {

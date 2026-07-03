@@ -68,12 +68,18 @@ exports.splitPdf = async (req, res) => {
     for (const part of parts) {
       if (part.includes('-')) {
         const [start, end] = part.split('-').map(n => parseInt(n.trim()));
-        for (let i = start; i <= end; i++) {
-          if (i > 0 && i <= totalPages) pageIndices.add(i - 1);
+        if (!isNaN(start) && !isNaN(end)) {
+          const startPage = Math.max(1, start);
+          const endPage = Math.min(totalPages, end);
+          for (let i = startPage; i <= endPage; i++) {
+            pageIndices.add(i - 1);
+          }
         }
       } else {
         const num = parseInt(part.trim());
-        if (num > 0 && num <= totalPages) pageIndices.add(num - 1);
+        if (!isNaN(num) && num > 0 && num <= totalPages) {
+          pageIndices.add(num - 1);
+        }
       }
     }
 

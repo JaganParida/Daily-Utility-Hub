@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { FileAudio, Video, FileText, Download, Copy, Play, Pause, Trash2, Globe, Sliders, RefreshCw, Upload, CheckCircle, Edit, List, AlertCircle } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 
 const AudioVideoTranscriber = () => {
@@ -224,7 +225,7 @@ const AudioVideoTranscriber = () => {
           <FileAudio size={24} />
         </div>
         <div>
-          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground font-sans">AI Audio & Video Captioner</h1>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter text-foreground font-sans">AI Audio & Video Captioner</h1>
           <p className="text-muted-foreground mt-1 text-xs md:text-sm">Extract timestamped text & subtitles from audio and video files offline using browser-based AI.</p>
         </div>
       </div>
@@ -232,15 +233,20 @@ const AudioVideoTranscriber = () => {
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         
         {/* Left Card: Media Player & Live Captions */}
-        <div className="flex-1 w-full bg-card border border-border p-4 md:p-5 rounded-2xl shadow-sm flex flex-col relative lg:h-[calc(100vh-250px)] lg:max-h-[620px] lg:min-h-[520px]">
+        <motion.div 
+          layout
+          className="flex-1 w-full bg-card border border-border p-4 md:p-5 rounded-2xl shadow-sm flex flex-col relative lg:h-[calc(100vh-250px)] lg:max-h-[620px] lg:min-h-[520px]"
+        >
           {!hasFile ? (
-            <div className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-border/80 rounded-xl p-8 bg-muted/5 min-h-[300px]">
-              <Upload className="w-12 h-12 text-primary/50 mb-3 animate-pulse" />
-              <p className="text-sm font-semibold text-foreground mb-1">Upload Audio or Video File</p>
-              <p className="text-xs text-muted-foreground mb-4 text-center max-w-[280px]">
+            <div className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-border/50 rounded-2xl p-8 bg-muted/5 min-h-[300px] transition-all">
+              <div className="p-4 bg-muted/50 rounded-full border border-border/50 text-primary mb-4">
+                <Upload className="w-10 h-10" />
+              </div>
+              <p className="text-base font-bold text-foreground mb-1">Upload Audio or Video File</p>
+              <p className="text-xs text-muted-foreground mb-6 text-center max-w-[320px]">
                 Supports MP3, WAV, M4A, MP4, WEBM, and MKV. Processed 100% locally.
               </p>
-              <label className="cursor-pointer bg-primary hover:bg-primary/95 text-primary-foreground font-bold px-4 py-2 rounded-xl text-xs transition-all active:scale-[0.98]">
+              <label className="cursor-pointer bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-6 py-3 rounded-xl text-xs shadow-sm shadow-primary/20 transition-all active:scale-[0.98]">
                 Browse File
                 <input type="file" accept="audio/*,video/*" className="hidden" onChange={handleFileChange} />
               </label>
@@ -325,12 +331,14 @@ const AudioVideoTranscriber = () => {
                       Remove
                     </button>
                     {!hasTranscribed && (
-                      <button
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
                         onClick={handleTranscribe}
                         className="bg-primary text-primary-foreground font-bold px-3 py-1 rounded-md hover:bg-primary/95 transition-colors"
                       >
                         Start Transcription
-                      </button>
+                      </motion.button>
                     )}
                   </div>
                 </div>
@@ -393,10 +401,14 @@ const AudioVideoTranscriber = () => {
               )}
             </div>
           )}
-        </div>
+        </motion.div>
 
         {/* Right Card: Transcription Configuration & Export Panel */}
-        <div className={`w-full lg:w-[350px] xl:w-[400px] shrink-0 transition-all duration-300 ${!hasFile ? 'opacity-50 pointer-events-none grayscale-[0.5]' : ''}`}>
+        <motion.div 
+          animate={{ opacity: hasFile ? 1 : 0.5 }}
+          transition={{ duration: 0.25 }}
+          className={`w-full lg:w-[350px] xl:w-[400px] shrink-0 transition-all duration-300 ${!hasFile ? 'pointer-events-none grayscale-[0.5]' : ''}`}
+        >
           <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6 flex flex-col">
             
             {/* Model & Language selection */}
@@ -405,18 +417,20 @@ const AudioVideoTranscriber = () => {
                 <Sliders size={15} /> Settings
               </h3>
 
-              <div className="space-y-2.5">
-                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">AI Model Model Size</label>
+              <div className="space-y-3">
+                <label className="text-sm font-semibold text-foreground">AI Model Size</label>
                 <div className="grid grid-cols-1 gap-2">
                   {[
                     { id: 'Xenova/whisper-tiny.en', label: 'Whisper-Tiny (English Only)', desc: 'Fastest transcription, ultra accurate for English.' },
                     { id: 'Xenova/whisper-tiny',    label: 'Whisper-Tiny (Multilingual)', desc: 'Auto-detects & translates 100+ languages.' }
                   ].map(model => (
-                    <button
+                    <motion.button
                       key={model.id}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
                       disabled={hasTranscribed || isProcessing}
                       onClick={() => setModelType(model.id)}
-                      className={`text-left p-3 rounded-xl border transition-all active:scale-[0.98] ${
+                      className={`text-left p-4 rounded-xl border transition-all active:scale-[0.98] ${
                         modelType === model.id
                           ? 'border-primary bg-primary/5 text-primary'
                           : 'border-border bg-muted/10 hover:bg-muted text-foreground'
@@ -424,35 +438,38 @@ const AudioVideoTranscriber = () => {
                     >
                       <span className="text-xs font-bold block">{model.label}</span>
                       <span className="text-[10px] text-muted-foreground mt-0.5 block leading-normal">{model.desc}</span>
-                    </button>
+                    </motion.button>
                   ))}
                 </div>
               </div>
 
               {modelType === 'Xenova/whisper-tiny' && (
-                <div className="space-y-2 pt-2">
-                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
-                    <Globe size={13} className="text-primary" /> Speech Language
+                <div className="space-y-3 pt-2">
+                  <label className="text-sm font-semibold text-foreground flex items-center gap-1.5">
+                    <Globe size={14} className="text-primary" /> Speech Language
                   </label>
-                  <select
-                    value={language}
-                    disabled={hasTranscribed || isProcessing}
-                    onChange={(e) => setLanguage(e.target.value)}
-                    className="w-full bg-muted/20 border border-border/50 p-2.5 rounded-xl text-xs font-semibold text-foreground outline-none focus:border-primary transition-all cursor-pointer shadow-sm"
-                  >
-                    <option value="en">English</option>
-                    <option value="es">Spanish (Español)</option>
-                    <option value="fr">French (Français)</option>
-                    <option value="de">German (Deutsch)</option>
-                    <option value="it">Italian (Italiano)</option>
-                    <option value="pt">Portuguese (Português)</option>
-                    <option value="hi">Hindi (हिन्दी)</option>
-                    <option value="zh">Chinese (中文)</option>
-                    <option value="ja">Japanese (日本語)</option>
-                    <option value="ko">Korean (한국어)</option>
-                    <option value="ru">Russian (Русский)</option>
-                    <option value="ar">Arabic (العربية)</option>
-                  </select>
+                  <div className="relative group">
+                    <select
+                      value={language}
+                      disabled={hasTranscribed || isProcessing}
+                      onChange={(e) => setLanguage(e.target.value)}
+                      className="w-full appearance-none bg-muted/20 border border-border/50 group-hover:border-border p-3 pl-4 pr-10 rounded-xl text-sm font-semibold text-foreground focus:ring-2 focus:ring-primary/50 outline-none transition-all cursor-pointer shadow-sm disabled:opacity-50"
+                    >
+                      <option value="en" className="bg-background text-foreground">English</option>
+                      <option value="es" className="bg-background text-foreground">Spanish (Español)</option>
+                      <option value="fr" className="bg-background text-foreground">French (Français)</option>
+                      <option value="de" className="bg-background text-foreground">German (Deutsch)</option>
+                      <option value="it" className="bg-background text-foreground">Italian (Italiano)</option>
+                      <option value="pt" className="bg-background text-foreground">Portuguese (Português)</option>
+                      <option value="hi" className="bg-background text-foreground">Hindi (हिन्दी)</option>
+                      <option value="zh" className="bg-background text-foreground">Chinese (中文)</option>
+                      <option value="ja" className="bg-background text-foreground">Japanese (日本語)</option>
+                      <option value="ko" className="bg-background text-foreground">Korean (한국어)</option>
+                      <option value="ru" className="bg-background text-foreground">Russian (Русский)</option>
+                      <option value="ar" className="bg-background text-foreground">Arabic (العربية)</option>
+                    </select>
+                    <ChevronDown size={18} className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground group-hover:text-foreground transition-colors" />
+                  </div>
                 </div>
               )}
             </div>
@@ -472,36 +489,44 @@ const AudioVideoTranscriber = () => {
               <div className="mt-auto space-y-3 pt-4 border-t border-border/50">
                 <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">Export Outputs</span>
                 <div className="grid grid-cols-2 gap-2">
-                  <button 
+                  <motion.button 
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
                     onClick={exportSRT}
-                    className="py-2.5 bg-muted/30 border border-border hover:bg-muted text-foreground text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 active:scale-[0.98]"
+                    className="py-3 bg-muted/20 hover:bg-muted/50 border border-border/50 text-foreground font-semibold rounded-xl transition-all flex items-center justify-center gap-1.5 active:scale-[0.98]"
                   >
                     <Download size={13} /> SRT Subs
-                  </button>
-                  <button 
+                  </motion.button>
+                  <motion.button 
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
                     onClick={exportVTT}
-                    className="py-2.5 bg-muted/30 border border-border hover:bg-muted text-foreground text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 active:scale-[0.98]"
+                    className="py-3 bg-muted/20 hover:bg-muted/50 border border-border/50 text-foreground font-semibold rounded-xl transition-all flex items-center justify-center gap-1.5 active:scale-[0.98]"
                   >
                     <Download size={13} /> VTT Subs
-                  </button>
+                  </motion.button>
                 </div>
-                <button 
+                <motion.button 
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={exportTXT}
-                  className="w-full py-2.5 bg-muted/30 border border-border hover:bg-muted text-foreground text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 active:scale-[0.98]"
+                  className="w-full py-3 bg-muted/20 hover:bg-muted/50 border border-border/50 text-foreground font-semibold rounded-xl transition-all flex items-center justify-center gap-1.5 active:scale-[0.98]"
                 >
                   <Download size={13} /> Download TXT Timeline
-                </button>
-                <button 
+                </motion.button>
+                <motion.button 
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.99 }}
                   onClick={copyTextOnly}
-                  className="w-full py-3 bg-primary hover:bg-primary/95 text-primary-foreground text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 active:scale-[0.98] shadow-sm shadow-primary/25"
+                  className="w-full h-14 font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-[0_1px_2px_rgba(0,0,0,0.1),0_0_0_1px_rgba(255,255,255,0.1)_inset] bg-primary hover:bg-primary/90 text-primary-foreground hover:shadow-[0_4px_12px_rgba(var(--primary),0.3)] active:scale-[0.98]"
                 >
-                  {copiedState ? <CheckCircle size={14} /> : <Copy size={14} />} Copy Full Transcript
-                </button>
+                  {copiedState ? <CheckCircle size={16} /> : <Copy size={16} />} Copy Full Transcript
+                </motion.button>
               </div>
             )}
 
           </div>
-        </div>
+        </motion.div>
 
       </div>
     </div>

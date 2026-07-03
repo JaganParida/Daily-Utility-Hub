@@ -480,7 +480,7 @@ const ImageWatermark = () => {
           <Stamp size={24} />
         </div>
         <div>
-          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">Advanced Image Watermarker</h1>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter text-foreground">Advanced Image Watermarker</h1>
           <p className="text-muted-foreground mt-1 text-xs md:text-sm">Apply text/logo watermarks or use the Magic Eraser brush to remove visual overlays.</p>
         </div>
       </div>

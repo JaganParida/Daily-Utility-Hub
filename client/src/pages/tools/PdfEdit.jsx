@@ -4,9 +4,10 @@ import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 import { 
   UploadCloud, FileText, CheckCircle2, Type, Paintbrush, Highlighter, 
   Square, MousePointer, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, 
-  Download, Undo2, X, Eye, ExternalLink, HelpCircle, Edit3
+  Download, Undo2, X, Eye, ExternalLink, HelpCircle, Edit3, Loader2
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // Setup pdfjs worker using unpkg CDN
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
@@ -608,88 +609,109 @@ const PdfEdit = () => {
   const presetColors = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#000000'];
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-4 lg:py-6 flex flex-col min-h-[85vh]">
+    <div className="max-w-[1600px] mx-auto w-full px-2 md:px-8">
       <div className="mb-6 flex items-center gap-3 shrink-0">
-        <div className="p-2 bg-red-500/10 text-red-500 rounded-lg shadow-sm">
-          <Type size={28} />
+        <div className="p-2 bg-primary/10 text-primary rounded-md shadow-sm">
+          <Type size={24} />
         </div>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Interactive PDF Editor</h1>
-          <p className="text-muted-foreground mt-1 text-sm">Draw, write text, highlight, and redact elements directly on your document online.</p>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter text-foreground">Interactive PDF Editor</h1>
+          <p className="text-muted-foreground mt-1 text-xs md:text-sm">Draw, write text, highlight, and redact elements directly on your document online.</p>
         </div>
       </div>
 
-      {!file ? (
-        <div 
-          onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}
-          onClick={() => fileInputRef.current?.click()}
-          className={`border-2 border-dashed rounded-2xl p-12 flex flex-col items-center justify-center cursor-pointer transition-all h-96 ${
-            isDragging ? 'border-red-500 bg-red-500/5' : 'border-border bg-card hover:border-red-500/50 hover:bg-muted/30'
-          }`}
+      <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
+        {/* Main Editing Board */}
+        <motion.div 
+          layout
+          className={`flex-1 w-full bg-card border border-border p-4 md:p-6 rounded-2xl shadow-sm flex flex-col gap-4 relative transition-all duration-500 ease-out ${!file ? 'min-h-[50vh]' : 'min-h-0'}`}
         >
-          <input type="file" ref={fileInputRef} onChange={handleFileSelect} className="hidden" accept=".pdf,application/pdf" />
-          <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center text-red-500 mb-4 pointer-events-none">
-            <UploadCloud size={32} />
-          </div>
-          <h3 className="text-lg font-bold text-foreground mb-1 pointer-events-none">Upload a PDF to Edit</h3>
-          <p className="text-sm text-muted-foreground text-center pointer-events-none max-w-sm">
-            Drag & drop your PDF file here or click to browse. Fully secure & processed in your browser.
-          </p>
-        </div>
-      ) : (
-        <div className="flex flex-col lg:flex-row gap-6 items-start w-full flex-1">
-          
-          {/* Main Editing Board */}
-          <div className="flex-1 w-full flex flex-col gap-4">
+          <AnimatePresence mode="popLayout" initial={false}>
+            {!file ? (
+              <motion.div
+                key="dropzone"
+                layout
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.3 }}
+                className="flex-1 h-full w-full flex flex-col justify-center"
+              >
+                <div 
+                  onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}
+                  onClick={() => fileInputRef.current?.click()}
+                  className={`flex-1 h-full w-full border-2 border-dashed rounded-2xl p-6 md:p-10 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 relative group min-h-[300px] ${
+                    isDragging ? 'border-primary bg-primary/5 scale-[0.99] shadow-inner' : 'border-border bg-card hover:border-primary/50 hover:bg-muted/20'
+                  }`}
+                >
+                  <input type="file" ref={fileInputRef} onChange={handleFileSelect} className="hidden" accept=".pdf,application/pdf" />
+                  <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center text-primary mb-4 shadow-sm transition-transform duration-300 group-hover:scale-110 pointer-events-none">
+                    <UploadCloud size={32} />
+                  </div>
+                  <h3 className="text-lg font-bold text-foreground mb-2 pointer-events-none text-center">Upload a PDF to Edit</h3>
+                  <p className="text-sm text-muted-foreground text-center pointer-events-none max-w-sm leading-relaxed">
+                    Drag & drop your PDF file here, or <span className="text-primary font-semibold hover:underline">browse files</span>. Fully secure & processed in your browser.
+                  </p>
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="workspace"
+                layout
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.3 }}
+                className="flex flex-col min-h-0 w-full space-y-4"
+              >
             
-            {/* Top Toolbar Panel */}
-            <div className="bg-card border border-border rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4 shadow-sm shrink-0 sticky top-0 z-40 backdrop-blur-md bg-card/85">
-              
-              {/* Tool Selector */}
-              <div className="flex items-center gap-1.5 bg-muted/40 p-1 rounded-xl">
-                <button
-                  onClick={() => setSelectedTool('select')}
-                  title="Select & Move Text"
-                  className={`p-2 rounded-lg transition-colors ${selectedTool === 'select' ? 'bg-background shadow text-red-500 font-bold' : 'text-muted-foreground hover:text-foreground'}`}
-                >
-                  <MousePointer size={18} />
-                </button>
-                <button
-                  onClick={() => setSelectedTool('edit-text')}
-                  title="Edit PDF Text (Click to Rewrite)"
-                  className={`p-2 rounded-lg transition-colors ${selectedTool === 'edit-text' ? 'bg-background shadow text-red-500 font-bold' : 'text-muted-foreground hover:text-foreground'}`}
-                >
-                  <Edit3 size={18} />
-                </button>
-                <button
-                  onClick={() => setSelectedTool('text')}
-                  title="Insert New Text"
-                  className={`p-2 rounded-lg transition-colors ${selectedTool === 'text' ? 'bg-background shadow text-red-500 font-bold' : 'text-muted-foreground hover:text-foreground'}`}
-                >
-                  <Type size={18} />
-                </button>
-                <button
-                  onClick={() => setSelectedTool('draw')}
-                  title="Draw / Signature"
-                  className={`p-2 rounded-lg transition-colors ${selectedTool === 'draw' ? 'bg-background shadow text-red-500 font-bold' : 'text-muted-foreground hover:text-foreground'}`}
-                >
-                  <Paintbrush size={18} />
-                </button>
-                <button
-                  onClick={() => setSelectedTool('highlight')}
-                  title="Translucent Highlight"
-                  className={`p-2 rounded-lg transition-colors ${selectedTool === 'highlight' ? 'bg-background shadow text-red-500 font-bold' : 'text-muted-foreground hover:text-foreground'}`}
-                >
-                  <Highlighter size={18} />
-                </button>
-                <button
-                  onClick={() => setSelectedTool('redact')}
-                  title="Solid Redaction Box"
-                  className={`p-2 rounded-lg transition-colors ${selectedTool === 'redact' ? 'bg-background shadow text-red-500 font-bold' : 'text-muted-foreground hover:text-foreground'}`}
-                >
-                  <Square size={18} />
-                </button>
-              </div>
+              <div className="bg-card border border-border rounded-xl p-3 flex flex-wrap items-center justify-between gap-4 shadow-sm shrink-0 sticky top-0 z-40 backdrop-blur-md bg-card/85">
+                
+                {/* Tool Selector */}
+                <div className="flex items-center gap-1.5 bg-muted/40 p-1 rounded-xl">
+                  <button
+                    onClick={() => setSelectedTool('select')}
+                    title="Select & Move Text"
+                    className={`p-2 rounded-lg transition-colors ${selectedTool === 'select' ? 'bg-background shadow text-primary font-bold' : 'text-muted-foreground hover:text-foreground'}`}
+                  >
+                    <MousePointer size={18} />
+                  </button>
+                  <button
+                    onClick={() => setSelectedTool('edit-text')}
+                    title="Edit PDF Text (Click to Rewrite)"
+                    className={`p-2 rounded-lg transition-colors ${selectedTool === 'edit-text' ? 'bg-background shadow text-primary font-bold' : 'text-muted-foreground hover:text-foreground'}`}
+                  >
+                    <Edit3 size={18} />
+                  </button>
+                  <button
+                    onClick={() => setSelectedTool('text')}
+                    title="Insert New Text"
+                    className={`p-2 rounded-lg transition-colors ${selectedTool === 'text' ? 'bg-background shadow text-primary font-bold' : 'text-muted-foreground hover:text-foreground'}`}
+                  >
+                    <Type size={18} />
+                  </button>
+                  <button
+                    onClick={() => setSelectedTool('draw')}
+                    title="Draw / Signature"
+                    className={`p-2 rounded-lg transition-colors ${selectedTool === 'draw' ? 'bg-background shadow text-primary font-bold' : 'text-muted-foreground hover:text-foreground'}`}
+                  >
+                    <Paintbrush size={18} />
+                  </button>
+                  <button
+                    onClick={() => setSelectedTool('highlight')}
+                    title="Translucent Highlight"
+                    className={`p-2 rounded-lg transition-colors ${selectedTool === 'highlight' ? 'bg-background shadow text-primary font-bold' : 'text-muted-foreground hover:text-foreground'}`}
+                  >
+                    <Highlighter size={18} />
+                  </button>
+                  <button
+                    onClick={() => setSelectedTool('redact')}
+                    title="Solid Redaction Box"
+                    className={`p-2 rounded-lg transition-colors ${selectedTool === 'redact' ? 'bg-background shadow text-primary font-bold' : 'text-muted-foreground hover:text-foreground'}`}
+                  >
+                    <Square size={18} />
+                  </button>
+                </div>
 
               {/* Toolbar Settings (Colors / Size / Sliders) */}
               <div className="flex items-center flex-wrap gap-4">
@@ -722,24 +744,24 @@ const PdfEdit = () => {
                   </div>
                 )}
 
-                {selectedTool === 'text' && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground font-semibold">Size:</span>
-                    <select
-                      value={selectedFontSize}
-                      onChange={(e) => setSelectedFontSize(parseInt(e.target.value))}
-                      className="bg-muted/50 border border-border text-xs rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-red-500"
-                    >
-                      <option value="12">12px</option>
-                      <option value="14">14px</option>
-                      <option value="16">16px</option>
-                      <option value="20">20px</option>
-                      <option value="24">24px</option>
-                      <option value="32">32px</option>
-                      <option value="48">48px</option>
-                    </select>
-                  </div>
-                )}
+                  {selectedTool === 'text' && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-muted-foreground font-semibold">Size:</span>
+                      <select
+                        value={selectedFontSize}
+                        onChange={(e) => setSelectedFontSize(parseInt(e.target.value))}
+                        className="bg-muted/50 border border-border text-xs rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-primary"
+                      >
+                        <option value="12">12px</option>
+                        <option value="14">14px</option>
+                        <option value="16">16px</option>
+                        <option value="20">20px</option>
+                        <option value="24">24px</option>
+                        <option value="32">32px</option>
+                        <option value="48">48px</option>
+                      </select>
+                    </div>
+                  )}
 
                 {/* Zoom Control */}
                 <div className="flex items-center gap-2 border-l border-border pl-4">
@@ -781,19 +803,19 @@ const PdfEdit = () => {
                 {selectedTool === 'redact' && 'Click & drag to blackout info.'}
               </div>
 
-            </div>
+              </div>
 
-            {/* Document Canvas Workspace Container */}
-            <div className="bg-muted/10 border border-border rounded-3xl p-6 min-h-[500px] overflow-auto flex items-center justify-center relative select-none">
-              
-              {isRendering && (
-                <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-50 flex items-center justify-center">
-                  <div className="text-center text-sm font-semibold flex items-center gap-2">
-                    <div className="w-5 h-5 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
-                    Rendering Page...
+              {/* Document Canvas Workspace Container */}
+              <div className="bg-muted/10 border border-border rounded-xl p-4 min-h-[500px] overflow-auto flex items-center justify-center relative select-none">
+                
+                {isRendering && (
+                  <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-50 flex items-center justify-center">
+                    <div className="text-center text-sm font-semibold flex items-center gap-2">
+                      <Loader2 className="animate-spin text-primary" size={20} />
+                      Rendering Page...
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
               {/* Interactive Canvas Overlay Container */}
               <div 
@@ -961,84 +983,122 @@ const PdfEdit = () => {
                 </div>
 
               </div>
-
             </div>
 
-            {/* Bottom Page Navigation Controls */}
-            <div className="flex items-center justify-center gap-4 bg-card border border-border p-3.5 rounded-2xl shadow-sm shrink-0">
-              <button
-                disabled={currentPage <= 1 || isRendering}
-                onClick={() => setCurrentPage(c => Math.max(1, c - 1))}
-                className="p-2 hover:bg-muted rounded-xl disabled:opacity-40 transition-colors"
-              >
-                <ChevronLeft size={20} />
-              </button>
-              <span className="text-sm font-bold text-foreground">
-                Page {currentPage} of {numPages}
-              </span>
-              <button
-                disabled={currentPage >= numPages || isRendering}
-                onClick={() => setCurrentPage(c => Math.min(numPages, c + 1))}
-                className="p-2 hover:bg-muted rounded-xl disabled:opacity-40 transition-colors"
-              >
-                <ChevronRight size={20} />
-              </button>
-            </div>
+              {/* Bottom Page Navigation Controls */}
+              <div className="flex items-center justify-center gap-4 bg-card border border-border p-3 rounded-xl shadow-sm shrink-0">
+                <button
+                  disabled={currentPage <= 1 || isRendering}
+                  onClick={() => setCurrentPage(c => Math.max(1, c - 1))}
+                  className="p-2 hover:bg-muted rounded-xl disabled:opacity-40 transition-colors"
+                >
+                  <ChevronLeft size={20} />
+                </button>
+                <span className="text-sm font-bold text-foreground">
+                  Page {currentPage} of {numPages}
+                </span>
+                <button
+                  disabled={currentPage >= numPages || isRendering}
+                  onClick={() => setCurrentPage(c => Math.min(numPages, c + 1))}
+                  className="p-2 hover:bg-muted rounded-xl disabled:opacity-40 transition-colors"
+                >
+                  <ChevronRight size={20} />
+                </button>
+              </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
 
-          </div>
-
-          {/* Right Action/Compile Sidebar Panel */}
-          <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6 lg:sticky lg:top-6 w-full lg:w-[350px] shrink-0">
-            <div>
-              <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4">Edit Details</h3>
-              <div className="space-y-4 text-sm text-foreground">
-                <div className="flex items-start gap-3">
-                  <CheckCircle2 className="text-emerald-500 mt-0.5 shrink-0" size={16} />
-                  <p>Changes are saved inside the browser using standard vectors.</p>
-                </div>
-                <div className="flex items-start gap-3">
-                  <CheckCircle2 className="text-emerald-500 mt-0.5 shrink-0" size={16} />
-                  <p>Works completely client-side. Zero server upload latency.</p>
-                </div>
-                <div className="flex items-start gap-3">
-                  <HelpCircle className="text-blue-500 mt-0.5 shrink-0" size={16} />
-                  <p className="text-xs text-muted-foreground">Double click on a text annotation block to re-edit it.</p>
-                </div>
+        {/* Right Action/Compile Sidebar Panel */}
+        <div className="w-full lg:w-[350px] xl:w-[400px] shrink-0 space-y-6 lg:sticky lg:top-6">
+          <div className={`bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6 transition-all duration-300 ${!file ? 'opacity-50 pointer-events-none grayscale-[0.5]' : ''}`}>
+            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground border-b border-border pb-3 mb-4 flex items-center gap-2">
+              <Edit3 size={16} /> Edit Details
+            </h3>
+            <div className="space-y-4 text-sm text-muted-foreground bg-muted/10 p-4 rounded-xl border border-border/30">
+              <div className="flex items-start gap-3">
+                <CheckCircle2 className="text-emerald-500 mt-0.5 shrink-0" size={16} />
+                <p>Changes are saved inside the browser using standard vectors.</p>
+              </div>
+              <div className="flex items-start gap-3">
+                <CheckCircle2 className="text-emerald-500 mt-0.5 shrink-0" size={16} />
+                <p>Works completely client-side. Zero server upload latency.</p>
+              </div>
+              <div className="flex items-start gap-3">
+                <HelpCircle className="text-blue-500 mt-0.5 shrink-0" size={16} />
+                <p className="text-xs text-muted-foreground">Double click on a text annotation block to re-edit it.</p>
               </div>
             </div>
-
+            
             {/* File info card */}
-            <div className="border-t border-border pt-4 min-w-0">
-              <div className="flex items-center gap-3 bg-muted/20 p-3 rounded-xl min-w-0">
-                <FileText className="text-red-500 shrink-0" size={24} />
-                <div className="min-w-0 flex-1">
-                  <p className="font-bold text-sm text-foreground truncate" title={file.name}>{file.name}</p>
-                  <p className="text-xs text-muted-foreground">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+            {file && (
+              <div className="border-t border-border pt-4 min-w-0">
+                <div className="flex items-center gap-3 bg-muted/20 p-3 rounded-xl min-w-0 border border-border/50">
+                  <div className="p-2 bg-primary/10 text-primary rounded-lg shrink-0">
+                    <FileText size={20} />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-bold text-sm text-foreground truncate" title={file.name}>{file.name}</p>
+                    <p className="text-xs text-muted-foreground">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                  </div>
                 </div>
               </div>
-            </div>
-
+            )}
+            
             <div className="flex flex-col gap-3">
               <button 
                 onClick={handleSave}
-                disabled={isProcessing}
-                className="w-full py-3 bg-red-500 text-white font-medium rounded-xl hover:bg-red-600 transition-colors flex items-center justify-center gap-2 shadow-sm shadow-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={isProcessing || !file}
+                className={`w-full h-14 font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-[0_1px_2px_rgba(0,0,0,0.1),0_0_0_1px_rgba(255,255,255,0.1)_inset] disabled:opacity-50 disabled:hover:shadow-none active:scale-[0.98] overflow-hidden ${
+                  isProcessing
+                    ? 'bg-primary/70 text-primary-foreground cursor-not-allowed'
+                    : 'bg-primary hover:bg-primary/90 text-primary-foreground hover:shadow-[0_4px_12px_rgba(var(--primary),0.3)]'
+                }`}
               >
-                <Download size={18} />
-                {isProcessing ? 'Compiling PDF...' : 'Download Edited PDF'}
+                <AnimatePresence mode="popLayout" initial={false}>
+                  {isProcessing ? (
+                    <motion.div
+                      key="generating"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                      className="flex items-center gap-2"
+                    >
+                      <Loader2 className="animate-spin" size={20} />
+                      Compiling...
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="idle"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                      className="flex items-center gap-2"
+                    >
+                      <Download size={20} />
+                      <span>Download Edited PDF</span>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </button>
-              <button
-                onClick={handleClear}
-                className="w-full py-2.5 bg-muted hover:bg-muted/80 text-foreground font-semibold text-sm rounded-xl transition-colors flex items-center justify-center gap-1.5"
-              >
-                <X size={16} />
-                Close Document
-              </button>
+              
+              {file && (
+                <button
+                  onClick={handleClear}
+                  className="w-full py-3.5 bg-muted hover:bg-muted/80 text-foreground font-semibold text-sm rounded-xl transition-colors flex items-center justify-center gap-1.5 border border-border"
+                >
+                  <X size={16} />
+                  Close Document
+                </button>
+              )}
             </div>
           </div>
-
         </div>
-      )}
+
+      </div>
     </div>
   );
 };

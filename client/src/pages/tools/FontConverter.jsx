@@ -153,14 +153,17 @@ const FontConverter = () => {
           <Type size={24} />
         </div>
         <div>
-          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">100+ Stylish Font Swatches</h1>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter text-foreground">100+ Stylish Font Swatches</h1>
           <p className="text-muted-foreground mt-1 text-xs md:text-sm">Transform plain text into aesthetic social media styles with custom symbols & sparkles.</p>
         </div>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         {/* Left: Input & Font Grid Area */}
-        <div className="flex-1 w-full bg-card border border-border p-4 md:p-5 rounded-2xl shadow-sm flex flex-col relative lg:h-[calc(100vh-250px)] lg:max-h-[620px] lg:min-h-[520px]">
+        <motion.div 
+          layout
+          className="flex-1 w-full bg-card border border-border p-4 md:p-5 rounded-2xl shadow-sm flex flex-col relative lg:h-[calc(100vh-250px)] lg:max-h-[620px] lg:min-h-[520px]"
+        >
           <div className="flex-1 flex flex-col gap-4 min-h-0">
             <div className="grid grid-cols-1 md:grid-cols-[1fr_250px] gap-3 shrink-0">
               {/* Text Input */}
@@ -208,10 +211,13 @@ const FontConverter = () => {
                     const isSelected = selectedFont?.id === font.id;
 
                     return (
-                      <div
+                      <motion.div
                         key={font.id}
+                        layout
+                        whileHover={{ scale: 1.02, y: -2 }}
+                        whileTap={{ scale: 0.98 }}
                         onClick={() => setSelectedFont(font)}
-                        className={`bg-muted/30 border p-3 rounded-xl flex flex-col gap-2 transition-all cursor-pointer group hover:-translate-y-0.5 ${
+                        className={`bg-muted/30 border p-3 rounded-xl flex flex-col gap-2 transition-all cursor-pointer group ${
                           isSelected ? 'border-primary bg-primary/5 ring-2 ring-primary/20' : 'border-border/50 hover:border-primary/40'
                         }`}
                       >
@@ -230,7 +236,7 @@ const FontConverter = () => {
                         <div className="text-sm font-semibold text-foreground truncate select-all pr-2 pt-0.5">
                           {activeTxt}
                         </div>
-                      </div>
+                      </motion.div>
                     );
                   })}
                 </div>
@@ -241,10 +247,14 @@ const FontConverter = () => {
               )}
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Right: Sidebar Customizer Panel */}
-        <div className={`w-full lg:w-[350px] xl:w-[400px] shrink-0 space-y-6 transition-all duration-300 ${!hasText ? 'opacity-50 pointer-events-none grayscale-[0.5]' : ''}`}>
+        <motion.div 
+          animate={{ opacity: hasText ? 1 : 0.5 }}
+          transition={{ duration: 0.25 }}
+          className={`w-full lg:w-[350px] xl:w-[400px] shrink-0 space-y-6 transition-all duration-300 ${!hasText ? 'pointer-events-none grayscale-[0.5]' : ''}`}
+        >
           <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6">
             <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground border-b border-border pb-3 flex items-center gap-2">
               <Settings size={15} /> Style Customizer
@@ -262,12 +272,14 @@ const FontConverter = () => {
                 <div className="bg-background/80 border border-border/30 p-3 rounded-lg text-center break-all select-all font-semibold text-base min-h-[50px] flex items-center justify-center text-foreground shadow-inner">
                   {applyDecoration(selectedFont.text)}
                 </div>
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={() => handleCopy(applyDecoration(selectedFont.text))}
-                  className="w-full py-2 bg-primary hover:bg-primary/95 text-primary-foreground text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 active:scale-[0.98] shadow-sm"
+                  className="w-full py-3.5 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-[0_1px_2px_rgba(0,0,0,0.1),0_0_0_1px_rgba(255,255,255,0.1)_inset] hover:shadow-[0_4px_12px_rgba(var(--primary),0.3)] active:scale-[0.98]"
                 >
                   {copiedState ? <CheckCircle size={14} /> : <Copy size={14} />} Copy Aesthetic Swatch
-                </button>
+                </motion.button>
               </div>
             ) : (
               <p className="text-xs text-muted-foreground italic text-center py-4">Select a font style to customize.</p>
@@ -288,17 +300,19 @@ const FontConverter = () => {
                   { id: 'music',    label: '♫ Music ♫' },
                   { id: 'crown',    label: '♚ Crown ♚' }
                 ].map(dec => (
-                  <button
+                  <motion.button
                     key={dec.id}
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
                     onClick={() => setDecorator(dec.id)}
-                    className={`py-2 px-2.5 text-xs font-semibold rounded-lg border transition-all active:scale-[0.97] text-center ${
+                    className={`py-2.5 px-2.5 text-xs font-semibold rounded-xl border transition-all text-center ${
                       decorator === dec.id
                         ? 'border-primary/50 bg-primary/10 text-primary font-bold'
                         : 'border-border/50 bg-muted/20 hover:bg-muted text-foreground'
                     }`}
                   >
                     {dec.label}
-                  </button>
+                  </motion.button>
                 ))}
               </div>
             </div>
@@ -318,14 +332,14 @@ const FontConverter = () => {
                   <button
                     key={level.id}
                     onClick={() => setZalgoLevel(level.id)}
-                    className={`flex-1 relative py-2 text-xs font-bold rounded-lg transition-all ${
+                    className={`flex-1 relative py-2.5 text-xs font-bold rounded-xl transition-all ${
                       zalgoLevel === level.id ? 'text-foreground font-extrabold' : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
                     {zalgoLevel === level.id && (
                       <motion.div
                         layoutId="zalgo-active"
-                        className="absolute inset-0 bg-background border border-border rounded-lg shadow-sm -z-10"
+                        className="absolute inset-0 bg-background border border-border rounded-xl shadow-sm -z-10"
                       />
                     )}
                     {level.label}
@@ -334,7 +348,7 @@ const FontConverter = () => {
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

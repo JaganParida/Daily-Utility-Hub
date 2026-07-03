@@ -1,7 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const { upload, validateFileType } = require('../middleware/uploadMiddleware');
+const { protect } = require('../middleware/authMiddleware');
 const { mergePdfs, splitPdf, watermarkPdf, lockPdf, unlockPdf, editMetadata, extractText, inspectPdf } = require('../controllers/pdfController');
+
+// Apply auth protection to all PDF operations
+router.use(protect);
 
 // Ensure that we only allow PDF files for these routes
 const ensurePdf = (req, res, next) => {

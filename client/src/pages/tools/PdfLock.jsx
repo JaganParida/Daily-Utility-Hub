@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { Lock, UploadCloud, FileText, CheckCircle2, Eye, EyeOff, ShieldCheck, ShieldAlert, ExternalLink } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import axios from 'axios';
+import { motion, AnimatePresence } from 'framer-motion';
+import api from '../../lib/api';
 
 const PdfLock = () => {
   const [file, setFile] = useState(null);
@@ -97,7 +98,7 @@ const PdfLock = () => {
       setIsProcessing(true);
       toastId = toast.loading('Encrypting PDF securely on server...');
       
-      const response = await axios.post('http://localhost:5000/api/pdf/lock', formData, {
+      const response = await api.post('/pdf/lock', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         responseType: 'blob'
       });
@@ -124,42 +125,63 @@ const PdfLock = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-4 lg:py-6 flex flex-col min-h-0">
+    <div className="max-w-[1600px] mx-auto w-full px-2 md:px-8">
       <div className="mb-6 flex items-center gap-3 shrink-0">
-        <div className="p-2 bg-emerald-500/10 text-emerald-500 rounded-lg shadow-sm">
-          <Lock size={28} />
+        <div className="p-2 bg-primary/10 text-primary rounded-md shadow-sm">
+          <Lock size={24} />
         </div>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Lock PDF (Encrypt)</h1>
-          <p className="text-muted-foreground mt-1 text-sm">Secure your document with AES-256 military-grade encryption and set permissions.</p>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter text-foreground">Lock PDF (Encrypt)</h1>
+          <p className="text-muted-foreground mt-1 text-xs md:text-sm">Secure your document with AES-256 military-grade encryption and set permissions.</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-6 items-start">
+      <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         
         {/* Upload & Form Area */}
-        <div className="flex flex-col gap-6 w-full min-h-0">
-          
-          {/* Dropzone */}
-          {!file ? (
-            <div 
-              onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}
-              onClick={() => fileInputRef.current?.click()}
-              className={`border-2 border-dashed rounded-2xl p-10 flex flex-col items-center justify-center cursor-pointer transition-all h-64 ${
-                isDragging ? 'border-emerald-500 bg-emerald-500/5' : 'border-border bg-card hover:border-emerald-500/50 hover:bg-muted/30'
-              }`}
-            >
-              <input type="file" ref={fileInputRef} onChange={handleFileSelect} className="hidden" accept=".pdf,application/pdf" />
-              <div className="w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center text-emerald-500 mb-4 pointer-events-none">
-                <UploadCloud size={32} />
-              </div>
-              <h3 className="text-lg font-bold text-foreground mb-1 pointer-events-none">Upload a PDF</h3>
-              <p className="text-sm text-muted-foreground text-center pointer-events-none">
-                Drag & drop a PDF file here or click to browse.
-              </p>
-            </div>
-          ) : (
-            <div className="bg-card border border-border rounded-2xl shadow-sm p-6 flex flex-col gap-4 shrink-0 min-w-0">
+        <motion.div 
+          layout
+          className={`flex-1 w-full bg-card border border-border p-4 md:p-6 rounded-2xl shadow-sm flex flex-col relative transition-all duration-500 ease-out ${!file ? 'min-h-[50vh]' : 'min-h-0'}`}
+        >
+          <AnimatePresence mode="popLayout" initial={false}>
+            {!file ? (
+              <motion.div
+                key="dropzone"
+                layout
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.3 }}
+                className="flex-1 h-full w-full flex flex-col justify-center"
+              >
+                <div 
+                  onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}
+                  onClick={() => fileInputRef.current?.click()}
+                  className={`flex-1 h-full w-full border-2 border-dashed rounded-2xl p-6 md:p-10 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 relative group min-h-[300px] ${
+                    isDragging ? 'border-primary bg-primary/5 scale-[0.99] shadow-inner' : 'border-border bg-card hover:border-primary/50 hover:bg-muted/20'
+                  }`}
+                >
+                  <input type="file" ref={fileInputRef} onChange={handleFileSelect} className="hidden" accept=".pdf,application/pdf" />
+                  <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center text-primary mb-4 pointer-events-none shadow-sm transition-transform duration-300 group-hover:scale-110">
+                    <UploadCloud size={32} />
+                  </div>
+                  <h3 className="text-lg font-bold text-foreground mb-2 pointer-events-none text-center">Upload a PDF</h3>
+                  <p className="text-sm text-muted-foreground text-center max-w-sm pointer-events-none leading-relaxed">
+                    Drag & drop a PDF file here, or <span className="text-primary font-semibold hover:underline">browse files</span>.
+                  </p>
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="workspace"
+                layout
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.3 }}
+                className="flex flex-col min-h-0 w-full space-y-6"
+              >
+                <div className="bg-card border border-border/80 rounded-2xl shadow-sm p-6 flex flex-col gap-4 shrink-0 min-w-0">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-4 min-w-0 w-full sm:w-auto">
                   <div className="w-12 h-12 bg-emerald-500/10 text-emerald-500 rounded-xl flex items-center justify-center shrink-0">
@@ -190,12 +212,12 @@ const PdfLock = () => {
                     <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Interactive Document Preview</h4>
                     <a 
                       href={previewUrl} target="_blank" rel="noreferrer"
-                      className="text-xs text-blue-500 hover:underline flex items-center gap-1 font-semibold"
+                      className="text-xs text-primary hover:underline flex items-center gap-1 font-semibold"
                     >
                       Open in New Tab <ExternalLink size={12} />
                     </a>
                   </div>
-                  <div className="w-full h-[400px] md:h-[500px] border border-border rounded-xl overflow-hidden bg-muted/10 relative">
+                  <div className="w-full h-[400px] md:h-[500px] border border-border rounded-xl overflow-hidden bg-muted/5 relative">
                     <object 
                       data={previewUrl} 
                       type="application/pdf" 
@@ -211,10 +233,8 @@ const PdfLock = () => {
                 </div>
               )}
             </div>
-          )}
 
-          {file && (
-             <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6 overflow-y-auto custom-scrollbar flex-1 min-h-[350px]">
+            <div className="bg-card border border-border/80 p-6 rounded-2xl shadow-sm space-y-6 overflow-y-auto custom-scrollbar flex-1 min-h-[350px]">
                 
                 {/* Password Fields */}
                 <div className="grid md:grid-cols-2 gap-6">
@@ -333,14 +353,17 @@ const PdfLock = () => {
                 </div>
 
              </div>
-          )}
-
-        </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
 
         {/* Action Panel */}
-        <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6 lg:sticky lg:top-6 w-full lg:w-[350px] shrink-0">
-          <div>
-            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4">Encryption Info</h3>
+        <div className="w-full lg:w-[350px] xl:w-[400px] shrink-0 space-y-6">
+          <div className={`bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6 transition-all duration-300 ${!file ? 'opacity-50 pointer-events-none grayscale-[0.5]' : ''}`}>
+            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground border-b border-border pb-3 mb-4">
+              <Lock size={16} className="inline mr-2" /> Encryption Info
+            </h3>
             <div className="space-y-4 text-sm text-foreground">
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="text-emerald-500 mt-0.5 shrink-0" size={16} />
@@ -357,14 +380,45 @@ const PdfLock = () => {
             </div>
           </div>
           
-          <button 
-            onClick={handleLock}
-            disabled={!file || !password.trim() || password !== confirmPassword || isProcessing}
-            className="w-full py-3 bg-emerald-500 text-white font-medium rounded-xl hover:bg-emerald-600 transition-colors flex items-center justify-center gap-2 shadow-sm shadow-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Lock size={18} />
-            {isProcessing ? 'Encrypting...' : 'Lock PDF'}
-          </button>
+          <div className="flex flex-col gap-3">
+            <button 
+              onClick={handleLock}
+              disabled={!file || !password.trim() || password !== confirmPassword || isProcessing}
+              className={`w-full h-14 font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-[0_1px_2px_rgba(0,0,0,0.1),0_0_0_1px_rgba(255,255,255,0.1)_inset] disabled:opacity-50 disabled:hover:shadow-none active:scale-[0.98] overflow-hidden ${
+                isProcessing
+                  ? 'bg-primary/70 text-primary-foreground cursor-not-allowed'
+                  : 'bg-primary hover:bg-primary/90 text-primary-foreground hover:shadow-[0_4px_12px_rgba(var(--primary),0.3)]'
+              }`}
+            >
+              <AnimatePresence mode="popLayout" initial={false}>
+                {isProcessing ? (
+                  <motion.div
+                    key="generating"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                    className="flex items-center gap-2"
+                  >
+                    <Loader2 className="animate-spin" size={20} />
+                    Encrypting...
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="idle"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                    className="flex items-center gap-2"
+                  >
+                    <Lock size={20} />
+                    Lock PDF
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </button>
+          </div>
         </div>
 
       </div>

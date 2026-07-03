@@ -102,14 +102,17 @@ const WordCounter = () => {
           <Type size={24} />
         </div>
         <div>
-          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">Advanced Word Counter</h1>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter text-foreground">Advanced Word Counter</h1>
           <p className="text-muted-foreground mt-1 text-xs md:text-sm">Inspect paragraph counts, keyword density charts, reading metrics, and character stats.</p>
         </div>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         {/* Left: Input Text Editor */}
-        <div className="flex-1 w-full bg-card border border-border p-4 md:p-5 rounded-2xl shadow-sm flex flex-col relative lg:h-[calc(100vh-250px)] lg:max-h-[620px] lg:min-h-[520px]">
+        <motion.div 
+          layout
+          className="flex-1 w-full bg-card border border-border p-4 md:p-5 rounded-2xl shadow-sm flex flex-col relative lg:h-[calc(100vh-250px)] lg:max-h-[620px] lg:min-h-[520px]"
+        >
           <div className="flex-1 flex flex-col gap-4 min-h-0">
             <div className="flex justify-between items-center px-1 shrink-0">
               <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Paste Document Content</span>
@@ -117,14 +120,14 @@ const WordCounter = () => {
                 <button
                   onClick={handleCopy}
                   disabled={!hasText}
-                  className="text-xs font-semibold text-muted-foreground hover:text-foreground flex items-center gap-1 disabled:opacity-40"
+                  className="text-xs font-semibold text-muted-foreground hover:text-foreground flex items-center gap-1 disabled:opacity-40 transition-colors"
                 >
                   <Copy size={13} /> Copy
                 </button>
                 <button
                   onClick={clearText}
                   disabled={!hasText}
-                  className="text-xs font-semibold text-red-500 hover:text-red-600 flex items-center gap-1 disabled:opacity-40"
+                  className="text-xs font-semibold text-red-500 hover:text-red-600 flex items-center gap-1 disabled:opacity-40 transition-colors"
                 >
                   <Trash2 size={13} /> Clear
                 </button>
@@ -135,7 +138,7 @@ const WordCounter = () => {
               value={text}
               onChange={(e) => setText(e.target.value)}
               placeholder="Start typing or paste your content here..."
-              className="w-full flex-1 bg-muted/10 border border-border/50 p-4 rounded-xl text-sm font-medium text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all shadow-inner custom-scrollbar resize-none min-h-0"
+              className="w-full flex-1 bg-muted/10 border border-border/50 p-4 rounded-xl text-sm font-medium text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/50 outline-none transition-all shadow-inner custom-scrollbar resize-none min-h-0"
             />
 
             {/* Quick Metrics Grid */}
@@ -146,17 +149,26 @@ const WordCounter = () => {
                 { name: 'Sentences',  value: stats.sentences },
                 { name: 'Paragraphs', value: stats.paragraphs }
               ].map(stat => (
-                <div key={stat.name} className="bg-muted/20 border border-border/30 p-3 rounded-xl shadow-sm">
+                <motion.div 
+                  key={stat.name} 
+                  whileHover={{ scale: 1.03, y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="bg-muted/20 border border-border/50 p-3.5 rounded-xl shadow-sm transition-all hover:border-primary/30 cursor-default"
+                >
                   <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">{stat.name}</p>
-                  <p className="text-base font-bold text-foreground mt-1">{stat.value}</p>
-                </div>
+                  <p className="text-lg font-bold text-foreground mt-1">{stat.value}</p>
+                </motion.div>
               ))}
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Right: Stats Sidebar */}
-        <div className={`w-full lg:w-[350px] xl:w-[400px] shrink-0 space-y-6 transition-all duration-300 ${!hasText ? 'opacity-50 pointer-events-none grayscale-[0.5]' : ''}`}>
+        <motion.div 
+          animate={{ opacity: hasText ? 1 : 0.5 }}
+          transition={{ duration: 0.25 }}
+          className={`w-full lg:w-[350px] xl:w-[400px] shrink-0 space-y-6 transition-all duration-300 ${!hasText ? 'pointer-events-none grayscale-[0.5]' : ''}`}
+        >
           <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6">
             <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground border-b border-border pb-3 flex items-center gap-2">
               <FileText size={15} /> Document Diagnostics
@@ -175,10 +187,14 @@ const WordCounter = () => {
                   { label: 'Avg Word Length',   val: stats.words > 0 ? `${(stats.characters / stats.words).toFixed(1)} chars` : '—' },
                   { label: 'Avg Sentence',      val: stats.words > 0 ? `${(stats.words / stats.sentences).toFixed(1)} words` : '—' }
                 ].map(item => (
-                  <div key={item.label} className="flex justify-between items-center bg-background/50 border border-border/30 py-2 px-3 rounded-lg">
-                    <span className="text-[10px] text-muted-foreground uppercase">{item.label}</span>
+                  <motion.div 
+                    key={item.label}
+                    whileHover={{ x: 2 }}
+                    className="flex justify-between items-center bg-muted/20 border border-border/50 py-2.5 px-3.5 rounded-xl shadow-sm"
+                  >
+                    <span className="text-[10px] text-muted-foreground uppercase tracking-wider">{item.label}</span>
                     <span className="font-mono text-[11px] font-bold">{item.val}</span>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
             </div>
@@ -190,14 +206,20 @@ const WordCounter = () => {
               </label>
 
               <div className="grid grid-cols-2 gap-3">
-                <div className="bg-muted/30 border border-border/50 p-3.5 rounded-xl text-center">
+                <motion.div 
+                  whileHover={{ scale: 1.02 }}
+                  className="bg-muted/20 border border-border/50 p-4 rounded-xl text-center shadow-sm"
+                >
                   <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">Reading Time</span>
                   <p className="text-lg font-bold text-foreground mt-2">{stats.words > 0 ? `${stats.readingTime} min` : '—'}</p>
-                </div>
-                <div className="bg-muted/30 border border-border/50 p-3.5 rounded-xl text-center">
+                </motion.div>
+                <motion.div 
+                  whileHover={{ scale: 1.02 }}
+                  className="bg-muted/20 border border-border/50 p-4 rounded-xl text-center shadow-sm"
+                >
                   <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">Speaking Time</span>
                   <p className="text-lg font-bold text-foreground mt-2">{stats.words > 0 ? `${stats.speakingTime} min` : '—'}</p>
-                </div>
+                </motion.div>
               </div>
             </div>
 
@@ -208,28 +230,36 @@ const WordCounter = () => {
               </label>
 
               {!keywords.length ? (
-                <p className="text-xs text-muted-foreground italic text-center py-2 bg-muted/10 rounded-lg border border-dashed border-border/40">Not enough words for analysis.</p>
+                <p className="text-xs text-muted-foreground italic text-center py-2.5 bg-muted/10 rounded-xl border border-dashed border-border/50">Not enough words for analysis.</p>
               ) : (
                 <div className="space-y-3">
                   {keywords.map((kw, i) => (
-                    <div key={i} className="space-y-1.5">
+                    <motion.div 
+                      key={i} 
+                      initial={{ opacity: 0, y: 5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.05 }}
+                      className="space-y-1.5"
+                    >
                       <div className="flex justify-between items-center text-xs">
-                        <span className="font-semibold text-foreground font-mono bg-muted/50 px-2 py-0.5 rounded-md border border-border/40">{kw.word}</span>
+                        <span className="font-semibold text-foreground font-mono bg-muted/30 px-2 py-0.5 rounded-lg border border-border/50">{kw.word}</span>
                         <span className="text-[10px] font-bold text-muted-foreground">{kw.count} times ({kw.percentage}%)</span>
                       </div>
-                      <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
-                        <div 
-                          className="h-full bg-primary rounded-full transition-all duration-500" 
-                          style={{ width: `${kw.percentage}%` }} 
+                      <div className="w-full h-2 bg-muted/30 rounded-full overflow-hidden">
+                        <motion.div 
+                          className="h-full bg-primary rounded-full" 
+                          initial={{ width: 0 }}
+                          animate={{ width: `${kw.percentage}%` }}
+                          transition={{ duration: 0.5, ease: "easeOut" }} 
                         />
                       </div>
-                    </div>
+                    </motion.div>
                   ))}
                 </div>
               )}
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

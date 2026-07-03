@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Search, Copy, Trash2, CheckCircle, HelpCircle, RefreshCw } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 
 const FindAndReplace = () => {
@@ -129,7 +130,7 @@ const FindAndReplace = () => {
           <Search size={24} />
         </div>
         <div>
-          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">Advanced Find & Replace</h1>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter text-foreground">Advanced Find & Replace</h1>
           <p className="text-muted-foreground mt-1 text-xs md:text-sm">Find and replace patterns in real-time, supporting Case Sensitivity, Whole Words, and Regular Expressions (Regex).</p>
         </div>
       </div>
@@ -137,7 +138,10 @@ const FindAndReplace = () => {
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         
         {/* Left: Input/Output Split Editor Area */}
-        <div className="flex-1 w-full bg-card border border-border rounded-2xl shadow-sm flex flex-col overflow-hidden lg:h-[calc(100vh-250px)] lg:max-h-[620px] lg:min-h-[520px]">
+        <motion.div 
+          layout
+          className="flex-1 w-full bg-card border border-border rounded-2xl shadow-sm flex flex-col overflow-hidden lg:h-[calc(100vh-250px)] lg:max-h-[620px] lg:min-h-[520px]"
+        >
           
           {/* Find & Replace Controls inside Left Card (Shrink-0) */}
           <div className="p-4 md:p-5 border-b border-border bg-muted/20 space-y-4 shrink-0">
@@ -147,7 +151,7 @@ const FindAndReplace = () => {
                 <input
                   type="text"
                   disabled={!hasText}
-                  className="w-full bg-background border border-border/60 rounded-xl px-4 py-2 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all disabled:opacity-50"
+                  className="w-full bg-muted/20 border border-border/50 rounded-xl p-3 px-4 text-sm font-semibold text-foreground outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-muted-foreground disabled:opacity-50"
                   placeholder={useRegex ? "Enter regex (e.g. \\d+)" : "Search term..."}
                   value={findText}
                   onChange={(e) => setFindText(e.target.value)}
@@ -158,7 +162,7 @@ const FindAndReplace = () => {
                 <input
                   type="text"
                   disabled={!hasText}
-                  className="w-full bg-background border border-border/60 rounded-xl px-4 py-2 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all disabled:opacity-50"
+                  className="w-full bg-muted/20 border border-border/50 rounded-xl p-3 px-4 text-sm font-semibold text-foreground outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-muted-foreground disabled:opacity-50"
                   placeholder="Substitution term..."
                   value={replaceText}
                   onChange={(e) => setReplaceText(e.target.value)}
@@ -234,10 +238,14 @@ const FindAndReplace = () => {
             </div>
           </div>
           
-        </div>
+        </motion.div>
 
         {/* Right: Sidebar Panel */}
-        <div className={`w-full lg:w-[320px] xl:w-[350px] shrink-0 transition-all duration-300 ${!hasText ? 'opacity-50 pointer-events-none grayscale-[0.5]' : ''}`}>
+        <motion.div 
+          animate={{ opacity: hasText ? 1 : 0.5 }}
+          transition={{ duration: 0.25 }}
+          className={`w-full lg:w-[320px] xl:w-[350px] shrink-0 transition-all duration-300 ${!hasText ? 'pointer-events-none grayscale-[0.5]' : ''}`}
+        >
           <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6 flex flex-col">
             
             {/* Occurrences Stats */}
@@ -267,36 +275,42 @@ const FindAndReplace = () => {
                   { id: 'numbers',       label: 'Remove All Digits' },
                   { id: 'punctuation',   label: 'Strip Punctuation' }
                 ].map(preset => (
-                  <button
+                  <motion.button
                     key={preset.id}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                     onClick={() => applyPreset(preset.id)}
-                    className="w-full text-left py-2 px-3 text-xs font-semibold rounded-lg border border-border/50 bg-muted/20 hover:bg-muted text-foreground transition-all active:scale-[0.98]"
+                    className="w-full text-left py-2.5 px-3.5 text-xs font-semibold rounded-xl border border-border/50 bg-muted/20 hover:bg-muted text-foreground transition-all"
                   >
                     {preset.label}
-                  </button>
+                  </motion.button>
                 ))}
               </div>
             </div>
 
             {/* Bottom Actions */}
             <div className="mt-auto pt-4 border-t border-border/50 space-y-2.5">
-              <button 
+              <motion.button 
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={handleCopy} 
                 disabled={!replacedOutput || replacedOutput === text} 
-                className="w-full py-2.5 bg-primary hover:bg-primary/95 text-primary-foreground text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 active:scale-[0.98] disabled:opacity-40 disabled:scale-100"
+                className="w-full h-14 font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-[0_1px_2px_rgba(0,0,0,0.1),0_0_0_1px_rgba(255,255,255,0.1)_inset] bg-primary hover:bg-primary/90 text-primary-foreground hover:shadow-[0_4px_12px_rgba(var(--primary),0.3)] disabled:opacity-40 active:scale-[0.98]"
               >
-                {copied ? <CheckCircle size={14} /> : <Copy size={14} />} Copy Replaced Text
-              </button>
-              <button 
+                {copied ? <CheckCircle size={16} /> : <Copy size={16} />} Copy Replaced Text
+              </motion.button>
+              <motion.button 
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={clearAll} 
-                className="w-full py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
+                className="w-full py-3 bg-destructive/10 hover:bg-destructive/20 border border-destructive/20 hover:border-destructive/30 text-destructive font-semibold rounded-xl transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
               >
-                <Trash2 size={14} /> Clear All
-              </button>
+                <Trash2 size={16} /> Clear All
+              </motion.button>
             </div>
 
           </div>
-        </div>
+        </motion.div>
 
       </div>
     </div>

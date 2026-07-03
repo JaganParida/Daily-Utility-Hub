@@ -181,12 +181,12 @@ const ImageToPdf = () => {
     <div className="max-w-[1600px] mx-auto w-full px-2 md:px-8">
 
       {/* Header */}
-      <div className="mb-6 flex items-center gap-3">
-        <div className="p-2 bg-primary/10 text-primary rounded-lg shadow-sm">
+      <div className="mb-6 flex items-center gap-3 shrink-0">
+        <div className="p-2 bg-primary/10 text-primary rounded-md shadow-sm">
           <FileText size={24} />
         </div>
         <div>
-          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">Advanced Image to PDF</h1>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter text-foreground">Advanced Image to PDF</h1>
           <p className="text-muted-foreground mt-1 text-xs md:text-sm">Convert photos to printable PDF documents — A4, Letter, and more.</p>
         </div>
       </div>

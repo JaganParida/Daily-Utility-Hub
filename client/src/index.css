@@ -48,17 +48,17 @@
   }
  
   .dark {
-    --background: #09090b;
-    --foreground: #fafafa;
-    --card: #121214;
-    --card-foreground: #fafafa;
-    --primary: #6366f1;
+    --background: #060608;
+    --foreground: #f4f4f5;
+    --card: #0d0d10;
+    --card-foreground: #f4f4f5;
+    --primary: #4f46e5;
     --primary-foreground: #ffffff;
-    --muted: #27272a;
-    --muted-foreground: #a1a1aa;
-    --border: #27272a;
+    --muted: #18181b;
+    --muted-foreground: #8e8e93;
+    --border: #1c1c21;
     --destructive: #ef4444;
-    --destructive-foreground: #fafafa;
+    --destructive-foreground: #f4f4f5;
   }
 }
 
@@ -114,4 +114,13 @@
 }
 .custom-scrollbar:hover::-webkit-scrollbar-thumb {
   background: var(--muted-foreground);
+}
+
+/* Hide scrollbar for elements with .no-scrollbar */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
 }

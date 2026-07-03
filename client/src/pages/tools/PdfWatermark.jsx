@@ -1,7 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
-import { UploadCloud, FileText, CheckCircle2, Droplets, Eye, ExternalLink } from 'lucide-react';
+import { UploadCloud, FileText, CheckCircle2, Droplets, Eye, EyeOff, ExternalLink, Loader2, X, Settings2, Sparkles, Check } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
-import axios from 'axios';
+import api from '../../lib/api';
+import DropzoneComponent from '../../components/DropzoneComponent';
 
 const PdfWatermark = () => {
   const [file, setFile] = useState(null);
@@ -14,9 +16,7 @@ const PdfWatermark = () => {
   const [previewUrl, setPreviewUrl] = useState(null);
   const [showPreview, setShowPreview] = useState(false);
   
-  const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const fileInputRef = useRef(null);
 
   const colors = [
     { name: 'Red', value: '#e61a1a' },
@@ -32,9 +32,6 @@ const PdfWatermark = () => {
     };
   }, [previewUrl]);
 
-  const handleDragOver = (e) => { e.preventDefault(); setIsDragging(true); };
-  const handleDragLeave = (e) => { e.preventDefault(); setIsDragging(false); };
-  
   const handleClear = () => {
     setFile(null);
     setShowPreview(false);
@@ -42,25 +39,6 @@ const PdfWatermark = () => {
       URL.revokeObjectURL(previewUrl);
       setPreviewUrl(null);
     }
-  };
-
-  const handleDrop = (e) => {
-    e.preventDefault();
-    setIsDragging(false);
-    const droppedFile = e.dataTransfer.files[0];
-    if (droppedFile?.type !== 'application/pdf') {
-      toast.error('Only PDF files are allowed');
-      return;
-    }
-    setFile(droppedFile);
-    setPreviewUrl(URL.createObjectURL(droppedFile));
-  };
-
-  const handleFileSelect = (e) => {
-    const selectedFile = e.target.files[0];
-    if (selectedFile?.type !== 'application/pdf') return;
-    setFile(selectedFile);
-    setPreviewUrl(URL.createObjectURL(selectedFile));
   };
 
   const handleWatermark = async () => {
@@ -87,7 +65,7 @@ const PdfWatermark = () => {
       setIsProcessing(true);
       toastId = toast.loading('Applying watermark securely on server...');
       
-      const response = await axios.post('http://localhost:5000/api/pdf/watermark', formData, {
+      const response = await api.post('/pdf/watermark', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         responseType: 'blob'
       });
@@ -119,68 +97,114 @@ const PdfWatermark = () => {
     return 'items-center justify-center';
   };
 
+  const getSliderBackground = (val, min, max) => {
+    const pct = ((val - min) / (max - min)) * 100;
+    return `linear-gradient(to right, #4f46e5 ${pct}%, #1c1c21 ${pct}%)`;
+  };
+
   return (
-    <div className="max-w-6xl mx-auto px-4 py-4 lg:py-6 flex flex-col min-h-0">
-      <div className="mb-6 flex items-center gap-3 shrink-0">
-        <div className="p-2 bg-purple-500/10 text-purple-500 rounded-lg shadow-sm">
-          <Droplets size={28} />
+    <div className="max-w-[1600px] mx-auto w-full px-2 md:px-8">
+      {/* Header Container */}
+      <div className="mb-6 flex items-center gap-3">
+        <div className="p-2 bg-primary/10 text-primary rounded-md shadow-sm">
+          <Droplets size={24} />
         </div>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Advanced PDF Watermark</h1>
-          <p className="text-muted-foreground mt-1 text-sm">Stamp documents with customized text, positioning, colors, and opacity.</p>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter text-foreground">Advanced PDF Watermark</h1>
+          <p className="text-muted-foreground mt-1 text-xs md:text-sm">Stamp documents with customized text, positioning, colors, and opacity.</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-6 items-start">
+      {/* Main Grid */}
+      <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         
-        {/* Upload & Preview Area */}
-        <div className="flex flex-col gap-6 w-full min-h-0">
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-auto md:h-64 shrink-0">
-            {/* Dropzone */}
+        {/* Workspace */}
+        <motion.div 
+          layout
+          className={`flex-1 w-full bg-card border border-border p-4 md:p-6 rounded-2xl shadow-sm flex flex-col relative transition-all duration-500 ease-out ${!file ? 'min-h-[50vh]' : 'min-h-0'}`}
+        >
+          <AnimatePresence mode="popLayout" initial={false}>
             {!file ? (
-              <div 
-                onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}
-                onClick={() => fileInputRef.current?.click()}
-                className={`border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center cursor-pointer transition-all h-64 md:h-full ${
-                  isDragging ? 'border-purple-500 bg-purple-500/5' : 'border-border bg-card hover:border-purple-500/50 hover:bg-muted/30'
-                }`}
+              <motion.div
+                key="dropzone"
+                layout
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.3 }}
+                className="flex-1 h-full w-full flex flex-col justify-center"
               >
-                <input type="file" ref={fileInputRef} onChange={handleFileSelect} className="hidden" accept=".pdf,application/pdf" />
-                <div className="w-16 h-16 bg-purple-500/10 rounded-full flex items-center justify-center text-purple-500 mb-4 pointer-events-none">
-                  <UploadCloud size={32} />
-                </div>
-                <h3 className="text-lg font-bold text-foreground mb-1 pointer-events-none">Upload a PDF</h3>
-                <p className="text-xs text-muted-foreground pointer-events-none">Drag & drop or click to browse</p>
-              </div>
+                  <DropzoneComponent 
+                    className="flex-1 h-full w-full justify-center"
+                    onFilesAccepted={(files) => {
+                      if (files.length === 0) return;
+                      const selectedFile = files[0];
+                      if (selectedFile.type !== 'application/pdf') {
+                        toast.error('Only PDF files are allowed');
+                        return;
+                      }
+                      setFile(selectedFile);
+                      setPreviewUrl(URL.createObjectURL(selectedFile));
+                    }} 
+                    accept={{ 'application/pdf': ['.pdf'] }} 
+                    maxFiles={1}
+                    title="Drag & drop a PDF here"
+                    subtitle="or click to browse"
+                  />
+                </motion.div>
             ) : (
-              <div className="bg-card border border-border rounded-2xl shadow-sm p-6 flex flex-col justify-center items-center h-64 md:h-full relative group min-w-0">
-                <div className="w-16 h-16 bg-purple-500/10 text-purple-500 rounded-xl flex items-center justify-center mb-4 shrink-0">
-                  <FileText size={32} />
-                </div>
-                <h3 className="font-bold text-foreground text-center truncate w-full px-4 min-w-0" title={file.name}>{file.name}</h3>
-                <p className="text-muted-foreground text-sm mt-1">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
-                <div className="absolute top-4 right-4 flex items-center gap-2">
-                  <button
-                    onClick={() => setShowPreview(!showPreview)}
-                    className="text-xs bg-muted hover:bg-muted/80 text-foreground px-3 py-1.5 rounded-lg transition-colors font-bold flex items-center gap-1.5"
-                  >
-                    <Eye size={12} />
-                    {showPreview ? 'Hide' : 'Preview'}
-                  </button>
-                  <button onClick={handleClear} className="text-xs text-red-500 bg-red-500/10 hover:bg-red-500/20 px-3 py-1.5 rounded-lg transition-colors font-semibold">
-                    Change
-                  </button>
-                </div>
-              </div>
-            )}
+              <motion.div
+                key="workspace"
+                layout
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.3 }}
+                className="flex flex-col min-h-0 w-full space-y-6"
+              >
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-auto md:h-64 shrink-0">
+                <motion.div
+                  key="file-box"
+                  className="bg-card border border-border rounded-2xl shadow-sm p-6 flex flex-col h-64 md:h-full relative min-w-0"
+                >
+                  <div className="flex items-center gap-3.5 mb-4">
+                    <div className="p-3 bg-primary/10 text-primary rounded-xl shrink-0">
+                      <FileText size={28} />
+                    </div>
+                    <div className="overflow-hidden min-w-0 flex-1">
+                      <h3 className="font-bold text-foreground truncate text-base" title={file.name}>{file.name}</h3>
+                      <p className="text-muted-foreground text-xs mt-0.5">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex flex-wrap gap-2 justify-end border-t border-border pt-4 mt-auto">
+                    <button
+                      onClick={() => setShowPreview(!showPreview)}
+                      className="text-xs bg-muted hover:bg-muted/80 text-foreground px-3.5 py-2.5 rounded-xl transition-all font-bold flex items-center gap-2 border border-border"
+                    >
+                      {showPreview ? <EyeOff size={14} /> : <Eye size={14} />}
+                      {showPreview ? 'Hide Preview' : 'Interactive Preview'}
+                    </button>
+                    <button 
+                      onClick={handleClear} 
+                      className="text-xs text-red-400 bg-red-950/10 border border-red-900/20 hover:bg-red-950/20 px-3.5 py-2.5 rounded-xl transition-all font-semibold flex items-center gap-1.5"
+                    >
+                      <X size={14} /> Remove
+                    </button>
+                  </div>
+                </motion.div>
 
-            {/* Visual Live Preview */}
-            <div className="bg-card rounded-2xl border border-border p-4 relative overflow-hidden h-64 md:h-full flex flex-col">
-              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 block">Live Preview</span>
-              <div className={`flex-1 bg-background rounded-xl border border-dashed border-border flex relative ${getPreviewAlignmentClass()}`}>
-                <span 
-                  className="font-bold whitespace-nowrap select-none transition-all duration-100"
+            {/* Box 2: Visual Live Preview */}
+            <div className="bg-card rounded-2xl border border-border/80 p-5 relative overflow-hidden h-64 md:h-full flex flex-col">
+              <div className="flex justify-between items-center mb-3">
+                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" /> Live Preview
+                </span>
+              </div>
+              <div className={`flex-1 bg-[#09090b] rounded-xl border border-dashed border-border/80 flex relative overflow-hidden ${getPreviewAlignmentClass()}`}>
+                <motion.span 
+                  layout
+                  className="font-black whitespace-nowrap select-none transition-all duration-100 drop-shadow-sm"
                   style={{ 
                     color: color, 
                     opacity: opacity, 
@@ -189,164 +213,230 @@ const PdfWatermark = () => {
                   }}
                 >
                   {watermarkText || 'PREVIEW'}
-                </span>
+                </motion.span>
                 
                 {/* Background paper lines placeholder to show transparency */}
-                <div className="absolute inset-x-4 top-1/4 h-2 bg-muted/40 rounded pointer-events-none z-0" />
-                <div className="absolute inset-x-4 top-1/2 h-2 bg-muted/40 rounded pointer-events-none z-0" />
-                <div className="absolute inset-x-4 top-3/4 h-2 bg-muted/40 rounded pointer-events-none z-0" />
+                <div className="absolute inset-x-4 top-1/4 h-2 bg-muted/10 rounded pointer-events-none z-0" />
+                <div className="absolute inset-x-4 top-1/2 h-2 bg-muted/10 rounded pointer-events-none z-0" />
+                <div className="absolute inset-x-4 top-3/4 h-2 bg-muted/10 rounded pointer-events-none z-0" />
               </div>
             </div>
           </div>
 
-          {file && showPreview && previewUrl && (
-            <div className="bg-card border border-border p-6 rounded-2xl shadow-sm flex flex-col gap-3 shrink-0">
-              <div className="flex items-center justify-between">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Interactive Document Preview</h4>
-                <a 
-                  href={previewUrl} target="_blank" rel="noreferrer"
-                  className="text-xs text-blue-500 hover:underline flex items-center gap-1 font-semibold"
-                >
-                  Open in New Tab <ExternalLink size={12} />
-                </a>
-              </div>
-              <div className="w-full h-[400px] md:h-[500px] border border-border rounded-xl overflow-hidden bg-muted/10 relative">
-                <object 
-                  data={previewUrl} 
-                  type="application/pdf" 
-                  className="w-full h-full"
-                >
-                  <iframe src={previewUrl} className="w-full h-full border-none" title="PDF Preview">
-                    <div className="p-6 text-center text-sm text-muted-foreground">
-                      Your browser doesn't support inline PDF previews. Please click "Open in New Tab" to view it.
-                    </div>
-                  </iframe>
-                </object>
-              </div>
-            </div>
-          )}
+                {/* Interactive Document Preview */}
+                <AnimatePresence>
+                  {showPreview && previewUrl && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="bg-card border border-border p-6 rounded-2xl shadow-sm flex flex-col gap-3 shrink-0 overflow-hidden"
+                    >
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Interactive Document Preview</h4>
+                        <a 
+                          href={previewUrl} target="_blank" rel="noreferrer"
+                          className="text-xs text-primary hover:underline flex items-center gap-1 font-semibold"
+                        >
+                          Open in New Tab <ExternalLink size={12} />
+                        </a>
+                      </div>
+                      <div className="w-full h-[400px] md:h-[500px] border border-border rounded-xl overflow-hidden bg-muted/5 relative">
+                        <object 
+                          data={previewUrl} 
+                          type="application/pdf" 
+                          className="w-full h-full"
+                        >
+                          <iframe src={previewUrl} className="w-full h-full border-none" title="PDF Preview">
+                            <div className="p-6 text-center text-sm text-muted-foreground">
+                              Your browser doesn't support inline PDF previews. Please click "Open in New Tab" to view it.
+                            </div>
+                          </iframe>
+                        </object>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
-          {/* Watermark Configuration Options */}
-          <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6 overflow-y-auto custom-scrollbar flex-1 min-h-[350px]">
+                {/* Watermark Configuration Options */}
+                <motion.div 
+                  layout
+                  className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6"
+                >
+            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground border-b border-border/80 pb-3 mb-5 flex items-center gap-2">
+              <Settings2 size={16} /> Customize Watermark
+            </h3>
+
+            {/* Custom slider thumb styles injected inside the options block */}
+            <style dangerouslySetInnerHTML={{__html: `
+              input[type=range]::-webkit-slider-thumb {
+                appearance: none;
+                width: 16px;
+                height: 16px;
+                border-radius: 50%;
+                background: #ffffff;
+                border: 2px solid #4f46e5;
+                cursor: pointer;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+                transition: transform 0.1s;
+              }
+              input[type=range]:hover::-webkit-slider-thumb {
+                transform: scale(1.2);
+              }
+            `}} />
              
-             {/* Text Input */}
-             <div>
-                <label className="text-sm font-bold uppercase tracking-wider text-muted-foreground block mb-2">Watermark Text</label>
+            {/* Text Input */}
+            <div>
+              <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground block mb-2">Watermark Text</label>
+              <div className="relative">
                 <input
                   type="text"
                   value={watermarkText}
                   onChange={(e) => setWatermarkText(e.target.value)}
                   placeholder="e.g. CONFIDENTIAL or DRAFT"
-                  className="w-full bg-background border border-border rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-purple-500/50 text-lg font-medium"
+                  className="w-full bg-[#09090b] border border-border/80 rounded-xl pl-4 pr-16 py-3.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-base font-semibold shadow-inner"
                   maxLength={30}
                 />
-             </div>
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-mono font-bold text-muted-foreground/60 bg-muted/30 px-2 py-1 rounded">
+                  {watermarkText.length}/30
+                </span>
+              </div>
+            </div>
 
-             <div className="grid md:grid-cols-2 gap-6">
-                
-                {/* Color Selector */}
-                <div>
-                   <label className="text-sm font-bold uppercase tracking-wider text-muted-foreground block mb-3">Color</label>
-                   <div className="flex flex-wrap gap-2 items-center">
-                      {colors.map(c => (
-                         <button 
-                           key={c.value} 
-                           onClick={() => setColor(c.value)}
-                           className={`w-8 h-8 rounded-full border-2 transition-transform ${color === c.value ? 'scale-110 border-foreground shadow' : 'border-transparent'}`}
-                           style={{ backgroundColor: c.value }}
-                           title={c.name}
-                         />
-                      ))}
-                      <input 
-                        type="color" 
-                        value={color} 
-                        onChange={(e) => setColor(e.target.value)}
-                        className="w-8 h-8 bg-transparent border-0 cursor-pointer rounded-full" 
-                      />
-                   </div>
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Color Selector */}
+              <div>
+                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground block mb-3">Color</label>
+                <div className="flex flex-wrap gap-2.5 items-center">
+                  {colors.map(c => {
+                    const isSelected = color === c.value;
+                    return (
+                      <motion.button 
+                        key={c.value} 
+                        onClick={() => setColor(c.value)}
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.95 }}
+                        className={`w-8 h-8 rounded-full border-2 transition-all relative flex items-center justify-center ${
+                          isSelected ? 'border-primary ring-2 ring-primary/20 scale-105 shadow' : 'border-transparent'
+                        }`}
+                        style={{ backgroundColor: c.value }}
+                        title={c.name}
+                      >
+                        {isSelected && (
+                          <Check size={14} className={c.value === '#0f172a' ? 'text-white' : 'text-neutral-900 invert font-bold'} />
+                        )}
+                      </motion.button>
+                    );
+                  })}
+                  
+                  {/* Custom color picker */}
+                  <div className="relative w-8 h-8 rounded-full border border-border/80 overflow-hidden cursor-pointer hover:scale-105 transition-transform flex items-center justify-center bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500" title="Custom Color">
+                    <input 
+                      type="color" 
+                      value={color} 
+                      onChange={(e) => setColor(e.target.value)}
+                      className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" 
+                    />
+                  </div>
                 </div>
+              </div>
 
-                {/* Position Selector */}
-                <div>
-                   <label className="text-sm font-bold uppercase tracking-wider text-muted-foreground block mb-2">Position</label>
-                   <div className="grid grid-cols-3 gap-1.5 w-44">
-                      {['top-left', 'top-right', 'center', 'bottom-left', 'bottom-right'].map(pos => {
-                        const isSelected = position === pos;
-                        let label = pos.split('-').map(w => w[0]).join('').toUpperCase() || 'C';
-                        if (pos === 'center') label = 'C';
-                        return (
-                          <button
-                            key={pos}
-                            onClick={() => setPosition(pos)}
-                            className={`py-1 text-xs font-bold border rounded-lg transition-colors uppercase ${isSelected ? 'bg-purple-500 border-purple-500 text-white shadow-sm' : 'bg-background hover:bg-muted text-foreground border-border'}`}
-                            style={pos === 'center' ? { gridColumn: '2', gridRow: '2' } : pos === 'bottom-left' ? { gridColumn: '1', gridRow: '3' } : pos === 'bottom-right' ? { gridColumn: '3', gridRow: '3' } : pos === 'top-left' ? { gridColumn: '1', gridRow: '1' } : { gridColumn: '3', gridRow: '1' }}
-                            title={pos.replace('-', ' ')}
-                          >
-                            {label}
-                          </button>
-                        );
-                      })}
-                   </div>
+              {/* Position Selector */}
+              <div>
+                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground block mb-2">Position</label>
+                <div className="grid grid-cols-3 gap-1.5 w-44">
+                  {['top-left', 'top-right', 'center', 'bottom-left', 'bottom-right'].map(pos => {
+                    const isSelected = position === pos;
+                    let label = pos.split('-').map(w => w[0]).join('').toUpperCase() || 'C';
+                    if (pos === 'center') label = 'C';
+                    return (
+                      <button
+                        key={pos}
+                        onClick={() => setPosition(pos)}
+                        className={`py-1.5 text-xs font-extrabold border rounded-lg transition-all uppercase ${
+                          isSelected 
+                            ? 'bg-primary border-primary text-white shadow-sm shadow-primary/20 scale-105' 
+                            : 'bg-[#09090b] hover:bg-neutral-800 text-muted-foreground border-border hover:border-muted-foreground/30'
+                        }`}
+                        style={
+                          pos === 'center' ? { gridColumn: '2', gridRow: '2' } :
+                          pos === 'bottom-left' ? { gridColumn: '1', gridRow: '3' } :
+                          pos === 'bottom-right' ? { gridColumn: '3', gridRow: '3' } :
+                          pos === 'top-left' ? { gridColumn: '1', gridRow: '1' } :
+                          { gridColumn: '3', gridRow: '1' }
+                        }
+                        title={pos.replace('-', ' ')}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
                 </div>
+              </div>
+            </div>
 
-             </div>
-
-             {/* Sliders Block */}
-             <div className="grid md:grid-cols-3 gap-6 pt-4 border-t border-border">
-                
-                {/* Opacity */}
-                <div>
-                   <div className="flex justify-between items-center mb-2">
-                      <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Opacity</label>
-                      <span className="text-xs font-mono font-bold text-foreground">{Math.round(opacity * 100)}%</span>
-                   </div>
-                   <input 
-                     type="range" min="0.1" max="1.0" step="0.05"
-                     value={opacity} onChange={(e) => setOpacity(parseFloat(e.target.value))}
-                     className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-purple-500" 
-                   />
+            {/* Sliders Block */}
+            <div className="grid md:grid-cols-3 gap-6 pt-4 border-t border-border/80">
+              {/* Opacity */}
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Opacity</label>
+                  <span className="text-xs font-extrabold bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 rounded-md">{Math.round(opacity * 100)}%</span>
                 </div>
+                <input 
+                  type="range" min="0.1" max="1.0" step="0.05"
+                  value={opacity} onChange={(e) => setOpacity(parseFloat(e.target.value))}
+                  className="w-full h-2 rounded-full appearance-none cursor-pointer outline-none transition-all" 
+                  style={{ background: getSliderBackground(opacity, 0.1, 1.0) }}
+                />
+              </div>
 
-                {/* Font Size */}
-                <div>
-                   <div className="flex justify-between items-center mb-2">
-                      <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Font Size</label>
-                      <span className="text-xs font-mono font-bold text-foreground">{fontSize}px</span>
-                   </div>
-                   <input 
-                     type="range" min="14" max="96" step="2"
-                     value={fontSize} onChange={(e) => setFontSize(parseInt(e.target.value))}
-                     className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-purple-500" 
-                   />
+              {/* Font Size */}
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Font Size</label>
+                  <span className="text-xs font-extrabold bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 rounded-md">{fontSize}px</span>
                 </div>
+                <input 
+                  type="range" min="14" max="96" step="2"
+                  value={fontSize} onChange={(e) => setFontSize(parseInt(e.target.value))}
+                  className="w-full h-2 rounded-full appearance-none cursor-pointer outline-none transition-all" 
+                  style={{ background: getSliderBackground(fontSize, 14, 96) }}
+                />
+              </div>
 
-                {/* Rotation */}
-                <div>
-                   <div className="flex justify-between items-center mb-2">
-                      <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Rotation</label>
-                      <span className="text-xs font-mono font-bold text-foreground">{rotation}°</span>
-                   </div>
-                   <input 
-                     type="range" min="-90" max="90" step="5"
-                     value={rotation} onChange={(e) => setRotation(parseInt(e.target.value))}
-                     className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-purple-500" 
-                   />
+              {/* Rotation */}
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Rotation</label>
+                  <span className="text-xs font-extrabold bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 rounded-md">{rotation}°</span>
                 </div>
+                <input 
+                  type="range" min="-90" max="90" step="5"
+                  value={rotation} onChange={(e) => setRotation(parseInt(e.target.value))}
+                  className="w-full h-2 rounded-full appearance-none cursor-pointer outline-none transition-all" 
+                  style={{ background: getSliderBackground(rotation, -90, 90) }}
+                />
+              </div>
+            </div>
+              </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
 
-             </div>
-
-          </div>
-
-        </div>
-
-        {/* Action Panel */}
-        <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6 lg:sticky lg:top-6 w-full lg:w-[350px] shrink-0">
-          <div>
-            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4">Watermark Details</h3>
-            <div className="space-y-4 text-sm text-foreground">
+        {/* Action Panel / Sidebar */}
+        <div className="w-full lg:w-[350px] xl:w-[400px] shrink-0 space-y-6">
+          <div className={`bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6 transition-all duration-300 ${!file ? 'opacity-50 pointer-events-none grayscale-[0.5]' : ''}`}>
+            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground border-b border-border pb-3 mb-4 flex items-center gap-2">
+              <Sparkles size={16} /> Watermark Details
+            </h3>
+            
+            <div className="space-y-4 text-sm text-muted-foreground bg-muted/10 p-4 rounded-xl border border-border/30">
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="text-emerald-500 mt-0.5 shrink-0" size={16} />
-                <p>Applies clean text formatting across every single page.</p>
+                <p>Applies clean text formatting across every page.</p>
               </div>
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="text-emerald-500 mt-0.5 shrink-0" size={16} />
@@ -359,16 +449,46 @@ const PdfWatermark = () => {
             </div>
           </div>
           
-          <button 
-            onClick={handleWatermark}
-            disabled={!file || !watermarkText.trim() || isProcessing}
-            className="w-full py-3 bg-purple-500 text-white font-medium rounded-xl hover:bg-purple-600 transition-colors flex items-center justify-center gap-2 shadow-sm shadow-purple-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Droplets size={18} />
-            {isProcessing ? 'Applying...' : 'Stamp PDF'}
-          </button>
+          <div className="flex flex-col gap-3">
+            <button 
+              onClick={handleWatermark}
+              disabled={!file || !watermarkText.trim() || isProcessing}
+              className={`w-full h-14 font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-[0_1px_2px_rgba(0,0,0,0.1),0_0_0_1px_rgba(255,255,255,0.1)_inset] disabled:opacity-50 disabled:hover:shadow-none active:scale-[0.98] overflow-hidden ${
+                isProcessing
+                  ? 'bg-primary/70 text-primary-foreground cursor-not-allowed'
+                  : 'bg-primary hover:bg-primary/90 text-primary-foreground hover:shadow-[0_4px_12px_rgba(var(--primary),0.3)]'
+              }`}
+            >
+              <AnimatePresence mode="popLayout" initial={false}>
+                {isProcessing ? (
+                  <motion.div
+                    key="generating"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                    className="flex items-center gap-2"
+                  >
+                    <Loader2 className="animate-spin" size={20} />
+                    Applying...
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="idle"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                    className="flex items-center gap-2"
+                  >
+                    <Sparkles size={20} />
+                    <span>Stamp PDF</span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </button>
+          </div>
         </div>
-
       </div>
     </div>
   );

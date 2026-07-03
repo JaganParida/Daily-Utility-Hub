@@ -1,21 +1,21 @@
-import { useState, useRef } from 'react';
-import JSZip from 'jszip';
-import { UploadCloud, FileText, CheckCircle2, ChevronRight, Download, X, ListFilter, RefreshCw } from 'lucide-react';
+import { useState, useRef, useMemo } from 'react';
+import { Type, FolderArchive, ArrowRight, Download, Trash2, Settings2, File as FileIcon, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
+import JSZip from 'jszip';
 
 const BatchRenamer = () => {
   const [files, setFiles] = useState([]);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isZipping, setIsZipping] = useState(false);
+  
   const [prefix, setPrefix] = useState('');
   const [suffix, setSuffix] = useState('');
-  const [findText, setFindText] = useState('');
-  const [replaceText, setReplaceText] = useState('');
-  const [casing, setCasing] = useState('original'); // original, lower, upper, title
-  const [enableNumbering, setEnableNumbering] = useState(false);
-  const [numberStart, setNumberStart] = useState(1);
-  const [numberPadding, setNumberPadding] = useState(2); // e.g. 01, 02
-
-  const [isDragging, setIsDragging] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [findStr, setFindStr] = useState('');
+  const [replaceStr, setReplaceStr] = useState('');
+  const [numberingStart, setNumberingStart] = useState(1);
+  const [useNumbering, setUseNumbering] = useState(false);
+  const [extensionBehavior, setExtensionBehavior] = useState('keep'); // 'keep', 'lowercase', 'uppercase'
 
   const fileInputRef = useRef(null);
 
@@ -25,283 +25,272 @@ const BatchRenamer = () => {
     e.preventDefault();
     setIsDragging(false);
     const droppedFiles = Array.from(e.dataTransfer.files);
-    if (droppedFiles.length > 0) handleFilesSelection(droppedFiles);
+    if (droppedFiles.length) setFiles([...files, ...droppedFiles]);
   };
 
   const handleFileSelect = (e) => {
     const selectedFiles = Array.from(e.target.files);
-    if (selectedFiles.length > 0) handleFilesSelection(selectedFiles);
+    if (selectedFiles.length) setFiles([...files, ...selectedFiles]);
   };
 
-  const handleFilesSelection = (selectedFiles) => {
-    setFiles(prev => [...prev, ...selectedFiles]);
+  const removeFile = (index) => {
+    setFiles(files.filter((_, i) => i !== index));
   };
 
-  const handleRemoveFile = (index) => {
-    setFiles(prev => prev.filter((_, idx) => idx !== index));
-  };
+  const clearAll = () => setFiles([]);
 
-  const handleClearAll = () => {
-    setFiles([]);
-    setPrefix('');
-    setSuffix('');
-    setFindText('');
-    setReplaceText('');
-    setCasing('original');
-    setEnableNumbering(false);
-  };
+  // Generate previews dynamically
+  const previews = useMemo(() => {
+    return files.map((file, index) => {
+      let name = file.name;
+      const lastDotIndex = name.lastIndexOf('.');
+      
+      let baseName = lastDotIndex !== -1 ? name.substring(0, lastDotIndex) : name;
+      let ext = lastDotIndex !== -1 ? name.substring(lastDotIndex) : '';
 
-  // Renaming function helper
-  const getRenamedName = (file, idx) => {
-    const dotIndex = file.name.lastIndexOf('.');
-    let nameWithoutExt = dotIndex !== -1 ? file.name.substring(0, dotIndex) : file.name;
-    const ext = dotIndex !== -1 ? file.name.substring(dotIndex) : '';
+      // Find/Replace
+      if (findStr) {
+        // Simple string replace globally
+        baseName = baseName.split(findStr).join(replaceStr);
+      }
 
-    // 1. Find & Replace
-    if (findText) {
-      nameWithoutExt = nameWithoutExt.split(findText).join(replaceText);
-    }
+      // Add Prefix/Suffix
+      baseName = `${prefix}${baseName}${suffix}`;
 
-    // 2. Casing conversions
-    if (casing === 'lower') {
-      nameWithoutExt = nameWithoutExt.toLowerCase();
-    } else if (casing === 'upper') {
-      nameWithoutExt = nameWithoutExt.toUpperCase();
-    } else if (casing === 'title') {
-      nameWithoutExt = nameWithoutExt.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
-    }
+      // Numbering
+      if (useNumbering) {
+        const num = (Number(numberingStart) + index).toString().padStart(3, '0');
+        baseName = `${baseName}_${num}`;
+      }
 
-    // 3. Sequential numbering
-    if (enableNumbering) {
-      const numStr = String(numberStart + idx).padStart(numberPadding, '0');
-      nameWithoutExt = `${nameWithoutExt}_${numStr}`;
-    }
+      // Extension Behavior
+      if (extensionBehavior === 'lowercase') ext = ext.toLowerCase();
+      else if (extensionBehavior === 'uppercase') ext = ext.toUpperCase();
 
-    // 4. Prefix & Suffix addition
-    return `${prefix}${nameWithoutExt}${suffix}${ext}`;
-  };
+      const newName = `${baseName}${ext}`;
+      
+      return {
+        originalFile: file,
+        oldName: file.name,
+        newName: newName || 'unnamed_file'
+      };
+    });
+  }, [files, prefix, suffix, findStr, replaceStr, numberingStart, useNumbering, extensionBehavior]);
 
-  // Perform renaming and zip download
-  const handleRenameAndDownload = async () => {
-    if (files.length === 0) return;
+  const handleDownloadZip = async () => {
+    if (!previews.length) return;
 
-    setIsProcessing(true);
-    const toastId = toast.loading('Compiling and renaming files into ZIP archive...');
+    setIsZipping(true);
+    const toastId = toast.loading('Generating renamed ZIP archive...');
 
     try {
       const zip = new JSZip();
       
-      files.forEach((file, index) => {
-        const renamedName = getRenamedName(file, index);
-        zip.file(renamedName, file);
+      // Add all renamed files to ZIP
+      previews.forEach(preview => {
+        zip.file(preview.newName, preview.originalFile);
       });
 
       const content = await zip.generateAsync({ type: 'blob' });
       
-      const downloadUrl = URL.createObjectURL(content);
-      const link = document.createElement('a');
-      link.href = downloadUrl;
-      link.download = `renamed_files_${Date.now()}.zip`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      const url = URL.createObjectURL(content);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `renamed_files_${Date.now()}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
 
-      toast.success('ZIP package downloaded successfully!', { id: toastId });
-    } catch (err) {
-      console.error(err);
-      toast.error('Renaming operation failed.', { id: toastId });
+      toast.success('Files renamed and downloaded!', { id: toastId });
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to create ZIP', { id: toastId });
     } finally {
-      setIsProcessing(false);
+      setIsZipping(false);
     }
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-4 lg:py-6 flex flex-col min-h-[85vh]">
+    <div className="max-w-[1600px] mx-auto w-full px-2 md:px-8">
       <div className="mb-6 flex items-center gap-3 shrink-0">
-        <div className="p-2 bg-indigo-500/10 text-indigo-500 rounded-lg shadow-sm">
-          <ListFilter size={28} />
+        <div className="p-2 bg-primary/10 text-primary rounded-md shadow-sm">
+          <Type size={24} />
         </div>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Batch File Renamer</h1>
-          <p className="text-muted-foreground mt-1 text-sm">Rename multiple files simultaneously. Configure prefixes, suffixes, search-replace, and auto-numbering.</p>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter text-foreground">Advanced Batch Renamer</h1>
+          <p className="text-muted-foreground mt-1 text-xs md:text-sm">Rename hundreds of files instantly with prefixes, find/replace, and auto-numbering. Downloads as a ZIP.</p>
         </div>
       </div>
 
-      {files.length === 0 ? (
-        <div 
-          onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}
-          onClick={() => fileInputRef.current?.click()}
-          className={`border-2 border-dashed rounded-2xl p-12 flex flex-col items-center justify-center cursor-pointer transition-all h-96 ${
-            isDragging ? 'border-indigo-500 bg-indigo-500/5' : 'border-border bg-card hover:border-indigo-500/50 hover:bg-muted/30'
-          }`}
-        >
-          <input type="file" ref={fileInputRef} onChange={handleFileSelect} className="hidden" multiple />
-          <div className="w-16 h-16 bg-indigo-500/10 rounded-full flex items-center justify-center text-indigo-500 mb-4 pointer-events-none">
-            <UploadCloud size={32} />
-          </div>
-          <h3 className="text-lg font-bold text-foreground mb-1 pointer-events-none">Drag & Drop files to rename</h3>
-          <p className="text-sm text-muted-foreground text-center pointer-events-none max-w-sm">
-            Select multiple files from your device. Processing is local inside your browser.
-          </p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-6 items-start">
-          
-          {/* Left Config Panel */}
-          <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground border-b border-border pb-3">Renaming Rules</h3>
-
-            {/* Prefix & Suffix */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-muted-foreground uppercase">Prefix</label>
-                <input 
-                  type="text" placeholder="e.g. img_"
-                  value={prefix} onChange={(e) => setPrefix(e.target.value)}
-                  className="w-full bg-muted/30 border border-border rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-muted-foreground uppercase">Suffix</label>
-                <input 
-                  type="text" placeholder="e.g. _v2"
-                  value={suffix} onChange={(e) => setSuffix(e.target.value)}
-                  className="w-full bg-muted/30 border border-border rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none"
-                />
-              </div>
-            </div>
-
-            {/* Find & Replace */}
-            <div className="space-y-3 border-t border-border pt-4">
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-muted-foreground uppercase">Find in Name</label>
-                <input 
-                  type="text" placeholder="e.g. copy"
-                  value={findText} onChange={(e) => setFindText(e.target.value)}
-                  className="w-full bg-muted/30 border border-border rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-muted-foreground uppercase">Replace With</label>
-                <input 
-                  type="text" placeholder="e.g. final"
-                  value={replaceText} onChange={(e) => setReplaceText(e.target.value)}
-                  className="w-full bg-muted/30 border border-border rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none"
-                />
-              </div>
-            </div>
-
-            {/* Casing conversions */}
-            <div className="space-y-2 border-t border-border pt-4">
-              <label className="text-[10px] font-bold text-muted-foreground uppercase">Convert Casing</label>
-              <select
-                value={casing}
-                onChange={(e) => setCasing(e.target.value)}
-                className="w-full bg-muted/30 border border-border text-xs rounded-xl px-3 py-2.5 font-bold focus:outline-none"
-              >
-                <option value="original">Keep Original Casing</option>
-                <option value="lower">lowercase</option>
-                <option value="upper">UPPERCASE</option>
-                <option value="title">Title Case</option>
-              </select>
-            </div>
-
-            {/* Sequential numbering */}
-            <div className="space-y-3 border-t border-border pt-4">
-              <div className="flex justify-between items-center">
-                <label className="text-[10px] font-bold text-muted-foreground uppercase">Append Auto-Numbering</label>
-                <input 
-                  type="checkbox" checked={enableNumbering}
-                  onChange={(e) => setEnableNumbering(e.target.checked)}
-                  className="w-4 h-4 accent-indigo-500"
-                />
-              </div>
-
-              {enableNumbering && (
-                <div className="grid grid-cols-2 gap-4 pt-1 animate-fadeIn">
-                  <div className="space-y-1">
-                    <label className="text-[9px] font-bold text-muted-foreground uppercase">Start Number</label>
-                    <input 
-                      type="number"
-                      value={numberStart} onChange={(e) => setNumberStart(parseInt(e.target.value) || 1)}
-                      className="w-full bg-muted/30 border border-border rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[9px] font-bold text-muted-foreground uppercase">Padding digits</label>
-                    <input 
-                      type="number" min="1" max="5"
-                      value={numberPadding} onChange={(e) => setNumberPadding(parseInt(e.target.value) || 2)}
-                      className="w-full bg-muted/30 border border-border rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none"
-                    />
-                  </div>
+      <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
+        
+        {/* Left: Settings Panel */}
+        <div className="w-full lg:w-[400px] shrink-0 space-y-6 lg:sticky lg:top-6">
+          <div className="bg-card border border-border p-6 rounded-2xl shadow-sm flex flex-col gap-6">
+            
+            <h3 className="font-bold uppercase tracking-wider text-muted-foreground text-xs flex items-center gap-2"><Settings2 size={14}/> Rename Rules</h3>
+            
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold uppercase text-muted-foreground">Prefix</label>
+                  <input 
+                    type="text" value={prefix} onChange={(e) => setPrefix(e.target.value)}
+                    placeholder="e.g. img_"
+                    className="w-full bg-background border border-border rounded-xl px-3 py-2 text-sm font-semibold text-foreground focus:ring-2 focus:ring-primary/50 focus:outline-none transition-all"
+                  />
                 </div>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold uppercase text-muted-foreground">Suffix</label>
+                  <input 
+                    type="text" value={suffix} onChange={(e) => setSuffix(e.target.value)}
+                    placeholder="e.g. _v2"
+                    className="w-full bg-background border border-border rounded-xl px-3 py-2 text-sm font-semibold text-foreground focus:ring-2 focus:ring-primary/50 focus:outline-none transition-all"
+                  />
+                </div>
+              </div>
+
+              <div className="p-4 bg-muted/30 rounded-xl border border-border space-y-4">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold uppercase text-muted-foreground">Find Text</label>
+                  <input 
+                    type="text" value={findStr} onChange={(e) => setFindStr(e.target.value)}
+                    placeholder="Text to replace..."
+                    className="w-full bg-background border border-border rounded-xl px-3 py-2 text-sm font-semibold text-foreground focus:ring-2 focus:ring-primary/50 focus:outline-none transition-all"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold uppercase text-muted-foreground">Replace With</label>
+                  <input 
+                    type="text" value={replaceStr} onChange={(e) => setReplaceStr(e.target.value)}
+                    placeholder="Replacement text..."
+                    className="w-full bg-background border border-border rounded-xl px-3 py-2 text-sm font-semibold text-foreground focus:ring-2 focus:ring-primary/50 focus:outline-none transition-all"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between p-4 bg-muted/30 rounded-xl border border-border">
+                <label className="flex items-center gap-3 cursor-pointer group">
+                  <div className="relative flex items-center justify-center">
+                    <input type="checkbox" checked={useNumbering} onChange={(e) => setUseNumbering(e.target.checked)} className="sr-only" />
+                    <div className={`w-8 h-4 rounded-full transition-colors ${useNumbering ? 'bg-primary' : 'bg-muted border border-border'}`}></div>
+                    <div className={`absolute left-0.5 w-3 h-3 rounded-full bg-background transition-transform ${useNumbering ? 'translate-x-4' : 'translate-x-0'}`}></div>
+                  </div>
+                  <span className="text-xs font-bold text-foreground">Auto-numbering</span>
+                </label>
+                
+                {useNumbering && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-bold uppercase text-muted-foreground">Start:</span>
+                    <input 
+                      type="number" value={numberingStart} onChange={(e) => setNumberingStart(Number(e.target.value))}
+                      className="w-16 bg-background border border-border rounded-lg px-2 py-1 text-xs font-bold text-foreground focus:ring-1 focus:ring-primary"
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold uppercase text-muted-foreground">Extensions</label>
+                <select 
+                  value={extensionBehavior} onChange={(e) => setExtensionBehavior(e.target.value)}
+                  className="w-full bg-background border border-border rounded-xl px-3 py-2 text-sm font-semibold text-foreground focus:ring-2 focus:ring-primary/50 focus:outline-none"
+                >
+                  <option value="keep">Keep Original</option>
+                  <option value="lowercase">Force lowercase (.jpg)</option>
+                  <option value="uppercase">Force UPPERCASE (.JPG)</option>
+                </select>
+              </div>
+            </div>
+
+            <button 
+              onClick={handleDownloadZip} disabled={!previews.length || isZipping}
+              className={`w-full py-3 mt-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-md ${
+                !previews.length 
+                  ? 'bg-muted text-muted-foreground cursor-not-allowed' 
+                  : 'bg-primary hover:bg-primary text-white shadow-primary/20 active:scale-95'
+              }`}
+            >
+              {isZipping ? (
+                <>Zipping... <span className="animate-spin text-lg">⏳</span></>
+              ) : (
+                <><Download size={18}/> Download ZIP</>
+              )}
+            </button>
+
+          </div>
+        </div>
+
+        {/* Right: File List Preview */}
+        <div className="flex-1 w-full flex flex-col gap-4">
+          
+          {/* Dropzone */}
+          <div 
+            onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}
+            onClick={() => fileInputRef.current?.click()}
+            className={`w-full h-32 border-2 border-dashed rounded-2xl flex flex-col items-center justify-center cursor-pointer transition-all shrink-0 ${
+              isDragging ? 'border-primary bg-primary/5 scale-[1.01]' : 'border-border bg-card hover:bg-muted/30 hover:border-primary/50'
+            }`}
+          >
+            <input type="file" multiple ref={fileInputRef} onChange={handleFileSelect} className="hidden" />
+            <div className={`p-3 rounded-full mb-2 transition-colors ${isDragging ? 'bg-primary/20 text-primary' : 'bg-muted text-muted-foreground'}`}>
+              <FolderArchive size={24} />
+            </div>
+            <p className="text-sm font-bold text-foreground">Add files to rename</p>
+          </div>
+
+          {/* List */}
+          <div className="bg-card border border-border rounded-2xl shadow-sm flex flex-col relative overflow-hidden min-h-[400px]">
+            <div className="p-4 border-b border-border bg-muted/30 flex items-center justify-between shrink-0">
+              <h2 className="font-semibold text-foreground flex items-center gap-2 text-sm uppercase tracking-wider">
+                Live Preview ({previews.length})
+              </h2>
+              {previews.length > 0 && (
+                <button onClick={clearAll} className="text-xs font-bold text-rose-500 hover:text-rose-600 transition-colors flex items-center gap-1">
+                  <Trash2 size={12}/> Clear All
+                </button>
               )}
             </div>
-
-            <div className="flex flex-col gap-3 pt-2">
-              <button
-                onClick={handleRenameAndDownload}
-                disabled={isProcessing}
-                className="w-full py-3 bg-indigo-500 text-white font-medium rounded-xl hover:bg-indigo-600 transition-colors flex items-center justify-center gap-2 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <Download size={18} />
-                Download Renamed ZIP
-              </button>
-              <button
-                onClick={handleClearAll}
-                className="w-full py-2.5 bg-muted hover:bg-muted/80 text-foreground font-semibold text-xs rounded-xl transition-all"
-              >
-                Clear all files
-              </button>
+            
+            <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-2">
+              <AnimatePresence>
+                {previews.length === 0 ? (
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="h-full flex flex-col items-center justify-center text-muted-foreground opacity-50">
+                    <FileIcon size={48} className="mb-4" />
+                    <p className="text-sm font-bold">No files added yet.</p>
+                  </motion.div>
+                ) : (
+                  previews.map((preview, index) => (
+                    <motion.div 
+                      key={index}
+                      initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, x: -10 }}
+                      className="group flex flex-col md:flex-row md:items-center justify-between p-3 rounded-xl border border-border bg-background hover:border-blue-500/30 transition-colors gap-2"
+                    >
+                      <div className="flex items-center gap-3 flex-1 overflow-hidden">
+                        <span className="text-[10px] font-bold text-muted-foreground w-4 text-center shrink-0">{index + 1}</span>
+                        <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 flex-1 overflow-hidden">
+                          <span className="text-sm text-muted-foreground truncate w-full md:w-1/2 line-through decoration-rose-500/50">{preview.oldName}</span>
+                          <ArrowRight size={14} className="text-muted-foreground hidden md:block shrink-0" />
+                          <span className="text-sm font-bold text-foreground truncate w-full md:w-1/2 text-blue-500">{preview.newName}</span>
+                        </div>
+                      </div>
+                      
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); removeFile(index); }}
+                        className="text-muted-foreground hover:text-rose-500 transition-colors shrink-0 md:opacity-0 group-hover:opacity-100 p-1"
+                      >
+                        <X size={14} />
+                      </button>
+                    </motion.div>
+                  ))
+                )}
+              </AnimatePresence>
             </div>
-
-          </div>
-
-          {/* Right Preview List Panel */}
-          <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-4">
-            <div className="flex justify-between items-center border-b border-border pb-3">
-              <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Files Preview list</h3>
-              <span className="text-xs bg-indigo-500/10 text-indigo-500 px-2 py-0.5 rounded-full font-bold">{files.length} Files</span>
-            </div>
-
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr className="bg-muted/30 text-muted-foreground uppercase tracking-wider font-bold border-b border-border">
-                    <th className="px-4 py-2.5">Original Filename</th>
-                    <th className="px-4 py-2.5 text-center"><ChevronRight size={14} className="inline" /></th>
-                    <th className="px-4 py-2.5">Target Filename</th>
-                    <th className="px-4 py-2.5 text-center">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/50 text-foreground font-semibold">
-                  {files.map((file, index) => {
-                    const targetName = getRenamedName(file, index);
-                    return (
-                      <tr key={index} className="hover:bg-muted/10 transition-colors">
-                        <td className="px-4 py-3 truncate max-w-[180px]" title={file.name}>{file.name}</td>
-                        <td className="px-4 py-3 text-center text-muted-foreground"><ChevronRight size={14} className="inline" /></td>
-                        <td className="px-4 py-3 text-indigo-500 truncate max-w-[180px]" title={targetName}>{targetName}</td>
-                        <td className="px-4 py-3 text-center">
-                          <button 
-                            onClick={() => handleRemoveFile(index)}
-                            className="p-1 hover:bg-red-500/10 text-muted-foreground hover:text-red-500 rounded-md transition-colors"
-                          >
-                            <X size={14} />
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-
           </div>
 
         </div>
-      )}
+      </div>
     </div>
   );
 };

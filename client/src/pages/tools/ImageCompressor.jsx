@@ -147,7 +147,7 @@ const ImageCompressor = () => {
           <ImageIcon size={24} />
         </div>
         <div>
-          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">Advanced Image Compressor</h1>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter text-foreground">Advanced Image Compressor</h1>
           <p className="text-muted-foreground mt-1 text-xs md:text-sm">Real-time compression targeting exact file sizes or quality.</p>
         </div>
       </div>

@@ -368,7 +368,7 @@ const ImageColorExtractor = () => {
           <Palette size={24} />
         </div>
         <div>
-          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">Advanced Color Extractor</h1>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter text-foreground">Advanced Color Extractor</h1>
           <p className="text-muted-foreground mt-1 text-xs md:text-sm">Inspect images, click pixels to pick colors, extract dominant palettes, and export code variables.</p>
         </div>
       </div>

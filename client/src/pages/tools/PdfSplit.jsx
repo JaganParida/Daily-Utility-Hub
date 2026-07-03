@@ -1,7 +1,8 @@
 import { useState, useRef } from 'react';
-import { UploadCloud, FileText, CheckCircle2, Scissors, HelpCircle, Loader2, Eye, ExternalLink } from 'lucide-react';
+import { UploadCloud, FileText, CheckCircle2, Scissors, HelpCircle, Loader2, Eye, ExternalLink, Sparkles } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import axios from 'axios';
+import { motion, AnimatePresence } from 'framer-motion';
+import api from '../../lib/api';
 
 const numbersToRangeString = (nums) => {
   if (nums.length === 0) return '';
@@ -56,8 +57,15 @@ const PdfSplit = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const fileInputRef = useRef(null);
 
-  const handleDragOver = (e) => { e.preventDefault(); setIsDragging(true); };
-  const handleDragLeave = (e) => { e.preventDefault(); setIsDragging(false); };
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+  
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
 
   const handleClear = () => {
     setFile(null);
@@ -69,6 +77,9 @@ const PdfSplit = () => {
       URL.revokeObjectURL(previewUrl);
       setPreviewUrl(null);
     }
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   const inspectFile = async (selectedFile) => {
@@ -78,7 +89,7 @@ const PdfSplit = () => {
     setIsInspecting(true);
     const toastId = toast.loading('Reading PDF properties...');
     try {
-      const { data } = await axios.post('http://localhost:5000/api/pdf/inspect', formData);
+      const { data } = await api.post('/pdf/inspect', formData);
       setIsInspecting(false);
       
       if (data.isEncrypted) {
@@ -170,7 +181,7 @@ const PdfSplit = () => {
       setIsProcessing(true);
       toastId = toast.loading(splitMode === 'split' ? 'Splitting PDF into separate pages...' : 'Extracting PDF pages securely...');
       
-      const response = await axios.post('http://localhost:5000/api/pdf/split', formData, {
+      const response = await api.post('/pdf/split', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         responseType: 'blob'
       });
@@ -198,237 +209,394 @@ const PdfSplit = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-4 lg:py-6 flex flex-col min-h-0">
-      <div className="mb-6 flex items-center gap-3 shrink-0">
-        <div className="p-2 bg-blue-500/10 text-blue-500 rounded-lg shadow-sm">
-          <Scissors size={28} />
+    <div className="max-w-[1600px] mx-auto w-full px-2 md:px-8">
+      {/* Header Container */}
+      <div className="mb-6 flex items-center gap-3">
+        <div className="p-2 bg-primary/10 text-primary rounded-md shadow-sm">
+          <Scissors size={24} className="transform -rotate-45" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Extract & Split PDF</h1>
-          <p className="text-muted-foreground mt-1 text-sm">Visually select pages or ranges to extract into a clean new document.</p>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter text-foreground flex items-center gap-2">
+            Extract & Split PDF
+            <span className="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] uppercase font-bold tracking-wider">Premium</span>
+          </h1>
+          <p className="text-muted-foreground mt-1 text-xs md:text-sm">
+            Visually select pages or ranges to extract or split into clean, new documents.
+          </p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-6 items-start">
-        
+      <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         {/* Main Work Area */}
-        <div className="flex flex-col gap-6 w-full min-h-0">
-          
-          {/* File Upload Dropzone */}
-          {!file && (
-            <div 
-              onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}
-              onClick={() => !isInspecting && fileInputRef.current?.click()}
-              className={`border-2 border-dashed rounded-2xl p-10 flex flex-col items-center justify-center cursor-pointer transition-all h-64 ${
-                isDragging ? 'border-blue-500 bg-blue-500/5' : 'border-border bg-card hover:border-blue-500/50 hover:bg-muted/30'
-              }`}
-            >
-              <input type="file" ref={fileInputRef} onChange={handleFileSelect} className="hidden" accept=".pdf,application/pdf" />
-              <div className="w-16 h-16 bg-blue-500/10 rounded-full flex items-center justify-center text-blue-500 mb-4 pointer-events-none">
-                {isInspecting ? <Loader2 size={32} className="animate-spin" /> : <UploadCloud size={32} />}
-              </div>
-              <h3 className="text-lg font-bold text-foreground mb-1 pointer-events-none">
-                {isInspecting ? 'Parsing PDF File...' : 'Upload PDF'}
-              </h3>
-              <p className="text-sm text-muted-foreground text-center pointer-events-none">
-                {isInspecting ? 'Please wait while we read metadata.' : 'Drag & drop a PDF here or click to browse.'}
-              </p>
-            </div>
-          )}
+        <motion.div 
+          layout
+          className={`flex-1 w-full bg-card border border-border p-4 md:p-6 rounded-2xl shadow-sm flex flex-col relative transition-all duration-500 ease-out ${!file ? 'min-h-[50vh]' : 'min-h-0'}`}
+        >
+          <AnimatePresence mode="popLayout" initial={false}>
+            {!file ? (
+              /* File Upload Dropzone */
+              <motion.div
+                key="dropzone"
+                layout
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.3 }}
+                className="flex-1 h-full w-full flex flex-col justify-center"
+              >
+                <div
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  onClick={() => !isInspecting && fileInputRef.current?.click()}
+                  className={`flex-1 h-full w-full border-2 border-dashed rounded-2xl p-6 md:p-10 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 relative group min-h-[300px]
+                    ${isDragging 
+                      ? 'border-primary bg-primary/5 scale-[0.99] shadow-inner' 
+                      : 'border-border bg-card hover:border-primary/50 hover:bg-muted/20'
+                    }`}
+                >
+                <input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  onChange={handleFileSelect} 
+                  className="hidden" 
+                  accept=".pdf,application/pdf" 
+                />
+                
+                {/* Glow effect on drag */}
+                <div className={`absolute inset-0 bg-primary/5 blur-3xl transition-opacity duration-300 pointer-events-none ${isDragging ? 'opacity-100' : 'opacity-0'}`} />
 
-          {/* Active File and Controls */}
-          {file && (
-            <>
-              {/* File Info Header */}
-              <div className="bg-card border border-border rounded-2xl shadow-sm p-6 flex flex-col gap-4 shrink-0">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                  <div className="flex items-center gap-4 min-w-0 w-full sm:w-auto">
-                    <div className="w-12 h-12 bg-blue-500/10 text-blue-500 rounded-xl flex items-center justify-center shrink-0">
+                <div className="relative z-10 flex flex-col items-center">
+                  <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 transition-all duration-300 
+                    ${isDragging || isInspecting 
+                      ? 'bg-primary text-white scale-110 shadow-lg shadow-primary/20' 
+                      : 'bg-primary/10 text-primary'
+                    }`}
+                  >
+                    {isInspecting ? (
+                      <Loader2 size={32} className="animate-spin" />
+                    ) : (
+                      <UploadCloud size={32} className={isDragging ? 'animate-bounce' : ''} />
+                    )}
+                  </div>
+                  <h3 className="text-lg font-bold text-foreground mb-2">
+                    {isInspecting ? 'Parsing PDF File...' : 'Upload PDF'}
+                  </h3>
+                  <p className="text-sm text-muted-foreground text-center max-w-sm">
+                    {isInspecting 
+                      ? 'Please wait while we securely read the document metadata.' 
+                      : 'Drag & drop your PDF file here, or click to browse files from your computer.'}
+                  </p>
+                </div>
+                </div>
+              </motion.div>
+            ) : (
+              /* Active File and Page Selection Layout */
+              <motion.div
+                key="workspace"
+                layout
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.3 }}
+                className="flex flex-col min-h-0 w-full space-y-6"
+              >
+                {/* File Info Header Card */}
+                <div className="bg-card border border-border/80 rounded-2xl shadow-sm p-6">
+                  {/* Card header with divider */}
+                  <div className="border-b border-border/80 pb-3 mb-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-primary/10 text-primary rounded-xl shrink-0">
+                        <FileText size={20} />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-foreground text-sm uppercase tracking-wider">Source Document</h3>
+                        <p className="text-xs text-muted-foreground">Select pages and configure extraction</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2.5 shrink-0 w-full sm:w-auto justify-end">
+                      <button
+                        onClick={() => setShowPreview(!showPreview)}
+                        className="text-xs bg-muted hover:bg-muted/80 text-foreground px-3.5 py-2 rounded-xl transition-all font-semibold flex items-center gap-1.5 border border-border/60 hover:border-primary/30"
+                      >
+                        <Eye size={14} className={showPreview ? 'text-primary' : 'text-muted-foreground'} />
+                        {showPreview ? 'Hide Preview' : 'Show Preview'}
+                      </button>
+                      <button 
+                        onClick={handleClear} 
+                        className="text-xs text-red-400 hover:bg-red-500/10 px-3.5 py-2 rounded-xl transition-all font-semibold border border-red-500/20"
+                      >
+                        Change File
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* File Metadata Details */}
+                  <div className="flex items-center gap-4 min-w-0 w-full">
+                    <div className="p-3 bg-primary/5 rounded-xl border border-primary/10 text-primary">
                       <FileText size={24} />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <h3 className="font-bold text-foreground text-lg truncate w-full" title={file.name}>{file.name}</h3>
-                      <p className="text-muted-foreground text-sm">
-                        {(file.size / 1024 / 1024).toFixed(2)} MB &bull; {totalPages} Pages
+                      <h4 className="font-bold text-foreground text-base truncate" title={file.name}>
+                        {file.name}
+                      </h4>
+                      <p className="text-muted-foreground text-xs mt-0.5">
+                        Size: <span className="font-medium text-foreground">{(file.size / 1024 / 1024).toFixed(2)} MB</span>
+                        <span className="mx-2">&bull;</span>
+                        Pages: <span className="font-medium text-foreground">{totalPages}</span>
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
-                    <button
-                      onClick={() => setShowPreview(!showPreview)}
-                      className="text-xs bg-muted hover:bg-muted/80 text-foreground px-3 py-1.5 rounded-lg transition-colors font-bold flex items-center gap-1.5"
-                    >
-                      <Eye size={14} />
-                      {showPreview ? 'Hide Preview' : 'Show Preview'}
-                    </button>
-                    <button 
-                      onClick={handleClear} 
-                      className="text-xs text-red-500 hover:bg-red-500/10 px-3 py-1.5 rounded-lg transition-colors font-semibold"
-                    >
-                      Change File
-                    </button>
-                  </div>
-                </div>
 
-                {showPreview && previewUrl && (
-                  <div className="border-t border-border pt-4 w-full flex flex-col gap-3">
-                    <div className="flex items-center justify-between">
-                      <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Interactive Document Preview</h4>
-                      <a 
-                        href={previewUrl} target="_blank" rel="noreferrer"
-                        className="text-xs text-blue-500 hover:underline flex items-center gap-1 font-semibold"
+                  {/* Document Preview (Animated) */}
+                  <AnimatePresence>
+                    {showPreview && previewUrl && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="overflow-hidden"
                       >
-                        Open in New Tab <ExternalLink size={12} />
-                      </a>
-                    </div>
-                    <div className="w-full h-[400px] md:h-[500px] border border-border rounded-xl overflow-hidden bg-muted/10 relative">
-                      <object 
-                        data={previewUrl} 
-                        type="application/pdf" 
-                        className="w-full h-full"
-                      >
-                        <iframe src={previewUrl} className="w-full h-full border-none" title="PDF Preview">
-                          <div className="p-6 text-center text-sm text-muted-foreground">
-                            Your browser doesn't support inline PDF previews. Please click "Open in New Tab" to view it.
+                        <div className="border-t border-border/80 pt-5 mt-5 w-full flex flex-col gap-3">
+                          <div className="flex items-center justify-between">
+                            <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" /> Document Preview
+                            </h4>
+                            <a 
+                              href={previewUrl} target="_blank" rel="noreferrer"
+                              className="text-xs text-primary hover:text-indigo-400 hover:underline flex items-center gap-1.5 font-semibold"
+                            >
+                              Open in New Tab <ExternalLink size={12} />
+                            </a>
                           </div>
-                        </iframe>
-                      </object>
+                          <div className="w-full h-[400px] md:h-[500px] border border-border/85 rounded-xl overflow-hidden bg-muted/5 relative">
+                            <object 
+                              data={previewUrl} 
+                              type="application/pdf" 
+                              className="w-full h-full"
+                            >
+                              <iframe src={previewUrl} className="w-full h-full border-none" title="PDF Preview">
+                                <div className="p-6 text-center text-sm text-muted-foreground">
+                                  Your browser doesn't support inline PDF previews. Please click "Open in New Tab" to view it.
+                                </div>
+                              </iframe>
+                            </object>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                {/* Grid Page Selector */}
+                <div className="bg-card border border-border/80 p-6 rounded-2xl shadow-sm flex flex-col min-h-[400px]">
+                  {/* Card Header with presets */}
+                  <div className="border-b border-border/80 pb-3 mb-5 flex flex-col sm:flex-row justify-between sm:items-center gap-3">
+                    <div>
+                      <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Select Pages to Extract</h3>
+                      <p className="text-xs text-muted-foreground mt-1">Select pages manually or use our preset toggles.</p>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      <button onClick={() => selectPreset('all')} className="px-3 py-1.5 text-xs bg-muted hover:bg-primary/20 hover:text-primary text-foreground rounded-lg transition-all font-semibold">All</button>
+                      <button onClick={() => selectPreset('odd')} className="px-3 py-1.5 text-xs bg-muted hover:bg-primary/20 hover:text-primary text-foreground rounded-lg transition-all font-semibold">Odds</button>
+                      <button onClick={() => selectPreset('even')} className="px-3 py-1.5 text-xs bg-muted hover:bg-primary/20 hover:text-primary text-foreground rounded-lg transition-all font-semibold">Evens</button>
+                      <button onClick={() => selectPreset('first5')} className="px-3 py-1.5 text-xs bg-muted hover:bg-primary/20 hover:text-primary text-foreground rounded-lg transition-all font-semibold">First 5</button>
                     </div>
                   </div>
-                )}
-              </div>
 
-              {/* Grid Page Selector */}
-              <div className="bg-card border border-border p-6 rounded-2xl shadow-sm flex flex-col flex-1 min-h-[350px] overflow-hidden">
-                <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 mb-6 shrink-0">
-                  <div>
-                    <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Select Pages to Extract</h3>
-                    <p className="text-xs text-muted-foreground mt-1">Click individual pages or select presets below</p>
+                  {/* Page Grid */}
+                  <div className="flex-1 overflow-y-auto max-h-[380px] custom-scrollbar pr-2 mb-6 grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-2 p-1 min-h-[150px]">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => {
+                      const isSelected = selectedPages.includes(page);
+                      return (
+                        <motion.button
+                          key={page}
+                          onClick={() => handlePageClick(page)}
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          className={`aspect-square flex flex-col items-center justify-center rounded-xl font-mono text-sm border font-bold transition-all duration-200 ${
+                            isSelected
+                              ? 'bg-primary text-white border-primary shadow-md shadow-primary/25'
+                              : 'bg-background hover:bg-muted border-border text-foreground hover:border-primary/45'
+                          }`}
+                        >
+                          {page}
+                        </motion.button>
+                      );
+                    })}
                   </div>
-                  <div className="flex flex-wrap gap-1">
-                    <button onClick={() => selectPreset('all')} className="px-3 py-1 text-xs bg-muted hover:bg-muted/80 text-foreground rounded-lg transition-colors font-medium">All</button>
-                    <button onClick={() => selectPreset('odd')} className="px-3 py-1 text-xs bg-muted hover:bg-muted/80 text-foreground rounded-lg transition-colors font-medium">Odds</button>
-                    <button onClick={() => selectPreset('even')} className="px-3 py-1 text-xs bg-muted hover:bg-muted/80 text-foreground rounded-lg transition-colors font-medium">Evens</button>
-                    <button onClick={() => selectPreset('first5')} className="px-3 py-1 text-xs bg-muted hover:bg-muted/80 text-foreground rounded-lg transition-colors font-medium">First 5</button>
-                  </div>
-                </div>
 
-                {/* The Page Grid */}
-                <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 mb-4 grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-2 p-1 min-h-[150px]">
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => {
-                    const isSelected = selectedPages.includes(page);
-                    return (
-                      <button
-                        key={page}
-                        onClick={() => handlePageClick(page)}
-                        className={`aspect-square flex flex-col items-center justify-center rounded-xl font-mono text-sm border font-bold transition-all ${
-                          isSelected
-                            ? 'bg-blue-500 text-white border-blue-500 shadow-md shadow-blue-500/20 scale-105'
-                            : 'bg-background hover:bg-muted border-border text-foreground'
-                        }`}
-                      >
-                        {page}
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {/* Range Input Field */}
-                <div className="border-t border-border pt-4 shrink-0">
-                  <div className="flex items-center gap-2 mb-2">
-                    <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Manual Page Selection</label>
-                    <span className="group relative cursor-help text-blue-500">
-                      <HelpCircle size={14} />
-                      <div className="absolute bottom-full mb-2 left-0 w-64 p-3 bg-foreground text-background text-xs rounded-xl shadow-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50">
-                        Valid formats: "1-5", "8,11,13", or combinations like "1-3, 5, 8".
+                  {/* Manual Range Selector */}
+                  <div className="border-t border-border/80 pt-5">
+                    <div className="flex items-center gap-2 mb-2.5">
+                      <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                        Manual Page Selection
+                      </label>
+                      <div className="relative group cursor-help text-primary hover:text-indigo-400 transition-colors">
+                        <HelpCircle size={14} />
+                        {/* Custom tooltip that opens on hover */}
+                        <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-64 p-3 bg-card border border-border/80 text-foreground text-xs rounded-xl shadow-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 z-50">
+                          <p className="font-semibold mb-1 text-primary">Formatting Examples:</p>
+                          <p className="text-muted-foreground leading-relaxed">
+                            • Page range: <code className="font-mono text-primary bg-primary/5 px-1 rounded">1-5</code><br />
+                            • Specific pages: <code className="font-mono text-primary bg-primary/5 px-1 rounded">2, 4, 8</code><br />
+                            • Combination: <code className="font-mono text-primary bg-primary/5 px-1 rounded">1-3, 6, 8-10</code>
+                          </p>
+                        </div>
                       </div>
-                    </span>
+                    </div>
+                    <input
+                      type="text"
+                      value={pages}
+                      onChange={(e) => handlePagesInputChange(e.target.value)}
+                      placeholder="e.g. 1-3, 5, 8"
+                      className="w-full bg-background border border-border/80 rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary text-sm font-mono tracking-wider transition-all"
+                    />
                   </div>
-                  <input
-                    type="text"
-                    value={pages}
-                    onChange={(e) => handlePagesInputChange(e.target.value)}
-                    placeholder="e.g. 1-3, 5, 8"
-                    className="w-full bg-background border border-border rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-sm font-mono tracking-widest"
-                  />
                 </div>
-              </div>
-            </>
-          )}
-
-        </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
 
         {/* Sidebar Actions */}
-        <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6 lg:sticky lg:top-6 w-full lg:w-[350px] shrink-0">
-          
-          {/* Split Mode Selector */}
-          {file && (
-            <div className="space-y-3 pb-4 border-b border-border">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Output Format</h3>
-              <div className="flex flex-col gap-2">
-                <label className="flex items-center gap-3 cursor-pointer p-3 bg-muted/20 border border-border/50 hover:bg-muted/40 rounded-xl transition-colors">
-                  <input 
-                    type="radio" 
-                    name="splitMode"
-                    value="extract"
-                    checked={splitMode === 'extract'}
-                    onChange={() => setSplitMode('extract')}
-                    className="w-4 h-4 text-blue-500 focus:ring-blue-500/50 accent-blue-500" 
-                  />
-                  <div>
-                    <p className="text-sm font-semibold text-foreground">Single PDF</p>
-                    <p className="text-xs text-muted-foreground">Extract selected pages into one PDF file.</p>
-                  </div>
-                </label>
+        <div className="w-full lg:w-[350px] xl:w-[400px] shrink-0 space-y-6">
+          {/* Output Format Card */}
+          <div className={`bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6 transition-all duration-300 ${!file ? 'opacity-50 pointer-events-none grayscale-[0.5]' : ''}`}>
+            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-2 border-b border-border pb-3">
+              <Sparkles size={16} /> Output Format
+            </h3>
 
-                <label className="flex items-center gap-3 cursor-pointer p-3 bg-muted/20 border border-border/50 hover:bg-muted/40 rounded-xl transition-colors">
-                  <input 
-                    type="radio" 
-                    name="splitMode"
-                    value="split"
-                    checked={splitMode === 'split'}
-                    onChange={() => setSplitMode('split')}
-                    className="w-4 h-4 text-blue-500 focus:ring-blue-500/50 accent-blue-500" 
-                  />
-                  <div>
-                    <p className="text-sm font-semibold text-foreground">Separate PDFs (ZIP)</p>
-                    <p className="text-xs text-muted-foreground">Split each selected page into its own PDF file packaged in a ZIP.</p>
+            <div className="flex flex-col gap-3">
+              <motion.div
+                whileHover={file ? { scale: 1.01 } : {}}
+                onClick={() => file && setSplitMode('extract')}
+                className={`flex items-start gap-3 p-4 bg-muted/10 border rounded-xl transition-all duration-200
+                  ${!file ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
+                  ${file && splitMode === 'extract'
+                    ? 'border-primary bg-primary/5 shadow-md shadow-primary/5'
+                    : 'border-border/80 hover:border-primary/30 hover:bg-muted/20'
+                  }`}
+              >
+                <div className={`p-1.5 rounded-lg shrink-0 transition-colors duration-200 
+                  ${file && splitMode === 'extract' ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'}`}
+                >
+                  <FileText size={16} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-bold text-foreground">Single PDF Document</p>
+                    {file && splitMode === 'extract' && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                    )}
                   </div>
-                </label>
+                  <p className="text-xs text-muted-foreground mt-0.5">Extract selected pages into one continuous PDF file.</p>
+                </div>
+              </motion.div>
+
+              <motion.div
+                whileHover={file ? { scale: 1.01 } : {}}
+                onClick={() => file && setSplitMode('split')}
+                className={`flex items-start gap-3 p-4 bg-muted/10 border rounded-xl transition-all duration-200
+                  ${!file ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
+                  ${file && splitMode === 'split'
+                    ? 'border-primary bg-primary/5 shadow-md shadow-primary/5'
+                    : 'border-border/80 hover:border-primary/30 hover:bg-muted/20'
+                  }`}
+              >
+                <div className={`p-1.5 rounded-lg shrink-0 transition-colors duration-200 
+                  ${file && splitMode === 'split' ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'}`}
+                >
+                  <Scissors size={16} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-bold text-foreground">Separate PDFs (ZIP)</p>
+                    {file && splitMode === 'split' && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-0.5 text-balance">Split each selected page into its own individual file, packaged in a ZIP archive.</p>
+                </div>
+              </motion.div>
+            </div>
+
+            {/* Split Details Benefits */}
+            <div className="pt-2 border-t border-border/50">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-1.5">
+                <Sparkles size={12} className="text-primary" /> Processing details
+              </h4>
+              <div className="space-y-3.5 text-xs text-muted-foreground">
+                <div className="flex items-start gap-2.5">
+                  <CheckCircle2 className="text-primary mt-0.5 shrink-0" size={14} />
+                  <p>Creates a brand-new PDF containing only the pages you want.</p>
+                </div>
+                <div className="flex items-start gap-2.5">
+                  <CheckCircle2 className="text-primary mt-0.5 shrink-0" size={14} />
+                  <p>Quick presets help you easily isolate even/odd/specific pages.</p>
+                </div>
+                <div className="flex items-start gap-2.5">
+                  <CheckCircle2 className="text-primary mt-0.5 shrink-0" size={14} />
+                  <p>Processed securely; we delete all files after splitting.</p>
+                </div>
               </div>
             </div>
-          )}
 
-          <div>
-            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4">Split details</h3>
-            <div className="space-y-4 text-sm text-foreground">
-              <div className="flex items-start gap-3">
-                <CheckCircle2 className="text-emerald-500 mt-0.5 shrink-0" size={16} />
-                <p>Creates a brand-new PDF containing only the pages you want.</p>
-              </div>
-              <div className="flex items-start gap-3">
-                <CheckCircle2 className="text-emerald-500 mt-0.5 shrink-0" size={16} />
-                <p>Quick presets help you easily isolate even/odd/specific pages.</p>
-              </div>
-              <div className="flex items-start gap-3">
-                <CheckCircle2 className="text-emerald-500 mt-0.5 shrink-0" size={16} />
-                <p>Processed securely; we delete all files after splitting.</p>
-              </div>
+            </div>
+
+            {/* Split Action Button */}
+            <div className="flex flex-col gap-3">
+              <button 
+                onClick={handleSplit}
+                disabled={!file || selectedPages.length === 0 || isProcessing}
+                className={`w-full h-14 font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-[0_1px_2px_rgba(0,0,0,0.1),0_0_0_1px_rgba(255,255,255,0.1)_inset] disabled:opacity-50 disabled:hover:shadow-none active:scale-[0.98] overflow-hidden ${
+                  isProcessing
+                    ? 'bg-primary/70 text-primary-foreground cursor-not-allowed'
+                    : 'bg-primary hover:bg-primary/90 text-primary-foreground hover:shadow-[0_4px_12px_rgba(var(--primary),0.3)]'
+                }`}
+              >
+                <AnimatePresence mode="popLayout" initial={false}>
+                  {isProcessing ? (
+                    <motion.div
+                      key="generating"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                      className="flex items-center gap-2"
+                    >
+                      <Loader2 className="animate-spin" size={20} />
+                      Processing PDF...
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="idle"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                      className="flex items-center gap-2"
+                    >
+                      <Scissors size={20} />
+                      <span>
+                        {!file 
+                          ? 'Upload a PDF' 
+                          : selectedPages.length === 0 
+                            ? 'Select Pages' 
+                            : splitMode === 'split' 
+                              ? `Split into ${selectedPages.length} PDFs` 
+                              : `Extract ${selectedPages.length} Pages`
+                        }
+                      </span>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </button>
             </div>
           </div>
-          
-          <button 
-            onClick={handleSplit}
-            disabled={!file || selectedPages.length === 0 || isProcessing}
-            className="w-full py-3 bg-blue-500 text-white font-semibold rounded-xl hover:bg-blue-600 transition-colors flex items-center justify-center gap-2 shadow-sm shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Scissors size={18} />
-            {isProcessing ? 'Processing...' : splitMode === 'split' ? `Split into ${selectedPages.length} PDFs` : `Extract ${selectedPages.length} Pages`}
-          </button>
         </div>
-
       </div>
-    </div>
   );
 };
 
