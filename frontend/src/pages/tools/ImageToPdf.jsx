@@ -162,6 +162,7 @@ const ImageToPdf = () => {
 
       toast.success('PDF documents exported successfully!');
       setDownloadState('done');
+      document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
       setTimeout(() => setDownloadState('idle'), 3000);
     } catch (err) {
       console.error(err);
@@ -173,6 +174,7 @@ const ImageToPdf = () => {
   const clear = () => {
     images.forEach(img => URL.revokeObjectURL(img.url));
     setImages([]);
+    document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const hasImages = images.length > 0;

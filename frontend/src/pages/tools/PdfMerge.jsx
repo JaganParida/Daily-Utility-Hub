@@ -162,6 +162,7 @@ const PdfMerge = () => {
       link.remove();
       
       toast.success('PDFs merged successfully!', { id: toastId });
+      document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
       console.error(error);
       const backendMsg = error.response?.data?.message || 'Failed to merge PDFs.';
@@ -360,7 +361,7 @@ const PdfMerge = () => {
             </button>
 
             <button 
-              onClick={() => setFiles([])} 
+              onClick={() => { setFiles([]); document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' }); }} 
               disabled={isProcessing || files.length === 0}
               className="w-full py-3.5 bg-muted/20 hover:bg-muted/50 border border-border/50 hover:border-border text-foreground font-semibold rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 active:scale-[0.98]"
             >

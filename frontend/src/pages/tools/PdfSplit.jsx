@@ -84,6 +84,7 @@ const PdfSplit = () => {
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
+    document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const inspectFile = async (selectedFile) => {
@@ -200,6 +201,7 @@ const PdfSplit = () => {
       link.remove();
       
       toast.success(splitMode === 'split' ? 'PDF split into separate files!' : 'Pages extracted successfully!', { id: toastId });
+      document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
       console.error(error);
       const backendMsg = error.response?.data?.message || 'Failed to process PDF.';

@@ -218,6 +218,7 @@ const PdfOrganizer = () => {
       URL.revokeObjectURL(url);
       
       toast.success('PDF organized successfully!');
+      document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
       console.error(error);
       toast.error('Failed to organize PDF.');
@@ -230,6 +231,7 @@ const PdfOrganizer = () => {
     setFile(null);
     setPdfData(null);
     setPages([]);
+    document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (

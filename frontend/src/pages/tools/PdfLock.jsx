@@ -32,6 +32,7 @@ const PdfLock = () => {
       URL.revokeObjectURL(previewUrl);
       setPreviewUrl(null);
     }
+    document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const getPasswordStrength = () => {
@@ -115,6 +116,7 @@ const PdfLock = () => {
       setPassword('');
       setConfirmPassword('');
       setFile(null);
+      document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
       console.error(error);
       const errMsg = error.response?.data?.message || 'Failed to lock PDF.';

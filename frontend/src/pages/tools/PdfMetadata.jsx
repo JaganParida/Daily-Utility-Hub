@@ -40,6 +40,7 @@ const PdfMetadata = () => {
       URL.revokeObjectURL(previewUrl);
       setPreviewUrl(null);
     }
+    document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const inspectFile = async (selectedFile) => {
@@ -147,6 +148,7 @@ const PdfMetadata = () => {
         producer: '',
         keywords: ''
       });
+      document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
       console.error(error);
       const errMsg = error.response?.data?.message || 'Failed to update metadata.';

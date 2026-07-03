@@ -99,6 +99,7 @@ const PdfAudioReader = () => {
       } else {
         setText(fullText);
         setFile(selectedFile);
+        document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
       }
     } catch (err) {
       console.error(err);
@@ -158,6 +159,7 @@ const PdfAudioReader = () => {
     handleStop();
     setFile(null);
     setText('');
+    document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (

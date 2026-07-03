@@ -79,6 +79,7 @@ const PdfConverter = () => {
     setPdfDocument(null);
     setTotalPages(0);
     setProgress(0);
+    document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // Convert PDF process
@@ -135,6 +136,7 @@ const PdfConverter = () => {
         document.body.removeChild(link);
         
         toast.success(`PDF converted to images! ZIP downloaded.`, { id: toastId });
+        document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
       } else if (targetFormat === 'word') {
         let htmlBody = '';
         
@@ -222,6 +224,7 @@ const PdfConverter = () => {
         document.body.removeChild(link);
         
         toast.success(`Converted PDF to editable Word document!`, { id: toastId });
+        document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
       }
     } catch (err) {
       console.error(err);

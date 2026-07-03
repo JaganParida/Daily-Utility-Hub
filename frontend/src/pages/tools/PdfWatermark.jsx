@@ -39,6 +39,7 @@ const PdfWatermark = () => {
       URL.revokeObjectURL(previewUrl);
       setPreviewUrl(null);
     }
+    document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleWatermark = async () => {
@@ -79,6 +80,7 @@ const PdfWatermark = () => {
       link.remove();
       
       toast.success('Watermark applied successfully!', { id: toastId });
+      document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
       console.error(error);
       const backendMsg = error.response?.data?.message || 'Failed to apply watermark.';

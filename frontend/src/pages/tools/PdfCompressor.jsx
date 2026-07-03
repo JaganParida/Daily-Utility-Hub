@@ -154,11 +154,12 @@ const PdfCompressor = () => {
       link.remove();
       URL.revokeObjectURL(downloadUrl);
 
-      if (compressionLevel === 'manual' && !success && finalBlob.size > targetBytes) {
+       if (compressionLevel === 'manual' && !success && finalBlob.size > targetBytes) {
         toast.error(`Could not compress further! Lowest size achieved: ${(finalBlob.size/1024).toFixed(1)} KB.`);
       } else {
         toast.success('PDF compressed successfully!');
       }
+      document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
       
     } catch (error) {
       console.error(error);
@@ -173,6 +174,7 @@ const PdfCompressor = () => {
     setFile(null);
     setTotalPages(0);
     setProgress(0);
+    document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (

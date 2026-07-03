@@ -30,6 +30,7 @@ const PdfToText = () => {
       URL.revokeObjectURL(previewUrl);
       setPreviewUrl(null);
     }
+    document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const getStats = () => {
@@ -88,6 +89,7 @@ const PdfToText = () => {
       setPagesCount(response.data.pages || 0);
       
       toast.success('Text extracted successfully!', { id: toastId });
+      document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
       console.error(error);
       const errMsg = error.response?.data?.message || 'Failed to extract text. The file might be encrypted.';
@@ -116,6 +118,7 @@ const PdfToText = () => {
     link.click();
     link.remove();
     toast.success('Downloaded text file!');
+    document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (

@@ -121,6 +121,7 @@ const PdfEdit = () => {
     setShapes({});
     setDetectedTexts({});
     setActionHistory([]);
+    document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // Render current PDF page to canvas
@@ -598,6 +599,7 @@ const PdfEdit = () => {
       document.body.removeChild(link);
       
       toast.success('PDF compiled and downloaded successfully!', { id: toastId });
+      document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) {
       console.error(err);
       toast.error('Failed to compile PDF updates.', { id: toastId });
