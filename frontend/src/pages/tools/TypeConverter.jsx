@@ -262,7 +262,7 @@ const TypeConverter = () => {
       className="max-w-[1600px] mx-auto w-full px-2 md:px-8"
     >
       {/* Header */}
-      <div className="mb-8 flex flex-col sm:flex-row items-start sm:items-center gap-4 pt-4 sm:pt-0">
+      <div className="mb-6 flex items-center gap-3">
         <div className="p-2.5 bg-primary/10 text-primary rounded-xl shadow-sm shrink-0">
           <Code2 size={24} />
         </div>
