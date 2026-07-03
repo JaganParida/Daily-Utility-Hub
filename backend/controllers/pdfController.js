@@ -1,6 +1,12 @@
-const { PDFDocument, rgb, degrees } = require('pdf-lib');
+const { PDFDocument, rgb, degrees, PDFName, PDFArray, PDFDict } = require('pdf-lib');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
+
+// Ensure Web Crypto API is available on older Node environments
+if (!globalThis.crypto) {
+  globalThis.crypto = crypto.webcrypto;
+}
 
 // Helper to clean up uploaded files
 const cleanupFiles = (files) => {
@@ -276,20 +282,49 @@ exports.unlockPdf = async (req, res) => {
       if (removeSignatures === 'true') {
         try {
           const pdfDoc = await PDFDocument.load(decryptedBytes);
-          const form = pdfDoc.getForm();
-          const fields = form.getFields();
-          
+          const indirectObjects = pdfDoc.context.enumerateIndirectObjects();
+          const signatureRefs = new Set();
           let signatureCount = 0;
-          fields.forEach(field => {
-            const isSig = field.constructor.name === 'PDFSignature' || 
-                          (typeof field.getType === 'function' && field.getType() === 'signature');
-            if (isSig) {
-              form.removeField(field);
-              signatureCount++;
+
+          for (const [ref, obj] of indirectObjects) {
+            if (obj instanceof PDFDict) {
+              const type = obj.get(PDFName.of('Type'));
+              const ft = obj.get(PDFName.of('FT'));
+              
+              if ((type && type.toString() === '/Sig') || (ft && ft.toString() === '/Sig')) {
+                signatureRefs.add(ref);
+                signatureCount++;
+                // Safely clear dictionary keys to invalidate signature references
+                const keys = obj.keys();
+                keys.forEach(k => obj.delete(k));
+              }
             }
-          });
-          
+          }
+
           if (signatureCount > 0) {
+            // Remove from `/Fields` in `/AcroForm`
+            const acroFormRef = pdfDoc.catalog.get(PDFName.of('AcroForm'));
+            if (acroFormRef) {
+              const acroForm = pdfDoc.context.lookup(acroFormRef);
+              if (acroForm instanceof PDFDict) {
+                const fields = acroForm.get(PDFName.of('Fields'));
+                if (fields instanceof PDFArray) {
+                  const newFields = fields.asArray().filter(ref => !signatureRefs.has(ref));
+                  acroForm.set(PDFName.of('Fields'), pdfDoc.context.obj(newFields));
+                }
+              }
+            }
+
+            // Remove from `/Annots` in pages
+            const pages = pdfDoc.getPages();
+            pages.forEach(page => {
+              const annots = page.node.get(PDFName.of('Annots'));
+              if (annots instanceof PDFArray) {
+                const newAnnots = annots.asArray().filter(ref => !signatureRefs.has(ref));
+                page.node.set(PDFName.of('Annots'), page.node.context.obj(newAnnots));
+              }
+            });
+
             console.log(`Successfully stripped ${signatureCount} digital signatures from document.`);
             finalBytes = await pdfDoc.save();
           }
@@ -302,6 +337,7 @@ exports.unlockPdf = async (req, res) => {
       res.setHeader('Content-Disposition', 'attachment; filename=unlocked_document.pdf');
       res.send(Buffer.from(finalBytes));
     } catch (decryptError) {
+      console.error('Decryption failed:', decryptError);
       cleanupFiles([req.file]);
       return res.status(401).json({ message: 'Incorrect password or unsupported encryption type.' });
     }

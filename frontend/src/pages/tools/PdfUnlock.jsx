@@ -148,7 +148,18 @@ const PdfUnlock = () => {
       document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
       console.error(error);
-      const errMsg = error.response?.data?.message || 'Failed to unlock PDF. Is the password correct?';
+      let errMsg = 'Failed to unlock PDF. Is the password correct?';
+      if (error.response?.data instanceof Blob) {
+        try {
+          const text = await error.response.data.text();
+          const parsed = JSON.parse(text);
+          if (parsed.message) errMsg = parsed.message;
+        } catch (e) {
+          console.error('Failed to parse error blob:', e);
+        }
+      } else if (error.response?.data?.message) {
+        errMsg = error.response.data.message;
+      }
       toast.error(errMsg, { id: toastId });
     } finally {
       setIsProcessing(false);
