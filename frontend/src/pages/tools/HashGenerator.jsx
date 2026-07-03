@@ -501,7 +501,7 @@ const HashGenerator = () => {
                         className={`absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 rounded-lg transition-all ${
                           copied === key
                             ? 'bg-green-500/20 text-green-600 opacity-100'
-                            : 'opacity-0 group-hover:opacity-100 hover:bg-muted text-muted-foreground'
+                            : 'opacity-100 lg:opacity-0 lg:group-hover:opacity-100 hover:bg-muted text-muted-foreground'
                         }`}
                         title="Copy hash"
                       >
