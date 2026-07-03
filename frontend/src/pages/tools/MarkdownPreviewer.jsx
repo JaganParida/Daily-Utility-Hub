@@ -225,25 +225,25 @@ Use the helper buttons to format notes easily!`);
           </div>
 
           {/* Document export footer */}
-          <div className="pt-6 border-t border-border/50 mt-6 flex gap-3 print:hidden flex-wrap">
+          <div className="pt-6 border-t border-border/50 mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3 print:hidden w-full">
             <button
               onClick={downloadMarkdown}
               disabled={isInputEmpty}
-              className="flex-1 py-3 bg-muted/40 hover:bg-muted/65 border border-border/85 font-bold rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer text-sm text-foreground disabled:opacity-40"
+              className="py-3 bg-muted/40 hover:bg-muted/65 border border-border/85 font-bold rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer text-sm text-foreground disabled:opacity-40"
             >
               <Download size={15} /> Download .MD
             </button>
             <button
               onClick={downloadHtml}
               disabled={isInputEmpty}
-              className="flex-1 py-3 bg-muted/40 hover:bg-muted/65 border border-border/85 font-bold rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer text-sm text-foreground disabled:opacity-40"
+              className="py-3 bg-muted/40 hover:bg-muted/65 border border-border/85 font-bold rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer text-sm text-foreground disabled:opacity-40"
             >
               <Download size={15} /> Export HTML
             </button>
             <button
               onClick={printDocument}
               disabled={isInputEmpty}
-              className="flex-1 py-3 bg-primary hover:bg-primary/95 text-white font-bold rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer text-sm disabled:opacity-40"
+              className="py-3 bg-primary hover:bg-primary/95 text-white font-bold rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer text-sm disabled:opacity-40"
             >
               <Printer size={15} /> Print / Save PDF
             </button>

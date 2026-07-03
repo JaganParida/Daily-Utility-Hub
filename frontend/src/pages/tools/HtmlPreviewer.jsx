@@ -155,6 +155,42 @@ const HtmlPreviewer = () => {
   const [previewKey, setPreviewKey] = useState(0);
   const [srcDoc, setSrcDoc] = useState('');
 
+  const containerRef = useRef(null);
+  const [containerWidth, setContainerWidth] = useState(0);
+
+  useEffect(() => {
+    // Auto-select device based on initial viewport size
+    const width = window.innerWidth;
+    if (width < 640) {
+      setPreviewDevice('phone');
+    } else if (width < 1024) {
+      setPreviewDevice('tablet');
+    } else {
+      setPreviewDevice('desktop');
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const handleResize = () => {
+      if (containerRef.current) {
+        setContainerWidth(containerRef.current.clientWidth);
+      }
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+
+    const observer = new ResizeObserver(handleResize);
+    observer.observe(containerRef.current);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      observer.disconnect();
+    };
+  }, []);
+
   const generateShareLink = () => {
     try {
       const data = { h: html, c: css, j: js };
@@ -485,29 +521,59 @@ const HtmlPreviewer = () => {
             </div>
 
             {/* Sandbox IFrame wrapper */}
-            <div className="w-full flex justify-center bg-background/30 rounded-xl p-3 border border-border/80 shadow-inner">
-              <div
-                id="preview-frame-container"
-                className="transition-all duration-300 overflow-hidden bg-white border border-border rounded-lg shadow-lg relative"
-                style={{
-                  width: previewDevice === 'phone' ? '360px' : previewDevice === 'tablet' ? '768px' : '100%',
-                  height: '520px'
-                }}
-              >
-                <iframe
-                  srcDoc={srcDoc}
-                  title="html-preview"
-                  className="w-full h-full border-none block"
-                  sandbox="allow-scripts"
-                  scrolling="yes"
-                  style={{ overflow: 'auto' }}
-                />
-              </div>
+            <div 
+              ref={containerRef}
+              className="w-full flex justify-center bg-background/30 rounded-xl p-3 border border-border/80 shadow-inner overflow-hidden"
+            >
+              {(() => {
+                const targetWidth = previewDevice === 'phone' ? 360 : previewDevice === 'tablet' ? 768 : 1200;
+                const targetHeight = previewDevice === 'phone' ? 640 : previewDevice === 'tablet' ? 900 : 768;
+
+                const isDesktopOnLargeScreen = previewDevice === 'desktop' && containerWidth >= 1024;
+
+                // Subtract padding of the wrapper
+                const scale = isDesktopOnLargeScreen
+                  ? 1
+                  : containerWidth > 0
+                  ? Math.min(1, (containerWidth - 24) / targetWidth)
+                  : 1;
+
+                return (
+                  <div
+                    id="preview-frame-container"
+                    className="transition-all duration-300 bg-white border border-border rounded-lg shadow-lg relative overflow-hidden"
+                    style={{
+                      width: isDesktopOnLargeScreen ? '100%' : `${targetWidth * scale}px`,
+                      height: isDesktopOnLargeScreen ? '520px' : `${targetHeight * scale}px`,
+                    }}
+                  >
+                    <iframe
+                      srcDoc={srcDoc}
+                      key={previewKey}
+                      title="html-preview"
+                      className="border-none block"
+                      sandbox="allow-scripts"
+                      scrolling="yes"
+                      style={
+                        isDesktopOnLargeScreen
+                          ? { width: '100%', height: '100%', overflow: 'auto' }
+                          : {
+                              width: `${targetWidth}px`,
+                              height: `${targetHeight}px`,
+                              transform: `scale(${scale})`,
+                              transformOrigin: 'top left',
+                              overflow: 'auto',
+                            }
+                      }
+                    />
+                  </div>
+                );
+              })()}
             </div>
           </div>
 
           {/* Export Actions Footer */}
-          <div className="pt-6 border-t border-border/50 mt-6 grid grid-cols-2 gap-4">
+          <div className="pt-6 border-t border-border/50 mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
             <button
               onClick={downloadSingleHtml}
               className="py-3 bg-muted/40 hover:bg-muted/65 border border-border/85 font-bold rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer text-sm text-foreground active:scale-[0.98]"
