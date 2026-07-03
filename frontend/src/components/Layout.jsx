@@ -68,18 +68,20 @@ const Layout = () => {
     }
   }, [location.pathname, isDashboard, isTool, isProfile]);
 
-  // Disable browser-level zoom (Keyboard, Mouse wheel + Ctrl, and Mobile viewport gestures)
+  // Disable browser-level zoom (Keyboard, Mouse wheel + Ctrl, and Mobile viewport gestures) - Small Devices Only
   useEffect(() => {
+    const isSmallDevice = () => window.innerWidth < 1024;
+
     // Disable Ctrl + scroll wheel zoom
     const preventWheelZoom = (e) => {
-      if (e.ctrlKey) {
+      if (e.ctrlKey && isSmallDevice()) {
         e.preventDefault();
       }
     };
 
     // Disable Keyboard zoom shortcuts (Ctrl +, Ctrl -, Ctrl 0)
     const preventKeyZoom = (e) => {
-      if (e.ctrlKey && (e.key === '=' || e.key === '-' || e.key === '+' || e.key === '0')) {
+      if (e.ctrlKey && isSmallDevice() && (e.key === '=' || e.key === '-' || e.key === '+' || e.key === '0')) {
         e.preventDefault();
       }
     };
@@ -87,6 +89,7 @@ const Layout = () => {
     // Disable double-tap zoom on mobile
     let lastTouchTime = 0;
     const preventDoubleTapZoom = (e) => {
+      if (!isSmallDevice()) return;
       const now = new Date().getTime();
       if (now - lastTouchTime <= 300) {
         e.preventDefault();
@@ -96,7 +99,7 @@ const Layout = () => {
 
     // Disable multi-touch (pinch) viewport zoom
     const preventPinchZoom = (e) => {
-      if (e.touches && e.touches.length > 1) {
+      if (isSmallDevice() && e.touches && e.touches.length > 1) {
         e.preventDefault();
       }
     };
@@ -114,12 +117,14 @@ const Layout = () => {
     };
   }, []);
 
-  // Global Intercepts for downloads and clear events to auto-scroll tools to top
+  // Global Intercepts for downloads and clear events to auto-scroll tools to top - Small Devices Only
   useEffect(() => {
+    const isSmallDevice = () => window.innerWidth < 1024;
+
     // Intercept clicks on links that have download attributes
     const originalClick = HTMLAnchorElement.prototype.click;
     HTMLAnchorElement.prototype.click = function() {
-      if (this.hasAttribute('download')) {
+      if (this.hasAttribute('download') && isSmallDevice()) {
         setTimeout(() => {
           if (mainRef.current) {
             mainRef.current.scrollTo({ top: 0, behavior: 'smooth' });
@@ -129,8 +134,10 @@ const Layout = () => {
       return originalClick.apply(this, arguments);
     };
 
-    // Intercept global clicks on clear/reset buttons
+    // Intercept global clicks on clear/reset/generate buttons
     const handleGlobalClearClick = (e) => {
+      if (!isSmallDevice()) return;
+
       const button = e.target.closest('button') || e.target.closest('[role="button"]');
       if (!button) return;
 
@@ -146,6 +153,7 @@ const Layout = () => {
         text.includes('trash') ||
         text.includes('upload new') ||
         text.includes('upload another') ||
+        text.includes('generate') ||
         ariaLabel.includes('clear') ||
         ariaLabel.includes('reset') ||
         title.includes('clear') ||
