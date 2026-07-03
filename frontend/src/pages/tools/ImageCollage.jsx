@@ -77,16 +77,55 @@ const ImageCollage = () => {
     });
   };
 
-  // --- Drag to Pan ---
+  const [isPinching, setIsPinching] = useState(null);
+  const touchStartDistRef = useRef(null);
+  const touchStartScaleRef = useRef(null);
+
+  // --- Drag to Pan & Pinch to Zoom ---
   const onPointerDown = (e, slotIndex) => {
     if (!images[slotIndex]) return;
-    e.preventDefault();
-    setDraggingSlot(slotIndex);
-    setDragStart({ x: e.clientX || e.touches[0].clientX, y: e.clientY || e.touches[0].clientY });
-    setInitialPos({ x: images[slotIndex].x, y: images[slotIndex].y });
+    
+    if (e.touches && e.touches.length === 2) {
+      // Pinch gesture touch start
+      e.preventDefault();
+      setDraggingSlot(null);
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      touchStartDistRef.current = distance;
+      touchStartScaleRef.current = images[slotIndex].scale;
+      setIsPinching(slotIndex);
+    } else {
+      // Regular drag initialization
+      e.preventDefault();
+      setDraggingSlot(slotIndex);
+      const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+      const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+      setDragStart({ x: clientX, y: clientY });
+      setInitialPos({ x: images[slotIndex].x, y: images[slotIndex].y });
+    }
   };
 
   const onPointerMove = useCallback((e) => {
+    if (isPinching !== null && e.touches && e.touches.length === 2 && images[isPinching]) {
+      e.preventDefault();
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      if (touchStartDistRef.current) {
+        const factor = distance / touchStartDistRef.current;
+        const newScale = Math.max(0.5, Math.min(5, touchStartScaleRef.current * factor));
+        setImages(prev => ({
+          ...prev,
+          [isPinching]: {
+            ...prev[isPinching],
+            scale: newScale
+          }
+        }));
+      }
+      return;
+    }
+
     if (draggingSlot === null || !images[draggingSlot]) return;
     const clientX = e.clientX || (e.touches && e.touches[0].clientX);
     const clientY = e.clientY || (e.touches && e.touches[0].clientY);
@@ -101,12 +140,18 @@ const ImageCollage = () => {
         y: initialPos.y + deltaY * sensitivity,
       }
     }));
-  }, [draggingSlot, dragStart, initialPos, images]);
+  }, [draggingSlot, dragStart, initialPos, images, isPinching]);
 
-  const onPointerUp = useCallback(() => setDraggingSlot(null), []);
+  const onPointerUp = useCallback(() => {
+    setDraggingSlot(null);
+    setIsPinching(null);
+    touchStartDistRef.current = null;
+    touchStartScaleRef.current = null;
+  }, []);
 
   useEffect(() => {
-    if (draggingSlot !== null) {
+    const active = draggingSlot !== null || isPinching !== null;
+    if (active) {
       window.addEventListener('mousemove', onPointerMove);
       window.addEventListener('mouseup', onPointerUp);
       window.addEventListener('touchmove', onPointerMove, { passive: false });
@@ -123,7 +168,7 @@ const ImageCollage = () => {
       window.removeEventListener('touchmove', onPointerMove);
       window.removeEventListener('touchend', onPointerUp);
     };
-  }, [draggingSlot, onPointerMove, onPointerUp]);
+  }, [draggingSlot, isPinching, onPointerMove, onPointerUp]);
 
   const handleWheel = (e, slotIndex) => {
     if (!images[slotIndex]) return;
@@ -232,7 +277,7 @@ const ImageCollage = () => {
                       </button>
                       {draggingSlot !== idx && (
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100 pointer-events-none">
-                          <span className="text-white text-xs font-semibold drop-shadow px-2 py-1 rounded bg-black/30">Drag · Scroll to Zoom</span>
+                          <span className="text-white text-xs font-semibold drop-shadow px-2 py-1 rounded bg-black/30">Drag · Pinch/Scroll to Zoom</span>
                         </div>
                       )}
                     </>

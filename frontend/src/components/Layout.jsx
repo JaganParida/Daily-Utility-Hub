@@ -68,6 +68,104 @@ const Layout = () => {
     }
   }, [location.pathname, isDashboard, isTool, isProfile]);
 
+  // Disable browser-level zoom (Keyboard, Mouse wheel + Ctrl, and Mobile viewport gestures)
+  useEffect(() => {
+    // Disable Ctrl + scroll wheel zoom
+    const preventWheelZoom = (e) => {
+      if (e.ctrlKey) {
+        e.preventDefault();
+      }
+    };
+
+    // Disable Keyboard zoom shortcuts (Ctrl +, Ctrl -, Ctrl 0)
+    const preventKeyZoom = (e) => {
+      if (e.ctrlKey && (e.key === '=' || e.key === '-' || e.key === '+' || e.key === '0')) {
+        e.preventDefault();
+      }
+    };
+
+    // Disable double-tap zoom on mobile
+    let lastTouchTime = 0;
+    const preventDoubleTapZoom = (e) => {
+      const now = new Date().getTime();
+      if (now - lastTouchTime <= 300) {
+        e.preventDefault();
+      }
+      lastTouchTime = now;
+    };
+
+    // Disable multi-touch (pinch) viewport zoom
+    const preventPinchZoom = (e) => {
+      if (e.touches && e.touches.length > 1) {
+        e.preventDefault();
+      }
+    };
+
+    window.addEventListener('wheel', preventWheelZoom, { passive: false });
+    window.addEventListener('keydown', preventKeyZoom);
+    window.addEventListener('touchstart', preventDoubleTapZoom, { passive: false });
+    window.addEventListener('touchmove', preventPinchZoom, { passive: false });
+
+    return () => {
+      window.removeEventListener('wheel', preventWheelZoom);
+      window.removeEventListener('keydown', preventKeyZoom);
+      window.removeEventListener('touchstart', preventDoubleTapZoom);
+      window.removeEventListener('touchmove', preventPinchZoom);
+    };
+  }, []);
+
+  // Global Intercepts for downloads and clear events to auto-scroll tools to top
+  useEffect(() => {
+    // Intercept clicks on links that have download attributes
+    const originalClick = HTMLAnchorElement.prototype.click;
+    HTMLAnchorElement.prototype.click = function() {
+      if (this.hasAttribute('download')) {
+        setTimeout(() => {
+          if (mainRef.current) {
+            mainRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+          }
+        }, 1000);
+      }
+      return originalClick.apply(this, arguments);
+    };
+
+    // Intercept global clicks on clear/reset buttons
+    const handleGlobalClearClick = (e) => {
+      const button = e.target.closest('button') || e.target.closest('[role="button"]');
+      if (!button) return;
+
+      const text = (button.innerText || button.textContent || '').toLowerCase();
+      const ariaLabel = (button.getAttribute('aria-label') || '').toLowerCase();
+      const title = (button.getAttribute('title') || '').toLowerCase();
+
+      const isClearAction = 
+        text.includes('clear') || 
+        text.includes('reset') || 
+        text.includes('start over') || 
+        text.includes('cancel') ||
+        text.includes('trash') ||
+        ariaLabel.includes('clear') ||
+        ariaLabel.includes('reset') ||
+        title.includes('clear') ||
+        title.includes('reset');
+
+      if (isClearAction) {
+        setTimeout(() => {
+          if (mainRef.current) {
+            mainRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+          }
+        }, 100);
+      }
+    };
+
+    window.addEventListener('click', handleGlobalClearClick, true);
+
+    return () => {
+      HTMLAnchorElement.prototype.click = originalClick;
+      window.removeEventListener('click', handleGlobalClearClick, true);
+    };
+  }, []);
+
   return (
     <div className="flex h-screen bg-background overflow-hidden relative">
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
