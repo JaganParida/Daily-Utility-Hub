@@ -16,6 +16,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 import api from '../../lib/api';
 import * as pdfjsLib from 'pdfjs-dist';
+import { PDFDocument, PDFName, PDFArray, PDFDict } from 'pdf-lib';
+import { decryptPDF } from '@pdfsmaller/pdf-decrypt';
 
 // Setup pdfjs worker using unpkg CDN
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
@@ -119,46 +121,94 @@ const PdfUnlock = () => {
       return;
     }
 
-    const formData = new FormData();
-    formData.append('pdf', file);
-    formData.append('password', password);
-    formData.append('removeSignatures', removeSignatures);
-
-    let toastId;
+    let toastId = toast.loading('Decrypting PDF locally in browser...');
     try {
       setIsProcessing(true);
-      toastId = toast.loading('Decrypting PDF securely on server...');
       
-      const response = await api.post('/pdf/unlock', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-        responseType: 'blob'
-      });
+      const fileBytes = new Uint8Array(await file.arrayBuffer());
+      const decryptedBytes = await decryptPDF(fileBytes, password);
+      
+      let finalBytes = decryptedBytes;
+      if (removeSignatures) {
+        try {
+          const pdfDoc = await PDFDocument.load(decryptedBytes);
+          const indirectObjects = pdfDoc.context.enumerateIndirectObjects();
+          const signatureRefs = new Set();
+          let signatureCount = 0;
 
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+          for (const [ref, obj] of indirectObjects) {
+            if (obj instanceof PDFDict) {
+              const type = obj.get(PDFName.of('Type'));
+              const ft = obj.get(PDFName.of('FT'));
+              
+              if ((type && type.toString() === '/Sig') || (ft && ft.toString() === '/Sig')) {
+                signatureRefs.add(ref.toString());
+                signatureCount++;
+                const keys = Array.from(obj.keys());
+                keys.forEach(k => obj.delete(k));
+              }
+            }
+          }
+
+          if (signatureCount > 0) {
+            // Remove from `/Fields` in `/AcroForm`
+            const acroFormRef = pdfDoc.catalog.get(PDFName.of('AcroForm'));
+            if (acroFormRef) {
+              const acroForm = pdfDoc.context.lookup(acroFormRef);
+              if (acroForm instanceof PDFDict) {
+                const fieldsRef = acroForm.get(PDFName.of('Fields'));
+                if (fieldsRef) {
+                  const fields = pdfDoc.context.lookup(fieldsRef);
+                  if (fields instanceof PDFArray) {
+                    const filtered = fields.asArray().filter(ref => !signatureRefs.has(ref.toString()));
+                    const arr = fields.asArray();
+                    arr.length = 0;
+                    filtered.forEach(item => arr.push(item));
+                  }
+                }
+              }
+            }
+
+            // Remove from `/Annots` in pages
+            const pages = pdfDoc.getPages();
+            pages.forEach(page => {
+              const annotsRef = page.node.get(PDFName.of('Annots'));
+              if (annotsRef) {
+                const annots = pdfDoc.context.lookup(annotsRef);
+                if (annots instanceof PDFArray) {
+                  const filtered = annots.asArray().filter(ref => !signatureRefs.has(ref.toString()));
+                  const arr = annots.asArray();
+                  arr.length = 0;
+                  filtered.forEach(item => arr.push(item));
+                }
+              }
+            });
+
+            finalBytes = await pdfDoc.save();
+          }
+        } catch (sigError) {
+          console.error('Failed to strip signatures, returning raw decrypted bytes:', sigError);
+        }
+      }
+
+      const url = window.URL.createObjectURL(new Blob([finalBytes], { type: 'application/pdf' }));
       const link = document.createElement('a');
       link.href = url;
       link.setAttribute('download', `${file.name.replace('.pdf', '')}_unlocked.pdf`);
       document.body.appendChild(link);
       link.click();
       link.remove();
+      window.URL.revokeObjectURL(url);
+      
       toast.success('PDF unlocked successfully!', { id: toastId });
       setPassword('');
       setFile(null);
-      // Scroll viewport to top on mobile after download
       document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
       console.error(error);
       let errMsg = 'Failed to unlock PDF. Is the password correct?';
-      if (error.response?.data instanceof Blob) {
-        try {
-          const text = await error.response.data.text();
-          const parsed = JSON.parse(text);
-          if (parsed.message) errMsg = parsed.message;
-        } catch (e) {
-          console.error('Failed to parse error blob:', e);
-        }
-      } else if (error.response?.data?.message) {
-        errMsg = error.response.data.message;
+      if (error.message && (error.message.toLowerCase().includes('password') || error.message.toLowerCase().includes('decrypt') || error.message.toLowerCase().includes('authenticate'))) {
+        errMsg = 'Incorrect password. Please try again.';
       }
       toast.error(errMsg, { id: toastId });
     } finally {
