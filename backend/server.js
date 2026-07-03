@@ -1,4 +1,6 @@
 const express = require('express');
+const dns = require('dns');
+dns.setDefaultResultOrder('ipv4first'); // Force IPv4 first to resolve MongoDB Atlas DNS issues on Node 18+
 const dotenv = require('dotenv');
 const cors = require('cors');
 const helmet = require('helmet');
