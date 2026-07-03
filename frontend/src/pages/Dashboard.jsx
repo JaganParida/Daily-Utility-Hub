@@ -1,7 +1,7 @@
 import { Link, useOutletContext } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRef, useEffect, useState } from 'react';
-import { Type, Hash, Key, Layers, AlignLeft, Image as ImageIcon, Expand, Crop, ArrowRightLeft, LayoutGrid, FileText, Braces, Search, Calculator, TrendingUp, Percent, Landmark, FolderArchive, Pin, Clock, ArrowRight, Stamp, Palette, Volume2, FileAudio, Code2, Activity, BookMarked, Timer, Shield } from 'lucide-react';
+import { Type, Hash, Key, Layers, AlignLeft, Image as ImageIcon, Expand, Crop, ArrowRightLeft, LayoutGrid, FileText, Braces, Search, Calculator, TrendingUp, Percent, Landmark, FolderArchive, Pin, Clock, ArrowRight, Stamp, Palette, Volume2, FileAudio, Code2, Activity, BookMarked, Timer, Shield, ChevronLeft, ChevronRight } from 'lucide-react';
 import PageTransition from '../components/PageTransition';
 import { useAnalytics } from '../hooks/useAnalytics';
 import { useAuth } from '../context/AuthContext';
@@ -28,6 +28,34 @@ const Dashboard = () => {
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [recentFilter, setRecentFilter] = useState('recent');
   const observerRef = useRef(null);
+
+  // Category horizontal nav scroll controls
+  const categoriesScrollRef = useRef(null);
+  const [showLeftArrow, setShowLeftArrow] = useState(false);
+  const [showRightArrow, setShowRightArrow] = useState(false);
+
+  const handleCategoriesScroll = () => {
+    if (categoriesScrollRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = categoriesScrollRef.current;
+      setShowLeftArrow(scrollLeft > 10);
+      setShowRightArrow(scrollWidth - scrollLeft - clientWidth > 10);
+    }
+  };
+
+  useEffect(() => {
+    const el = categoriesScrollRef.current;
+    if (el) {
+      handleCategoriesScroll();
+      el.addEventListener('scroll', handleCategoriesScroll);
+      window.addEventListener('resize', handleCategoriesScroll);
+      const timeout = setTimeout(handleCategoriesScroll, 100);
+      return () => {
+        el.removeEventListener('scroll', handleCategoriesScroll);
+        window.removeEventListener('resize', handleCategoriesScroll);
+        clearTimeout(timeout);
+      };
+    }
+  }, []);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -184,11 +212,6 @@ const Dashboard = () => {
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
             className="flex flex-col items-center text-center relative z-10 w-full"
           >
-            {/* Pill badge */}
-            <div className="mb-8 px-4 py-1.5 rounded-full border border-border bg-card/50 backdrop-blur-md shadow-sm flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
-              <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Command Center</span>
-            </div>
 
             <h1 className="text-5xl md:text-7xl font-black tracking-tighter text-foreground mb-6 leading-[1.1]">
               Tools for <span className="text-muted-foreground">modern</span> <br className="hidden sm:block" />
@@ -230,26 +253,73 @@ const Dashboard = () => {
         <div ref={observerRef} className="h-1 w-full -mt-12 mb-4" />
 
         {/* SLEEK CATEGORY NAVIGATION */}
-        <div className="max-w-[1600px] mx-auto w-full overflow-x-auto no-scrollbar pb-12 mb-6">
-          <div className="flex items-center justify-start md:justify-center gap-3 px-2 min-w-max mx-auto">
-            {circularCategories.map((cat) => {
-              const IconComponent = cat.icon;
-              const safeId = cat.name.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
-              return (
+        <div className="relative max-w-[1600px] mx-auto mb-6 group/nav">
+          {/* Left Gradient & Arrow */}
+          <AnimatePresence>
+            {showLeftArrow && (
+              <motion.div
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-background via-background/90 to-transparent z-30 flex items-center justify-start pl-2 pointer-events-none md:hidden"
+              >
                 <button
-                  key={cat.name}
                   onClick={() => {
-                    document.getElementById(safeId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    categoriesScrollRef.current?.scrollBy({ left: -160, behavior: 'smooth' });
                   }}
-                  className="flex items-center gap-2 px-5 py-3 rounded-full bg-transparent border border-transparent hover:border-border hover:bg-muted/30 transition-all cursor-pointer focus:outline-none group"
+                  className="w-8 h-8 rounded-full bg-card border border-border flex items-center justify-center text-foreground shadow-md pointer-events-auto active:scale-90 transition-transform cursor-pointer"
                 >
-                  <IconComponent size={18} className="text-muted-foreground group-hover:text-foreground transition-colors" />
-                  <span className="text-sm font-bold text-muted-foreground group-hover:text-foreground tracking-tight whitespace-nowrap transition-colors">
-                    {cat.name.replace(' Tools', '')}
-                  </span>
+                  <ChevronLeft size={16} />
                 </button>
-              );
-            })}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Right Gradient & Arrow */}
+          <AnimatePresence>
+            {showRightArrow && (
+              <motion.div
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 10 }}
+                className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-background via-background/90 to-transparent z-30 flex items-center justify-end pr-2 pointer-events-none md:hidden"
+              >
+                <button
+                  onClick={() => {
+                    categoriesScrollRef.current?.scrollBy({ left: 160, behavior: 'smooth' });
+                  }}
+                  className="w-8 h-8 rounded-full bg-card border border-border flex items-center justify-center text-foreground shadow-md pointer-events-auto active:scale-90 transition-transform cursor-pointer"
+                >
+                  <ChevronRight size={16} />
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <div 
+            ref={categoriesScrollRef}
+            className="w-full overflow-x-auto no-scrollbar pb-4"
+          >
+            <div className="flex items-center justify-start md:justify-center gap-3 px-4 min-w-max mx-auto">
+              {circularCategories.map((cat) => {
+                const IconComponent = cat.icon;
+                const safeId = cat.name.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
+                return (
+                  <button
+                    key={cat.name}
+                    onClick={() => {
+                      document.getElementById(safeId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }}
+                    className="flex items-center gap-2 px-5 py-3 rounded-full bg-transparent border border-transparent hover:border-border hover:bg-muted/30 transition-all cursor-pointer focus:outline-none group"
+                  >
+                    <IconComponent size={18} className="text-muted-foreground group-hover:text-foreground transition-colors" />
+                    <span className="text-sm font-bold text-muted-foreground group-hover:text-foreground tracking-tight whitespace-nowrap transition-colors">
+                      {cat.name.replace(' Tools', '')}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
 

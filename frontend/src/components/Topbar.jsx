@@ -15,7 +15,7 @@ import { useHotkeys } from "react-hotkeys-hook";
 
 import CommandPalette from "./CommandPalette";
 
-const Topbar = ({ isScrolled }) => {
+const Topbar = ({ isScrolled, headerVisible = true }) => {
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const { currentUser: user, logout } = useAuth();
 
@@ -35,8 +35,11 @@ const Topbar = ({ isScrolled }) => {
   return (
     <motion.header
       initial={{ y: -20, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.4, ease: "easeOut" }}
+      animate={{ 
+        y: headerVisible ? 0 : -100, 
+        opacity: headerVisible ? 1 : 0 
+      }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
       className="h-20 w-full max-w-[1600px] mx-auto flex items-center justify-between px-4 md:px-12 lg:px-20 xl:px-32 bg-transparent z-50 absolute top-0 inset-x-0 mt-4 transition-all duration-300"
     >
       {/* LEFT: Logo & Back Button */}

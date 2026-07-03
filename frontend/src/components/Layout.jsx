@@ -4,7 +4,6 @@ import { ArrowLeft } from 'lucide-react';
 import Topbar from './Topbar';
 
 const Layout = () => {
-  const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const mainRef = useRef(null);
@@ -17,14 +16,31 @@ const Layout = () => {
   const showTopbar = isDashboard;
   const showBackButton = isTool || isProfile;
 
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [headerVisible, setHeaderVisible] = useState(true);
+  const lastScrollY = useRef(0);
+
   const handleScroll = (e) => {
-    // Scroll state is now managed locally by child components (e.g. Dashboard)
-    // using IntersectionObserver for precise trigger points.
+    const currentScrollTop = e.target.scrollTop;
     
     // Save scroll position if we are on the dashboard
     if (isDashboard) {
-      sessionStorage.setItem('dashboardScroll', e.target.scrollTop);
+      sessionStorage.setItem('dashboardScroll', currentScrollTop);
     }
+    
+    // Hide header on scroll down, show on scroll up (with a threshold)
+    if (currentScrollTop > 80) {
+      if (currentScrollTop > lastScrollY.current) {
+        setHeaderVisible(false);
+      } else {
+        setHeaderVisible(true);
+      }
+    } else {
+      setHeaderVisible(true);
+    }
+    
+    setIsScrolled(currentScrollTop > 30);
+    lastScrollY.current = currentScrollTop;
   };
 
   // Manage scroll restoration and routing effects
@@ -55,7 +71,7 @@ const Layout = () => {
   return (
     <div className="flex h-screen bg-background overflow-hidden relative">
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
-        {showTopbar && <Topbar isScrolled={isScrolled && isDashboard} />}
+        {showTopbar && <Topbar isScrolled={isScrolled && isDashboard} headerVisible={headerVisible} />}
         
         {/* Global Tool/Profile Header - Static Back Button */}
         {showBackButton && (
