@@ -30,13 +30,13 @@ const FaqItem = ({ question, answer, isOpen, onClick }) => {
     <div className="border-b border-border">
       <button
         onClick={onClick}
-        className="flex w-full items-center justify-between py-8 text-left focus:outline-none group"
+        className="flex w-full items-center justify-between py-6 sm:py-8 text-left focus:outline-none group"
       >
-        <span className="font-semibold text-xl md:text-2xl text-foreground group-hover:text-primary transition-colors">
+        <span className="font-semibold text-lg sm:text-xl md:text-2xl text-foreground group-hover:text-primary transition-colors pr-4">
           {question}
         </span>
         <div
-          className={`w-8 h-8 rounded-full border border-border flex items-center justify-center transition-colors ${isOpen ? "bg-foreground text-background" : "group-hover:border-primary"}`}
+          className={`w-8 h-8 rounded-full border border-border flex items-center justify-center shrink-0 transition-colors ${isOpen ? "bg-foreground text-background" : "group-hover:border-primary"}`}
         >
           <span className="text-xl font-light">{isOpen ? "−" : "+"}</span>
         </div>
@@ -49,7 +49,7 @@ const FaqItem = ({ question, answer, isOpen, onClick }) => {
             exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden"
           >
-            <p className="pb-8 text-muted-foreground text-lg leading-relaxed max-w-3xl">
+            <p className="pb-6 sm:pb-8 text-muted-foreground text-sm sm:text-lg leading-relaxed max-w-3xl">
               {answer}
             </p>
           </motion.div>
@@ -114,45 +114,77 @@ const InteractiveFeatures = () => {
   ];
 
   return (
-    <div className="flex flex-col lg:flex-row gap-12 lg:gap-24 items-center min-h-[500px]">
-      <div className="w-full lg:w-1/2 flex flex-col gap-2">
+    <>
+      {/* Desktop Mode (Tabs layout) */}
+      <div className="hidden lg:flex flex-row gap-24 items-center min-h-[500px]">
+        <div className="w-1/2 flex flex-col gap-2">
+          {features.map((feature, idx) => (
+            <button
+              key={idx}
+              onClick={() => setActiveTab(idx)}
+              className={`text-left p-6 md:p-8 rounded-3xl transition-all duration-300 border-l-4 ${activeTab === idx ? "bg-muted/30 border-primary" : "hover:bg-muted/10 border-transparent opacity-60 hover:opacity-100"}`}
+            >
+              <div className="flex items-center gap-4 mb-3">
+                <div
+                  className={`p-2 rounded-xl ${activeTab === idx ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}
+                >
+                  {feature.icon}
+                </div>
+                <h3 className="text-2xl md:text-3xl font-bold text-foreground">
+                  {feature.title}
+                </h3>
+              </div>
+              <p className="text-lg text-muted-foreground ml-14">
+                {feature.description}
+              </p>
+            </button>
+          ))}
+        </div>
+        <div className="w-1/2 h-[500px] relative">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.95 }}
+              transition={{ duration: 0.4 }}
+              className="absolute inset-0"
+            >
+              {features[activeTab].visual}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      </div>
+
+      {/* Mobile/Tablet Mode (Beautiful inline stack cards with Framer Motion) */}
+      <div className="lg:hidden flex flex-col gap-6 w-full">
         {features.map((feature, idx) => (
-          <button
+          <motion.div
             key={idx}
-            onClick={() => setActiveTab(idx)}
-            className={`text-left p-6 md:p-8 rounded-3xl transition-all duration-300 border-l-4 ${activeTab === idx ? "bg-muted/30 border-primary" : "hover:bg-muted/10 border-transparent opacity-60 hover:opacity-100"}`}
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.5, delay: idx * 0.1 }}
+            className="bg-card border border-border p-6 rounded-3xl flex flex-col gap-4 shadow-sm"
           >
-            <div className="flex items-center gap-4 mb-3">
-              <div
-                className={`p-2 rounded-xl ${activeTab === idx ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}
-              >
+            <div className="flex items-center gap-4">
+              <div className="p-3 rounded-2xl bg-primary/10 text-primary shrink-0">
                 {feature.icon}
               </div>
-              <h3 className="text-2xl md:text-3xl font-bold text-foreground">
+              <h3 className="text-xl font-bold text-foreground">
                 {feature.title}
               </h3>
             </div>
-            <p className="text-lg text-muted-foreground ml-14">
+            <p className="text-sm text-muted-foreground leading-relaxed">
               {feature.description}
             </p>
-          </button>
+            <div className="aspect-[4/3] w-full rounded-2xl overflow-hidden bg-zinc-900 border border-zinc-800 flex items-center justify-center p-4">
+              {feature.visual}
+            </div>
+          </motion.div>
         ))}
       </div>
-      <div className="w-full lg:w-1/2 h-[400px] md:h-[500px] relative">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -20, scale: 0.95 }}
-            transition={{ duration: 0.4 }}
-            className="absolute inset-0"
-          >
-            {features[activeTab].visual}
-          </motion.div>
-        </AnimatePresence>
-      </div>
-    </div>
+    </>
   );
 };
 
@@ -183,7 +215,8 @@ const StickyScrollSteps = () => {
     <div className="relative">
       <div className="hidden lg:block absolute left-1/2 top-0 bottom-0 w-[1px] bg-border -translate-x-1/2" />
 
-      <div className="flex flex-col gap-24 lg:gap-40">
+      {/* Desktop Mode Steps */}
+      <div className="hidden lg:flex flex-col gap-40">
         {steps.map((step, idx) => (
           <div
             key={idx}
@@ -224,6 +257,29 @@ const StickyScrollSteps = () => {
           </div>
         ))}
       </div>
+
+      {/* Mobile/Tablet Mode Steps (Optimized and without vertical waste) */}
+      <div className="lg:hidden flex flex-col gap-6 w-full">
+        {steps.map((step, idx) => (
+          <motion.div
+            key={idx}
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.5, delay: idx * 0.1 }}
+            className="flex gap-4 items-start bg-card border border-border p-5 rounded-2xl shadow-sm"
+          >
+            <div className="p-3 bg-primary/10 text-primary rounded-2xl shrink-0">
+              {step.icon}
+            </div>
+            <div className="space-y-1">
+              <span className="text-[10px] font-mono tracking-widest text-primary uppercase block">0{idx + 1} / Step</span>
+              <h3 className="text-lg font-black text-foreground">{step.title}</h3>
+              <p className="text-xs text-muted-foreground leading-relaxed">{step.description}</p>
+            </div>
+          </motion.div>
+        ))}
+      </div>
     </div>
   );
 };
@@ -256,7 +312,7 @@ const Home = () => {
           >
             <motion.h1
               variants={fadeUp}
-              className="text-5xl min-[400px]:text-6xl sm:text-7xl md:text-[8rem] lg:text-[10rem] font-black tracking-tighter leading-[0.9] mb-6 sm:mb-8"
+              className="text-4xl min-[360px]:text-5xl min-[480px]:text-6xl sm:text-7xl md:text-[8rem] lg:text-[10rem] font-black tracking-tighter leading-[0.95] mb-6 sm:mb-8 text-foreground"
             >
               Work <span className="text-muted-foreground">faster</span>
               <br />
@@ -267,15 +323,15 @@ const Home = () => {
               variants={fadeUp}
               className="flex flex-col md:flex-row items-start md:items-center justify-between w-full gap-6 md:gap-10"
             >
-              <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground max-w-xl leading-relaxed font-medium">
+              <p className="text-base sm:text-xl md:text-2xl text-muted-foreground max-w-xl leading-relaxed font-medium">
                 The modern utility hub for developers, designers, and
                 professionals. 50+ tools executing instantly in your browser.
               </p>
 
-              <div className="flex flex-row items-center gap-4 w-auto shrink-0 mt-1 md:mt-0">
+              <div className="flex flex-row items-center gap-4 w-full md:w-auto shrink-0 mt-2 md:mt-0">
                 <Link
                   to="/dashboard"
-                  className="px-6 py-3.5 sm:px-8 sm:py-5 bg-foreground hover:bg-foreground/90 text-background font-bold rounded-full transition-all flex items-center gap-3 text-sm sm:text-lg w-fit justify-center hover:scale-105 active:scale-95 shadow-xl"
+                  className="px-6 py-3.5 sm:px-8 sm:py-5 bg-foreground hover:bg-foreground/90 text-background font-bold rounded-full transition-all flex items-center gap-3 text-sm sm:text-lg w-full md:w-fit justify-center hover:scale-105 active:scale-95 shadow-xl"
                 >
                   Enter Platform <ArrowUpRight size={18} />
                 </Link>
@@ -446,19 +502,19 @@ const Home = () => {
             <div className="grid grid-cols-3 gap-2 md:gap-4 mb-4 relative z-20">
               <div className="p-2 md:p-6"></div>
               <div className="p-2 sm:p-4 md:p-6 text-center rounded-2xl border border-zinc-800/50 bg-zinc-900/30 backdrop-blur-md flex flex-col justify-center items-center">
-                <h3 className="text-sm sm:text-lg md:text-xl font-bold text-zinc-300 leading-tight mb-1">
+                <h3 className="text-xs sm:text-lg md:text-xl font-bold text-zinc-300 leading-tight mb-1">
                   Guest
                 </h3>
-                <p className="text-[10px] sm:text-xs md:text-sm text-zinc-500 leading-tight hidden sm:block">
+                <p className="text-[9px] sm:text-xs md:text-sm text-zinc-500 leading-tight hidden sm:block">
                   No registration
                 </p>
               </div>
               <div className="p-2 sm:p-4 md:p-6 text-center rounded-2xl border-2 border-primary/40 bg-primary/5 backdrop-blur-md relative overflow-hidden shadow-[0_0_40px_rgba(var(--primary-rgb),0.1)] scale-105 z-10 flex flex-col justify-center items-center">
                 <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-primary to-transparent opacity-70" />
-                <h3 className="text-sm sm:text-lg md:text-xl font-bold text-primary leading-tight mb-1">
+                <h3 className="text-xs sm:text-lg md:text-xl font-bold text-primary leading-tight mb-1">
                   Registered
                 </h3>
-                <p className="text-[10px] sm:text-xs md:text-sm text-primary/70 leading-tight hidden sm:block">
+                <p className="text-[9px] sm:text-xs md:text-sm text-primary/70 leading-tight hidden sm:block">
                   100% Free
                 </p>
               </div>
