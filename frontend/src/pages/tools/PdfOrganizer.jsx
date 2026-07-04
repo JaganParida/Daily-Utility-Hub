@@ -55,23 +55,26 @@ const SortablePage = ({ page, index, onRemove, onDuplicate, onRotate }) => {
         />
       </div>
 
-      <div className="absolute top-2 right-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+      <div className="absolute top-2 right-2 flex flex-col gap-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity z-20">
         <button 
-          onPointerDown={(e) => { e.stopPropagation(); onRemove(page.id); }}
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => { e.stopPropagation(); onRemove(page.id); }}
           className="p-1.5 bg-red-500/90 hover:bg-red-500 text-white rounded-md shadow-sm transition-colors"
           title="Remove Page"
         >
           <Trash2 size={14} />
         </button>
         <button 
-          onPointerDown={(e) => { e.stopPropagation(); onDuplicate(page.id); }}
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => { e.stopPropagation(); onDuplicate(page.id); }}
           className="p-1.5 bg-blue-500/90 hover:bg-blue-500 text-white rounded-md shadow-sm transition-colors"
           title="Duplicate Page"
         >
           <Copy size={14} />
         </button>
         <button 
-          onPointerDown={(e) => { e.stopPropagation(); onRotate(page.id); }}
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => { e.stopPropagation(); onRotate(page.id); }}
           className="p-1.5 bg-green-500/90 hover:bg-green-500 text-white rounded-md shadow-sm transition-colors"
           title="Rotate Page"
         >
@@ -123,7 +126,8 @@ const PdfOrganizer = () => {
       const arrayBuffer = await selectedFile.arrayBuffer();
       setPdfData(arrayBuffer);
       
-      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      const clonedBuffer = arrayBuffer.slice(0);
+      const pdf = await pdfjsLib.getDocument({ data: clonedBuffer }).promise;
       
       const loadedPages = [];
       for (let i = 1; i <= pdf.numPages; i++) {
@@ -192,7 +196,7 @@ const PdfOrganizer = () => {
       // 1. Yield for UI update
       await new Promise(r => setTimeout(r, 100));
 
-      const originalDoc = await PDFDocument.load(pdfData);
+      const originalDoc = await PDFDocument.load(pdfData.slice(0));
       const newDoc = await PDFDocument.create();
 
       // We need to copy pages. Since pages can be duplicated, we can just copy them all one by one or batch
