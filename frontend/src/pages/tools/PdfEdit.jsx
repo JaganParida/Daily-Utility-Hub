@@ -626,7 +626,7 @@ const PdfEdit = () => {
         {/* Main Editing Board */}
         <motion.div 
           layout
-          className={`flex-1 w-full bg-card border border-border p-4 md:p-6 rounded-2xl shadow-sm flex flex-col gap-4 relative transition-all duration-500 ease-out ${!file ? 'min-h-[50vh]' : 'min-h-0'}`}
+          className={`flex-1 min-w-0 w-full bg-card border border-border p-4 md:p-6 rounded-2xl shadow-sm flex flex-col gap-4 relative transition-all duration-500 ease-out ${!file ? 'min-h-[50vh]' : 'min-h-0'}`}
         >
           <AnimatePresence mode="popLayout" initial={false}>
             {!file ? (
@@ -808,7 +808,7 @@ const PdfEdit = () => {
               </div>
 
               {/* Document Canvas Workspace Container */}
-              <div className="bg-muted/10 border border-border rounded-xl p-4 min-h-[500px] overflow-auto flex items-center justify-center relative select-none">
+              <div className="w-full max-w-full bg-muted/10 border border-border rounded-xl p-4 min-h-[500px] overflow-auto flex items-center justify-center relative select-none">
                 
                 {isRendering && (
                   <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-50 flex items-center justify-center">

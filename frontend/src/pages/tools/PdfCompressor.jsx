@@ -19,7 +19,7 @@ const PdfCompressor = () => {
   const [file, setFile] = useState(null);
   const [totalPages, setTotalPages] = useState(0);
   const [compressionLevel, setCompressionLevel] = useState('medium');
-  const [targetSizeMb, setTargetSizeMb] = useState(2);
+  const [targetSizeMb, setTargetSizeMb] = useState('2');
   const [targetUnit, setTargetUnit] = useState('MB');
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -67,24 +67,8 @@ const PdfCompressor = () => {
     setIsProcessing(true);
     setProgress(0);
 
-    const levelSettings = COMPRESSION_LEVELS.find(l => l.id === compressionLevel);
-    
-    let levelQuality = 0.5;
-    let levelScale = 1.0;
-    
-    if (compressionLevel === 'manual') {
-      const origMb = file.size / (1024 * 1024);
-      const targetMb = targetUnit === 'MB' ? targetSizeMb : targetSizeMb / 1024;
-      const ratio = targetMb / origMb;
-      if (ratio >= 0.8) { levelQuality = 0.8; levelScale = 1.2; }
-      else if (ratio >= 0.5) { levelQuality = 0.6; levelScale = 1.0; }
-      else if (ratio >= 0.3) { levelQuality = 0.4; levelScale = 0.9; }
-      else if (ratio >= 0.1) { levelQuality = 0.2; levelScale = 0.8; }
-      else { levelQuality = 0.1; levelScale = 0.6; }
-    } else {
-      levelQuality = levelSettings.quality;
-      levelScale = levelSettings.scale;
-    }
+    const targetVal = parseFloat(targetSizeMb) || 0.1;
+    const targetBytes = targetUnit === 'MB' ? targetVal * 1024 * 1024 : targetVal * 1024;
     
     try {
       // 1. Yield for UI update
@@ -95,14 +79,61 @@ const PdfCompressor = () => {
       
       let finalBlob = null;
       let success = false;
-      const targetBytes = targetUnit === 'MB' ? targetSizeMb * 1024 * 1024 : targetSizeMb * 1024;
       
-      let maxAttempts = compressionLevel === 'manual' ? 4 : 1;
-      let currentQuality = levelQuality;
-      let currentScale = levelScale;
+      if (compressionLevel === 'manual') {
+        // Multi-step presets from highest quality to lowest
+        const presets = [
+          { scale: 1.0, quality: 0.85 }, // Step 1: High quality
+          { scale: 0.9, quality: 0.60 }, // Step 2: Medium-high quality
+          { scale: 0.75, quality: 0.35 }, // Step 3: Medium-low quality
+          { scale: 0.5, quality: 0.15 }  // Step 4: Low quality
+        ];
 
-      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        for (let attempt = 0; attempt < presets.length; attempt++) {
+          const { scale: currentScale, quality: currentQuality } = presets[attempt];
+          let tempDoc = null;
+          
+          for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+            const page = await pdf.getPage(pageNum);
+            const viewport = page.getViewport({ scale: currentScale });
+            
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = viewport.width;
+            canvas.height = viewport.height;
+
+            await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+
+            const imgData = canvas.toDataURL('image/jpeg', currentQuality);
+            
+            const imgWidthMm = (viewport.width * 25.4) / 72;
+            const imgHeightMm = (viewport.height * 25.4) / 72;
+            const orientation = imgWidthMm > imgHeightMm ? 'l' : 'p';
+
+            if (!tempDoc) {
+              tempDoc = new jsPDF({ orientation, unit: 'mm', format: [imgWidthMm, imgHeightMm] });
+            } else {
+              tempDoc.addPage([imgWidthMm, imgHeightMm], orientation);
+            }
+
+            tempDoc.addImage(imgData, 'JPEG', 0, 0, imgWidthMm, imgHeightMm, undefined, 'FAST');
+            setProgress(Math.round((pageNum / pdf.numPages) * 100));
+          }
+
+          finalBlob = tempDoc.output('blob');
+          
+          if (finalBlob.size <= targetBytes) {
+            success = true;
+            break; // Fits within target size, stop here!
+          }
+        }
+      } else {
+        // Preset-based compression levels (low, medium, high)
+        const levelSettings = COMPRESSION_LEVELS.find(l => l.id === compressionLevel);
+        const currentScale = levelSettings.scale;
+        const currentQuality = levelSettings.quality;
         let tempDoc = null;
+
         for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
           const page = await pdf.getPage(pageNum);
           const viewport = page.getViewport({ scale: currentScale });
@@ -127,22 +158,11 @@ const PdfCompressor = () => {
           }
 
           tempDoc.addImage(imgData, 'JPEG', 0, 0, imgWidthMm, imgHeightMm, undefined, 'FAST');
-          
-          // Progress within current attempt
           setProgress(Math.round((pageNum / pdf.numPages) * 100));
         }
 
         finalBlob = tempDoc.output('blob');
-        
-        if (compressionLevel !== 'manual' || finalBlob.size <= targetBytes) {
-          success = true;
-          break; // It fits or we aren't in manual mode
-        } else {
-          // Need more compression
-          currentScale = Math.max(0.3, currentScale * 0.7);
-          currentQuality = Math.max(0.01, currentQuality - 0.2);
-          if (attempt === maxAttempts) break; 
-        }
+        success = true;
       }
 
       const downloadUrl = URL.createObjectURL(finalBlob);
@@ -154,7 +174,7 @@ const PdfCompressor = () => {
       link.remove();
       URL.revokeObjectURL(downloadUrl);
 
-       if (compressionLevel === 'manual' && !success && finalBlob.size > targetBytes) {
+      if (compressionLevel === 'manual' && !success && finalBlob.size > targetBytes) {
         toast.error(`Could not compress further! Lowest size achieved: ${(finalBlob.size/1024).toFixed(1)} KB.`);
       } else {
         toast.success('PDF compressed successfully!');
@@ -174,6 +194,7 @@ const PdfCompressor = () => {
     setFile(null);
     setTotalPages(0);
     setProgress(0);
+    setTargetSizeMb('2');
     document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -266,12 +287,20 @@ const PdfCompressor = () => {
                           <div className="mt-2" onClick={(e) => e.stopPropagation()}>
                             <div className="flex items-center gap-2">
                               <input 
-                                type="number" 
-                                min="0.1" 
-                                step="any"
+                                type="text" 
                                 value={targetSizeMb}
-                                onChange={(e) => setTargetSizeMb(Number(e.target.value))}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  if (val === '' || /^\d*\.?\d*$/.test(val)) {
+                                    let cleaned = val;
+                                    if (cleaned.startsWith('0') && cleaned.length > 1 && cleaned[1] !== '.') {
+                                      cleaned = cleaned.replace(/^0+/, '');
+                                    }
+                                    setTargetSizeMb(cleaned);
+                                  }
+                                }}
                                 className="w-full bg-background border border-border text-foreground text-sm rounded-lg px-2 py-1.5 focus:outline-none focus:border-primary"
+                                placeholder="Enter size"
                               />
                               <select 
                                 value={targetUnit}
