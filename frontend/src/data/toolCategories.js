@@ -61,6 +61,7 @@ export const toolCategories = {
     { name: 'Markdown Editor', description: 'Write beautiful documentation with instant previews.', icon: FileText, to: '/tools/markdown-editor', color: 'text-blue-500 bg-blue-500/10' },
     { name: 'Text Analyzer', description: 'Analyze readability, keyword density, and speaking time.', icon: Activity, to: '/tools/text-analyzer', color: 'text-purple-500 bg-purple-500/10' },
     { name: 'Citation Generator', description: 'Instantly generate APA, MLA, and Chicago format citations.', icon: BookMarked, to: '/tools/citation-generator', color: 'text-emerald-500 bg-emerald-500/10' },
+    { name: 'Dev Profile Generator', description: 'Create and host premium, responsive developer link trees and portfolio cards.', icon: Code2, to: '/tools/developer-profile', color: 'text-indigo-500 bg-indigo-500/10' },
     { name: 'Pomodoro Hub', description: 'Study with an animated timer, tasks, and productivity modes.', icon: Timer, to: '/tools/pomodoro-hub', color: 'text-rose-500 bg-rose-500/10' },
   ],
   'Finance & Productivity': [

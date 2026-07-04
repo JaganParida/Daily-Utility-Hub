@@ -40,9 +40,10 @@ const CodeToImage = () => {
       const toastId = toast.loading('Generating high-res image...');
       
       const dataUrl = await toPng(codeCardRef.current, { 
-        quality: 1, 
-        pixelRatio: 3, // High DPI for crisp text
-        skipFonts: false
+        quality: 0.95, 
+        pixelRatio: 2.5, // High DPI but within safe memory limits
+        skipFonts: true, // Prevents CORS SecurityError on external stylesheets
+        fontEmbedCSS: '' // Bypasses font embedding CSS lookup
       });
       
       const link = document.createElement('a');
@@ -53,7 +54,7 @@ const CodeToImage = () => {
       toast.success('Image exported successfully!', { id: toastId });
     } catch (error) {
       console.error(error);
-      toast.error('Failed to export image');
+      toast.error('Failed to export image. Try copy-pasting or screenshots if it persists.');
     } finally {
       setIsExporting(false);
     }

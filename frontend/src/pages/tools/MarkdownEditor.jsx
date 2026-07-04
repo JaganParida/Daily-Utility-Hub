@@ -1,5 +1,8 @@
 import { useState, useRef } from 'react';
-import { BookOpen, Download, Copy, CheckCircle2, Bold, Italic, Link as LinkIcon, Code, List, Table, Settings } from 'lucide-react';
+import { 
+  BookOpen, Download, Copy, CheckCircle2, Bold, Italic, Link as LinkIcon, 
+  Code, List, Table, Settings, HelpCircle, Eye, EyeOff, LayoutTemplate, AlignLeft 
+} from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -7,11 +10,30 @@ import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { toast } from 'react-hot-toast';
 import { motion } from 'framer-motion';
 
+const MARKDOWN_TEMPLATES = [
+  {
+    id: 'lab-report',
+    name: '🔬 Lab Report',
+    content: `# Lab Report: Verification of Bully Election Algorithm\n\n**Course**: CS401 Distributed Systems  \n**Student Name**: Jane Doe  \n**Date**: October 12, 2024  \n\n---\n\n## 1. Objective\nDescribe the objective of this laboratory exercise.\n\n## 2. Methodology & Algorithm Design\nExplain the design details and consensus steps of the Bully election algorithm.\n\n## 3. Results & Console Output\n\`\`\`text\n[Node 1] Active\n[Node 3] Crashed\n[Node 2] Initiating Election...\n[Node 2] Selected Leader: Node 5\n\`\`\`\n\n## 4. Conclusion\nSummarize findings and consensus validation under stress testing.\n`
+  },
+  {
+    id: 'project-doc',
+    name: '📂 Project Documentation',
+    content: `# Technical Documentation: API Gateway Services\n\n## 1. Architecture Overview\nProvide a high-level description of the gateway architecture.\n\n## 2. API Endpoints\n| Method | Path | Description | Authentication |\n| ------ | ---- | ----------- | -------------- |\n| GET    | /api/v1/health | Gateway health checks | None |\n| POST   | /api/v1/users  | User registration | JWT Key |\n\n## 3. Configuration Setup\n\`\`\`yaml\nserver:\n  port: 8080\n  route:\n    path: /api/v1\n\`\`\`\n`
+  },
+  {
+    id: 'lecture-notes',
+    name: '📝 Lecture Notes',
+    content: `# CS201: Data Structures - Lecture 5 Notes\n\n**Topic**: Balanced Binary Search Trees (AVL & Red-Black Trees)\n**Date**: October 12, 2024\n\n---\n\n### Key Concepts\n1. **AVL Tree Balance Factor**:\n   - Height of left subtree minus height of right subtree.\n   - Must remain in the range \\([-1, 1]\\).\n\n2. **Rotations**:\n   - Left Rotation (LL)\n   - Right Rotation (RR)\n   - Left-Right Rotation (LR)\n   - Right-Left Rotation (RL)\n`
+  }
+];
+
 const MarkdownEditor = () => {
   const defaultMd = `# Welcome to the Markdown Editor! 👋\n\nThis is a **live-preview** markdown editor tailored for documentation.\n\n## Features Supported (GitHub Flavored Markdown)\n\n1. **Tables**:\n| Syntax      | Description |\n| ----------- | ----------- |\n| Header      | Title       |\n| Paragraph   | Text        |\n\n2. **Task Lists**:\n- [x] Write amazing documentation\n- [ ] Deploy the app\n- [ ] Celebrate 🎉\n\n3. **Code Blocks with Syntax Highlighting**:\n\`\`\`javascript\nfunction calculateSum(a, b) {\n  return a + b;\n}\nconsole.log(calculateSum(5, 10));\n\`\`\`\n\n4. **Blockquotes**:\n> "Documentation is a love letter that you write to your future self."\n\n5. **Links and Images**:\n[Visit Daily Utility Hub](#)\n\n---\n\nStart typing on the left to see the instant preview on the right!\n`;
 
   const [markdown, setMarkdown] = useState(defaultMd);
   const [isCopied, setIsCopied] = useState(false);
+  const [showCheatSheet, setShowCheatSheet] = useState(false);
   const textareaRef = useRef(null);
 
   const downloadMarkdown = () => {
@@ -43,7 +65,6 @@ const MarkdownEditor = () => {
     
     setMarkdown(newText);
 
-    // Reset cursor position inside the wrapper
     setTimeout(() => {
       textarea.focus();
       textarea.setSelectionRange(start + prefix.length, end + prefix.length);
@@ -55,15 +76,29 @@ const MarkdownEditor = () => {
     insertText(tableTemplate);
   };
 
+  const handleTemplateSelect = (templateId) => {
+    const t = MARKDOWN_TEMPLATES.find(x => x.id === templateId);
+    if (t) {
+      setMarkdown(t.content);
+      toast.success(`Loaded ${t.name} template!`);
+    }
+  };
+
+  const wordCount = markdown.split(/\s+/).filter(Boolean).length;
+  const charCount = markdown.length;
+  const readTime = Math.ceil(wordCount / 200);
+
   return (
     <div className="max-w-[1600px] mx-auto w-full px-2 md:px-8">
-      <div className="mb-6 flex items-center gap-3 shrink-0">
-        <div className="p-2 bg-primary/10 text-primary rounded-md shadow-sm">
-          <BookOpen size={24} />
-        </div>
-        <div>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter text-foreground">Markdown Live Editor</h1>
-          <p className="text-muted-foreground mt-1 text-xs md:text-sm">Write beautiful documentation with instant GitHub-flavored previews and quick tools.</p>
+      <div className="mb-6 flex items-center justify-between shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-primary/10 text-primary rounded-md shadow-sm">
+            <BookOpen size={24} />
+          </div>
+          <div>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter text-foreground">Markdown Live Editor</h1>
+            <p className="text-muted-foreground mt-1 text-xs md:text-sm">Write beautiful documentation with instant GitHub-flavored previews and quick tools.</p>
+          </div>
         </div>
       </div>
 
@@ -74,42 +109,114 @@ const MarkdownEditor = () => {
           layout
           className="flex-1 w-full flex flex-col gap-6 relative"
         >
-          <div className="bg-card border border-border rounded-2xl shadow-sm flex flex-col min-h-[600px] overflow-hidden">
-            {/* Toolbar */}
-            <div className="p-3 border-b border-border bg-muted/30 flex items-center gap-2 overflow-x-auto custom-scrollbar shrink-0">
-              <div className="flex bg-background border border-border rounded-lg shadow-sm">
-                <button onClick={() => insertText('**', '**')} className="p-2 hover:bg-muted text-foreground transition-colors border-r border-border" title="Bold">
-                  <Bold size={16} />
+          {/* Quick controls bar */}
+          <div className="flex flex-wrap gap-3 items-center bg-card border border-border p-3.5 rounded-2xl shadow-sm shrink-0">
+            <div className="flex items-center gap-2">
+              <LayoutTemplate size={16} className="text-primary" />
+              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Template:</span>
+            </div>
+            <div className="flex gap-2">
+              {MARKDOWN_TEMPLATES.map(t => (
+                <button
+                  key={t.id}
+                  onClick={() => handleTemplateSelect(t.id)}
+                  className="px-3 py-1.5 bg-muted hover:bg-muted/80 text-foreground text-xs font-bold rounded-lg border border-border transition-colors"
+                >
+                  {t.name}
                 </button>
-                <button onClick={() => insertText('*', '*')} className="p-2 hover:bg-muted text-foreground transition-colors border-r border-border" title="Italic">
-                  <Italic size={16} />
-                </button>
-                <button onClick={() => insertText('[', '](url)')} className="p-2 hover:bg-muted text-foreground transition-colors border-r border-border" title="Link">
-                  <LinkIcon size={16} />
-                </button>
-                <button onClick={() => insertText('`', '`')} className="p-2 hover:bg-muted text-foreground transition-colors border-r border-border" title="Inline Code">
-                  <Code size={16} />
-                </button>
-                <button onClick={() => insertText('- ')} className="p-2 hover:bg-muted text-foreground transition-colors border-r border-border" title="Unordered List">
-                  <List size={16} />
-                </button>
-                <button onClick={insertTable} className="p-2 hover:bg-muted text-foreground transition-colors" title="Table">
-                  <Table size={16} />
-                </button>
+              ))}
+            </div>
+
+            <button
+              onClick={() => setShowCheatSheet(!showCheatSheet)}
+              className="ml-auto flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold rounded-lg transition-colors border border-primary/20"
+            >
+              <HelpCircle size={14} /> {showCheatSheet ? 'Hide Guide' : 'Show Guide'}
+            </button>
+          </div>
+
+          <div className="flex gap-4 items-start w-full relative">
+            <div className="flex-1 bg-card border border-border rounded-2xl shadow-sm flex flex-col min-h-[600px] overflow-hidden">
+              {/* Toolbar */}
+              <div className="p-3 border-b border-border bg-muted/30 flex items-center gap-2 overflow-x-auto custom-scrollbar shrink-0">
+                <div className="flex bg-background border border-border rounded-lg shadow-sm">
+                  <button onClick={() => insertText('**', '**')} className="p-2 hover:bg-muted text-foreground transition-colors border-r border-border" title="Bold">
+                    <Bold size={16} />
+                  </button>
+                  <button onClick={() => insertText('*', '*')} className="p-2 hover:bg-muted text-foreground transition-colors border-r border-border" title="Italic">
+                    <Italic size={16} />
+                  </button>
+                  <button onClick={() => insertText('[', '](url)')} className="p-2 hover:bg-muted text-foreground transition-colors border-r border-border" title="Link">
+                    <LinkIcon size={16} />
+                  </button>
+                  <button onClick={() => insertText('`', '`')} className="p-2 hover:bg-muted text-foreground transition-colors border-r border-border" title="Inline Code">
+                    <Code size={16} />
+                  </button>
+                  <button onClick={() => insertText('- ')} className="p-2 hover:bg-muted text-foreground transition-colors border-r border-border" title="Unordered List">
+                    <List size={16} />
+                  </button>
+                  <button onClick={insertTable} className="p-2 hover:bg-muted text-foreground transition-colors" title="Table">
+                    <Table size={16} />
+                  </button>
+                </div>
+                <div className="ml-auto text-xs text-muted-foreground uppercase font-bold tracking-wider px-2">
+                  Raw Editor
+                </div>
               </div>
-              <div className="ml-auto text-xs text-muted-foreground uppercase font-bold tracking-wider px-2">
-                Raw Markdown
+              
+              <textarea
+                ref={textareaRef}
+                value={markdown}
+                onChange={(e) => setMarkdown(e.target.value)}
+                className="w-full flex-1 bg-background border-none p-6 text-sm text-foreground focus:outline-none focus:ring-0 font-mono resize-none custom-scrollbar leading-relaxed min-h-[500px]"
+                spellCheck="false"
+                placeholder="Type your markdown here..."
+              />
+
+              <div className="p-3 bg-muted/30 border-t border-border flex justify-between items-center text-xs text-muted-foreground shrink-0">
+                <span>{wordCount} Words | {charCount} Chars</span>
+                <span>⏱️ {readTime} min read</span>
               </div>
             </div>
-            
-            <textarea
-              ref={textareaRef}
-              value={markdown}
-              onChange={(e) => setMarkdown(e.target.value)}
-              className="w-full flex-1 bg-background border-none p-6 text-sm text-foreground focus:outline-none focus:ring-0 font-mono resize-none custom-scrollbar leading-relaxed"
-              spellCheck="false"
-              placeholder="Type your markdown here..."
-            />
+
+            {/* Markdown Cheat Sheet Drawer */}
+            <AnimatePresence>
+              {showCheatSheet && (
+                <motion.div
+                  initial={{ opacity: 0, x: 20, width: 0 }}
+                  animate={{ opacity: 1, x: 0, width: '280px' }}
+                  exit={{ opacity: 0, x: 20, width: 0 }}
+                  className="bg-card border border-border rounded-2xl shadow-sm p-4 h-[600px] overflow-y-auto custom-scrollbar shrink-0 space-y-4 text-xs"
+                >
+                  <h3 className="font-bold text-foreground border-b border-border pb-2 flex items-center gap-1.5">
+                    <HelpCircle size={14} className="text-primary" /> Markdown Guide
+                  </h3>
+                  
+                  <div className="space-y-3">
+                    <div>
+                      <p className="font-bold text-foreground">Headers</p>
+                      <code className="block bg-muted p-1.5 rounded mt-1"># Header 1<br/>## Header 2</code>
+                    </div>
+                    <div>
+                      <p className="font-bold text-foreground">Emphasis</p>
+                      <code className="block bg-muted p-1.5 rounded mt-1">**Bold Text**<br/>*Italic Text*</code>
+                    </div>
+                    <div>
+                      <p className="font-bold text-foreground">Lists</p>
+                      <code className="block bg-muted p-1.5 rounded mt-1">1. First item<br/>- Bullet item</code>
+                    </div>
+                    <div>
+                      <p className="font-bold text-foreground">Links & Images</p>
+                      <code className="block bg-muted p-1.5 rounded mt-1">[Link Text](url)<br/>![Alt Text](imgUrl)</code>
+                    </div>
+                    <div>
+                      <p className="font-bold text-foreground">Tables</p>
+                      <code className="block bg-muted p-1.5 rounded mt-1">| Header | Value |<br/>| ------ | ----- |<br/>| Cell 1 | Val 1 |</code>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </motion.div>
 
@@ -152,23 +259,29 @@ const MarkdownEditor = () => {
                         const match = /language-(\w+)/.exec(className || '')
                         return !inline && match ? (
                           <SyntaxHighlighter
-                            children={String(children).replace(/\n$/, '')}
                             style={vscDarkPlus}
                             language={match[1]}
                             PreTag="div"
-                            className="rounded-lg !m-0 !bg-[#1e1e1e] !text-xs"
+                            className="rounded-lg my-4 !bg-[#161b22] border border-[#30363d] !text-xs"
                             {...props}
-                          />
+                          >
+                            {String(children).replace(/\n$/, '')}
+                          </SyntaxHighlighter>
                         ) : (
-                          <code className="bg-muted px-1.5 py-0.5 rounded-md text-pink-500 font-mono text-xs border border-border/50" {...props}>
+                          <code className="bg-[#161b22] px-1.5 py-0.5 rounded text-[#e6edf3] font-mono text-[0.9em] border border-[#30363d]" {...props}>
                             {children}
                           </code>
                         )
-                      }
+                      },
+                      h1: ({node, ...props}) => <h1 className="text-2xl font-bold border-b border-[#21262d] pb-2 mb-4 text-foreground" {...props} />,
+                      h2: ({node, ...props}) => <h2 className="text-xl font-bold border-b border-[#21262d] pb-2 mt-6 mb-4 text-foreground" {...props} />,
+                      a: ({node, ...props}) => <a className="text-[#58a6ff] hover:underline" {...props} />,
+                      ul: ({node, ...props}) => <ul className="list-disc pl-5 space-y-1 mb-4 text-foreground" {...props} />,
+                      img: ({node, ...props}) => <img className="inline-block mr-1 max-w-full rounded-xl shadow-md border border-border" {...props} />
                     }}
-                 >
-                   {markdown}
-                 </ReactMarkdown>
+                  >
+                    {markdown}
+                  </ReactMarkdown>
                </div>
             </div>
           </div>

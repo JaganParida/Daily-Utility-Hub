@@ -80,6 +80,7 @@ const TextAnalyzer = lazy(() => import('./pages/tools/TextAnalyzer'));
 const CitationGenerator = lazy(() => import('./pages/tools/CitationGenerator'));
 const PomodoroHub = lazy(() => import('./pages/tools/PomodoroHub'));
 const HtmlSandbox = lazy(() => import('./pages/tools/HtmlSandbox'));
+const DevProfileGenerator = lazy(() => import('./pages/tools/DevProfileGenerator'));
 
 // Finance & Productivity (Lazy loaded)
 const EmiCalculator = lazy(() => import('./pages/tools/EmiCalculator'));
@@ -188,6 +189,7 @@ function AnimatedRoutes() {
             <Route path="/tools/text-analyzer" element={<TextAnalyzer />} />
             <Route path="/tools/citation-generator" element={<CitationGenerator />} />
             <Route path="/tools/pomodoro-hub" element={<PomodoroHub />} />
+            <Route path="/tools/developer-profile" element={<DevProfileGenerator />} />
 
             {/* Finance & Productivity Tools Routes */}
             <Route path="/tools/emi-calculator" element={<EmiCalculator />} />

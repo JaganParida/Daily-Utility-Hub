@@ -2,6 +2,8 @@ import { useState, useRef } from 'react';
 import { FileDiff, SplitSquareHorizontal, Upload, FileText, Settings, Type } from 'lucide-react';
 import ReactDiffViewer from 'react-diff-viewer-continued';
 import { motion } from 'framer-motion';
+import Tesseract from 'tesseract.js';
+import { toast } from 'react-hot-toast';
 
 const TextDiff = () => {
   const [oldText, setOldText] = useState('function calculateSum(a, b) {\n  return a + b;\n}\n\nconsole.log(calculateSum(5, 10));');
@@ -15,20 +17,39 @@ const TextDiff = () => {
   const oldFileRef = useRef(null);
   const newFileRef = useRef(null);
 
-  const handleFileUpload = (e, isOld) => {
+  const handleFileUpload = async (e, isOld) => {
     const file = e.target.files[0];
     if (!file) return;
 
     if (isOld) setOldFileName(file.name);
     else setNewFileName(file.name);
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const text = event.target.result;
-      if (isOld) setOldText(text);
-      else setNewText(text);
-    };
-    reader.readAsText(file);
+    if (file.type.startsWith('image/')) {
+      const toastId = toast.loading('Running OCR to extract text from image...');
+      try {
+        const result = await Tesseract.recognize(file, 'eng');
+        const extractedText = result.data.text || '';
+        if (isOld) {
+          setOldText(extractedText);
+          setOldFileName(file.name + ' (Extracted)');
+        } else {
+          setNewText(extractedText);
+          setNewFileName(file.name + ' (Extracted)');
+        }
+        toast.success('Text extracted from image successfully!', { id: toastId });
+      } catch (error) {
+        console.error(error);
+        toast.error('Failed to extract text from image.', { id: toastId });
+      }
+    } else {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const text = event.target.result;
+        if (isOld) setOldText(text);
+        else setNewText(text);
+      };
+      reader.readAsText(file);
+    }
     
     // reset input
     e.target.value = null;
