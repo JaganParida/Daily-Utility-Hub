@@ -133,7 +133,14 @@ const CodeToImage = () => {
                     <SyntaxHighlighter 
                       language={language} 
                       style={vscDarkPlus}
-                      customStyle={{ margin: 0, padding: 0, background: 'transparent', wordBreak: 'break-all', whiteSpace: 'pre-wrap' }}
+                      customStyle={{ 
+                        margin: 0, 
+                        padding: 0, 
+                        background: 'transparent', 
+                        wordBreak: 'break-all', 
+                        whiteSpace: 'pre-wrap',
+                        overflow: 'hidden' // Suppresses both horizontal and vertical scrollbars in export renders
+                      }}
                       wrapLines={true}
                       showLineNumbers={showLineNumbers}
                       lineNumberStyle={{ minWidth: '2.5em', paddingRight: '1em', color: '#6e7681', textAlign: 'right' }}
