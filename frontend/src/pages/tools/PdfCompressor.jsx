@@ -9,9 +9,9 @@ import { jsPDF } from 'jspdf';
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
 
 const COMPRESSION_LEVELS = [
-  { id: 'low', label: 'Low Compression', quality: 0.8, scale: 1.5, desc: 'Highest quality, smaller file.' },
-  { id: 'medium', label: 'Recommended', quality: 0.5, scale: 1.0, desc: 'Good quality, medium file.', badge: 'Recommended' },
-  { id: 'high', label: 'Extreme', quality: 0.2, scale: 0.8, desc: 'Lowest quality, smallest file.' },
+  { id: 'low', label: 'Low Compression', quality: 0.75, scale: 1.5, desc: 'Highest quality, smaller file.' },
+  { id: 'medium', label: 'Recommended', quality: 0.45, scale: 1.3, desc: 'Good quality, medium file.', badge: 'Recommended' },
+  { id: 'high', label: 'Extreme', quality: 0.2, scale: 0.9, desc: 'Lowest quality, smallest file.' },
   { id: 'manual', label: 'Target Size', quality: null, scale: null, desc: 'Manually set max size.', badge: 'Advanced' }
 ];
 
@@ -83,18 +83,19 @@ const PdfCompressor = () => {
       if (compressionLevel === 'manual') {
         // Finer-grained presets that scale up to 1.6 for very high quality/crispness if size limit allows
         const presets = [
-          { scale: 1.6, quality: 0.95 },
-          { scale: 1.5, quality: 0.85 },
-          { scale: 1.3, quality: 0.80 },
-          { scale: 1.15, quality: 0.75 },
-          { scale: 1.0, quality: 0.75 },
-          { scale: 1.0, quality: 0.60 },
-          { scale: 0.85, quality: 0.50 },
-          { scale: 0.75, quality: 0.40 },
-          { scale: 0.65, quality: 0.28 },
-          { scale: 0.55, quality: 0.18 },
-          { scale: 0.45, quality: 0.10 },
-          { scale: 0.35, quality: 0.05 }
+          { scale: 1.6, quality: 0.80 },
+          { scale: 1.5, quality: 0.65 },
+          { scale: 1.5, quality: 0.50 },
+          { scale: 1.5, quality: 0.38 },
+          { scale: 1.3, quality: 0.55 },
+          { scale: 1.3, quality: 0.40 },
+          { scale: 1.3, quality: 0.30 },
+          { scale: 1.1, quality: 0.35 },
+          { scale: 1.0, quality: 0.40 },
+          { scale: 1.0, quality: 0.25 },
+          { scale: 0.8, quality: 0.20 },
+          { scale: 0.6, quality: 0.15 },
+          { scale: 0.4, quality: 0.10 }
         ];
 
         console.log(`[Compressor] Target size limit: ${(targetBytes / 1024).toFixed(1)} KB`);
