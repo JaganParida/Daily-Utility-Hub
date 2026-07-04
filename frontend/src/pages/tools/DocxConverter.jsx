@@ -3,6 +3,7 @@ import { FileText, Download, Upload, Copy, CheckCircle2, FileImage, Sparkles } f
 import { toast } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { jsPDF } from 'jspdf';
+import JSZip from 'jszip';
 
 const DocxConverter = () => {
   const [file, setFile] = useState(null);
