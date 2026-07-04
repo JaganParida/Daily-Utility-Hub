@@ -452,74 +452,10 @@ const Dashboard = () => {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
-              {/* 1. Recommended Image Tool */}
+              {/* 1. Recommended Word Tool */}
               <div className="group relative col-span-1 h-full">
                 <Link
-                  to="/tools/image-compressor"
-                  className="block h-full bg-card border border-border hover:border-primary/50 rounded-xl p-6 transition-all duration-300 shadow-sm hover:shadow overflow-hidden relative"
-                >
-                  <div className="absolute top-0 right-0 p-6 opacity-[0.03] group-hover:opacity-[0.05] group-hover:scale-110 transition-all duration-500 pointer-events-none">
-                    <ImageIcon size={100} />
-                  </div>
-
-                  <div className="relative z-10 h-full flex flex-col">
-                    <div className="w-fit px-2.5 py-0.5 bg-emerald-500/10 text-emerald-500 text-[10px] font-bold tracking-widest uppercase rounded mb-4 border border-emerald-500/20">
-                      Most Popular
-                    </div>
-                    <h2 className="text-2xl font-bold text-foreground mb-2 group-hover:text-emerald-500 transition-colors tracking-tight">
-                      Image Compressor
-                    </h2>
-                    <p className="text-muted-foreground text-sm max-w-[90%] mb-6 leading-relaxed">
-                      Reduce image file sizes instantly without losing visible quality. Perfect for web optimization.
-                    </p>
-
-                    <div className="mt-auto flex items-center text-sm font-semibold text-emerald-500 group-hover:text-emerald-500/80 transition-colors">
-                      Launch Compressor{" "}
-                      <ArrowRight
-                        size={16}
-                        className="ml-2 group-hover:translate-x-1 transition-transform"
-                      />
-                    </div>
-                  </div>
-                </Link>
-              </div>
-
-              {/* 2. Recommended Audio/Video Tool */}
-              <div className="group relative col-span-1 h-full">
-                <Link
-                  to="/tools/audio-video-transcriber"
-                  className="block h-full bg-card border border-border hover:border-primary/50 rounded-xl p-6 transition-all duration-300 shadow-sm hover:shadow overflow-hidden relative"
-                >
-                  <div className="absolute top-0 right-0 p-6 opacity-[0.03] group-hover:opacity-[0.05] group-hover:scale-110 transition-all duration-500 pointer-events-none">
-                    <FileAudio size={100} />
-                  </div>
-
-                  <div className="relative z-10 h-full flex flex-col">
-                    <div className="w-fit px-2.5 py-0.5 bg-primary/10 text-primary text-[10px] font-bold tracking-widest uppercase rounded mb-4 border border-primary/20">
-                      Featured Tool
-                    </div>
-                    <h2 className="text-2xl font-bold text-foreground mb-2 group-hover:text-primary transition-colors tracking-tight">
-                      Audio/Video Captioner
-                    </h2>
-                    <p className="text-muted-foreground text-sm max-w-[90%] mb-6 leading-relaxed">
-                      Extract timestamped text & subtitles from audio & video instantly.
-                    </p>
-
-                    <div className="mt-auto flex items-center text-sm font-semibold text-primary group-hover:text-primary/80 transition-colors">
-                      Launch Captioner{" "}
-                      <ArrowRight
-                        size={16}
-                        className="ml-2 group-hover:translate-x-1 transition-transform"
-                      />
-                    </div>
-                  </div>
-                </Link>
-              </div>
-
-              {/* 3. Recommended PDF Tool */}
-              <div className="group relative col-span-1 h-full">
-                <Link
-                  to="/tools/pdf-unlock"
+                  to="/tools/docx-converter"
                   className="block h-full bg-card border border-border hover:border-primary/50 rounded-xl p-6 transition-all duration-300 shadow-sm hover:shadow overflow-hidden relative"
                 >
                   <div className="absolute top-0 right-0 p-6 opacity-[0.03] group-hover:opacity-[0.05] group-hover:scale-110 transition-all duration-500 pointer-events-none">
@@ -527,18 +463,82 @@ const Dashboard = () => {
                   </div>
 
                   <div className="relative z-10 h-full flex flex-col">
-                    <div className="w-fit px-2.5 py-0.5 bg-primary/10 text-primary text-[10px] font-bold tracking-widest uppercase rounded mb-4 border border-primary/20">
-                      Security Pick
+                    <div className="w-fit px-2.5 py-0.5 bg-blue-500/10 text-blue-500 text-[10px] font-bold tracking-widest uppercase rounded mb-4 border border-blue-500/20">
+                      Word Tool
                     </div>
-                    <h2 className="text-2xl font-bold text-foreground mb-2 group-hover:text-primary transition-colors tracking-tight">
-                      Unlock PDF
+                    <h2 className="text-2xl font-bold text-foreground mb-2 group-hover:text-blue-500 transition-colors tracking-tight">
+                      Word to PDF/Image
                     </h2>
                     <p className="text-muted-foreground text-sm max-w-[90%] mb-6 leading-relaxed">
-                      Remove password protection and restrictions from a PDF document instantly.
+                      Convert Word documents to clean PDF pages and extract PNG page images locally in your browser.
                     </p>
 
-                    <div className="mt-auto flex items-center text-sm font-semibold text-primary group-hover:text-primary/80 transition-colors">
-                      Launch Unlocker{" "}
+                    <div className="mt-auto flex items-center text-sm font-semibold text-blue-500 group-hover:text-blue-500/80 transition-colors">
+                      Launch Converter{" "}
+                      <ArrowRight
+                        size={16}
+                        className="ml-2 group-hover:translate-x-1 transition-transform"
+                      />
+                    </div>
+                  </div>
+                </Link>
+              </div>
+
+              {/* 2. Recommended Excel/Sheets Tool */}
+              <div className="group relative col-span-1 h-full">
+                <Link
+                  to="/tools/formula-helper"
+                  className="block h-full bg-card border border-border hover:border-primary/50 rounded-xl p-6 transition-all duration-300 shadow-sm hover:shadow overflow-hidden relative"
+                >
+                  <div className="absolute top-0 right-0 p-6 opacity-[0.03] group-hover:opacity-[0.05] group-hover:scale-110 transition-all duration-500 pointer-events-none">
+                    <Calculator size={100} />
+                  </div>
+
+                  <div className="relative z-10 h-full flex flex-col">
+                    <div className="w-fit px-2.5 py-0.5 bg-emerald-500/10 text-emerald-500 text-[10px] font-bold tracking-widest uppercase rounded mb-4 border border-emerald-500/20">
+                      Excel Tool
+                    </div>
+                    <h2 className="text-2xl font-bold text-foreground mb-2 group-hover:text-emerald-500 transition-colors tracking-tight">
+                      Formula Generator
+                    </h2>
+                    <p className="text-muted-foreground text-sm max-w-[90%] mb-6 leading-relaxed">
+                      Translate natural language text to spreadsheet formulas or get step-by-step explanations of nested formulas.
+                    </p>
+
+                    <div className="mt-auto flex items-center text-sm font-semibold text-emerald-500 group-hover:text-emerald-500/80 transition-colors">
+                      Launch Helper{" "}
+                      <ArrowRight
+                        size={16}
+                        className="ml-2 group-hover:translate-x-1 transition-transform"
+                      />
+                    </div>
+                  </div>
+                </Link>
+              </div>
+
+              {/* 3. Recommended PPT/Slides Tool */}
+              <div className="group relative col-span-1 h-full">
+                <Link
+                  to="/tools/md-to-slides"
+                  className="block h-full bg-card border border-border hover:border-primary/50 rounded-xl p-6 transition-all duration-300 shadow-sm hover:shadow overflow-hidden relative"
+                >
+                  <div className="absolute top-0 right-0 p-6 opacity-[0.03] group-hover:opacity-[0.05] group-hover:scale-110 transition-all duration-500 pointer-events-none">
+                    <Layers size={100} />
+                  </div>
+
+                  <div className="relative z-10 h-full flex flex-col">
+                    <div className="w-fit px-2.5 py-0.5 bg-rose-500/10 text-rose-500 text-[10px] font-bold tracking-widest uppercase rounded mb-4 border border-rose-500/20">
+                      Slides Tool
+                    </div>
+                    <h2 className="text-2xl font-bold text-foreground mb-2 group-hover:text-rose-500 transition-colors tracking-tight">
+                      Markdown to Slides
+                    </h2>
+                    <p className="text-muted-foreground text-sm max-w-[90%] mb-6 leading-relaxed">
+                      Convert standard Markdown bullet lists and headers into presentation slide layout visuals and download as PDF.
+                    </p>
+
+                    <div className="mt-auto flex items-center text-sm font-semibold text-rose-500 group-hover:text-rose-500/80 transition-colors">
+                      Launch Slide Deck{" "}
                       <ArrowRight
                         size={16}
                         className="ml-2 group-hover:translate-x-1 transition-transform"
