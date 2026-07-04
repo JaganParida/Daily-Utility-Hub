@@ -359,7 +359,7 @@ const Dashboard = () => {
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -10 }}
-                className="absolute left-0 top-0 h-[44px] w-16 bg-gradient-to-r from-background via-background/90 to-transparent z-30 flex items-center justify-start pl-2 pointer-events-none md:hidden"
+                className="absolute left-0 top-0 h-[44px] w-16 bg-gradient-to-r from-background via-background/90 to-transparent z-30 flex items-center justify-start pl-2 pointer-events-none"
               >
                 <button
                   onClick={() => {
@@ -383,7 +383,7 @@ const Dashboard = () => {
                 initial={{ opacity: 0, x: 10 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 10 }}
-                className="absolute right-0 top-0 h-[44px] w-16 bg-gradient-to-l from-background via-background/90 to-transparent z-30 flex items-center justify-end pr-2 pointer-events-none md:hidden"
+                className="absolute right-0 top-0 h-[44px] w-16 bg-gradient-to-l from-background via-background/90 to-transparent z-30 flex items-center justify-end pr-2 pointer-events-none"
               >
                 <button
                   onClick={() => {
@@ -404,7 +404,7 @@ const Dashboard = () => {
             ref={categoriesScrollRef}
             className="w-full overflow-x-auto no-scrollbar pb-4"
           >
-            <div className="flex items-center justify-start md:justify-center gap-3 px-4 min-w-max mx-auto">
+            <div className="flex items-center justify-start gap-3 px-4 min-w-max mx-auto">
               {circularCategories.map((cat) => {
                 const IconComponent = cat.icon;
                 const safeId = cat.name
