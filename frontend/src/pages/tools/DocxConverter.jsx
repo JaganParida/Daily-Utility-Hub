@@ -22,37 +22,34 @@ const DocxConverter = () => {
     setFile(uploadedFile);
     toast.success('Document uploaded successfully!');
 
-    // Read file text content client-side
     const reader = new FileReader();
-    reader.onload = (event) => {
-      // Mock docx text extraction (for client-side demonstration, reading ascii segments)
-      const buffer = event.target.result;
-      const arr = new Uint8Array(buffer);
-      let text = '';
-      for (let i = 0; i < arr.length; i++) {
-        // Simple extraction of readable characters from docx binary XML sections
-        if (arr[i] >= 32 && arr[i] <= 126) {
-          text += String.fromCharCode(arr[i]);
-        } else if (arr[i] === 10 || arr[i] === 13) {
-          text += '\n';
+    reader.onload = async (event) => {
+      try {
+        const buffer = event.target.result;
+        const zip = await JSZip.loadAsync(buffer);
+        const docXmlFile = zip.file("word/document.xml");
+        if (!docXmlFile) {
+          toast.error("Invalid docx structure. Could not find word/document.xml");
+          return;
         }
-      }
-      
-      // Filter out XML tags and binary headers to get clean readable chunks
-      let cleaned = text
-        .replace(/<[^>]*>/g, '')
-        .replace(/[^\x20-\x7E\n]/g, '')
-        .replace(/\s+/g, ' ')
-        .trim();
+        
+        const docXmlText = await docXmlFile.async("text");
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(docXmlText, "text/xml");
+        
+        // Extract paragraphs to preserve layout spacing
+        const paragraphNodes = xmlDoc.getElementsByTagName("w:p");
+        const paragraphsText = Array.from(paragraphNodes).map(pNode => {
+          const tNodes = pNode.getElementsByTagName("w:t");
+          return Array.from(tNodes).map(t => t.textContent).join("");
+        }).filter(text => text.trim() !== "");
 
-      if (cleaned.length < 50) {
-        // Fallback demo text if XML parsing is too sparse
-        cleaned = `Report Title: ${uploadedFile.name.replace('.docx', '')}\n\n1. Executive Summary\nThis report presents a client-side conversion mockup from the uploaded document. It contains structured paragraphs, tables, and reference schemas.\n\n2. Key Findings\n- Client-side Web APIs allow fast exports.\n- Local storage maintains data privacy.\n- Built with React, Tailwind, and jsPDF.\n\n3. Recommendations\nIt is recommended to deploy standalone browser utilities to save CPU cycles and server cost.`;
-      } else {
-        cleaned = cleaned.substring(0, 1500) + '... [Rest of document parsed successfully]';
+        const cleaned = paragraphsText.join("\n\n");
+        setContent(cleaned || "Empty document content.");
+      } catch (err) {
+        console.error(err);
+        toast.error("Failed to parse Word document.");
       }
-
-      setContent(cleaned);
     };
     reader.readAsArrayBuffer(uploadedFile);
   };
