@@ -24,10 +24,13 @@ const EmiCalculator = () => {
     const r = (interestRate / 12) / 100;
     const n = tenureYears * 12;
 
-    if (P <= 0 || r <= 0 || n <= 0) return { emi: 0, interest: 0, total: 0, months: 0, savings: 0, timeSaved: 0, schedule: [] };
-
     // Standard EMI without prepayments
     const emi = (P * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+    
+    if (P <= 0 || r <= 0 || n <= 0 || emi <= P * r) {
+      return { emi: 0, totalInterest: 0, standardInterest: 0, totalAmount: P, months: 0, savings: 0, timeSaved: 0, schedule: [] };
+    }
+    
     const standardTotalInterest = (emi * n) - P;
 
     // Simulation with prepayments

@@ -68,14 +68,15 @@ const TaxCalculator = () => {
         { limit: Infinity, rate: 0.30 }
       ];
 
-      let remainingIncome = income;
-      let previousLimit = 0;
+      let previousLimit = slabs[0].limit;
 
       for (let i = 1; i < slabs.length; i++) {
         if (income > previousLimit) {
-          const taxableInThisSlab = Math.min(income - previousLimit, slabs[i].limit - slabs[i-1].limit);
+          const slabMax = slabs[i].limit;
+          const slabMin = previousLimit;
+          const taxableInThisSlab = Math.min(income - slabMin, slabMax - slabMin);
           tax += taxableInThisSlab * slabs[i].rate;
-          previousLimit = slabs[i].limit;
+          previousLimit = slabMax;
         } else {
           break;
         }
