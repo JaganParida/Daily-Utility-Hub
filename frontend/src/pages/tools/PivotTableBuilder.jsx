@@ -279,7 +279,7 @@ const PivotTableBuilder = () => {
                               fill="#6366f1"
                               stroke="#ffffff"
                               strokeWidth="2"
-                              className="hover:r-7 transition-all cursor-pointer"
+                              className="transition-all duration-200 hover:scale-125 origin-center cursor-pointer"
                             />
                           );
                         })}
@@ -316,10 +316,15 @@ const PivotTableBuilder = () => {
                 </div>
               </div>
             ) : (
-              <div className="text-center text-muted-foreground p-12 flex flex-col items-center justify-center gap-2 h-full">
+              <div 
+                onClick={() => !file && fileInputRef.current?.click()}
+                className={`text-center text-muted-foreground p-12 flex flex-col items-center justify-center gap-2 h-full ${!file ? 'cursor-pointer hover:bg-muted/30 border border-dashed border-border/40 rounded-xl transition-all' : ''}`}
+              >
                 <BarChart2 size={48} className="text-muted-foreground/35" />
-                <p className="text-sm font-bold">No Summary Compiled</p>
-                <p className="text-xs max-w-xs leading-normal">Configure columns and aggregate functions to display interactive spreadsheet visual dashboards.</p>
+                <p className="text-sm font-bold">{!file ? 'No Spreadsheet Loaded' : 'No Summary Compiled'}</p>
+                <p className="text-xs max-w-xs leading-normal">
+                  {!file ? 'Click here to load a CSV/Excel sheet to start pivot reporting.' : 'Configure columns and aggregate functions to display interactive spreadsheet visual dashboards.'}
+                </p>
               </div>
             )}
           </div>
