@@ -1,4 +1,4 @@
-import { Type, Hash, Key, Layers, AlignLeft, Image as ImageIcon, Expand, Crop, ArrowRightLeft, LayoutGrid, FileText, Braces, Search, Calculator, TrendingUp, Percent, Landmark, FolderArchive, Pin, Clock, ArrowRight, Stamp, Palette, Volume2, FileAudio, Code2, Activity, BookMarked, Timer, Shield } from 'lucide-react';
+import { Type, Hash, Key, Layers, AlignLeft, Image as ImageIcon, Expand, Crop, ArrowRightLeft, LayoutGrid, FileText, Braces, Search, Calculator, TrendingUp, Percent, Landmark, FolderArchive, Pin, Clock, ArrowRight, Stamp, Palette, Volume2, FileAudio, Code2, Activity, BookMarked, Timer, Shield, Database } from 'lucide-react';
 
 export const toolCategories = {
   'Image Tools': [
@@ -75,6 +75,36 @@ export const toolCategories = {
     { name: 'Batch Renamer', description: 'Rename multiple files at once using custom numbering.', icon: FolderArchive, to: '/tools/batch-renamer', color: 'text-primary bg-primary/10' },
     { name: 'Zip & Unzip', description: 'Compress files into a ZIP or extract existing ZIP files.', icon: FolderArchive, to: '/tools/zip-archiver', color: 'text-primary bg-primary/10' },
     { name: 'Secure File Vault', description: 'Military-grade client-side AES-256 file encryption.', icon: Shield, to: '/tools/file-vault', color: 'text-primary bg-primary/10' },
+  ],
+  'Word & Docs Tools': [
+    { name: 'Word to PDF/Image', description: 'Convert Word documents to clean PDF and PNG images.', icon: FileText, to: '/tools/docx-converter', color: 'text-blue-500 bg-blue-500/10' },
+    { name: 'Document Builder', description: 'Build formal proposals, Resumes, and NDAs instantly.', icon: Layers, to: '/tools/doc-template-builder', color: 'text-indigo-500 bg-indigo-500/10' },
+    { name: 'Smart Grammar Checker', description: 'Check spelling and grammatical errors client-side.', icon: AlignLeft, to: '/tools/grammar-checker', color: 'text-emerald-500 bg-emerald-500/10' },
+    { name: 'Doc Metadata Stripper', description: 'Erase hidden corporate metadata properties from document files.', icon: FileText, to: '/tools/doc-metadata-cleaner', color: 'text-rose-500 bg-rose-500/10' },
+    { name: 'Similarity Visualizer', description: 'Compare document versions side-by-side to highlight differences.', icon: Layers, to: '/tools/similarity-checker', color: 'text-orange-500 bg-orange-500/10' },
+    { name: 'Multi-File Find/Replace', description: 'Run search and replace across multiple text files into a ZIP.', icon: Search, to: '/tools/batch-find-replace', color: 'text-teal-500 bg-teal-500/10' },
+    { name: 'MLA/APA Layout Checker', description: 'Verify academic essay styling parameters and margins.', icon: AlignLeft, to: '/tools/academic-format-checker', color: 'text-cyan-500 bg-cyan-500/10' },
+    { name: 'HTML to Word', description: 'Export HTML markup templates to Word documents.', icon: Code2, to: '/tools/html-to-docx', color: 'text-purple-500 bg-purple-500/10' },
+  ],
+  'Excel & Sheets Tools': [
+    { name: 'Sheet Schema Converter', description: 'Convert CSV/Excel to formatted JSON, XML, or SQL inserts.', icon: Braces, to: '/tools/sheet-converter', color: 'text-amber-500 bg-amber-500/10' },
+    { name: 'Formula Generator', description: 'Translate natural language instructions to Excel formulas.', icon: Calculator, to: '/tools/formula-helper', color: 'text-emerald-500 bg-emerald-500/10' },
+    { name: 'Data Deduplicator', description: 'Clean up spreadsheet columns and deduplicate rows.', icon: Layers, to: '/tools/data-cleaner', color: 'text-indigo-500 bg-indigo-500/10' },
+    { name: 'Pivot & Chart Builder', description: 'Build dynamic pivot summaries and interactive charts.', icon: TrendingUp, to: '/tools/pivot-table-builder', color: 'text-teal-500 bg-teal-500/10' },
+    { name: 'Excel Merge & Split', description: 'Merge sheets or split workbook layouts client-side.', icon: FolderArchive, to: '/tools/excel-merge-split', color: 'text-blue-500 bg-blue-500/10' },
+    { name: 'SQL Sheet Query Runner', description: 'Run select database queries against CSV and Excel tables.', icon: Database, to: '/tools/csv-sql-runner', color: 'text-purple-500 bg-purple-500/10' },
+    { name: 'Mock Data Generator', description: 'Generate customizable sample test datasets for spreadsheets.', icon: Hash, to: '/tools/test-data-generator', color: 'text-rose-500 bg-rose-500/10' },
+    { name: 'Amortization Planner', description: 'Calculate compounding payments and mortgage debt schedules.', icon: Landmark, to: '/tools/amortization-scheduler', color: 'text-cyan-500 bg-cyan-500/10' },
+  ],
+  'PowerPoint & Slides Tools': [
+    { name: 'Markdown to Slides', description: 'Convert Markdown headings and bullets to slideshows.', icon: Layers, to: '/tools/md-to-slides', color: 'text-rose-500 bg-rose-500/10' },
+    { name: 'HTML Slides Sandbox', description: 'Code and preview rich HTML animated presentation slides.', icon: Code2, to: '/tools/html-presentation', color: 'text-indigo-500 bg-indigo-500/10' },
+    { name: 'Speaker Notes Prompter', description: 'Read scrolling prompter notes with pacing timers.', icon: Clock, to: '/tools/prompter-timer', color: 'text-amber-500 bg-amber-500/10' },
+    { name: 'PowerPoint to PDF/Image', description: 'Convert PowerPoint files to clean PDF pages and PNGs.', icon: FileText, to: '/tools/ppt-to-pdf', color: 'text-orange-500 bg-orange-500/10' },
+    { name: 'Projector Theme Swatches', description: 'Design high-contrast presentation palettes for projectors.', icon: Palette, to: '/tools/ppt-palette-generator', color: 'text-emerald-500 bg-emerald-500/10' },
+    { name: 'Voice Slides Remote', description: 'Navigate slides hands-free using voice command triggers.', icon: Volume2, to: '/tools/presentation-remote', color: 'text-blue-500 bg-blue-500/10' },
+    { name: 'Slide Canvas Whiteboard', description: 'Sketch visual presentation drafts and slide mockups.', icon: Palette, to: '/tools/slide-mockup', color: 'text-pink-500 bg-pink-500/10' },
+    { name: 'PPTX Metadata Stripper', description: 'Strip hidden author properties and modification logs.', icon: FileText, to: '/tools/pptx-metadata-editor', color: 'text-teal-500 bg-teal-500/10' },
   ]
 };
 

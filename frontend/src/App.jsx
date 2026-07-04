@@ -94,6 +94,36 @@ const BatchRenamer = lazy(() => import('./pages/tools/BatchRenamer'));
 const ZipArchiver = lazy(() => import('./pages/tools/ZipArchiver'));
 const FileVault = lazy(() => import('./pages/tools/FileVault'));
 
+// Word & Docs Tools (Lazy loaded)
+const DocxConverter = lazy(() => import('./pages/tools/DocxConverter'));
+const DocTemplateBuilder = lazy(() => import('./pages/tools/DocTemplateBuilder'));
+const GrammarChecker = lazy(() => import('./pages/tools/GrammarChecker'));
+const DocMetadataCleaner = lazy(() => import('./pages/tools/DocMetadataCleaner'));
+const SimilarityChecker = lazy(() => import('./pages/tools/SimilarityChecker'));
+const BatchFindReplace = lazy(() => import('./pages/tools/BatchFindReplace'));
+const AcademicFormatChecker = lazy(() => import('./pages/tools/AcademicFormatChecker'));
+const HtmlToDocx = lazy(() => import('./pages/tools/HtmlToDocx'));
+
+// Excel & Sheets Tools (Lazy loaded)
+const SheetConverter = lazy(() => import('./pages/tools/SheetConverter'));
+const FormulaHelper = lazy(() => import('./pages/tools/FormulaHelper'));
+const DataCleaner = lazy(() => import('./pages/tools/DataCleaner'));
+const PivotTableBuilder = lazy(() => import('./pages/tools/PivotTableBuilder'));
+const ExcelMergeSplit = lazy(() => import('./pages/tools/ExcelMergeSplit'));
+const CsvSqlRunner = lazy(() => import('./pages/tools/CsvSqlRunner'));
+const TestDataGenerator = lazy(() => import('./pages/tools/TestDataGenerator'));
+const AmortizationScheduler = lazy(() => import('./pages/tools/AmortizationScheduler'));
+
+// PowerPoint & Slides Tools (Lazy loaded)
+const MdToSlides = lazy(() => import('./pages/tools/MdToSlides'));
+const HtmlPresentation = lazy(() => import('./pages/tools/HtmlPresentation'));
+const PrompterTimer = lazy(() => import('./pages/tools/PrompterTimer'));
+const PptToPdf = lazy(() => import('./pages/tools/PptToPdf'));
+const PptPaletteGenerator = lazy(() => import('./pages/tools/PptPaletteGenerator'));
+const PresentationRemote = lazy(() => import('./pages/tools/PresentationRemote'));
+const SlideMockup = lazy(() => import('./pages/tools/SlideMockup'));
+const PptxMetadataEditor = lazy(() => import('./pages/tools/PptxMetadataEditor'));
+
 const ProtectedRoute = ({ children }) => {
   const { currentUser } = useAuth();
   return currentUser ? children : <Navigate to="/login" replace />;
@@ -205,6 +235,36 @@ function AnimatedRoutes() {
             <Route path="/tools/batch-renamer" element={<BatchRenamer />} />
             <Route path="/tools/zip-archiver" element={<ZipArchiver />} />
             <Route path="/tools/file-vault" element={<FileVault />} />
+
+            {/* Word & Docs Tools Routes */}
+            <Route path="/tools/docx-converter" element={<DocxConverter />} />
+            <Route path="/tools/doc-template-builder" element={<DocTemplateBuilder />} />
+            <Route path="/tools/grammar-checker" element={<GrammarChecker />} />
+            <Route path="/tools/doc-metadata-cleaner" element={<DocMetadataCleaner />} />
+            <Route path="/tools/similarity-checker" element={<SimilarityChecker />} />
+            <Route path="/tools/batch-find-replace" element={<BatchFindReplace />} />
+            <Route path="/tools/academic-format-checker" element={<AcademicFormatChecker />} />
+            <Route path="/tools/html-to-docx" element={<HtmlToDocx />} />
+
+            {/* Excel & Sheets Tools Routes */}
+            <Route path="/tools/sheet-converter" element={<SheetConverter />} />
+            <Route path="/tools/formula-helper" element={<FormulaHelper />} />
+            <Route path="/tools/data-cleaner" element={<DataCleaner />} />
+            <Route path="/tools/pivot-table-builder" element={<PivotTableBuilder />} />
+            <Route path="/tools/excel-merge-split" element={<ExcelMergeSplit />} />
+            <Route path="/tools/csv-sql-runner" element={<CsvSqlRunner />} />
+            <Route path="/tools/test-data-generator" element={<TestDataGenerator />} />
+            <Route path="/tools/amortization-scheduler" element={<AmortizationScheduler />} />
+
+            {/* PowerPoint & Slides Tools Routes */}
+            <Route path="/tools/md-to-slides" element={<MdToSlides />} />
+            <Route path="/tools/html-presentation" element={<HtmlPresentation />} />
+            <Route path="/tools/prompter-timer" element={<PrompterTimer />} />
+            <Route path="/tools/ppt-to-pdf" element={<PptToPdf />} />
+            <Route path="/tools/ppt-palette-generator" element={<PptPaletteGenerator />} />
+            <Route path="/tools/presentation-remote" element={<PresentationRemote />} />
+            <Route path="/tools/slide-mockup" element={<SlideMockup />} />
+            <Route path="/tools/pptx-metadata-editor" element={<PptxMetadataEditor />} />
           </Route>
         </Routes>
       </Suspense>
