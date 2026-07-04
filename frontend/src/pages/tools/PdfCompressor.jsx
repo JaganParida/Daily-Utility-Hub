@@ -81,80 +81,77 @@ const PdfCompressor = () => {
       let success = false;
       
       if (compressionLevel === 'manual') {
-        // Multi-step presets for fine-grained target size search
-        const presets = [
-          { scale: 1.0, quality: 0.95 },
-          { scale: 1.0, quality: 0.85 },
-          { scale: 1.0, quality: 0.75 },
-          { scale: 0.95, quality: 0.65 },
-          { scale: 0.9, quality: 0.55 },
-          { scale: 0.85, quality: 0.45 },
-          { scale: 0.8, quality: 0.35 },
-          { scale: 0.75, quality: 0.28 },
-          { scale: 0.7, quality: 0.22 },
-          { scale: 0.6, quality: 0.16 },
-          { scale: 0.5, quality: 0.1 },
-          { scale: 0.4, quality: 0.05 }
-        ];
-
-        // 1. Smart single-page estimation loop to find the best preset
-        const firstPage = await pdf.getPage(1);
-        let bestPreset = presets[presets.length - 1]; // default fallback
+        let currentScale = 1.0;
+        let currentQuality = 0.85;
         
-        for (let i = 0; i < presets.length; i++) {
-          const { scale: currentScale, quality: currentQuality } = presets[i];
-          const viewport = firstPage.getViewport({ scale: currentScale });
-          
-          const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
-          canvas.width = viewport.width;
-          canvas.height = viewport.height;
-          
-          await firstPage.render({ canvasContext: ctx, viewport: viewport }).promise;
-          
-          const imgData = canvas.toDataURL('image/jpeg', currentQuality);
-          // Calculate approx size in bytes (base64 length * 0.75) with 15% safety buffer for container overhead
-          const estimatedPageBytes = imgData.length * 0.75;
-          const estimatedTotalBytes = estimatedPageBytes * pdf.numPages * 1.15;
+        let bestBlob = null;
+        let lastTempBlob = null;
+        
+        let lowQuality = 0.05;
+        let highQuality = 0.95;
+        
+        const totalAttempts = Math.min(5, Math.max(3, 6 - pdf.numPages)); // max 5 attempts for small PDFs, fewer for extremely large ones
+        
+        for (let attempt = 1; attempt <= totalAttempts; attempt++) {
+          let tempDoc = null;
+          for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+            const page = await pdf.getPage(pageNum);
+            const viewport = page.getViewport({ scale: currentScale });
+            
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = viewport.width;
+            canvas.height = viewport.height;
 
-          if (estimatedTotalBytes <= targetBytes) {
-            bestPreset = presets[i];
-            break; // Found the highest quality preset that fits the limit!
+            await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+
+            const imgData = canvas.toDataURL('image/jpeg', currentQuality);
+            
+            const imgWidthMm = (viewport.width * 25.4) / 72;
+            const imgHeightMm = (viewport.height * 25.4) / 72;
+            const orientation = imgWidthMm > imgHeightMm ? 'l' : 'p';
+
+            if (!tempDoc) {
+              tempDoc = new jsPDF({ orientation, unit: 'mm', format: [imgWidthMm, imgHeightMm] });
+            } else {
+              tempDoc.addPage([imgWidthMm, imgHeightMm], orientation);
+            }
+
+            tempDoc.addImage(imgData, 'JPEG', 0, 0, imgWidthMm, imgHeightMm, undefined, 'FAST');
+            setProgress(Math.round(((attempt - 1) / totalAttempts) * 100 + (pageNum / pdf.numPages) * (100 / totalAttempts)));
           }
-        }
 
-        // 2. Compile document using the chosen best preset
-        const { scale: finalScale, quality: finalQuality } = bestPreset;
-        let tempDoc = null;
-        
-        for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-          const page = await pdf.getPage(pageNum);
-          const viewport = page.getViewport({ scale: finalScale });
-          
-          const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
-          canvas.width = viewport.width;
-          canvas.height = viewport.height;
+          const tempBlob = tempDoc.output('blob');
+          lastTempBlob = tempBlob;
 
-          await page.render({ canvasContext: ctx, viewport: viewport }).promise;
-
-          const imgData = canvas.toDataURL('image/jpeg', finalQuality);
-          const imgWidthMm = (viewport.width * 25.4) / 72;
-          const imgHeightMm = (viewport.height * 25.4) / 72;
-          const orientation = imgWidthMm > imgHeightMm ? 'l' : 'p';
-
-          if (!tempDoc) {
-            tempDoc = new jsPDF({ orientation, unit: 'mm', format: [imgWidthMm, imgHeightMm] });
+          if (tempBlob.size <= targetBytes) {
+            bestBlob = tempBlob;
+            success = true;
+            
+            // Fits! Try increasing quality to get closer to the target size
+            lowQuality = currentQuality;
+            currentQuality = (currentQuality + highQuality) / 2;
           } else {
-            tempDoc.addPage([imgWidthMm, imgHeightMm], orientation);
+            // Exceeds! We must reduce quality
+            highQuality = currentQuality;
+            currentQuality = (currentQuality + lowQuality) / 2;
+
+            // If quality is already very low, we must reduce scale
+            if (currentQuality < 0.15 && currentScale > 0.4) {
+              currentScale = Math.max(0.4, currentScale - 0.15);
+              currentQuality = 0.6; // reset quality at lower scale
+              lowQuality = 0.05;
+              highQuality = 0.95;
+            }
           }
 
-          tempDoc.addImage(imgData, 'JPEG', 0, 0, imgWidthMm, imgHeightMm, undefined, 'FAST');
-          setProgress(Math.round((pageNum / pdf.numPages) * 100));
+          // If we got very close to the target size (within 5%), break early!
+          if (bestBlob && (targetBytes - bestBlob.size) / targetBytes < 0.05) {
+            break;
+          }
         }
 
-        finalBlob = tempDoc.output('blob');
-        success = finalBlob.size <= targetBytes;
+        finalBlob = bestBlob || lastTempBlob;
       } else {
         // Preset-based compression levels (low, medium, high)
         const levelSettings = COMPRESSION_LEVELS.find(l => l.id === compressionLevel);
