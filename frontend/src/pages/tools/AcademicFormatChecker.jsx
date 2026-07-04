@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FileText, CheckCircle2, Download, AlertTriangle, Play, Sparkles } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { motion } from 'framer-motion';
@@ -10,6 +10,53 @@ const AcademicFormatChecker = () => {
   const [issues, setIssues] = useState([]);
   const [isChecking, setIsChecking] = useState(false);
 
+  useEffect(() => {
+    const foundIssues = [];
+    const lines = essay.split('\n').map(l => l.trim());
+
+    // Rule 1: First 4 lines check for MLA heading
+    if (style === 'MLA') {
+      if (lines.length < 4 || !lines[0] || !lines[1] || !lines[2] || !lines[3]) {
+        foundIssues.push({
+          rule: 'MLA Heading',
+          desc: 'MLA papers require student name, instructor, course, and date in the first 4 lines.',
+          severity: 'high'
+        });
+      }
+    } 
+    // Rule 2: Title check
+    if (style === 'APA') {
+      // APA requires a title page format
+      if (!lines[0].toLowerCase().includes('running head') && !essay.toLowerCase().includes('abstract')) {
+        foundIssues.push({
+          rule: 'APA Cover Page / Abstract',
+          desc: 'APA style papers typically require a Running Head and a dedicated Abstract section.',
+          severity: 'medium'
+        });
+      }
+    }
+
+    // Rule 3: Spacing check
+    if (essay.includes('\n\n\n')) {
+      foundIssues.push({
+        rule: 'Double Spacing',
+        desc: 'Identified excess blank lines. Academic layouts require clean double spacing.',
+        severity: 'medium'
+      });
+    }
+
+    // Rule 4: Citations format check
+    if (essay.includes('[') && style === 'MLA') {
+      foundIssues.push({
+        rule: 'In-text Citations',
+        desc: 'MLA requires parenthetical citations with author and page number e.g., (Doe 42), not brackets.',
+        severity: 'high'
+      });
+    }
+
+    setIssues(foundIssues);
+  }, [essay, style]);
+
   const runCheck = () => {
     if (!essay.trim()) {
       toast.error('Please input your academic essay draft first!');
@@ -17,55 +64,10 @@ const AcademicFormatChecker = () => {
     }
 
     setIsChecking(true);
-    
     setTimeout(() => {
-      const foundIssues = [];
-      const lines = essay.split('\n').map(l => l.trim());
-
-      // Rule 1: First 4 lines check for MLA heading
-      if (style === 'MLA') {
-        if (lines.length < 5) {
-          foundIssues.push({
-            rule: 'MLA Heading',
-            desc: 'MLA papers require student name, instructor, course, and date in the first 4 lines.',
-            severity: 'high'
-          });
-        }
-      } 
-      // Rule 2: Title check
-      if (style === 'APA') {
-        // APA requires a title page format
-        if (!lines[0].toLowerCase().includes('running head') && !essay.toLowerCase().includes('abstract')) {
-          foundIssues.push({
-            rule: 'APA Cover Page / Abstract',
-            desc: 'APA style papers typically require a Running Head and a dedicated Abstract section.',
-            severity: 'medium'
-          });
-        }
-      }
-
-      // Rule 3: Spacing check
-      if (essay.includes('\n\n\n')) {
-        foundIssues.push({
-          rule: 'Double Spacing',
-          desc: 'Identified excess blank lines. Academic layouts require clean double spacing.',
-          severity: 'medium'
-        });
-      }
-
-      // Rule 4: Citations format check
-      if (essay.includes('[') && style === 'MLA') {
-        foundIssues.push({
-          rule: 'In-text Citations',
-          desc: 'MLA requires parenthetical citations with author and page number e.g., (Doe 42), not brackets.',
-          severity: 'high'
-        });
-      }
-
-      setIssues(foundIssues);
       setIsChecking(false);
-      toast.success(`Check complete! Found ${foundIssues.length} style discrepancies.`);
-    }, 1000);
+      toast.success(`Check complete! Found ${issues.length} style discrepancies.`);
+    }, 600);
   };
 
   const autoFixIssues = () => {

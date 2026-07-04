@@ -39,6 +39,10 @@ const BatchFindReplace = () => {
   };
 
   const executeFindReplace = () => {
+    if (files.length === 0) {
+      toast.error('Please upload at least one file first!');
+      return;
+    }
     if (!findQuery) {
       toast.error('Please specify the query to find!');
       return;
@@ -168,10 +172,13 @@ const BatchFindReplace = () => {
 
           <div className="flex-1 p-6 overflow-y-auto custom-scrollbar">
             {files.length === 0 ? (
-              <div className="text-center text-muted-foreground p-12 flex flex-col items-center justify-center gap-2 h-full">
+              <div 
+                onClick={() => fileInputRef.current?.click()}
+                className="text-center text-muted-foreground p-12 flex flex-col items-center justify-center gap-2 h-full cursor-pointer hover:bg-muted/30 border border-dashed border-border/40 rounded-xl transition-all"
+              >
                 <Upload size={48} className="text-muted-foreground/35" />
                 <p className="text-sm font-bold">No Files Loaded</p>
-                <p className="text-xs max-w-xs leading-normal">Upload source code files or text notes to execute batch keyword search-and-replace routines.</p>
+                <p className="text-xs max-w-xs leading-normal">Click here to upload source code files or text notes to execute batch keyword search-and-replace routines.</p>
               </div>
             ) : (
               <div className="grid sm:grid-cols-2 gap-4">

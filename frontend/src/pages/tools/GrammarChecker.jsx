@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AlignLeft, CheckCircle2, Download, RefreshCw, AlertCircle, Play } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { motion } from 'framer-motion';
@@ -10,58 +10,58 @@ const GrammarChecker = () => {
   const [readability, setReadability] = useState({ score: 0, grade: 'N/A' });
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
+  useEffect(() => {
+    // Run spelling and grammar checks reactively
+    const rules = [
+      { regex: /\bWe is\b/gi, message: 'Verb agreement error. Did you mean "We are"?', correction: 'We are' },
+      { regex: /\ba advanced\b/gi, message: 'Incorrect article. Use "an" before vowel sounds.', correction: 'an advanced' },
+      { regex: /\bIt will helps\b/gi, message: 'Verb agreement after modal. Use "help" instead of "helps".', correction: 'It will help' },
+      { regex: /\bTheir are\b/gi, message: 'Incorrect homophone. Did you mean "There are"?', correction: 'There are' },
+      { regex: /\bthat is completely\b/gi, message: 'Noun-verb count disagreement. Use "that are".', correction: 'that are completely' }
+    ];
+
+    const foundErrors = [];
+    rules.forEach(rule => {
+      let match;
+      rule.regex.lastIndex = 0;
+      while ((match = rule.regex.exec(text)) !== null) {
+        foundErrors.push({
+          index: match.index,
+          length: match[0].length,
+          original: match[0],
+          message: rule.message,
+          correction: rule.correction
+        });
+      }
+    });
+
+    // Calculate simple readability index (Flesch Kincaid grade approximation)
+    const words = text.split(/\s+/).filter(Boolean).length;
+    const sentences = text.split(/[.!?]+/).filter(Boolean).length;
+    const characters = text.length;
+    
+    let grade = 'Easy';
+    let score = 85;
+    if (words > 0 && sentences > 0) {
+      const asl = words / sentences;
+      const asw = characters / words;
+      score = Math.round(206.835 - (1.015 * asl) - (84.6 * (asw / 5)));
+      score = Math.max(1, Math.min(100, score));
+      if (score < 50) grade = 'Difficult (University)';
+      else if (score < 80) grade = 'Medium (High School)';
+    }
+
+    setErrors(foundErrors);
+    setReadability({ score, grade });
+  }, [text]);
+
   const analyzeText = () => {
     if (!text.trim()) return toast.error('Please enter some text first');
-    
     setIsAnalyzing(true);
-    
     setTimeout(() => {
-      // Mock spelling and grammar checks
-      const rules = [
-        { regex: /\bWe is\b/gi, message: 'Verb agreement error. Did you mean "We are"?', correction: 'We are' },
-        { regex: /\ba advanced\b/gi, message: 'Incorrect article. Use "an" before vowel sounds.', correction: 'an advanced' },
-        { regex: /\bIt will helps\b/gi, message: 'Verb agreement after modal. Use "help" instead of "helps".', correction: 'It will help' },
-        { regex: /\bTheir are\b/gi, message: 'Incorrect homophone. Did you mean "There are"?', correction: 'There are' },
-        { regex: /\bthat is completely\b/gi, message: 'Noun-verb count disagreement. Use "that are".', correction: 'that are completely' }
-      ];
-
-      const foundErrors = [];
-      rules.forEach(rule => {
-        let match;
-        // Reset regex index for safety
-        rule.regex.lastIndex = 0;
-        while ((match = rule.regex.exec(text)) !== null) {
-          foundErrors.push({
-            index: match.index,
-            length: match[0].length,
-            original: match[0],
-            message: rule.message,
-            correction: rule.correction
-          });
-        }
-      });
-
-      // Calculate simple readability index (Flesch Kincaid grade approximation)
-      const words = text.split(/\s+/).filter(Boolean).length;
-      const sentences = text.split(/[.!?]+/).filter(Boolean).length;
-      const characters = text.length;
-      
-      let grade = 'Easy';
-      let score = 85;
-      if (words > 0 && sentences > 0) {
-        const asl = words / sentences;
-        const asw = characters / words;
-        score = Math.round(206.835 - (1.015 * asl) - (84.6 * (asw / 5)));
-        score = Math.max(1, Math.min(100, score));
-        if (score < 50) grade = 'Difficult (University)';
-        else if (score < 80) grade = 'Medium (High School)';
-      }
-
-      setErrors(foundErrors);
-      setReadability({ score, grade });
       setIsAnalyzing(false);
-      toast.success(`Analysis complete! Found ${foundErrors.length} suggestions.`);
-    }, 1000);
+      toast.success(`Analysis up-to-date! Found ${errors.length} suggestions.`);
+    }, 600);
   };
 
   const applyCorrection = (err) => {
