@@ -76,7 +76,10 @@ const ExcelMergeSplit = () => {
   };
 
   const executeMerge = () => {
-    if (files.length === 0) return;
+    if (files.length === 0) {
+      toast.error('Please upload at least one spreadsheet first!');
+      return;
+    }
     setIsProcessing(true);
 
     setTimeout(() => {
@@ -202,10 +205,13 @@ const ExcelMergeSplit = () => {
           <div className="flex-1 p-6 overflow-y-auto custom-scrollbar">
             {mode === 'merge' ? (
               files.length === 0 ? (
-                <div className="text-center text-muted-foreground p-12 flex flex-col items-center justify-center gap-2 h-full">
+                <div 
+                  onClick={() => fileInputRef.current?.click()}
+                  className="text-center text-muted-foreground p-12 flex flex-col items-center justify-center gap-2 h-full cursor-pointer hover:bg-muted/30 border border-dashed border-border/40 rounded-xl transition-all"
+                >
                   <Layers size={48} className="text-muted-foreground/35" />
                   <p className="text-sm font-bold">Workspace Empty</p>
-                  <p className="text-xs max-w-xs leading-normal">Upload spreadsheets to compile them into a unified multi-sheet workbook.</p>
+                  <p className="text-xs max-w-xs leading-normal">Click here to upload spreadsheets and compile them into a unified multi-sheet workbook.</p>
                 </div>
               ) : (
                 <div className="grid sm:grid-cols-2 gap-4">
@@ -230,10 +236,13 @@ const ExcelMergeSplit = () => {
               )
             ) : (
               splitSheets.length === 0 ? (
-                <div className="text-center text-muted-foreground p-12 flex flex-col items-center justify-center gap-2 h-full">
+                <div 
+                  onClick={() => fileInputRef.current?.click()}
+                  className="text-center text-muted-foreground p-12 flex flex-col items-center justify-center gap-2 h-full cursor-pointer hover:bg-muted/30 border border-dashed border-border/40 rounded-xl transition-all"
+                >
                   <Split size={48} className="text-muted-foreground/35" />
                   <p className="text-sm font-bold">No Workbook Loaded</p>
-                  <p className="text-xs max-w-xs leading-normal">Upload a multi-sheet spreadsheet file to audit and split pages.</p>
+                  <p className="text-xs max-w-xs leading-normal">Click here to upload a multi-sheet spreadsheet file to audit and split pages.</p>
                 </div>
               ) : (
                 <div className="grid sm:grid-cols-2 gap-4">

@@ -189,12 +189,15 @@ const TestDataGenerator = () => {
             </h2>
           </div>
 
-          <div className="flex-1 overflow-auto custom-scrollbar p-4">
+          <div className="flex-1 p-6 overflow-auto custom-scrollbar">
             {generatedData.length === 0 ? (
-              <div className="text-center text-muted-foreground p-12 flex flex-col items-center justify-center gap-2 h-full">
+              <div 
+                onClick={generateData}
+                className="text-center text-muted-foreground p-12 flex flex-col items-center justify-center gap-2 h-full cursor-pointer hover:bg-muted/30 border border-dashed border-border/40 rounded-xl transition-all"
+              >
                 <Layers size={48} className="text-muted-foreground/35" />
                 <p className="text-sm font-bold">Preview Grid Empty</p>
-                <p className="text-xs max-w-xs leading-normal">Configure columns and rows in the side panel to generate synthetic test datasets.</p>
+                <p className="text-xs max-w-xs leading-normal">Click here or configure the side panel to generate synthetic test datasets.</p>
               </div>
             ) : (
               <table className="w-full border-collapse text-left text-xs">

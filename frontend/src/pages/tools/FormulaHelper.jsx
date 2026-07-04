@@ -35,7 +35,26 @@ const FormulaHelper = () => {
         }
       } else {
         // Explain mode
-        setExplanation(`Parsed Formula: ${prompt}\n\n1. Initialized function check.\n2. Computes conditions based on arguments.\n3. Returns computed result directly into the target cell.`);
+        const lower = prompt.toLowerCase();
+        let exp = `Parsed Formula: ${prompt}\n\n`;
+        if (lower.includes('vlookup')) {
+          exp += `1. Function: VLOOKUP (Vertical Lookup)\n2. Purpose: Searches for a value in the first column of a table array and returns a value in the same row from another column.\n3. Breakdown:\n   - Lookup Value: The value you want to search for.\n   - Table Array: The range of cells containing the data.\n   - Col Index Num: The column number from which to retrieve the value.\n   - Range Lookup: FALSE (exact match) or TRUE (approximate match).`;
+        } else if (lower.includes('sumif')) {
+          exp += `1. Function: SUMIF (Conditional Sum)\n2. Purpose: Sums the values in a range that meet a specific condition.\n3. Breakdown:\n   - Range: The range of cells to evaluate with the criteria.\n   - Criteria: The condition (e.g. ">100" or "Approved") that cells must meet.\n   - Sum Range: The actual cells to add (if different from the evaluation range).`;
+        } else if (lower.includes('averageif')) {
+          exp += `1. Function: AVERAGEIF (Conditional Average)\n2. Purpose: Calculates the average of cells that meet a specific condition.\n3. Breakdown:\n   - Range: The range of cells to evaluate.\n   - Criteria: The condition for cells to be averaged.\n   - Average Range: The actual cells to average.`;
+        } else if (lower.includes('countif')) {
+          exp += `1. Function: COUNTIF (Conditional Count)\n2. Purpose: Counts the number of cells in a range that meet a specific condition.\n3. Breakdown:\n   - Range: The cells you want to count.\n   - Criteria: The condition defining which cells to count.`;
+        } else if (lower.includes('sum')) {
+          exp += `1. Function: SUM (Addition)\n2. Purpose: Adds all numbers in a range of cells.\n3. Breakdown:\n   - Numbers/Ranges: The list of cells or ranges to add together (e.g. A1:A10).`;
+        } else if (lower.includes('average')) {
+          exp += `1. Function: AVERAGE (Mean)\n2. Purpose: Calculates the mathematical average of a list of numbers or cells.\n3. Breakdown:\n   - Ranges: The cells to sum and divide by their count.`;
+        } else if (lower.includes('if')) {
+          exp += `1. Function: IF (Logical Test)\n2. Purpose: Checks if a condition is met, returning one value if TRUE and another if FALSE.\n3. Breakdown:\n   - Logical Test: The condition to evaluate (e.g., A1 > 100).\n   - Value If True: Output returned if test evaluates to true.\n   - Value If False: Output returned if test evaluates to false.`;
+        } else {
+          exp += `1. Function: General Spreadsheet Formula\n2. Purpose: Computes mathematical or logical operations.\n3. Breakdown:\n   - Evaluates ranges and operators client-side.\n   - Returns computed value directly.`;
+        }
+        setExplanation(exp);
       }
       setIsProcessing(false);
       toast.success('Formula query processed!');

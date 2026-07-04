@@ -196,10 +196,15 @@ const CsvSqlRunner = () => {
 
             <div className="flex-1 overflow-auto custom-scrollbar p-4">
               {results.length === 0 ? (
-                <div className="text-center text-muted-foreground p-12 flex flex-col items-center justify-center gap-2 h-full">
+                <div 
+                  onClick={() => !file && fileInputRef.current?.click()}
+                  className={`text-center text-muted-foreground p-12 flex flex-col items-center justify-center gap-2 h-full ${!file ? 'cursor-pointer hover:bg-muted/30 border border-dashed border-border/40 rounded-xl transition-all' : ''}`}
+                >
                   <Layers size={48} className="text-muted-foreground/35" />
-                  <p className="text-sm font-bold">Query Result Empty</p>
-                  <p className="text-xs max-w-xs leading-normal">Load a sheet, write a query, and check columns in real time.</p>
+                  <p className="text-sm font-bold">{!file ? 'No Spreadsheet Loaded' : 'Query Result Empty'}</p>
+                  <p className="text-xs max-w-xs leading-normal">
+                    {!file ? 'Click here to load a CSV/Excel sheet to start querying.' : 'Write a query and check columns in real time.'}
+                  </p>
                 </div>
               ) : (
                 <table className="w-full border-collapse text-left text-xs">

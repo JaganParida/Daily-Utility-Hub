@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Landmark, Download, Play, CheckCircle2, Calculator } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import * as XLSX from 'xlsx';
@@ -10,6 +10,44 @@ const AmortizationScheduler = () => {
   const [years, setYears] = useState(15);
   const [schedule, setSchedule] = useState([]);
   const [summary, setSummary] = useState(null);
+
+  useEffect(() => {
+    // Run initial calculation silently on mount to populate layout
+    const P = parseFloat(principal);
+    const r = parseFloat(rate) / 100 / 12;
+    const n = parseInt(years) * 12;
+
+    if (!isNaN(P) && !isNaN(r) && !isNaN(n) && P > 0 && r > 0 && n > 0) {
+      const monthlyPayment = (P * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+      let balance = P;
+      let totalInterest = 0;
+      const list = [];
+
+      for (let month = 1; month <= n; month++) {
+        const interest = balance * r;
+        const principalPaid = monthlyPayment - interest;
+        balance -= principalPaid;
+        totalInterest += interest;
+
+        if (month % 12 === 0 || month === n) {
+          list.push({
+            year: Math.ceil(month / 12),
+            payment: Math.round(monthlyPayment * 12 * 100) / 100,
+            principalPaid: Math.round(principalPaid * 12 * 100) / 100,
+            interestPaid: Math.round(interest * 12 * 100) / 100,
+            balance: Math.max(0, Math.round(balance * 100) / 100)
+          });
+        }
+      }
+
+      setSchedule(list);
+      setSummary({
+        monthlyPayment: Math.round(monthlyPayment * 100) / 100,
+        totalPayment: Math.round((monthlyPayment * n) * 100) / 100,
+        totalInterest: Math.round(totalInterest * 100) / 100
+      });
+    }
+  }, []);
 
   const calculateAmortization = () => {
     const P = parseFloat(principal);
