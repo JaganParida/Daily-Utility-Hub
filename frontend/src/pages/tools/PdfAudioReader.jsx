@@ -39,14 +39,37 @@ const PdfAudioReader = () => {
   const fileInputRef = useRef(null);
   const synth = window.speechSynthesis;
 
+  const autoSelectVoice = (textData, currentVoices) => {
+    if (!textData || currentVoices.length === 0) return;
+    
+    const hasOdia = /[\u0B00-\u0B7F]/.test(textData);
+    let matchedVoice = null;
+    
+    if (hasOdia) {
+      matchedVoice = currentVoices.find(v => 
+        v.lang.toLowerCase().includes('or') || 
+        v.name.toLowerCase().includes('odia') || 
+        v.name.toLowerCase().includes('oriya')
+      );
+      if (!matchedVoice) {
+        matchedVoice = currentVoices.find(v => v.lang.toLowerCase().includes('hi'));
+      }
+    }
+    
+    if (matchedVoice) {
+      setSelectedVoice(matchedVoice.name);
+    } else {
+      const engVoice = currentVoices.find(v => v.lang.includes('en')) || currentVoices[0];
+      setSelectedVoice(engVoice.name);
+    }
+  };
+
   useEffect(() => {
     const loadVoices = () => {
       const availableVoices = synth.getVoices();
       setVoices(availableVoices);
       if (availableVoices.length > 0 && !selectedVoice) {
-        // default to first english voice or just first voice
-        const engVoice = availableVoices.find(v => v.lang.includes('en')) || availableVoices[0];
-        setSelectedVoice(engVoice.name);
+        autoSelectVoice(text, availableVoices);
       }
     };
     
@@ -58,7 +81,7 @@ const PdfAudioReader = () => {
     return () => {
       synth.cancel();
     };
-  }, []);
+  }, [text]);
 
   const handleDragOver = (e) => { e.preventDefault(); setIsDragging(true); };
   const handleDragLeave = (e) => { e.preventDefault(); setIsDragging(false); };
@@ -99,6 +122,7 @@ const PdfAudioReader = () => {
       } else {
         setText(fullText);
         setFile(selectedFile);
+        autoSelectVoice(fullText, voices);
         document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
       }
     } catch (err) {
@@ -109,9 +133,63 @@ const PdfAudioReader = () => {
     }
   };
 
+  const sentencesRef = useRef([]);
+  const [currentUtteranceIndex, setCurrentUtteranceIndex] = useState(0);
+  
+  const isPlayingRef = useRef(false);
+  const isPausedRef = useRef(false);
+
+  useEffect(() => {
+    isPlayingRef.current = isPlaying;
+    isPausedRef.current = isPaused;
+  }, [isPlaying, isPaused]);
+
+  const speakSentence = (index) => {
+    if (!isPlayingRef.current) return;
+    
+    if (index >= sentencesRef.current.length) {
+      setIsPlaying(false);
+      setIsPaused(false);
+      setCurrentUtteranceIndex(0);
+      return;
+    }
+
+    const sentenceText = sentencesRef.current[index].trim();
+    if (!sentenceText) {
+      setCurrentUtteranceIndex(index + 1);
+      speakSentence(index + 1);
+      return;
+    }
+
+    const utterance = new SpeechSynthesisUtterance(sentenceText);
+    if (selectedVoice) {
+      utterance.voice = voices.find(v => v.name === selectedVoice);
+    }
+    utterance.rate = rate;
+
+    utterance.onend = () => {
+      if (isPlayingRef.current) {
+        setCurrentUtteranceIndex(index + 1);
+        speakSentence(index + 1);
+      }
+    };
+
+    utterance.onerror = (e) => {
+      console.error(e);
+      if (isPlayingRef.current) {
+        setCurrentUtteranceIndex(index + 1);
+        speakSentence(index + 1);
+      }
+    };
+
+    synth.speak(utterance);
+  };
+
   const handlePlay = () => {
     if (isPaused) {
       synth.resume();
+      isPlayingRef.current = true;
+      isPausedRef.current = false;
       setIsPaused(false);
       setIsPlaying(true);
       return;
@@ -119,31 +197,22 @@ const PdfAudioReader = () => {
     
     if (synth.speaking) synth.cancel();
 
-    const utterance = new SpeechSynthesisUtterance(text);
-    if (selectedVoice) {
-      utterance.voice = voices.find(v => v.name === selectedVoice);
-    }
-    utterance.rate = rate;
+    // Split text into sentences using standard punctuation and Odia danda (।)
+    const sentences = text.match(/[^.!?।\n]+[.!?।\n]*/g) || [text];
+    sentencesRef.current = sentences;
     
-    utterance.onend = () => {
-      setIsPlaying(false);
-      setIsPaused(false);
-    };
-    
-    utterance.onerror = (e) => {
-      console.error(e);
-      setIsPlaying(false);
-      setIsPaused(false);
-    };
-
-    synth.speak(utterance);
+    isPlayingRef.current = true;
+    isPausedRef.current = false;
     setIsPlaying(true);
     setIsPaused(false);
+    speakSentence(currentUtteranceIndex);
   };
 
   const handlePause = () => {
     if (synth.speaking) {
       synth.pause();
+      isPlayingRef.current = false;
+      isPausedRef.current = true;
       setIsPaused(true);
       setIsPlaying(false);
     }
@@ -151,14 +220,18 @@ const PdfAudioReader = () => {
 
   const handleStop = () => {
     synth.cancel();
+    isPlayingRef.current = false;
+    isPausedRef.current = false;
     setIsPlaying(false);
     setIsPaused(false);
+    setCurrentUtteranceIndex(0);
   };
 
   const handleClear = () => {
     handleStop();
     setFile(null);
     setText('');
+    setCurrentUtteranceIndex(0);
     document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
