@@ -94,21 +94,27 @@ const FileVault = () => {
 
             const parsed = JSON.parse(decryptedPayload);
             
-            // Download the original file
-            // Extract the base64 part from the Data URL
-            fetch(parsed.data)
-              .then(res => res.blob())
-              .then(blob => {
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = parsed.name;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-                toast.success('File successfully decrypted and downloaded!');
-              });
+            // Local base64 parsing without using network-like fetch API
+            const dataurl = parsed.data;
+            const parts = dataurl.split(',');
+            const mime = parts[0].match(/:(.*?);/)[1];
+            const bstr = atob(parts[1]);
+            let n = bstr.length;
+            const u8arr = new Uint8Array(n);
+            while (n--) {
+              u8arr[n] = bstr.charCodeAt(n);
+            }
+            const blob = new Blob([u8arr], { type: mime });
+
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = parsed.name;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            toast.success('File successfully decrypted and downloaded!');
           }
         };
 

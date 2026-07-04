@@ -256,9 +256,15 @@ const BatchRenamer = () => {
             <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-2">
               <AnimatePresence>
                 {previews.length === 0 ? (
-                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="h-full flex flex-col items-center justify-center text-muted-foreground opacity-50">
-                    <FileIcon size={48} className="mb-4" />
+                  <motion.div 
+                    initial={{ opacity: 0 }} 
+                    animate={{ opacity: 1 }} 
+                    onClick={() => fileInputRef.current?.click()}
+                    className="h-full flex flex-col items-center justify-center text-muted-foreground cursor-pointer hover:bg-muted/30 border border-dashed border-border/40 rounded-xl transition-all p-12"
+                  >
+                    <FileIcon size={48} className="mb-4 opacity-50" />
                     <p className="text-sm font-bold">No files added yet.</p>
+                    <p className="text-xs text-center mt-1">Click here to upload files to begin batch renaming.</p>
                   </motion.div>
                 ) : (
                   previews.map((preview, index) => (

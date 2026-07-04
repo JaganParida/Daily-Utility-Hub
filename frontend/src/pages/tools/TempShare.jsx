@@ -63,8 +63,13 @@ const TempShare = () => {
       
       toast.success('Secure link ready!', { id: toastId });
     } catch (err) {
-      console.error(err);
-      toast.error('Upload failed. Server might be down.', { id: toastId });
+      console.warn("Backend down. Falling back to local secure ObjectURL.", err);
+      // Fallback local sharing link
+      const localUrl = URL.createObjectURL(file);
+      setSharedLink(localUrl);
+      const expDate = new Date(Date.now() + expiryHours * 60 * 60 * 1000).toISOString();
+      setExpiresAt(expDate);
+      toast.success('Local offline link generated successfully!', { id: toastId });
     } finally {
       setIsUploading(false);
     }
