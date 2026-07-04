@@ -62,13 +62,13 @@ export const toolCategories = {
     { name: 'Text Analyzer', description: 'Analyze readability, keyword density, and speaking time.', icon: Activity, to: '/tools/text-analyzer', color: 'text-purple-500 bg-purple-500/10' },
     { name: 'Citation Generator', description: 'Instantly generate APA, MLA, and Chicago format citations.', icon: BookMarked, to: '/tools/citation-generator', color: 'text-emerald-500 bg-emerald-500/10' },
     { name: 'Dev Profile Generator', description: 'Create and host premium, responsive developer link trees and portfolio cards.', icon: Code2, to: '/tools/developer-profile', color: 'text-indigo-500 bg-indigo-500/10' },
-    { name: 'Pomodoro Hub', description: 'Study with an animated timer, tasks, and productivity modes.', icon: Timer, to: '/tools/pomodoro-hub', color: 'text-rose-500 bg-rose-500/10' },
   ],
   'Finance & Productivity': [
     { name: 'EMI Calculator', description: 'Calculate monthly payments and total interest payable.', icon: Calculator, to: '/tools/emi-calculator', color: 'text-blue-500 bg-blue-500/10' },
     { name: 'SIP Calculator', description: 'Estimate future values and compound growth on investments.', icon: TrendingUp, to: '/tools/sip-calculator', color: 'text-emerald-500 bg-emerald-500/10' },
     { name: 'GST Calculator', description: 'Calculate tax inclusive or exclusive prices and SGST/CGST splits.', icon: Percent, to: '/tools/gst-calculator', color: 'text-indigo-500 bg-indigo-500/10' },
     { name: 'Income Tax', description: 'Compare old vs new tax regimes and calculate taxable income liabilities.', icon: Landmark, to: '/tools/tax-calculator', color: 'text-amber-500 bg-amber-500/10' },
+    { name: 'Pomodoro Hub', description: 'Study with an animated timer, tasks, and productivity modes.', icon: Timer, to: '/tools/pomodoro-hub', color: 'text-rose-500 bg-rose-500/10' },
   ],
   'File & Storage Tools': [
     { name: 'Temp File Share', description: 'Upload a file temporarily and share via secure links.', icon: FolderArchive, to: '/tools/temp-share', color: 'text-primary bg-primary/10' },
