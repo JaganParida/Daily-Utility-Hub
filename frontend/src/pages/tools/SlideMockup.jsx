@@ -18,14 +18,29 @@ const SlideMockup = () => {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
   }, []);
 
+  const getCoordinates = (e) => {
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    let clientX, clientY;
+
+    if (e.touches && e.touches.length > 0) {
+      clientX = e.touches[0].clientX;
+      clientY = e.touches[0].clientY;
+    } else {
+      clientX = e.clientX;
+      clientY = e.clientY;
+    }
+
+    const x = ((clientX - rect.left) / rect.width) * canvas.width;
+    const y = ((clientY - rect.top) / rect.height) * canvas.height;
+    return { x, y };
+  };
+
   const startDrawing = (e) => {
+    if (e.cancelable) e.preventDefault();
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
-    const rect = canvas.getBoundingClientRect();
-    
-    // Calculate scaling ratio between actual canvas size and bounding display client rect
-    const x = ((e.clientX - rect.left) / rect.width) * canvas.width;
-    const y = ((e.clientY - rect.top) / rect.height) * canvas.height;
+    const { x, y } = getCoordinates(e);
 
     ctx.beginPath();
     ctx.moveTo(x, y);
@@ -39,12 +54,10 @@ const SlideMockup = () => {
 
   const draw = (e) => {
     if (!isDrawing) return;
+    if (e.cancelable) e.preventDefault();
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
-    const rect = canvas.getBoundingClientRect();
-    
-    const x = ((e.clientX - rect.left) / rect.width) * canvas.width;
-    const y = ((e.clientY - rect.top) / rect.height) * canvas.height;
+    const { x, y } = getCoordinates(e);
 
     ctx.lineTo(x, y);
     ctx.stroke();
@@ -154,6 +167,9 @@ const SlideMockup = () => {
               onMouseMove={draw}
               onMouseUp={stopDrawing}
               onMouseLeave={stopDrawing}
+              onTouchStart={startDrawing}
+              onTouchMove={draw}
+              onTouchEnd={stopDrawing}
               className="max-w-full aspect-[4/3] bg-white rounded-xl shadow-2xl cursor-crosshair border border-slate-700 select-none touch-none"
             />
           </div>

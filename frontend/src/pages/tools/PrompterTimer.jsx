@@ -21,7 +21,16 @@ const PrompterTimer = () => {
       }
       return { header: 'General Notes', content: sec.trim() };
     });
-    setSlides(parsed.filter(s => s.content));
+    const filtered = parsed.filter(s => s.content);
+    setSlides(filtered);
+    
+    // Safely clamp active index within new boundaries
+    setActiveSlideIdx(prev => {
+      if (prev >= filtered.length) {
+        return Math.max(0, filtered.length - 1);
+      }
+      return prev;
+    });
   }, [notes]);
 
   // Timer loop

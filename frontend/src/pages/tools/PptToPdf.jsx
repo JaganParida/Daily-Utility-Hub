@@ -3,6 +3,7 @@ import { FileText, Download, Upload, Copy, CheckCircle2, FileImage, Sparkles } f
 import { toast } from 'react-hot-toast';
 import { motion } from 'framer-motion';
 import { jsPDF } from 'jspdf';
+import JSZip from 'jszip';
 
 const PptToPdf = () => {
   const [file, setFile] = useState(null);
@@ -22,15 +23,62 @@ const PptToPdf = () => {
     setFile(uploadedFile);
     toast.success('Presentation uploaded successfully!');
 
-    // Mock slide page extraction
-    setTimeout(() => {
-      setSlides([
-        { title: 'Slide 1: Business Overview', bullets: ['Key performance indicators look strong.', 'Q4 objective focuses on cloud migration projects.'] },
-        { title: 'Slide 2: Execution Milestones', bullets: ['Establish secure database clusters.', 'Scale serverless API microservices.'] },
-        { title: 'Slide 3: Strategic Recommendations', bullets: ['Leverage local browser client caches.', 'Prune server computational overheads.'] }
-      ]);
-      setActiveSlideIdx(0);
-    }, 800);
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const buffer = event.target.result;
+        const zip = await JSZip.loadAsync(buffer);
+        
+        // Find all slide XML files
+        const slideFiles = Object.keys(zip.files).filter(name => 
+          name.startsWith("ppt/slides/slide") && name.endsWith(".xml")
+        );
+
+        if (slideFiles.length === 0) {
+          toast.error("Invalid PPTX structure. Could not find slides.");
+          return;
+        }
+
+        // Sort slide files numerically (e.g. slide1.xml, slide2.xml, slide10.xml)
+        slideFiles.sort((a, b) => {
+          const numA = parseInt(a.match(/slide(\d+)\.xml/)[1]);
+          const numB = parseInt(b.match(/slide(\d+)\.xml/)[1]);
+          return numA - numB;
+        });
+
+        const parsedSlides = [];
+        const parser = new DOMParser();
+
+        for (let i = 0; i < slideFiles.length; i++) {
+          const xmlText = await zip.file(slideFiles[i]).async("text");
+          const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+          const tElements = xmlDoc.getElementsByTagName("a:t");
+          const texts = Array.from(tElements).map(el => el.textContent.trim()).filter(Boolean);
+
+          if (texts.length > 0) {
+            const title = texts[0];
+            const bullets = texts.slice(1);
+            parsedSlides.push({
+              title: title.length > 50 ? title.substring(0, 50) + "..." : title,
+              bullets: bullets.length > 0 ? bullets.slice(0, 5) : ["No list items found on slide."]
+            });
+          } else {
+            parsedSlides.push({
+              title: `Slide ${i + 1}`,
+              bullets: ["Image or shape-only content."]
+            });
+          }
+        }
+
+        setSlides(parsedSlides);
+        setActiveSlideIdx(0);
+        toast.success(`Presentation parsed successfully! Extracted ${parsedSlides.length} slides.`);
+      } catch (err) {
+        console.error(err);
+        toast.error("Failed to parse PowerPoint presentation.");
+      }
+    };
+    reader.readAsArrayBuffer(uploadedFile);
   };
 
   const exportPDF = () => {
@@ -55,8 +103,9 @@ const PptToPdf = () => {
       doc.setFontSize(14);
       let y = 70;
       slide.bullets.forEach(bullet => {
-        doc.text(`- ${bullet}`, 25, y);
-        y += 15;
+        const splitBullet = doc.splitTextToSize(`- ${bullet}`, 250);
+        doc.text(splitBullet, 25, y);
+        y += (splitBullet.length * 7) + 8;
       });
     });
 
@@ -214,10 +263,13 @@ const PptToPdf = () => {
                 </div>
               </motion.div>
             ) : (
-              <div className="text-center text-muted-foreground p-12 flex flex-col items-center justify-center gap-2 h-full">
+              <div 
+                onClick={() => fileInputRef.current?.click()}
+                className="text-center text-muted-foreground p-12 flex flex-col items-center justify-center gap-2 h-full cursor-pointer hover:bg-neutral-800/40 border border-dashed border-slate-800/60 rounded-xl transition-all"
+              >
                 <FileText size={48} className="text-muted-foreground/35" />
                 <p className="text-sm font-bold">No Presentation Uploaded</p>
-                <p className="text-xs max-w-xs leading-normal">Select a PPTX presentation file to audit slide structures and trigger downloads.</p>
+                <p className="text-xs max-w-xs leading-normal">Click here or upload a PPTX presentation file to audit slide structures.</p>
               </div>
             )}
           </div>

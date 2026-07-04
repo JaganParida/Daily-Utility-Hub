@@ -74,8 +74,9 @@ const MdToSlides = () => {
       doc.setFontSize(16);
       let y = 70;
       slide.bullets.forEach(bullet => {
-        doc.text(`* ${bullet}`, 25, y);
-        y += 18;
+        const splitBullet = doc.splitTextToSize(`* ${bullet}`, 250);
+        doc.text(splitBullet, 25, y);
+        y += (splitBullet.length * 8) + 10;
       });
 
       // Footer

@@ -4,7 +4,7 @@ import { toast } from 'react-hot-toast';
 import { motion } from 'framer-motion';
 
 const HtmlPresentation = () => {
-  const defaultHtml = `<section style="padding: 40px; text-align: center; color: white; background: linear-gradient(135deg, #4f46e5, #6366f1); border-radius: 16px; min-height: 280px; display: flex; flex-col; justify-content: center; align-items: center;">
+  const defaultHtml = `<section style="padding: 40px; text-align: center; color: white; background: linear-gradient(135deg, #4f46e5, #6366f1); border-radius: 16px; min-height: 280px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
   <h1 style="font-size: 32px; font-weight: 900; margin-bottom: 12px;">Interactive HTML Presentation</h1>
   <p style="font-size: 16px; opacity: 0.9;">Create stunning slide decks client-side with native HTML/CSS styling tags.</p>
 </section>`;
