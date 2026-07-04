@@ -85,6 +85,24 @@ const circularCategories = [
     gradient: "from-sky-400 to-blue-500",
     shadow: "shadow-sky-500/20",
   },
+  {
+    name: "Word & Docs Tools",
+    icon: FileText,
+    gradient: "from-indigo-400 to-blue-500",
+    shadow: "shadow-indigo-500/20",
+  },
+  {
+    name: "Excel & Sheets Tools",
+    icon: Braces,
+    gradient: "from-emerald-400 to-teal-500",
+    shadow: "shadow-emerald-500/20",
+  },
+  {
+    name: "PowerPoint & Slides Tools",
+    icon: Layers,
+    gradient: "from-rose-400 to-pink-500",
+    shadow: "shadow-rose-500/20",
+  },
 ];
 
 const Dashboard = () => {
