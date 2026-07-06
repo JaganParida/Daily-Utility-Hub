@@ -400,8 +400,20 @@ const TempShare = () => {
                   <CheckCircle2 size={32} />
                 </div>
                 
-                <h2 className="text-2xl font-black text-foreground mt-6 mb-2">Secure Link Created!</h2>
-                <p className="text-muted-foreground text-sm font-medium">Open on any device to view, redirect, or download instantly.</p>
+                <h2 className="text-2xl font-black text-foreground mt-6 mb-2">
+                  {sharedLink.startsWith('blob:') ? 'Local Link Created (Offline)' : 'Secure Link Created!'}
+                </h2>
+                <div className="max-w-md mx-auto mb-2">
+                  {sharedLink.startsWith('blob:') ? (
+                    <p className="text-rose-500 dark:text-rose-400 text-xs font-bold bg-rose-500/10 py-2.5 px-4 rounded-xl border border-rose-500/20 leading-relaxed">
+                      ⚠️ Server is currently busy or rate-limited. This is a local-only link that works only on this device/tab. It cannot be opened by others. Please try again later.
+                    </p>
+                  ) : (
+                    <p className="text-muted-foreground text-sm font-medium">
+                      Open on any device to view, redirect, or download instantly.
+                    </p>
+                  )}
+                </div>
 
                 {/* Local Client-Side QR Code */}
                 {qrCodeUrl && (

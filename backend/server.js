@@ -24,6 +24,9 @@ setupCleanupJobs();
 
 const app = express();
 
+// Trust proxy for accurate client IP rate limiting behind reverse proxies (Render, Vercel, etc.)
+app.set('trust proxy', 1);
+
 // Body parser
 app.use(express.json());
 
