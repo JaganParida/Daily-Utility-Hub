@@ -90,6 +90,7 @@ const TaxCalculator = lazy(() => import('./pages/tools/TaxCalculator'));
 
 // File Management Tools (Lazy loaded)
 const TempShare = lazy(() => import('./pages/tools/TempShare'));
+const TempShareDownload = lazy(() => import('./pages/tools/TempShareDownload'));
 const BatchRenamer = lazy(() => import('./pages/tools/BatchRenamer'));
 const ZipArchiver = lazy(() => import('./pages/tools/ZipArchiver'));
 const FileVault = lazy(() => import('./pages/tools/FileVault'));
@@ -232,6 +233,7 @@ function AnimatedRoutes() {
 
             {/* File & Storage Tools */}
             <Route path="/tools/temp-share" element={<TempShare />} />
+            <Route path="/tools/temp-share/download/:id" element={<TempShareDownload />} />
             <Route path="/tools/batch-renamer" element={<BatchRenamer />} />
             <Route path="/tools/zip-archiver" element={<ZipArchiver />} />
             <Route path="/tools/file-vault" element={<FileVault />} />

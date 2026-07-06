@@ -63,8 +63,21 @@ exports.uploadFile = async (req, res) => {
       return res.status(400).json({ error: 'No file uploaded' });
     }
 
-    const { expiryHours } = req.body;
-    const hours = parseInt(expiryHours) || 24; // default to 24 hours
+    const { expiryHours, shareType } = req.body;
+    const isGuest = !req.user;
+    
+    // Safety size checks based on login status
+    const maxSize = isGuest ? 10 * 1024 * 1024 : 50 * 1024 * 1024;
+    if (req.file.size > maxSize) {
+      if (fs.existsSync(req.file.path)) {
+        fs.unlinkSync(req.file.path);
+      }
+      return res.status(400).json({ error: `File size limit exceeded. ${isGuest ? 'Guests are limited to 10MB. Please log in for up to 50MB.' : 'Logged-in users are limited to 50MB.'}` });
+    }
+
+    // Safety expiry checks based on login status
+    const maxHours = isGuest ? 24 : 168; // Guest max 24h, logged-in max 7 days
+    const hours = Math.min(parseInt(expiryHours) || 24, maxHours);
     
     const fileId = crypto.randomBytes(16).toString('hex');
     const uploadedAt = Date.now();
@@ -78,7 +91,8 @@ exports.uploadFile = async (req, res) => {
       mimeType: req.file.mimetype,
       size: req.file.size,
       uploadedAt: uploadedAt,
-      expiresAt: expiresAt
+      expiresAt: expiresAt,
+      shareType: shareType || 'file' // 'file' | 'text' | 'url' | 'code'
     };
 
     metadata.push(newEntry);
@@ -88,11 +102,54 @@ exports.uploadFile = async (req, res) => {
       success: true,
       fileId: fileId,
       originalName: req.file.originalname,
-      expiresAt: expiresAt
+      expiresAt: expiresAt,
+      shareType: newEntry.shareType
     });
   } catch (err) {
     console.error('Upload temporary file error:', err);
     return res.status(500).json({ error: 'File upload failed' });
+  }
+};
+
+// GET: Get metadata of a shared file/link
+exports.getFileMetadata = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const metadata = await loadMetadata();
+    const fileEntry = metadata.find(entry => entry.id === id);
+
+    if (!fileEntry) {
+      return res.status(404).json({ error: 'File not found or expired.' });
+    }
+
+    // Check expiry
+    if (Date.now() > fileEntry.expiresAt) {
+      return res.status(410).json({ error: 'This share link has expired.' });
+    }
+
+    const responseData = {
+      id: fileEntry.id,
+      originalName: fileEntry.originalName,
+      mimeType: fileEntry.mimeType,
+      size: fileEntry.size,
+      uploadedAt: fileEntry.uploadedAt,
+      expiresAt: fileEntry.expiresAt,
+      shareType: fileEntry.shareType || 'file'
+    };
+
+    // If it's a text/url/code share, read the content of the file from disk and return it
+    if (fileEntry.shareType && fileEntry.shareType !== 'file') {
+      const filePath = path.join(uploadDir, fileEntry.filename);
+      if (fs.existsSync(filePath)) {
+        const content = await fs.promises.readFile(filePath, 'utf8');
+        responseData.content = content;
+      }
+    }
+
+    return res.status(200).json(responseData);
+  } catch (err) {
+    console.error('Get file metadata error:', err);
+    return res.status(500).json({ error: 'Internal server error.' });
   }
 };
 

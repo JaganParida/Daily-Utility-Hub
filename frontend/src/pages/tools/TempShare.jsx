@@ -1,20 +1,40 @@
-import { useState, useRef } from 'react';
-import { UploadCloud, File, CheckCircle2, Clipboard, Globe, X, Download, QrCode, Share2, Timer } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { UploadCloud, File, CheckCircle2, Clipboard, Globe, X, QrCode, Share2, Timer, Code, Link, MessageSquare } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../lib/api';
+import QRCode from 'qrcode';
 
 const TempShare = () => {
+  const [tab, setTab] = useState('file'); // 'file' | 'text'
   const [file, setFile] = useState(null);
+  const [textVal, setTextVal] = useState('');
+  const [shareType, setShareType] = useState('url'); // 'text' | 'url' | 'code'
+  
   const [expiryHours, setExpiryHours] = useState(24);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   
   const [sharedLink, setSharedLink] = useState('');
+  const [qrCodeUrl, setQrCodeUrl] = useState('');
   const [expiresAt, setExpiresAt] = useState(null);
   const [isCopied, setIsCopied] = useState(false);
 
   const fileInputRef = useRef(null);
+
+  // Generate QR code whenever the sharedLink is updated
+  useEffect(() => {
+    if (sharedLink) {
+      QRCode.toDataURL(sharedLink, { margin: 2, width: 250, color: { dark: '#000000', light: '#ffffff' } })
+        .then(url => setQrCodeUrl(url))
+        .catch(err => {
+          console.error('Error generating QR code:', err);
+          toast.error('Could not generate QR Code');
+        });
+    } else {
+      setQrCodeUrl('');
+    }
+  }, [sharedLink]);
 
   const handleDragOver = (e) => { e.preventDefault(); setIsDragging(true); };
   const handleDragLeave = (e) => { e.preventDefault(); setIsDragging(false); };
@@ -40,15 +60,43 @@ const TempShare = () => {
   };
 
   const handleUpload = async () => {
-    if (!file) return;
+    let uploadFileObj = null;
+
+    if (tab === 'file') {
+      if (!file) {
+        toast.error('Please select a file first.');
+        return;
+      }
+      uploadFileObj = file;
+    } else {
+      if (!textVal.trim()) {
+        toast.error('Please enter content to share.');
+        return;
+      }
+      
+      let filename = 'share_text.txt';
+      if (shareType === 'url') {
+        filename = 'share_url.txt';
+        // Basic URL syntax correction
+        if (!/^https?:\/\//i.test(textVal.trim()) && !textVal.trim().includes(' ')) {
+          // If it's a URL-like string without space, check if we should label it URL
+          // The download/redirect component will handle prepending http://
+        }
+      } else if (shareType === 'code') {
+        filename = 'share_code.txt';
+      }
+
+      uploadFileObj = new File([textVal], filename, { type: 'text/plain' });
+    }
 
     setIsUploading(true);
-    const toastId = toast.loading('Uploading securely...');
+    const toastId = toast.loading('Uploading securely to temp share...');
 
     try {
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('file', uploadFileObj);
       formData.append('expiryHours', expiryHours);
+      formData.append('shareType', tab === 'file' ? 'file' : shareType);
 
       const response = await api.post('/share/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
@@ -56,20 +104,22 @@ const TempShare = () => {
 
       const data = response.data;
       
-      const backendBaseUrl = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace(/\/api$/, '') : 'http://localhost:5000';
-      const shareUrl = `${backendBaseUrl}/api/share/download/${data.fileId}`;
-      setSharedLink(shareUrl);
+      // Point the sharedLink to the frontend page instead of backend direct download
+      const frontendShareUrl = `${window.location.origin}/tools/temp-share/download/${data.fileId}`;
+      setSharedLink(frontendShareUrl);
       setExpiresAt(data.expiresAt);
       
-      toast.success('Secure link ready!', { id: toastId });
+      toast.success('Secure link generated successfully!', { id: toastId });
     } catch (err) {
-      console.warn("Backend down. Falling back to local secure ObjectURL.", err);
-      // Fallback local sharing link
-      const localUrl = URL.createObjectURL(file);
+      console.error("Backend upload failed:", err);
+      // Fallback local sharing link using window.URL (local ObjectURL)
+      const localUrl = URL.createObjectURL(uploadFileObj);
+      // Local URL is only valid on the user's browser, so we'll warn them
+      const localShareUrl = `${window.location.origin}/tools/temp-share/download/local?blob=${encodeURIComponent(localUrl)}`;
       setSharedLink(localUrl);
       const expDate = new Date(Date.now() + expiryHours * 60 * 60 * 1000).toISOString();
       setExpiresAt(expDate);
-      toast.success('Local offline link generated successfully!', { id: toastId });
+      toast.error('Server offline. Generated local offline preview URL.', { id: toastId });
     } finally {
       setIsUploading(false);
     }
@@ -82,8 +132,33 @@ const TempShare = () => {
     setTimeout(() => setIsCopied(false), 3000);
   };
 
+  const handleWhatsAppShare = () => {
+    const message = `Check out this temporary link from Daily Utility Hub: ${sharedLink}`;
+    const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+    window.open(waUrl, '_blank');
+  };
+
+  const handleNativeShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Secure Temporary Share',
+          text: 'Check out this temporary link from Daily Utility Hub:',
+          url: sharedLink
+        });
+        toast.success('Shared successfully!');
+      } catch (err) {
+        console.warn('Native share cancelled or failed', err);
+      }
+    } else {
+      handleCopy();
+      toast.success('Native sharing not supported on this device. Link copied!');
+    }
+  };
+
   const resetAll = () => {
     setFile(null);
+    setTextVal('');
     setSharedLink('');
   };
 
@@ -95,14 +170,36 @@ const TempShare = () => {
         </div>
         <div>
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter text-foreground">Secure Temp Share</h1>
-          <p className="text-muted-foreground mt-1 text-xs md:text-sm">Upload a file to generate a temporary, expiring download link instantly.</p>
+          <p className="text-muted-foreground mt-1 text-xs md:text-sm">Upload files or share URLs and code instantly with automatic expiration.</p>
         </div>
       </div>
 
+      {/* Tabs */}
+      {!sharedLink && (
+        <div className="flex border-b border-border mb-6">
+          <button
+            onClick={() => setTab('file')}
+            className={`px-6 py-3 font-bold text-sm border-b-2 transition-all flex items-center gap-2 ${
+              tab === 'file' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <File size={16} /> Share File
+          </button>
+          <button
+            onClick={() => setTab('text')}
+            className={`px-6 py-3 font-bold text-sm border-b-2 transition-all flex items-center gap-2 ${
+              tab === 'text' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <Code size={16} /> Share URL / Code
+          </button>
+        </div>
+      )}
+
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         
-        {/* Left: Upload Dashboard */}
-        <div className="w-full lg:w-[450px] shrink-0 space-y-6 lg:sticky lg:top-6">
+        {/* Left: Upload Settings */}
+        <div className="w-full lg:w-[400px] shrink-0 space-y-6 lg:sticky lg:top-6">
           <div className="bg-card border border-border p-6 rounded-2xl shadow-sm flex flex-col gap-6">
             
             <div className="space-y-4">
@@ -131,17 +228,19 @@ const TempShare = () => {
             {/* Status Panel */}
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs ${!file ? 'bg-primary text-white' : 'bg-emerald-500/20 text-emerald-500'}`}>
-                  {!file ? '1' : <CheckCircle2 size={16}/>}
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs ${(!file && !textVal.trim()) ? 'bg-primary text-white' : 'bg-emerald-500/20 text-emerald-500'}`}>
+                  {(!file && !textVal.trim()) ? '1' : <CheckCircle2 size={16}/>}
                 </div>
-                <span className={`text-sm font-semibold ${!file ? 'text-foreground' : 'text-muted-foreground'}`}>Select File</span>
+                <span className={`text-sm font-semibold ${(!file && !textVal.trim()) ? 'text-foreground' : 'text-muted-foreground'}`}>
+                  {tab === 'file' ? 'Select File' : 'Enter Content'}
+                </span>
               </div>
               
               <div className="flex items-center gap-3">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs ${file && !sharedLink ? 'bg-primary text-white' : sharedLink ? 'bg-emerald-500/20 text-emerald-500' : 'bg-muted text-muted-foreground'}`}>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs ${(file || textVal.trim()) && !sharedLink ? 'bg-primary text-white' : sharedLink ? 'bg-emerald-500/20 text-emerald-500' : 'bg-muted text-muted-foreground'}`}>
                   {sharedLink ? <CheckCircle2 size={16}/> : '2'}
                 </div>
-                <span className={`text-sm font-semibold ${file && !sharedLink ? 'text-foreground' : 'text-muted-foreground'}`}>Upload & Share</span>
+                <span className={`text-sm font-semibold ${(file || textVal.trim()) && !sharedLink ? 'text-foreground' : 'text-muted-foreground'}`}>Upload & Share</span>
               </div>
 
               <div className="flex items-center gap-3">
@@ -155,7 +254,7 @@ const TempShare = () => {
           </div>
         </div>
 
-        {/* Right: Dropzone / Result */}
+        {/* Right: Dropzone / Input / Result */}
         <div className="flex-1 w-full flex flex-col items-center justify-center min-h-[500px]">
           <AnimatePresence mode="wait">
             {!sharedLink ? (
@@ -164,47 +263,112 @@ const TempShare = () => {
                 initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
                 className="w-full h-full flex flex-col items-center justify-center"
               >
-                {!file ? (
-                  <div 
-                    onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}
-                    onClick={() => fileInputRef.current?.click()}
-                    className={`w-full max-w-2xl h-80 border-2 border-dashed rounded-3xl flex flex-col items-center justify-center cursor-pointer transition-all ${
-                      isDragging ? 'border-primary bg-primary/5 scale-[1.02]' : 'border-border bg-card hover:bg-muted/30 hover:border-primary/50'
-                    }`}
-                  >
-                    <input type="file" ref={fileInputRef} onChange={handleFileSelect} className="hidden" />
-                    <div className={`p-5 rounded-full mb-4 transition-colors ${isDragging ? 'bg-primary/20 text-primary' : 'bg-background shadow-sm text-muted-foreground'}`}>
-                      <UploadCloud size={40} />
+                {tab === 'file' ? (
+                  // File Share Tab
+                  !file ? (
+                    <div 
+                      onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}
+                      onClick={() => fileInputRef.current?.click()}
+                      className={`w-full max-w-2xl h-80 border-2 border-dashed rounded-3xl flex flex-col items-center justify-center cursor-pointer transition-all ${
+                        isDragging ? 'border-primary bg-primary/5 scale-[1.02]' : 'border-border bg-card hover:bg-muted/30 hover:border-primary/50'
+                      }`}
+                    >
+                      <input type="file" ref={fileInputRef} onChange={handleFileSelect} className="hidden" />
+                      <div className={`p-5 rounded-full mb-4 transition-colors ${isDragging ? 'bg-primary/20 text-primary' : 'bg-background shadow-sm text-muted-foreground'}`}>
+                        <UploadCloud size={40} />
+                      </div>
+                      <h3 className="text-xl font-bold text-foreground">Drag & Drop your file</h3>
+                      <p className="text-sm text-muted-foreground mt-2 px-8 text-center">
+                        Max file size: 10MB for guests, 50MB for members. Click to browse.
+                      </p>
                     </div>
-                    <h3 className="text-xl font-bold text-foreground">Drag & Drop your file</h3>
-                    <p className="text-sm text-muted-foreground mt-2 px-8 text-center">
-                      Max upload size is 50MB. Click to browse.
-                    </p>
-                  </div>
+                  ) : (
+                    <div className="w-full max-w-2xl bg-card border border-border p-8 rounded-3xl shadow-sm text-center relative overflow-hidden">
+                      <button onClick={() => setFile(null)} className="absolute top-6 right-6 text-muted-foreground hover:text-rose-500 transition-colors">
+                        <X size={24} />
+                      </button>
+
+                      <div className="w-20 h-20 mx-auto bg-primary/10 rounded-2xl flex items-center justify-center mb-6 text-primary shadow-inner">
+                        <File size={40} />
+                      </div>
+                      
+                      <h3 className="font-bold text-2xl text-foreground truncate px-12">{file.name}</h3>
+                      <p className="text-sm text-muted-foreground mt-2 uppercase tracking-wider font-semibold">
+                        {(file.size / (1024 * 1024)).toFixed(2)} MB • Ready to Upload
+                      </p>
+
+                      <div className="mt-8 flex justify-center">
+                        <button 
+                          onClick={handleUpload} disabled={isUploading}
+                          className={`w-full max-w-xs py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-md bg-primary hover:bg-primary/95 text-white shadow-primary/20 ${isUploading ? 'opacity-75 cursor-wait' : 'active:scale-95'}`}
+                        >
+                          {isUploading ? (
+                            <>Uploading File... <span className="animate-spin text-lg">⏳</span></>
+                          ) : (
+                            <><Share2 size={20}/> Upload & Share File</>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  )
                 ) : (
-                  <div className="w-full max-w-2xl bg-card border border-border p-8 rounded-3xl shadow-sm text-center relative overflow-hidden">
-                    <button onClick={() => setFile(null)} className="absolute top-6 right-6 text-muted-foreground hover:text-rose-500 transition-colors">
-                      <X size={24} />
-                    </button>
-
-                    <div className="w-20 h-20 mx-auto bg-primary/10 rounded-2xl flex items-center justify-center mb-6 text-primary shadow-inner">
-                      <File size={40} />
+                  // Text / URL / Code Share Tab
+                  <div className="w-full max-w-2xl bg-card border border-border p-8 rounded-3xl shadow-sm space-y-6">
+                    <div className="flex gap-4">
+                      <button
+                        onClick={() => setShareType('url')}
+                        className={`flex-1 py-3 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 border transition-all ${
+                          shareType === 'url' ? 'bg-primary/10 text-primary border-primary' : 'bg-background text-muted-foreground border-border hover:bg-muted'
+                        }`}
+                      >
+                        <Link size={16} /> URL Link
+                      </button>
+                      <button
+                        onClick={() => setShareType('code')}
+                        className={`flex-1 py-3 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 border transition-all ${
+                          shareType === 'code' ? 'bg-primary/10 text-primary border-primary' : 'bg-background text-muted-foreground border-border hover:bg-muted'
+                        }`}
+                      >
+                        <Code size={16} /> Code Snippet
+                      </button>
+                      <button
+                        onClick={() => setShareType('text')}
+                        className={`flex-1 py-3 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 border transition-all ${
+                          shareType === 'text' ? 'bg-primary/10 text-primary border-primary' : 'bg-background text-muted-foreground border-border hover:bg-muted'
+                        }`}
+                      >
+                        <File size={16} /> Plain Text
+                      </button>
                     </div>
-                    
-                    <h3 className="font-bold text-2xl text-foreground truncate px-12">{file.name}</h3>
-                    <p className="text-sm text-muted-foreground mt-2 uppercase tracking-wider font-semibold">
-                      {(file.size / (1024 * 1024)).toFixed(2)} MB • Ready to Upload
-                    </p>
 
-                    <div className="mt-8 flex justify-center">
-                      <button 
+                    <div className="space-y-2">
+                      <label className="text-sm font-semibold text-foreground">
+                        {shareType === 'url' ? 'Paste URL Link' : shareType === 'code' ? 'Paste Code' : 'Enter Text Content'}
+                      </label>
+                      <textarea
+                        rows={6}
+                        value={textVal}
+                        onChange={(e) => setTextVal(e.target.value)}
+                        placeholder={
+                          shareType === 'url' 
+                            ? 'https://google.com' 
+                            : shareType === 'code' 
+                            ? 'const sayHello = () => console.log("Hello!");' 
+                            : 'Type any message or note you wish to share temporarily...'
+                        }
+                        className="w-full bg-muted border border-border rounded-2xl p-4 text-sm font-semibold text-foreground focus:outline-none focus:border-primary resize-y"
+                      />
+                    </div>
+
+                    <div className="flex justify-center pt-2">
+                      <button
                         onClick={handleUpload} disabled={isUploading}
-                        className={`w-full max-w-xs py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-md bg-primary hover:bg-primary text-white shadow-primary/20 ${isUploading ? 'opacity-75 cursor-wait' : 'active:scale-95'}`}
+                        className={`w-full max-w-xs py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-md bg-primary hover:bg-primary/95 text-white shadow-primary/20 ${isUploading ? 'opacity-75 cursor-wait' : 'active:scale-95'}`}
                       >
                         {isUploading ? (
-                          <>Uploading... <span className="animate-spin text-lg">⏳</span></>
+                          <>Generating... <span className="animate-spin text-lg">⏳</span></>
                         ) : (
-                          <><Share2 size={20}/> Upload & Share</>
+                          <><Share2 size={20}/> Share Link</>
                         )}
                       </button>
                     </div>
@@ -212,6 +376,7 @@ const TempShare = () => {
                 )}
               </motion.div>
             ) : (
+              // Shared Result View (Link, QR Code, and Quick Share buttons)
               <motion.div
                 key="result-zone"
                 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
@@ -221,34 +386,63 @@ const TempShare = () => {
                   <CheckCircle2 size={32} />
                 </div>
                 
-                <h2 className="text-2xl font-black text-foreground mt-6 mb-2">Upload Successful!</h2>
-                <p className="text-muted-foreground text-sm font-medium">Scan the QR code or copy the link below.</p>
+                <h2 className="text-2xl font-black text-foreground mt-6 mb-2">Secure Link Created!</h2>
+                <p className="text-muted-foreground text-sm font-medium">Open on any device to view, redirect, or download instantly.</p>
 
-                <div className="mt-8 bg-white p-4 rounded-2xl inline-block mx-auto border-2 border-border shadow-sm relative group cursor-pointer" title="Scan to download">
-                  {/* Dynamic QR Code from API */}
-                  <img 
-                    src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(sharedLink)}&margin=10`} 
-                    alt="QR Code"
-                    className="w-48 h-48 rounded-lg group-hover:opacity-80 transition-opacity"
-                  />
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 rounded-2xl">
-                    <QrCode size={40} className="text-primary" />
+                {/* Local Client-Side QR Code */}
+                {qrCodeUrl && (
+                  <div className="mt-8 bg-white p-4 rounded-2xl inline-block mx-auto border-2 border-border shadow-sm relative group cursor-pointer" title="Scan to download">
+                    <img 
+                      src={qrCodeUrl} 
+                      alt="QR Code"
+                      className="w-48 h-48 rounded-lg group-hover:opacity-85 transition-opacity"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 rounded-2xl">
+                      <QrCode size={40} className="text-primary" />
+                    </div>
                   </div>
-                </div>
+                )}
 
-                <div className="mt-8 relative max-w-md mx-auto">
-                  <input 
-                    type="text"
-                    value={sharedLink}
-                    readOnly
-                    className="w-full bg-muted border border-border rounded-xl pl-4 pr-12 py-3 text-sm font-semibold text-foreground focus:outline-none focus:border-primary text-center"
-                  />
-                  <button 
-                    onClick={handleCopy}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-primary text-white rounded-lg hover:bg-primary transition-colors"
-                  >
-                    {isCopied ? <CheckCircle2 size={16} /> : <Clipboard size={16} />}
-                  </button>
+                <div className="mt-8 space-y-4">
+                  {/* Shareable Link Input with Copy Button */}
+                  <div className="relative max-w-md mx-auto">
+                    <input 
+                      type="text"
+                      value={sharedLink}
+                      readOnly
+                      className="w-full bg-muted border border-border rounded-xl pl-4 pr-12 py-3 text-sm font-semibold text-foreground focus:outline-none focus:border-primary text-center"
+                    />
+                    <button 
+                      onClick={handleCopy}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-primary text-white rounded-lg hover:bg-primary/95 transition-colors"
+                    >
+                      {isCopied ? <CheckCircle2 size={16} /> : <Clipboard size={16} />}
+                    </button>
+                  </div>
+
+                  {/* Share Options: WhatsApp, PC Native Share, Copy Link */}
+                  <div className="flex justify-center items-center gap-3 pt-2">
+                    <button
+                      onClick={handleCopy}
+                      className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-border bg-card hover:bg-muted text-foreground transition-all text-xs font-bold active:scale-95 shadow-sm"
+                    >
+                      <Clipboard size={14} /> Copy Link
+                    </button>
+                    
+                    <button
+                      onClick={handleWhatsAppShare}
+                      className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#25D366] hover:bg-[#20ba59] text-white transition-all text-xs font-bold active:scale-95 shadow-sm"
+                    >
+                      <MessageSquare size={14} /> WhatsApp
+                    </button>
+
+                    <button
+                      onClick={handleNativeShare}
+                      className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary hover:bg-primary/95 text-white transition-all text-xs font-bold active:scale-95 shadow-sm"
+                    >
+                      <Share2 size={14} /> Send Share
+                    </button>
+                  </div>
                 </div>
 
                 <div className="mt-6 flex flex-col items-center justify-center gap-2">
@@ -259,7 +453,7 @@ const TempShare = () => {
                     onClick={resetAll}
                     className="mt-4 text-xs font-bold text-muted-foreground hover:text-indigo-500 uppercase tracking-wider transition-colors"
                   >
-                    Upload Another File
+                    Create Another Share
                   </button>
                 </div>
 

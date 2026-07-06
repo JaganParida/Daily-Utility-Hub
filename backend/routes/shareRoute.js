@@ -6,7 +6,7 @@ const crypto = require('crypto');
 const fs = require('fs');
 
 const shareController = require('../controllers/shareController');
-const { protect } = require('../middleware/authMiddleware');
+const { protect, softProtect } = require('../middleware/authMiddleware');
 const { validateFileType } = require('../middleware/uploadMiddleware');
 
 const tempUploadDir = path.join(__dirname, '..', 'uploads', 'temp');
@@ -31,7 +31,8 @@ const upload = multer({
   limits: { fileSize: 50 * 1024 * 1024 } // 50MB max file size
 });
 
-router.post('/upload', protect, upload.single('file'), validateFileType, shareController.uploadFile);
+router.post('/upload', softProtect, upload.single('file'), validateFileType, shareController.uploadFile);
+router.get('/metadata/:id', shareController.getFileMetadata);
 router.get('/download/:id', shareController.downloadFile);
 
 module.exports = router;
