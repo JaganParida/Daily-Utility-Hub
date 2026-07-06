@@ -1,9 +1,23 @@
 import { useState, useRef, useEffect } from 'react';
-import { UploadCloud, File, CheckCircle2, Clipboard, Globe, X, QrCode, Share2, Timer, Code, Link, MessageSquare } from 'lucide-react';
+import { UploadCloud, File, CheckCircle2, Clipboard, Globe, X, QrCode, Share2, Timer, Code, Link } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../lib/api';
-import QRCode from 'qrcode';
+import * as QRCodeModule from 'qrcode';
+
+const QRCode = QRCodeModule.default || QRCodeModule;
+
+const WhatsAppIcon = ({ size = 16, className = '' }) => (
+  <svg
+    viewBox="0 0 24 24"
+    width={size}
+    height={size}
+    fill="currentColor"
+    className={className}
+  >
+    <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.717-1.456L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.625 1.451 5.403.002 9.803-4.381 9.805-9.782.001-2.592-1.01-5.031-2.846-6.87A9.742 9.742 0 0012.008 2.01c-5.402 0-9.802 4.382-9.805 9.783-.001 2.09.549 4.123 1.595 5.928l-1.047 3.825 3.925-1.029zm13.111-7.147c-.29-.145-1.713-.846-1.978-.941-.264-.096-.457-.145-.649.145-.191.29-.741.941-.909 1.134-.168.192-.336.216-.625.071-2.92-1.46-3.856-2.115-5.32-4.636-.39-.67.39-.623 1.117-2.072.12-.24.06-.45-.03-.594-.09-.145-.649-1.562-.889-2.14-.234-.563-.491-.486-.671-.495-.173-.008-.372-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.713-.699 1.953-1.373.24-.675.24-1.253.168-1.373-.072-.12-.264-.192-.553-.337z" />
+  </svg>
+);
 
 const TempShare = () => {
   const [tab, setTab] = useState('file'); // 'file' | 'text'
@@ -433,7 +447,7 @@ const TempShare = () => {
                       onClick={handleWhatsAppShare}
                       className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#25D366] hover:bg-[#20ba59] text-white transition-all text-xs font-bold active:scale-95 shadow-sm"
                     >
-                      <MessageSquare size={14} /> WhatsApp
+                      <WhatsAppIcon size={15} /> WhatsApp
                     </button>
 
                     <button
