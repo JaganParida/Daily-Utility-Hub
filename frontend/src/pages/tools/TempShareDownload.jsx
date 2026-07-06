@@ -16,9 +16,7 @@ const TempShareDownload = () => {
         const response = await api.get(`/share/metadata/${id}`);
         const data = response.data;
 
-        const backendBaseUrl = import.meta.env.VITE_API_URL 
-          ? import.meta.env.VITE_API_URL.replace(/\/api$/, '') 
-          : 'http://localhost:5000';
+        const backendBaseUrl = api.defaults.baseURL.replace(/\/api$/, '');
 
         const downloadUrl = `${backendBaseUrl}/api/share/download/${id}`;
 
@@ -119,7 +117,7 @@ const TempShareDownload = () => {
 
         <div className="space-y-4">
           <a 
-            href={`${import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace(/\/api$/, '') : 'http://localhost:5000'}/api/share/download/${id}`}
+            href={`${api.defaults.baseURL.replace(/\/api$/, '')}/api/share/download/${id}`}
             className="inline-flex w-full items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-bold bg-primary hover:bg-primary/95 text-white transition-all active:scale-95 shadow-md shadow-primary/15 text-sm"
           >
             <Download size={18} /> Restart Download
