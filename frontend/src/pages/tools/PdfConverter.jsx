@@ -138,8 +138,20 @@ const PdfConverter = () => {
         toast.success(`PDF converted to images! ZIP downloaded.`, { id: toastId });
         document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
       } else if (targetFormat === 'word') {
-        let htmlBody = '';
-        
+        const docxParagraphs = [];
+        const escapeXml = (unsafe) => {
+          return unsafe.replace(/[<>&'"]/g, (c) => {
+            switch (c) {
+              case '<': return '&lt;';
+              case '>': return '&gt;';
+              case '&': return '&amp;';
+              case '\'': return '&apos;';
+              case '"': return '&quot;';
+              default: return c;
+            }
+          });
+        };
+
         // Extract layout texts from all pages
         for (let i = 1; i <= totalPages; i++) {
           setProgress(Math.round(((i - 1) / totalPages) * 100));
@@ -159,7 +171,7 @@ const PdfConverter = () => {
           // Sort lines top to bottom (descending y)
           const sortedY = Object.keys(lines).sort((a, b) => b - a);
           
-          htmlBody += `<h2 style="color: #4b5563; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px; margin-top: 24px;">Page ${i}</h2>`;
+          docxParagraphs.push(`--- Page ${i} ---`);
           
           let currentParagraph = '';
           sortedY.forEach(y => {
@@ -168,62 +180,108 @@ const PdfConverter = () => {
             const lineText = lineItems.map(item => item.str).join(' ').trim();
             
             if (lineText) {
-              if (lineText.length < 55) {
-                if (currentParagraph) {
-                  htmlBody += `<p style="margin-bottom: 12px; line-height: 1.5;">${currentParagraph} ${lineText}</p>`;
-                  currentParagraph = '';
-                } else {
-                  htmlBody += `<p style="margin-bottom: 12px; line-height: 1.5;">${lineText}</p>`;
-                }
-              } else {
-                currentParagraph += (currentParagraph ? ' ' : '') + lineText;
+              const isShort = lineText.length < 60;
+              const endsWithPunctuation = /[.!?]$/.test(lineText);
+              
+              currentParagraph += (currentParagraph ? ' ' : '') + lineText;
+              
+              if (isShort || endsWithPunctuation) {
+                docxParagraphs.push(currentParagraph);
+                currentParagraph = '';
               }
             }
           });
           
           if (currentParagraph) {
-            htmlBody += `<p style="margin-bottom: 12px; line-height: 1.5;">${currentParagraph}</p>`;
+            docxParagraphs.push(currentParagraph);
           }
         }
         
-        setProgress(95);
-        toast.loading('Compiling Word XML...', { id: toastId });
+        setProgress(90);
+        toast.loading('Compiling Word document...', { id: toastId });
+
+        // Build OOXML document.xml content
+        let documentXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:body>`;
+
+        docxParagraphs.forEach(pText => {
+          const escaped = escapeXml(pText);
+          const isPageHeader = escaped.startsWith('--- Page');
+          
+          if (isPageHeader) {
+            documentXml += `
+    <w:p>
+      <w:pPr>
+        <w:spacing w:before="360" w:after="120"/>
+        <w:rPr>
+          <w:b/>
+          <w:color w:val="2563EB"/>
+          <w:sz w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:b/>
+          <w:color w:val="2563EB"/>
+          <w:sz w:val="24"/>
+        </w:rPr>
+        <w:t>${escaped}</w:t>
+      </w:r>
+    </w:p>`;
+          } else {
+            documentXml += `
+    <w:p>
+      <w:pPr>
+        <w:spacing w:after="160" w:line="240" w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri"/>
+          <w:sz w:val="22"/>
+        </w:rPr>
+        <w:t>${escaped}</w:t>
+      </w:r>
+    </w:p>`;
+          }
+        });
+
+        documentXml += `
+    <w:sectPr>
+      <w:pgSz w:w="12240" w:h="15840"/>
+      <w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440"/>
+    </w:sectPr>
+  </w:body>
+</w:document>`;
+
+        const contentTypesXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+  <Default Extension="xml" ContentType="application/xml"/>
+  <Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
+</Types>`;
+
+        const relsXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
+</Relationships>`;
+
+        const zip = new JSZip();
+        zip.file('[Content_Types].xml', contentTypesXml);
+        zip.file('_rels/.rels', relsXml);
+        zip.file('word/document.xml', documentXml);
+
+        const content = await zip.generateAsync({ type: 'blob' });
         
-        // Wrap HTML inside Microsoft Word specific HTML envelope
-        const htmlEnvelope = `
-          <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
-          <head>
-            <!--[if gte mso 9]>
-            <xml>
-              <w:WordDocument>
-                <w:View>Print</w:View>
-                <w:Zoom>100</w:Zoom>
-              </w:WordDocument>
-            </xml>
-            <![endif]-->
-            <title>Converted Document</title>
-            <style>
-              body { font-family: 'Calibri', 'Arial', sans-serif; font-size: 11pt; color: #1f2937; margin: 1in; }
-              h2 { font-size: 14pt; font-weight: bold; margin-bottom: 8px; }
-              p { margin: 0 0 10px 0; text-align: justify; }
-            </style>
-          </head>
-          <body>
-            ${htmlBody}
-          </body>
-          </html>
-        `;
-        
-        const blob = new Blob(['\ufeff' + htmlEnvelope], { type: 'application/msword' });
-        const downloadUrl = URL.createObjectURL(blob);
+        const downloadUrl = URL.createObjectURL(content);
         const link = document.createElement('a');
         link.href = downloadUrl;
-        link.download = `${file.name.replace('.pdf', '')}.doc`;
+        link.download = `${file.name.replace('.pdf', '')}.docx`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
         
-        toast.success(`Converted PDF to editable Word document!`, { id: toastId });
+        toast.success(`Converted PDF to editable Word (.docx) document!`, { id: toastId });
         document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
       }
     } catch (err) {
