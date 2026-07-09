@@ -2,6 +2,7 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import Topbar from './Topbar';
+import { toolCategories } from '../data/toolCategories';
 
 const Layout = () => {
   const location = useLocation();
@@ -67,6 +68,72 @@ const Layout = () => {
       }
     }
   }, [location.pathname, isDashboard, isTool, isProfile]);
+
+  // Centralized SEO Metadata Manager
+  useEffect(() => {
+    const getPageMetadata = (pathname) => {
+      const allTools = Object.values(toolCategories).flat();
+      const tool = allTools.find(t => t.to === pathname);
+      
+      if (tool) {
+        return {
+          title: `${tool.name} - Daily Utility Hub | Free Web Utility`,
+          description: `${tool.description} Fast, secure, and run completely client-side in your browser. No server uploads required.`
+        };
+      }
+      
+      if (pathname === '/' || pathname === '/dashboard') {
+        return {
+          title: 'Daily Utility Hub | Free Offline-First Developer & File Utilities',
+          description: 'Daily Utility Hub is a premium suite of free, secure, client-side tools for file sharing, PDF edits, developer utilities, and conversion tasks. 100% private.'
+        };
+      }
+      
+      if (pathname === '/profile') {
+        return {
+          title: 'User Profile - Daily Utility Hub',
+          description: 'Manage your Daily Utility Hub account profile details and usage configurations.'
+        };
+      }
+
+      return {
+        title: 'Daily Utility Hub',
+        description: 'Free, secure, client-side offline-first developer & file utilities.'
+      };
+    };
+
+    const meta = getPageMetadata(location.pathname);
+    
+    // Update Title tag
+    document.title = meta.title;
+    
+    // Update Meta Description tag
+    let metaDescription = document.querySelector('meta[name="description"]');
+    if (!metaDescription) {
+      metaDescription = document.createElement('meta');
+      metaDescription.setAttribute('name', 'description');
+      document.head.appendChild(metaDescription);
+    }
+    metaDescription.setAttribute('content', meta.description);
+
+    // Update Open Graph (OG) tags for rich snippets/shares
+    let ogTitle = document.querySelector('meta[property="og:title"]');
+    if (!ogTitle) {
+      ogTitle = document.createElement('meta');
+      ogTitle.setAttribute('property', 'og:title');
+      document.head.appendChild(ogTitle);
+    }
+    ogTitle.setAttribute('content', meta.title);
+
+    let ogDescription = document.querySelector('meta[property="og:description"]');
+    if (!ogDescription) {
+      ogDescription = document.createElement('meta');
+      ogDescription.setAttribute('property', 'og:description');
+      document.head.appendChild(ogDescription);
+    }
+    ogDescription.setAttribute('content', meta.description);
+    
+  }, [location.pathname]);
 
   // Disable browser-level zoom (Keyboard, Mouse wheel + Ctrl, and Mobile viewport gestures) - Small Devices Only
   useEffect(() => {
