@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://daily-utility-hub-orpin.vercel.app/sitemap.xml
