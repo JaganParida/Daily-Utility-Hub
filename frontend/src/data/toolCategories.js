@@ -38,6 +38,7 @@ export const toolCategories = {
     { name: 'HTML Live Preview', description: 'Build and sandbox HTML/CSS/JS with templates and live rendering.', icon: Code2, to: '/tools/html-previewer', color: 'text-blue-500 bg-blue-500/10' },
     { name: 'Markdown Previewer', description: 'Write Markdown notes, compile assignments, and print to PDF.', icon: FileText, to: '/tools/markdown-previewer', color: 'text-indigo-500 bg-indigo-500/10' },
     { name: 'JSON Type Converter', description: 'Convert JSON to TypeScript, MongoDB, Python, or SQL schemas.', icon: Code2, to: '/tools/type-converter', color: 'text-teal-500 bg-teal-500/10' },
+    { name: 'Google Search Builder', description: 'Build advanced Google search queries and dorks with UI parameters.', icon: Search, to: '/tools/google-search-builder', color: 'text-amber-500 bg-amber-500/10' },
   ],
   'PDF Tools': [
     { name: 'Edit PDF', description: 'Draw, write text, highlight, and redact elements directly.', icon: FileText, to: '/tools/pdf-edit', color: 'text-red-500 bg-red-500/10' },

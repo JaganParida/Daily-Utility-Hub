@@ -55,6 +55,7 @@ const EncoderDecoder = lazy(() => import('./pages/tools/EncoderDecoder'));
 const HtmlPreviewer = lazy(() => import('./pages/tools/HtmlPreviewer'));
 const MarkdownPreviewer = lazy(() => import('./pages/tools/MarkdownPreviewer'));
 const TypeConverter = lazy(() => import('./pages/tools/TypeConverter'));
+const GoogleSearchBuilder = lazy(() => import('./pages/tools/GoogleSearchBuilder'));
 
 // PDF Tools (Lazy loaded)
 const PdfEdit = lazy(() => import('./pages/tools/PdfEdit'));
@@ -196,6 +197,7 @@ function AnimatedRoutes() {
             <Route path="/tools/html-previewer" element={<HtmlPreviewer />} />
             <Route path="/tools/markdown-previewer" element={<MarkdownPreviewer />} />
             <Route path="/tools/type-converter" element={<TypeConverter />} />
+            <Route path="/tools/google-search-builder" element={<GoogleSearchBuilder />} />
 
             {/* New PDF Tools Routes */}
             <Route path="/tools/pdf-merge" element={<PdfMerge />} />
