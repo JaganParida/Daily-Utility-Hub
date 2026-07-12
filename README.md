@@ -1,6 +1,6 @@
 # 🛠️ Daily Utility Hub
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
+
 ![React](https://img.shields.io/badge/React-18.2.0-61DAFB?logo=react&logoColor=black)
 ![Node.js](https://img.shields.io/badge/Node.js-Express-339933?logo=node.js&logoColor=white)
 ![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?logo=mongodb&logoColor=white)
@@ -112,21 +112,4 @@ Start the frontend development server:
 npm run dev
 \`\`\`
 
----
 
-## 🤝 Contributing
-
-Contributions, issues, and feature requests are welcome! 
-Feel free to check the [issues page](../../issues) if you want to contribute.
-
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
----
-
-## 📜 License
-
-This project is licensed under the MIT License.
