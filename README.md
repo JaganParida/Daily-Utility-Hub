@@ -51,3 +51,12 @@ Experience the live application here: **[Daily Utility Hub](https://daily-utilit
 *(Ensure you have registered an account to access advanced features like personalized dashboards, tool pinning, and history tracking.)*
 
 ---
+
+<p align="center">
+  Built with ❤️ by Jagan Parida<br>
+  For any inquiries or support, please reach out via <a href="https://github.com/JaganParida/Daily-Utility-Hub/issues">GitHub Issues</a>.
+</p>
+
+<p align="center">
+  <i>Empowering your daily digital tasks, one click at a time.</i>
+</p>
