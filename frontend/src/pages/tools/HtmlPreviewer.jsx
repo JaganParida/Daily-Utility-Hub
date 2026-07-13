@@ -155,9 +155,38 @@ const HtmlPreviewer = () => {
   const [previewDevice, setPreviewDevice] = useState('desktop'); // 'desktop' | 'tablet' | 'phone'
   const [previewKey, setPreviewKey] = useState(0);
   const [srcDoc, setSrcDoc] = useState('');
+  const [shareExpiry, setShareExpiry] = useState(null);
+  const [timeLeft, setTimeLeft] = useState('');
 
   const containerRef = useRef(null);
   const [containerWidth, setContainerWidth] = useState(0);
+
+  useEffect(() => {
+    if (!shareExpiry) return;
+    
+    const updateTimer = () => {
+      const now = Date.now();
+      const diff = shareExpiry - now;
+      if (diff <= 0) {
+        setTimeLeft('Expired');
+        return false;
+      }
+      const h = Math.floor(diff / (1000 * 60 * 60));
+      const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const s = Math.floor((diff % (1000 * 60)) / 1000);
+      setTimeLeft(`Expires in ${h}h ${m}m ${s}s`);
+      return true;
+    };
+    
+    updateTimer();
+    const interval = setInterval(() => {
+      if (!updateTimer()) {
+        clearInterval(interval);
+      }
+    }, 1000);
+    
+    return () => clearInterval(interval);
+  }, [shareExpiry]);
 
   useEffect(() => {
     // Auto-select device based on initial viewport size
@@ -183,6 +212,7 @@ const HtmlPreviewer = () => {
             setHtml(data.h || '');
             setCss(data.c || '');
             setJs(data.j || '');
+            if (res.data.expiresAt) setShareExpiry(res.data.expiresAt);
             toast.success('Shared code loaded!', { id: toastId });
           } else {
             toast.error('Failed to load shared code.', { id: toastId });
@@ -225,13 +255,14 @@ const HtmlPreviewer = () => {
       const formData = new FormData();
       formData.append('file', blob, 'sandbox.json');
       formData.append('shareType', 'code');
-      formData.append('expiryHours', '168'); // 7 days
+      formData.append('expiryHours', '24'); // 24 hours
       
       const res = await api.post('/share/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       
       if (res.data && res.data.fileId) {
+         if (res.data.expiresAt) setShareExpiry(res.data.expiresAt);
          return `${window.location.origin}${window.location.pathname}?id=${res.data.fileId}`;
       }
       return null;
@@ -274,13 +305,14 @@ const HtmlPreviewer = () => {
       const formData = new FormData();
       formData.append('file', blob, 'sandbox.json');
       formData.append('shareType', 'code');
-      formData.append('expiryHours', '168');
+      formData.append('expiryHours', '24');
       
       const res = await api.post('/share/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       
       if (res.data && res.data.fileId) {
+        if (res.data.expiresAt) setShareExpiry(res.data.expiresAt);
         newWindow.location.href = `/tools/html-previewer/sandbox?id=${res.data.fileId}`;
         toast.dismiss(toastId);
       } else {
@@ -544,9 +576,16 @@ const HtmlPreviewer = () => {
 
             {/* Header / Device controls */}
             <div className="flex justify-between items-center border-b border-border/80 pb-3 flex-wrap gap-2">
-              <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                <Eye size={16} /> Live Sandbox View
-              </h3>
+              <div className="flex flex-col">
+                <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                  <Eye size={16} /> Live Sandbox View
+                </h3>
+                {shareExpiry && (
+                  <span className="text-xs font-mono text-orange-400 mt-1">
+                    {timeLeft}
+                  </span>
+                )}
+              </div>
 
               <div className="flex items-center gap-3">
                 {/* Actions */}
