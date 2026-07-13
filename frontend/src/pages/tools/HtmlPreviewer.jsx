@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import api from '../../lib/api';
 import { 
   Code2, Eye, Download, Play, RefreshCw, Trash2, 
   Sparkles, FileCode, Monitor, Tablet, Phone,
@@ -168,6 +169,30 @@ const HtmlPreviewer = () => {
     } else {
       setPreviewDevice('desktop');
     }
+
+    // Load shared code via API if ID is provided
+    const loadSharedCode = async () => {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('id');
+      if (id) {
+        const toastId = toast.loading('Loading shared code...');
+        try {
+          const res = await api.get(`/share/${id}`);
+          if (res.data && res.data.content) {
+            const data = JSON.parse(res.data.content);
+            setHtml(data.h || '');
+            setCss(data.c || '');
+            setJs(data.j || '');
+            toast.success('Shared code loaded!', { id: toastId });
+          } else {
+            toast.error('Failed to load shared code.', { id: toastId });
+          }
+        } catch (err) {
+          toast.error('Failed to load shared code.', { id: toastId });
+        }
+      }
+    };
+    loadSharedCode();
   }, []);
 
   useEffect(() => {
@@ -191,30 +216,39 @@ const HtmlPreviewer = () => {
     };
   }, []);
 
-  const generateShareLink = () => {
+  const generateShareLink = async () => {
     try {
       const data = { h: html, c: css, j: js };
       const str = JSON.stringify(data);
-      const utf8Bytes = new TextEncoder().encode(str);
-      const binString = Array.from(utf8Bytes).map((byte) => String.fromCharCode(byte)).join('');
-      const base64 = btoa(binString)
-        .replace(/\+/g, '-')
-        .replace(/\//g, '_')
-        .replace(/=/g, '');
-      return `${window.location.origin}${window.location.pathname}?code=${base64}`;
+      
+      const blob = new Blob([str], { type: 'application/json' });
+      const formData = new FormData();
+      formData.append('file', blob, 'sandbox.json');
+      formData.append('shareType', 'code');
+      formData.append('expiryHours', '168'); // 7 days
+      
+      const res = await api.post('/share/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      
+      if (res.data && res.data.fileId) {
+         return `${window.location.origin}${window.location.pathname}?id=${res.data.fileId}`;
+      }
+      return null;
     } catch (err) {
       console.error(err);
       return null;
     }
   };
 
-  const copyShareLink = () => {
-    const url = generateShareLink();
+  const copyShareLink = async () => {
+    const toastId = toast.loading('Generating secure link...');
+    const url = await generateShareLink();
     if (url) {
       navigator.clipboard.writeText(url);
-      toast.success('Share link copied to clipboard!');
+      toast.success('Share link copied to clipboard!', { id: toastId });
     } else {
-      toast.error('Failed to generate share link.');
+      toast.error('Failed to generate share link.', { id: toastId });
     }
   };
 
@@ -230,21 +264,33 @@ const HtmlPreviewer = () => {
     }
   };
 
-  const openInNewTab = () => {
+  const openInNewTab = async () => {
+    const toastId = toast.loading('Opening sandbox...');
+    const newWindow = window.open('', '_blank');
     try {
       const data = { h: html, c: css, j: js };
       const str = JSON.stringify(data);
-      const utf8Bytes = new TextEncoder().encode(str);
-      const binString = Array.from(utf8Bytes).map((byte) => String.fromCharCode(byte)).join('');
-      const base64 = btoa(binString)
-        .replace(/\+/g, '-')
-        .replace(/\//g, '_')
-        .replace(/=/g, '');
-      const url = `/tools/html-previewer/sandbox?code=${base64}`;
-      window.open(url, '_blank');
+      const blob = new Blob([str], { type: 'application/json' });
+      const formData = new FormData();
+      formData.append('file', blob, 'sandbox.json');
+      formData.append('shareType', 'code');
+      formData.append('expiryHours', '168');
+      
+      const res = await api.post('/share/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      
+      if (res.data && res.data.fileId) {
+        newWindow.location.href = `/tools/html-previewer/sandbox?id=${res.data.fileId}`;
+        toast.dismiss(toastId);
+      } else {
+        newWindow.close();
+        toast.error('Failed to open preview.', { id: toastId });
+      }
     } catch (err) {
       console.error(err);
-      toast.error('Failed to open preview in new tab.');
+      newWindow.close();
+      toast.error('Failed to open preview.', { id: toastId });
     }
   };
 

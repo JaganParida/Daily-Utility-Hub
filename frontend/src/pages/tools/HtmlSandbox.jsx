@@ -1,44 +1,57 @@
 import { useEffect, useState } from 'react';
+import api from '../../lib/api';
 
 const HtmlSandbox = () => {
   const [srcDoc, setSrcDoc] = useState('');
 
   useEffect(() => {
-    try {
-      const params = new URLSearchParams(window.location.search);
-      const codeParam = params.get('code');
-      if (codeParam) {
-        let base64 = codeParam.replace(/-/g, '+').replace(/_/g, '/');
-        while (base64.length % 4) {
-          base64 += '=';
-        }
-        const binString = atob(base64);
-        const bytes = Uint8Array.from(binString, (m) => m.codePointAt(0));
-        const str = new TextDecoder().decode(bytes);
-        const data = JSON.parse(str);
+    const loadCode = async () => {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const codeParam = params.get('code');
+        const idParam = params.get('id');
         
-        const isFullHtmlDocument = (data.h || '').trim().toLowerCase().startsWith('<!doctype html') || (data.h || '').trim().toLowerCase().startsWith('<html');
-        let combined = '';
-        if (isFullHtmlDocument) {
-           let fullHtml = data.h || '';
-           if (data.c && data.c.trim()) {
-             if (fullHtml.includes('</head>')) {
-               fullHtml = fullHtml.replace('</head>', `<style>${data.c}</style></head>`);
-             } else {
-               fullHtml += `<style>${data.c}</style>`;
+        let data = null;
+
+        if (idParam) {
+          const res = await api.get(`/share/${idParam}`);
+          if (res.data && res.data.content) {
+            data = JSON.parse(res.data.content);
+          }
+        } else if (codeParam) {
+          let base64 = codeParam.replace(/-/g, '+').replace(/_/g, '/');
+          while (base64.length % 4) {
+            base64 += '=';
+          }
+          const binString = atob(base64);
+          const bytes = Uint8Array.from(binString, (m) => m.codePointAt(0));
+          const str = new TextDecoder().decode(bytes);
+          data = JSON.parse(str);
+        }
+
+        if (data) {
+          const isFullHtmlDocument = (data.h || '').trim().toLowerCase().startsWith('<!doctype html') || (data.h || '').trim().toLowerCase().startsWith('<html');
+          let combined = '';
+          if (isFullHtmlDocument) {
+             let fullHtml = data.h || '';
+             if (data.c && data.c.trim()) {
+               if (fullHtml.includes('</head>')) {
+                 fullHtml = fullHtml.replace('</head>', `<style>${data.c}</style></head>`);
+               } else {
+                 fullHtml += `<style>${data.c}</style>`;
+               }
              }
-           }
-           if (data.j && data.j.trim()) {
-             const jsString = `<script>try { ${data.j} } catch(e) { console.error(e); }</script>`;
-             if (fullHtml.includes('</body>')) {
-               fullHtml = fullHtml.replace('</body>', `${jsString}</body>`);
-             } else {
-               fullHtml += jsString;
+             if (data.j && data.j.trim()) {
+               const jsString = `<script>try { ${data.j} } catch(e) { console.error(e); }</script>`;
+               if (fullHtml.includes('</body>')) {
+                 fullHtml = fullHtml.replace('</body>', `${jsString}</body>`);
+               } else {
+                 fullHtml += jsString;
+               }
              }
-           }
-           combined = fullHtml;
-        } else {
-           combined = `<!DOCTYPE html>
+             combined = fullHtml;
+          } else {
+             combined = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -57,12 +70,15 @@ const HtmlSandbox = () => {
   </script>
 </body>
 </html>`;
+          }
+          setSrcDoc(combined);
         }
-        setSrcDoc(combined);
+      } catch (err) {
+        console.error('Failed to load sandbox code:', err);
       }
-    } catch (err) {
-      console.error('Failed to parse sandbox code:', err);
-    }
+    };
+    
+    loadCode();
   }, []);
 
   return (
