@@ -14,7 +14,7 @@ const HtmlSandbox = () => {
         let data = null;
 
         if (idParam) {
-          const res = await api.get(`/share/${idParam}`);
+          const res = await api.get(`/share/metadata/${idParam}`);
           if (res.data && res.data.content) {
             data = JSON.parse(res.data.content);
           }

@@ -206,7 +206,7 @@ const HtmlPreviewer = () => {
       if (id) {
         const toastId = toast.loading('Loading shared code...');
         try {
-          const res = await api.get(`/share/${id}`);
+          const res = await api.get(`/share/metadata/${id}`);
           if (res.data && res.data.content) {
             const data = JSON.parse(res.data.content);
             setHtml(data.h || '');
