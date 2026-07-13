@@ -33,7 +33,7 @@ export const toolCategories = {
     { name: 'JSON Formatter', description: 'Format, validate, and minify JSON data instantly.', icon: Layers, to: '/tools/json-formatter', color: 'text-emerald-500 bg-emerald-500/10' },
     { name: 'Base64 Converter', description: 'Encode and decode Base64 data with file support.', icon: Hash, to: '/tools/base64-converter', color: 'text-blue-500 bg-blue-500/10' },
     { name: 'URL Converter', description: 'Safely encode and decode URLs and query parameters.', icon: Type, to: '/tools/url-converter', color: 'text-pink-500 bg-pink-500/10' },
-    { name: 'Bcrypt Generator', description: 'Generate and verify secure bcrypt password hashes.', icon: Key, to: '/tools/bcrypt-generator', color: 'text-rose-500 bg-rose-500/10' },
+
     { name: 'Cron Parser', description: 'Translate cron expressions into human-readable text.', icon: Layers, to: '/tools/cron-parser', color: 'text-purple-500 bg-purple-500/10' },
     { name: 'HTML Live Preview', description: 'Build and sandbox HTML/CSS/JS with templates and live rendering.', icon: Code2, to: '/tools/html-previewer', color: 'text-blue-500 bg-blue-500/10' },
     { name: 'Markdown Previewer', description: 'Write Markdown notes, compile assignments, and print to PDF.', icon: FileText, to: '/tools/markdown-previewer', color: 'text-indigo-500 bg-indigo-500/10' },

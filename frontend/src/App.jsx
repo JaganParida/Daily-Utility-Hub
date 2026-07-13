@@ -49,7 +49,7 @@ const JwtSecretGenerator = lazy(() => import('./pages/tools/JwtSecretGenerator')
 const JsonFormatter = lazy(() => import('./pages/tools/JsonFormatter'));
 const Base64Converter = lazy(() => import('./pages/tools/Base64Converter'));
 const UrlConverter = lazy(() => import('./pages/tools/UrlConverter'));
-const BcryptGenerator = lazy(() => import('./pages/tools/BcryptGenerator'));
+
 const CronParser = lazy(() => import('./pages/tools/CronParser'));
 const EncoderDecoder = lazy(() => import('./pages/tools/EncoderDecoder'));
 const HtmlPreviewer = lazy(() => import('./pages/tools/HtmlPreviewer'));
@@ -192,7 +192,7 @@ function AnimatedRoutes() {
             <Route path="/tools/json-formatter" element={<JsonFormatter />} />
             <Route path="/tools/base64-converter" element={<Base64Converter />} />
             <Route path="/tools/url-converter" element={<UrlConverter />} />
-            <Route path="/tools/bcrypt-generator" element={<BcryptGenerator />} />
+
             <Route path="/tools/cron-parser" element={<CronParser />} />
             <Route path="/tools/html-previewer" element={<HtmlPreviewer />} />
             <Route path="/tools/markdown-previewer" element={<MarkdownPreviewer />} />
