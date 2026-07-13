@@ -196,7 +196,8 @@ const HtmlPreviewer = () => {
       const data = { h: html, c: css, j: js };
       const str = JSON.stringify(data);
       const utf8Bytes = new TextEncoder().encode(str);
-      const base64 = btoa(String.fromCharCode(...utf8Bytes))
+      const binString = Array.from(utf8Bytes).map((byte) => String.fromCharCode(byte)).join('');
+      const base64 = btoa(binString)
         .replace(/\+/g, '-')
         .replace(/\//g, '_')
         .replace(/=/g, '');
@@ -234,7 +235,8 @@ const HtmlPreviewer = () => {
       const data = { h: html, c: css, j: js };
       const str = JSON.stringify(data);
       const utf8Bytes = new TextEncoder().encode(str);
-      const base64 = btoa(String.fromCharCode(...utf8Bytes))
+      const binString = Array.from(utf8Bytes).map((byte) => String.fromCharCode(byte)).join('');
+      const base64 = btoa(binString)
         .replace(/\+/g, '-')
         .replace(/\//g, '_')
         .replace(/=/g, '');
@@ -458,6 +460,8 @@ const HtmlPreviewer = () => {
               }
               #preview-frame-container:fullscreen iframe {
                 height: 100vh !important;
+                width: 100vw !important;
+                transform: none !important;
               }
             `}</style>
 
@@ -552,7 +556,7 @@ const HtmlPreviewer = () => {
                       key={previewKey}
                       title="html-preview"
                       className="border-none block"
-                      sandbox="allow-scripts"
+                      sandbox="allow-scripts allow-same-origin allow-forms allow-modals"
                       scrolling="yes"
                       style={
                         isDesktopOnLargeScreen
