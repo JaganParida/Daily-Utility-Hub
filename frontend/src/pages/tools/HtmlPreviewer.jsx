@@ -301,10 +301,11 @@ const HtmlPreviewer = () => {
   const copyShareLink = async () => {
     const url = generateHashLink();
     if (url) {
-      navigator.clipboard.writeText(url);
+      const previewUrl = url.replace('/tools/html-previewer', '/tools/html-previewer/sandbox');
+      navigator.clipboard.writeText(previewUrl);
       const expiresAt = Date.now() + 24 * 60 * 60 * 1000;
       setShareExpiry(expiresAt);
-      toast.success('Share link copied to clipboard!');
+      toast.success('Preview share link copied to clipboard!');
     } else {
       toast.error('Failed to generate share link.');
     }
