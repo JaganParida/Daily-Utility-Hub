@@ -157,6 +157,8 @@ const HtmlPreviewer = () => {
   const [srcDoc, setSrcDoc] = useState('');
   const [shareExpiry, setShareExpiry] = useState(null);
   const [timeLeft, setTimeLeft] = useState('');
+  const [lastSharedState, setLastSharedState] = useState(null); // { h, c, j, url, expiresAt }
+  const [isSharing, setIsSharing] = useState(false);
 
   const containerRef = useRef(null);
   const [containerWidth, setContainerWidth] = useState(0);
@@ -246,7 +248,19 @@ const HtmlPreviewer = () => {
     };
   }, []);
 
-  const generateShareLink = async () => {
+  const copyShareLink = async () => {
+    if (isSharing) return;
+
+    // Check cache
+    if (lastSharedState && lastSharedState.h === html && lastSharedState.c === css && lastSharedState.j === js) {
+      navigator.clipboard.writeText(lastSharedState.url);
+      setShareExpiry(lastSharedState.expiresAt);
+      toast.success('Share link copied to clipboard! (Cached)');
+      return;
+    }
+
+    setIsSharing(true);
+    const toastId = toast.loading('Generating secure link...');
     try {
       const data = { h: html, c: css, j: js };
       const str = JSON.stringify(data);
@@ -263,23 +277,18 @@ const HtmlPreviewer = () => {
       
       if (res.data && res.data.fileId) {
          if (res.data.expiresAt) setShareExpiry(res.data.expiresAt);
-         return `${window.location.origin}${window.location.pathname}?id=${res.data.fileId}`;
+         const shareUrl = `${window.location.origin}${window.location.pathname}?id=${res.data.fileId}`;
+         setLastSharedState({ h: html, c: css, j: js, url: shareUrl, expiresAt: res.data.expiresAt });
+         navigator.clipboard.writeText(shareUrl);
+         toast.success('Share link copied to clipboard!', { id: toastId });
+      } else {
+         toast.error('Failed to generate share link.', { id: toastId });
       }
-      return null;
     } catch (err) {
       console.error(err);
-      return null;
-    }
-  };
-
-  const copyShareLink = async () => {
-    const toastId = toast.loading('Generating secure link...');
-    const url = await generateShareLink();
-    if (url) {
-      navigator.clipboard.writeText(url);
-      toast.success('Share link copied to clipboard!', { id: toastId });
-    } else {
       toast.error('Failed to generate share link.', { id: toastId });
+    } finally {
+      setIsSharing(false);
     }
   };
 
@@ -296,6 +305,17 @@ const HtmlPreviewer = () => {
   };
 
   const openInNewTab = async () => {
+    if (isSharing) return;
+
+    // Check cache
+    if (lastSharedState && lastSharedState.h === html && lastSharedState.c === css && lastSharedState.j === js) {
+      const sandboxUrl = lastSharedState.url.replace('/tools/html-previewer', '/tools/html-previewer/sandbox');
+      window.open(sandboxUrl, '_blank');
+      setShareExpiry(lastSharedState.expiresAt);
+      return;
+    }
+
+    setIsSharing(true);
     const toastId = toast.loading('Opening sandbox...');
     const newWindow = window.open('', '_blank');
     try {
@@ -313,6 +333,9 @@ const HtmlPreviewer = () => {
       
       if (res.data && res.data.fileId) {
         if (res.data.expiresAt) setShareExpiry(res.data.expiresAt);
+        const shareUrl = `${window.location.origin}${window.location.pathname}?id=${res.data.fileId}`;
+        setLastSharedState({ h: html, c: css, j: js, url: shareUrl, expiresAt: res.data.expiresAt });
+        
         newWindow.location.href = `/tools/html-previewer/sandbox?id=${res.data.fileId}`;
         toast.dismiss(toastId);
       } else {
@@ -323,6 +346,8 @@ const HtmlPreviewer = () => {
       console.error(err);
       newWindow.close();
       toast.error('Failed to open preview.', { id: toastId });
+    } finally {
+      setIsSharing(false);
     }
   };
 
@@ -592,14 +617,16 @@ const HtmlPreviewer = () => {
                 <div className="flex bg-muted/20 rounded-lg p-0.5 border border-border/50">
                   <button
                     onClick={copyShareLink}
-                    className="p-1.5 rounded-md text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
+                    disabled={isSharing}
+                    className="p-1.5 rounded-md text-muted-foreground hover:text-foreground cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     title="Share Sandbox Link"
                   >
                     <Share2 size={13} />
                   </button>
                   <button
                     onClick={openInNewTab}
-                    className="p-1.5 rounded-md text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
+                    disabled={isSharing}
+                    className="p-1.5 rounded-md text-muted-foreground hover:text-foreground cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     title="Open in New Tab"
                   >
                     <ExternalLink size={13} />

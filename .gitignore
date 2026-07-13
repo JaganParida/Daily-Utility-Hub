@@ -6,3 +6,5 @@ tmp
 backend/tmp
 frontend/dist
 .DS_Store
+backend/uploads/
+backend/data/
