@@ -249,6 +249,28 @@ const HtmlPreviewer = () => {
   };
 
   const generateCombinedSrc = () => {
+    const isFullHtmlDocument = html.trim().toLowerCase().startsWith('<!doctype html') || html.trim().toLowerCase().startsWith('<html');
+    
+    if (isFullHtmlDocument) {
+      let fullHtml = html;
+      if (css.trim()) {
+        if (fullHtml.includes('</head>')) {
+          fullHtml = fullHtml.replace('</head>', `<style>${css}</style></head>`);
+        } else {
+          fullHtml += `<style>${css}</style>`;
+        }
+      }
+      if (js.trim()) {
+        const jsString = `<script>try { ${js} } catch(e) { console.error(e); }</script>`;
+        if (fullHtml.includes('</body>')) {
+          fullHtml = fullHtml.replace('</body>', `${jsString}</body>`);
+        } else {
+          fullHtml += jsString;
+        }
+      }
+      return fullHtml;
+    }
+
     return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -311,7 +333,15 @@ const HtmlPreviewer = () => {
 
   const downloadZip = async () => {
     const zip = new JSZip();
-    zip.file('index.html', `<!DOCTYPE html>
+    
+    const isFullHtmlDocument = html.trim().toLowerCase().startsWith('<!doctype html') || html.trim().toLowerCase().startsWith('<html');
+    
+    if (isFullHtmlDocument) {
+      zip.file('index.html', html);
+      if (css.trim()) zip.file('style.css', css);
+      if (js.trim()) zip.file('script.js', js);
+    } else {
+      zip.file('index.html', `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -324,8 +354,9 @@ const HtmlPreviewer = () => {
   <script src="script.js"></script>
 </body>
 </html>`);
-    zip.file('style.css', css);
-    zip.file('script.js', js);
+      zip.file('style.css', css);
+      zip.file('script.js', js);
+    }
 
     const content = await zip.generateAsync({ type: 'blob' });
     const url = URL.createObjectURL(content);

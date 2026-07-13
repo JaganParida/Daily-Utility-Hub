@@ -17,8 +17,28 @@ const HtmlSandbox = () => {
         const str = new TextDecoder().decode(bytes);
         const data = JSON.parse(str);
         
-        // Reconstruct the combined HTML
-        const combined = `<!DOCTYPE html>
+        const isFullHtmlDocument = (data.h || '').trim().toLowerCase().startsWith('<!doctype html') || (data.h || '').trim().toLowerCase().startsWith('<html');
+        let combined = '';
+        if (isFullHtmlDocument) {
+           let fullHtml = data.h || '';
+           if (data.c && data.c.trim()) {
+             if (fullHtml.includes('</head>')) {
+               fullHtml = fullHtml.replace('</head>', `<style>${data.c}</style></head>`);
+             } else {
+               fullHtml += `<style>${data.c}</style>`;
+             }
+           }
+           if (data.j && data.j.trim()) {
+             const jsString = `<script>try { ${data.j} } catch(e) { console.error(e); }</script>`;
+             if (fullHtml.includes('</body>')) {
+               fullHtml = fullHtml.replace('</body>', `${jsString}</body>`);
+             } else {
+               fullHtml += jsString;
+             }
+           }
+           combined = fullHtml;
+        } else {
+           combined = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -37,6 +57,7 @@ const HtmlSandbox = () => {
   </script>
 </body>
 </html>`;
+        }
         setSrcDoc(combined);
       }
     } catch (err) {
