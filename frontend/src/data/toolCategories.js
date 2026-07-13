@@ -29,7 +29,7 @@ export const toolCategories = {
     { name: 'Regex Tester', description: 'Test regex, highlight matches, and generate code.', icon: Type, to: '/tools/regex-tester', color: 'text-sky-500 bg-sky-500/10' },
     { name: 'Color Picker', description: 'WCAG contrast checker and palette generator.', icon: Layers, to: '/tools/color-picker', color: 'text-pink-500 bg-pink-500/10' },
     { name: 'Gradient Generator', description: 'Create multi-stop linear, radial, and conic gradients.', icon: Layers, to: '/tools/gradient-generator', color: 'text-fuchsia-500 bg-fuchsia-500/10' },
-    { name: 'API Key Generator', description: 'Generate secure cryptographically strong API keys.', icon: Key, to: '/tools/api-key-generator', color: 'text-orange-500 bg-orange-500/10' },
+    { name: 'JWT Secret Generator', description: 'Generate cryptographically secure, high-entropy JWT secrets.', icon: Key, to: '/tools/jwt-secret-generator', color: 'text-orange-500 bg-orange-500/10' },
     { name: 'JSON Formatter', description: 'Format, validate, and minify JSON data instantly.', icon: Layers, to: '/tools/json-formatter', color: 'text-emerald-500 bg-emerald-500/10' },
     { name: 'Base64 Converter', description: 'Encode and decode Base64 data with file support.', icon: Hash, to: '/tools/base64-converter', color: 'text-blue-500 bg-blue-500/10' },
     { name: 'URL Converter', description: 'Safely encode and decode URLs and query parameters.', icon: Type, to: '/tools/url-converter', color: 'text-pink-500 bg-pink-500/10' },

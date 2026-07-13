@@ -45,7 +45,7 @@ const JwtDecoder = lazy(() => import('./pages/tools/JwtDecoder'));
 const RegexTester = lazy(() => import('./pages/tools/RegexTester'));
 const ColorPicker = lazy(() => import('./pages/tools/ColorPicker'));
 const GradientGenerator = lazy(() => import('./pages/tools/GradientGenerator'));
-const ApiKeyGenerator = lazy(() => import('./pages/tools/ApiKeyGenerator'));
+const JwtSecretGenerator = lazy(() => import('./pages/tools/JwtSecretGenerator'));
 const JsonFormatter = lazy(() => import('./pages/tools/JsonFormatter'));
 const Base64Converter = lazy(() => import('./pages/tools/Base64Converter'));
 const UrlConverter = lazy(() => import('./pages/tools/UrlConverter'));
@@ -188,7 +188,7 @@ function AnimatedRoutes() {
             <Route path="/tools/image-color-extractor" element={<ImageColorExtractor />} />
             
             {/* New Dev Tools Routes */}
-            <Route path="/tools/api-key-generator" element={<ApiKeyGenerator />} />
+            <Route path="/tools/jwt-secret-generator" element={<JwtSecretGenerator />} />
             <Route path="/tools/json-formatter" element={<JsonFormatter />} />
             <Route path="/tools/base64-converter" element={<Base64Converter />} />
             <Route path="/tools/url-converter" element={<UrlConverter />} />

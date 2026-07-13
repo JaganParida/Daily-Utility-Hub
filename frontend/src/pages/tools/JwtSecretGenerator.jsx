@@ -1,79 +1,97 @@
 import { useState, useEffect, useCallback } from 'react';
 import { 
   Key, Copy, RefreshCw, Check, Settings2, 
-  ChevronDown, ShieldAlert, Sparkles, Download 
+  ChevronDown, ShieldAlert, Sparkles, Download, Info
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 
-const ApiKeyGenerator = () => {
+const JwtSecretGenerator = () => {
   const [secret, setSecret] = useState('');
   const [copied, setCopied] = useState(false);
-  const [length, setLength] = useState(64);
-  const [format, setFormat] = useState('hex'); // 'hex' | 'base64' | 'alphanumeric' | 'uuid'
+  const [bitLength, setBitLength] = useState(512); // Default to 512 bits (HS512)
+  const [format, setFormat] = useState('base64url'); // Default to base64url for JWT standard
   
   // Advanced features
   const [prefix, setPrefix] = useState('');
   const [suffix, setSuffix] = useState('');
-  const [batchCount, setBatchCount] = useState(1); // Generate 1-10 keys
+  const [batchCount, setBatchCount] = useState(1); // Generate 1-10 secrets
   const [batchSecrets, setBatchSecrets] = useState([]);
-  const [excludeAmbiguous, setExcludeAmbiguous] = useState(false);
   const [copiedIndex, setCopiedIndex] = useState(-1);
   const [history, setHistory] = useState([]);
 
-  const generateSingleKey = useCallback((len, fmt, pref = '', suff = '', exclude = false) => {
-    let result = '';
-    
-    if (fmt === 'uuid') {
-      const uuid = crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        const r = Math.random() * 16 | 0;
-        const v = c === 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-      });
-      return (pref ? pref : '') + uuid + (suff ? suff : '');
-    }
-
-    let charset = '';
-    if (fmt === 'hex') {
-      charset = '0123456789abcdef';
-    } else if (fmt === 'alphanumeric') {
-      charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    } else if (fmt === 'base64') {
-      charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-    }
-
-    if (exclude) {
-      // Exclude ambiguous characters: 0, O, o, l, 1, I, i, +, /
-      charset = charset.replace(/[0Oo1lIi+/]/g, '');
-    }
-
-    const array = new Uint32Array(len);
+  const generateSingleSecret = useCallback((bits, fmt, pref = '', suff = '') => {
+    const byteLength = bits / 8;
+    const array = new Uint8Array(byteLength);
     window.crypto.getRandomValues(array);
-    for (let i = 0; i < len; i++) {
-      result += charset.charAt(array[i] % charset.length);
+    let result = '';
+
+    if (fmt === 'hex') {
+      result = Array.from(array).map(b => b.toString(16).padStart(2, '0')).join('');
+    } else if (fmt === 'base64') {
+      const binString = Array.from(array).map(b => String.fromCharCode(b)).join('');
+      result = btoa(binString);
+    } else if (fmt === 'base64url') {
+      const binString = Array.from(array).map(b => String.fromCharCode(b)).join('');
+      result = btoa(binString)
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')
+        .replace(/=/g, '');
+    } else if (fmt === 'plain') {
+      const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:,.<>?';
+      const randomArray = new Uint32Array(byteLength);
+      window.crypto.getRandomValues(randomArray);
+      for (let i = 0; i < byteLength; i++) {
+        result += charset.charAt(randomArray[i] % charset.length);
+      }
+    } else if (fmt === 'passphrase') {
+      const wordList = [
+        'correct', 'horse', 'battery', 'staple', 'quantum', 'cipher', 'crypto', 'entropy', 'token', 'secret',
+        'plasma', 'galaxy', 'neon', 'matrix', 'vortex', 'shadow', 'fusion', 'cosmic', 'orbit', 'cyber',
+        'kernel', 'beacon', 'vector', 'vertex', 'phantom', 'omega', 'aurora', 'nexus', 'pulse', 'sonic',
+        'stellar', 'horizon', 'zenith', 'apex', 'magnet', 'gravity', 'silicon', 'binary', 'pixel', 'radar',
+        'anchor', 'shield', 'helmet', 'armor', 'sword', 'castle', 'temple', 'forest', 'valley', 'canyon',
+        'glacier', 'island', 'volcano', 'desert', 'oasis', 'safari', 'jungle', 'ocean', 'river', 'stream',
+        'breeze', 'cyclone', 'typhoon', 'tornado', 'monsoon', 'harvest', 'winter', 'autumn', 'summer', 'spring',
+        'marble', 'granite', 'crystal', 'diamond', 'emerald', 'sapphire', 'ruby', 'quartz', 'amber', 'silver',
+        'copper', 'bronze', 'platinum', 'carbon', 'oxygen', 'helium', 'nitrogen', 'hydrogen', 'sodium', 'cobalt',
+        'safeguard', 'fortress', 'barrier', 'sentinel', 'patrol', 'outpost', 'citadel', 'bastion', 'rampart', 'garrison',
+        'cipher', 'enigma', 'cryptic', 'decode', 'encode', 'verify', 'validate', 'certify', 'authenticate', 'protocol',
+        'gateway', 'firewall', 'sandbox', 'network', 'routing', 'domain', 'address', 'console', 'terminal', 'compiler',
+        'database', 'query', 'indexing', 'cluster', 'node', 'client', 'server', 'request', 'response', 'payload',
+        'header', 'footer', 'cookie', 'session', 'storage', 'caching', 'latency', 'bandwidth', 'packet', 'socket'
+      ];
+      const wordsCount = Math.max(4, Math.round(bits / 32));
+      const randomArray = new Uint32Array(wordsCount);
+      window.crypto.getRandomValues(randomArray);
+      const chosenWords = [];
+      for (let i = 0; i < wordsCount; i++) {
+        chosenWords.push(wordList[randomArray[i] % wordList.length]);
+      }
+      result = chosenWords.join('-');
     }
 
     return (pref ? pref : '') + result + (suff ? suff : '');
   }, []);
 
-  const generateKeys = useCallback(() => {
-    const keys = [];
+  const generateSecrets = useCallback(() => {
+    const secrets = [];
     for (let i = 0; i < batchCount; i++) {
-      keys.push(generateSingleKey(length, format, prefix, suffix, excludeAmbiguous));
+      secrets.push(generateSingleSecret(bitLength, format, prefix, suffix));
     }
     
-    setSecret(keys[0]);
-    setBatchSecrets(keys);
+    setSecret(secrets[0]);
+    setBatchSecrets(secrets);
     setCopied(false);
 
-    if (!history.includes(keys[0])) {
-      setHistory(prev => [keys[0], ...prev.slice(0, 9)]);
+    if (!history.includes(secrets[0])) {
+      setHistory(prev => [secrets[0], ...prev.slice(0, 9)]);
     }
-  }, [batchCount, length, format, prefix, suffix, excludeAmbiguous, generateSingleKey, history]);
+  }, [batchCount, bitLength, format, prefix, suffix, generateSingleSecret, history]);
 
   useEffect(() => {
-    generateKeys();
-  }, [length, format, batchCount, excludeAmbiguous]);
+    generateSecrets();
+  }, [bitLength, format, batchCount]);
 
   const handleCopySingle = (text, idx = -1) => {
     navigator.clipboard.writeText(text);
@@ -84,50 +102,46 @@ const ApiKeyGenerator = () => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
-    toast.success('Key copied to clipboard!');
+    toast.success('JWT Secret copied to clipboard!');
   };
 
   const getStrengthMetrics = () => {
-    if (format === 'uuid') return { entropy: 122, label: 'Very Strong', color: 'bg-primary text-emerald-500' };
-    
-    let entropyPerChar = 4; // Hex = log2(16)
-    if (format === 'alphanumeric') entropyPerChar = 5.95; // log2(62)
-    if (format === 'base64') entropyPerChar = 6; // log2(64)
-    
-    if (excludeAmbiguous) entropyPerChar -= 0.5;
-
-    const totalEntropy = Math.round(length * entropyPerChar);
+    let entropy = bitLength;
+    if (format === 'passphrase') {
+      const wordsCount = Math.max(4, Math.round(bitLength / 32));
+      entropy = wordsCount * 7.17; 
+    }
     
     let label = 'Weak';
     let color = 'bg-red-500 text-red-500';
-    if (totalEntropy > 120) {
-      label = 'Very Strong';
+    if (entropy >= 256) {
+      label = 'Unbreakable (Ultra Secure)';
       color = 'bg-emerald-500 text-emerald-500';
-    } else if (totalEntropy > 80) {
+    } else if (entropy >= 128) {
       label = 'Strong';
       color = 'bg-green-500 text-green-500';
-    } else if (totalEntropy > 60) {
-      label = 'Moderate';
+    } else {
+      label = 'Weak';
       color = 'bg-amber-500 text-amber-500';
     }
 
-    return { entropy: totalEntropy, label, color };
+    return { entropy: Math.round(entropy), label, color };
   };
 
   const strength = getStrengthMetrics();
 
   const downloadEnv = () => {
-    const lines = batchSecrets.map((k, i) => `API_KEY_${i + 1}=${k}`).join('\n');
+    const lines = batchSecrets.map((k, i) => `JWT_SECRET_${i + 1}=${k}`).join('\n');
     const blob = new Blob([lines], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = '.env.keys';
+    a.download = '.env.jwt';
     document.body.appendChild(a);
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
-    toast.success('Downloaded .env.keys file');
+    toast.success('Downloaded .env.jwt file');
   };
 
   return (
@@ -143,8 +157,8 @@ const ApiKeyGenerator = () => {
           <Key size={24} />
         </div>
         <div>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter text-foreground">API Key & Secret Generator</h1>
-          <p className="text-muted-foreground mt-1 text-xs md:text-sm">Generate secure, cryptographically random strings for API credentials, JWT secrets, and salt values.</p>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter text-foreground">JWT Secret Key Generator</h1>
+          <p className="text-muted-foreground mt-1 text-xs md:text-sm">Generate high-entropy, cryptographically secure secrets to sign JSON Web Tokens (JWTs) and secure user authentication.</p>
         </div>
       </div>
 
@@ -152,11 +166,11 @@ const ApiKeyGenerator = () => {
         {/* Left Workspace */}
         <div className="flex-1 w-full space-y-6">
           
-          {/* Main Key Display Box */}
+          {/* Main Secret Display Box */}
           <div className="bg-card border border-border/80 p-6 rounded-2xl shadow-sm space-y-5">
             <div className="flex items-center justify-between border-b border-border/80 pb-3 mb-4">
               <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                <Sparkles size={14} className="text-primary" /> Generated Credential
+                <Sparkles size={14} className="text-primary" /> Generated JWT Secret
               </h3>
             </div>
             
@@ -176,7 +190,7 @@ const ApiKeyGenerator = () => {
             {/* Strength metrics */}
             <div className="flex items-center justify-between text-xs pt-1">
               <span className="text-muted-foreground font-semibold flex items-center gap-1">
-                Strength: <span className={`font-bold ${strength.color.split(' ')[1]}`}>{strength.label}</span>
+                Security Rating: <span className={`font-bold ${strength.color.split(' ')[1]}`}>{strength.label}</span>
               </span>
               <span className="font-mono text-muted-foreground font-bold">~{strength.entropy} bits entropy</span>
             </div>
@@ -185,8 +199,29 @@ const ApiKeyGenerator = () => {
             <div className="h-2 w-full bg-muted rounded-full overflow-hidden shadow-inner">
               <div 
                 className={`h-full transition-all duration-300 ${strength.color.split(' ')[0]}`}
-                style={{ width: `${Math.min(100, (strength.entropy / 256) * 100)}%` }}
+                style={{ width: `${Math.min(100, (strength.entropy / 512) * 100)}%` }}
               />
+            </div>
+          </div>
+
+          {/* Educational Security Recommendation */}
+          <div className="bg-card border border-border/80 p-6 rounded-2xl shadow-sm space-y-4">
+            <div className="flex items-center gap-2 text-primary font-bold text-sm">
+              <Info size={16} />
+              <span>Security Guidelines for JWT Signing</span>
+            </div>
+            <div className="text-xs text-muted-foreground space-y-2 leading-relaxed">
+              <p>
+                <strong>Algorithm Requirements:</strong> The HMAC-SHA algorithms require minimum secret key lengths for cryptographic safety:
+              </p>
+              <ul className="list-disc pl-5 space-y-1 font-mono text-[11px]">
+                <li>HS256: Requires a minimum of 256 bits (32 bytes) secret.</li>
+                <li>HS384: Requires a minimum of 384 bits (48 bytes) secret.</li>
+                <li>HS512: Requires a minimum of 512 bits (64 bytes) secret.</li>
+              </ul>
+              <p className="mt-2 text-red-400 font-semibold">
+                ⚠️ Weak secrets make your JWTs vulnerable to brute-force attacks by hackers using tools like Hashcat. Always generate at least 512 bits.
+              </p>
             </div>
           </div>
 
@@ -225,28 +260,56 @@ const ApiKeyGenerator = () => {
           <div className="bg-card border border-border/80 p-6 rounded-2xl shadow-sm space-y-6">
             <div className="flex items-center justify-between border-b border-border/80 pb-3">
               <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                <Settings2 size={16} /> generator settings
+                <Settings2 size={16} /> Generator Settings
               </h3>
             </div>
 
-            {/* Key format selector */}
+            {/* Bit length selector */}
             <div className="space-y-3">
-              <label className="text-sm font-semibold text-foreground">Format Type</label>
+              <label className="text-sm font-semibold text-foreground">Bit Length (Secret Strength)</label>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { id: 256, label: '256-bit', desc: 'HS256 Min' },
+                  { id: 384, label: '384-bit', desc: 'HS384 Min' },
+                  { id: 512, label: '512-bit', desc: 'HS512 Recommended' },
+                  { id: 1024, label: '1024-bit', desc: 'Ultra Strong' },
+                  { id: 2048, label: '2048-bit', desc: 'Max Paranoid' }
+                ].map(bits => (
+                  <button
+                    key={bits.id}
+                    onClick={() => setBitLength(bits.id)}
+                    className={`py-2 text-xs font-bold rounded-xl border flex flex-col items-center justify-center transition-all cursor-pointer ${
+                      bitLength === bits.id
+                        ? 'bg-primary/10 border-primary text-primary shadow-sm'
+                        : 'bg-background border-border/80 text-foreground hover:bg-muted'
+                    }`}
+                  >
+                    <span>{bits.label}</span>
+                    <span className="text-[9px] opacity-75 font-normal">{bits.desc}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Key format selector */}
+            <div className="space-y-3 pt-2 border-t border-border/50">
+              <label className="text-sm font-semibold text-foreground">Format Encoding</label>
               <div className="grid grid-cols-2 gap-2">
                 {[
+                  { id: 'base64url', label: 'Base64URL (JWT standard)' },
+                  { id: 'base64', label: 'Base64 Standard' },
                   { id: 'hex', label: 'Hexadecimal' },
-                  { id: 'base64', label: 'Base64' },
-                  { id: 'alphanumeric', label: 'Alphanumeric' },
-                  { id: 'uuid', label: 'UUID v4' }
+                  { id: 'plain', label: 'Plain Text (Secure Alphanumeric)' },
+                  { id: 'passphrase', label: 'Memorable Passphrase' }
                 ].map(fmt => (
                   <button
                     key={fmt.id}
                     onClick={() => setFormat(fmt.id)}
-                    className={`py-2.5 text-xs font-bold rounded-xl border transition-all cursor-pointer ${
+                    className={`py-2.5 px-2 text-xs font-bold rounded-xl border transition-all cursor-pointer text-center leading-tight ${
                       format === fmt.id
                         ? 'bg-primary/10 border-primary text-primary shadow-sm'
                         : 'bg-background border-border/80 text-foreground hover:bg-muted'
-                    }`}
+                    } ${fmt.id === 'base64url' ? 'col-span-2' : ''}`}
                   >
                     {fmt.label}
                   </button>
@@ -254,74 +317,26 @@ const ApiKeyGenerator = () => {
               </div>
             </div>
 
-            {/* Key length slider */}
-            {format !== 'uuid' && (
-              <div className="space-y-2 pt-2">
-                <div className="flex justify-between items-center text-xs">
-                  <label className="text-sm font-semibold text-foreground">Length (Characters)</label>
-                  <span className="font-bold font-mono bg-muted/60 px-2 py-0.5 rounded">{length}</span>
-                </div>
-                <input
-                  type="range"
-                  min="16"
-                  max="128"
-                  step="8"
-                  value={length}
-                  onChange={(e) => setLength(Number(e.target.value))}
-                  className="w-full h-2.5 rounded-lg appearance-none cursor-pointer outline-none shadow-sm"
-                  style={{
-                    background: `linear-gradient(to right, var(--primary) ${Math.round(((length-16)/(128-16))*100)}%, var(--muted) ${Math.round(((length-16)/(128-16))*100)}%)`
-                  }}
-                />
-              </div>
-            )}
-
-            {/* Advanced configurations */}
-            <div className="space-y-3 pt-2 border-t border-border/50">
-              <label className="text-sm font-semibold text-foreground">Prefix / Suffix</label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  placeholder="prefix_"
-                  value={prefix}
-                  onChange={(e) => setPrefix(e.target.value)}
-                  className="w-1/2 p-3 bg-background border border-border/80 rounded-xl text-xs font-mono outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/50 text-foreground"
-                />
-                <input
-                  type="text"
-                  placeholder="_suffix"
-                  value={suffix}
-                  onChange={(e) => setSuffix(e.target.value)}
-                  className="w-1/2 p-3 bg-background border border-border/80 rounded-xl text-xs font-mono outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/50 text-foreground"
-                />
-              </div>
-            </div>
-
-            {/* Exclude ambiguous characters */}
-            {format !== 'uuid' && (
-              <div className="flex items-center justify-between pt-2 border-t border-border/50">
-                <div className="flex items-center gap-2">
-                  <ShieldAlert size={16} className="text-muted-foreground" />
-                  <div>
-                    <label className="text-sm font-semibold text-foreground block">Exclude Ambiguous</label>
-                    <p className="text-[11px] text-muted-foreground leading-tight mt-0.5">
-                      Avoid 0, O, o, l, 1, I
-                    </p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setExcludeAmbiguous(!excludeAmbiguous)}
-                  className={`relative w-11 h-6 rounded-full transition-colors shrink-0 cursor-pointer ${
-                    excludeAmbiguous ? 'bg-primary' : 'bg-muted/50 border border-border'
-                  }`}
-                >
-                  <motion.div
-                    layout
-                    className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md animate-none"
-                    style={{ left: excludeAmbiguous ? 'calc(100% - 22px)' : '2px' }}
-                    transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+            {/* Prefix / Suffix */}
+            {format !== 'passphrase' && (
+              <div className="space-y-3 pt-2 border-t border-border/50">
+                <label className="text-sm font-semibold text-foreground">Prefix / Suffix</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="prefix_"
+                    value={prefix}
+                    onChange={(e) => setPrefix(e.target.value)}
+                    className="w-1/2 p-3 bg-background border border-border/80 rounded-xl text-xs font-mono outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/50 text-foreground"
                   />
-                </button>
+                  <input
+                    type="text"
+                    placeholder="_suffix"
+                    value={suffix}
+                    onChange={(e) => setSuffix(e.target.value)}
+                    className="w-1/2 p-3 bg-background border border-border/80 rounded-xl text-xs font-mono outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/50 text-foreground"
+                  />
+                </div>
               </div>
             )}
 
@@ -334,7 +349,7 @@ const ApiKeyGenerator = () => {
                   onChange={(e) => setBatchCount(Number(e.target.value))}
                   className="w-full appearance-none bg-muted/20 border border-border/50 group-hover:border-border p-3.5 pl-4 pr-10 rounded-xl text-sm font-semibold text-foreground focus:ring-2 focus:ring-primary/45 outline-none transition-all cursor-pointer shadow-sm"
                 >
-                  <option value={1} className="bg-background text-foreground">Generate Single Key (1)</option>
+                  <option value={1} className="bg-background text-foreground">Generate Single Secret (1)</option>
                   <option value={5} className="bg-background text-foreground">Generate Batch of 5</option>
                   <option value={10} className="bg-background text-foreground">Generate Batch of 10</option>
                 </select>
@@ -347,10 +362,10 @@ const ApiKeyGenerator = () => {
             {/* Action buttons */}
             <div className="pt-2">
               <button
-                onClick={generateKeys}
+                onClick={generateSecrets}
                 className="w-full h-14 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl shadow-sm transition-colors flex items-center justify-center gap-2 active:scale-[0.98] cursor-pointer text-sm"
               >
-                <RefreshCw size={16} /> Generate New Key
+                <RefreshCw size={16} /> Generate New Secret
               </button>
             </div>
           </div>
@@ -377,25 +392,8 @@ const ApiKeyGenerator = () => {
           )}
         </div>
       </div>
-
-      <style dangerouslySetInnerHTML={{ __html: `
-        input[type=range]::-webkit-slider-thumb {
-          appearance: none;
-          width: 18px;
-          height: 18px;
-          border-radius: 50%;
-          background: white;
-          border: 2.5px solid var(--primary);
-          cursor: pointer;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.25);
-          transition: transform 0.1s;
-        }
-        input[type=range]:hover::-webkit-slider-thumb {
-          transform: scale(1.15);
-        }
-      ` }} />
     </motion.div>
   );
 };
 
-export default ApiKeyGenerator;
+export default JwtSecretGenerator;
