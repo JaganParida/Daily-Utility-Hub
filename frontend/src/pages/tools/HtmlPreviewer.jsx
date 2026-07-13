@@ -203,9 +203,41 @@ const HtmlPreviewer = () => {
 
     // Load shared code via API if ID is provided
     const loadSharedCode = async () => {
+      const hash = window.location.hash;
       const params = new URLSearchParams(window.location.search);
       const id = params.get('id');
-      if (id) {
+
+      if (hash && hash.startsWith('#code=')) {
+        try {
+          const base64 = hash.replace('#code=', '')
+            .replace(/-/g, '+')
+            .replace(/_/g, '/');
+          let padded = base64;
+          while (padded.length % 4) {
+            padded += '=';
+          }
+          const binString = atob(padded);
+          const bytes = Uint8Array.from(binString, (m) => m.codePointAt(0));
+          const str = new TextDecoder().decode(bytes);
+          const data = JSON.parse(str);
+          
+          if (data) {
+            if (data.expiresAt && Date.now() > data.expiresAt) {
+              toast.error('This share link has expired.');
+              setShareExpiry(data.expiresAt);
+              return;
+            }
+            setHtml(data.h || '');
+            setCss(data.c || '');
+            setJs(data.j || '');
+            if (data.expiresAt) setShareExpiry(data.expiresAt);
+            toast.success('Shared code loaded!');
+          }
+        } catch (err) {
+          console.error('Failed to load shared code from hash:', err);
+          toast.error('Failed to load shared code.');
+        }
+      } else if (id) {
         const toastId = toast.loading('Loading shared code...');
         try {
           const res = await api.get(`/share/metadata/${id}`);
@@ -248,47 +280,33 @@ const HtmlPreviewer = () => {
     };
   }, []);
 
-  const copyShareLink = async () => {
-    if (isSharing) return;
-
-    // Check cache
-    if (lastSharedState && lastSharedState.h === html && lastSharedState.c === css && lastSharedState.j === js) {
-      navigator.clipboard.writeText(lastSharedState.url);
-      setShareExpiry(lastSharedState.expiresAt);
-      toast.success('Share link copied to clipboard! (Cached)');
-      return;
-    }
-
-    setIsSharing(true);
-    const toastId = toast.loading('Generating secure link...');
+  const generateHashLink = () => {
     try {
-      const data = { h: html, c: css, j: js };
+      const expiresAt = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
+      const data = { h: html, c: css, j: js, expiresAt };
       const str = JSON.stringify(data);
-      
-      const blob = new Blob([str], { type: 'application/json' });
-      const formData = new FormData();
-      formData.append('file', blob, 'sandbox.json');
-      formData.append('shareType', 'code');
-      formData.append('expiryHours', '24'); // 24 hours
-      
-      const res = await api.post('/share/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-      
-      if (res.data && res.data.fileId) {
-         if (res.data.expiresAt) setShareExpiry(res.data.expiresAt);
-         const shareUrl = `${window.location.origin}${window.location.pathname}?id=${res.data.fileId}`;
-         setLastSharedState({ h: html, c: css, j: js, url: shareUrl, expiresAt: res.data.expiresAt });
-         navigator.clipboard.writeText(shareUrl);
-         toast.success('Share link copied to clipboard!', { id: toastId });
-      } else {
-         toast.error('Failed to generate share link.', { id: toastId });
-      }
+      const utf8Bytes = new TextEncoder().encode(str);
+      const binString = Array.from(utf8Bytes).map((byte) => String.fromCharCode(byte)).join('');
+      const base64 = btoa(binString)
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')
+        .replace(/=/g, '');
+      return `${window.location.origin}${window.location.pathname}#code=${base64}`;
     } catch (err) {
       console.error(err);
-      toast.error('Failed to generate share link.', { id: toastId });
-    } finally {
-      setIsSharing(false);
+      return null;
+    }
+  };
+
+  const copyShareLink = async () => {
+    const url = generateHashLink();
+    if (url) {
+      navigator.clipboard.writeText(url);
+      const expiresAt = Date.now() + 24 * 60 * 60 * 1000;
+      setShareExpiry(expiresAt);
+      toast.success('Share link copied to clipboard!');
+    } else {
+      toast.error('Failed to generate share link.');
     }
   };
 
@@ -304,50 +322,15 @@ const HtmlPreviewer = () => {
     }
   };
 
-  const openInNewTab = async () => {
-    if (isSharing) return;
-
-    // Check cache
-    if (lastSharedState && lastSharedState.h === html && lastSharedState.c === css && lastSharedState.j === js) {
-      const sandboxUrl = lastSharedState.url.replace('/tools/html-previewer', '/tools/html-previewer/sandbox');
+  const openInNewTab = () => {
+    const url = generateHashLink();
+    if (url) {
+      const sandboxUrl = url.replace('/tools/html-previewer', '/tools/html-previewer/sandbox');
       window.open(sandboxUrl, '_blank');
-      setShareExpiry(lastSharedState.expiresAt);
-      return;
-    }
-
-    setIsSharing(true);
-    const toastId = toast.loading('Opening sandbox...');
-    const newWindow = window.open('', '_blank');
-    try {
-      const data = { h: html, c: css, j: js };
-      const str = JSON.stringify(data);
-      const blob = new Blob([str], { type: 'application/json' });
-      const formData = new FormData();
-      formData.append('file', blob, 'sandbox.json');
-      formData.append('shareType', 'code');
-      formData.append('expiryHours', '24');
-      
-      const res = await api.post('/share/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-      
-      if (res.data && res.data.fileId) {
-        if (res.data.expiresAt) setShareExpiry(res.data.expiresAt);
-        const shareUrl = `${window.location.origin}${window.location.pathname}?id=${res.data.fileId}`;
-        setLastSharedState({ h: html, c: css, j: js, url: shareUrl, expiresAt: res.data.expiresAt });
-        
-        newWindow.location.href = `/tools/html-previewer/sandbox?id=${res.data.fileId}`;
-        toast.dismiss(toastId);
-      } else {
-        newWindow.close();
-        toast.error('Failed to open preview.', { id: toastId });
-      }
-    } catch (err) {
-      console.error(err);
-      newWindow.close();
-      toast.error('Failed to open preview.', { id: toastId });
-    } finally {
-      setIsSharing(false);
+      const expiresAt = Date.now() + 24 * 60 * 60 * 1000;
+      setShareExpiry(expiresAt);
+    } else {
+      toast.error('Failed to open preview.');
     }
   };
 

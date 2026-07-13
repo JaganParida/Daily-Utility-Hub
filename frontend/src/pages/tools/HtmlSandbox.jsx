@@ -7,13 +7,26 @@ const HtmlSandbox = () => {
   useEffect(() => {
     const loadCode = async () => {
       try {
+        const hash = window.location.hash;
         const params = new URLSearchParams(window.location.search);
         const codeParam = params.get('code');
         const idParam = params.get('id');
         
         let data = null;
 
-        if (idParam) {
+        if (hash && hash.startsWith('#code=')) {
+          const base64 = hash.replace('#code=', '')
+            .replace(/-/g, '+')
+            .replace(/_/g, '/');
+          let padded = base64;
+          while (padded.length % 4) {
+            padded += '=';
+          }
+          const binString = atob(padded);
+          const bytes = Uint8Array.from(binString, (m) => m.codePointAt(0));
+          const str = new TextDecoder().decode(bytes);
+          data = JSON.parse(str);
+        } else if (idParam) {
           const res = await api.get(`/share/metadata/${idParam}`);
           if (res.data && res.data.content) {
             data = JSON.parse(res.data.content);
@@ -30,6 +43,10 @@ const HtmlSandbox = () => {
         }
 
         if (data) {
+          if (data.expiresAt && Date.now() > data.expiresAt) {
+            setSrcDoc(`<!DOCTYPE html><html><body style="background:#09090b;color:#ef4444;font-family:sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;"><h1>This share link has expired.</h1></body></html>`);
+            return;
+          }
           const isFullHtmlDocument = (data.h || '').trim().toLowerCase().startsWith('<!doctype html') || (data.h || '').trim().toLowerCase().startsWith('<html');
           let combined = '';
           if (isFullHtmlDocument) {
