@@ -284,6 +284,24 @@ const HashGenerator = () => {
     return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
   };
 
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: 'easeOut' }}
+      className="max-w-[1600px] mx-auto w-full px-2 md:px-8"
+    >
+      {/* Header */}
+      <div className="mb-6 flex items-center gap-3 shrink-0">
+        <div className="p-2.5 bg-primary/10 text-primary rounded-xl shadow-sm shrink-0">
+          <Hash size={24} />
+        </div>
+        <div>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter text-foreground">Advanced Hash Generator</h1>
+          <p className="text-muted-foreground mt-1 text-xs md:text-sm">Generate MD5, SHA-1, SHA-256, SHA-512, SHA-3, RIPEMD-160 and secure Bcrypt hashes client-side.</p>
+        </div>
+      </div>
+
       {/* Mode Switcher */}
       <div className="flex p-1 bg-muted/40 rounded-xl border border-border/50 self-start gap-1 shrink-0 mb-6 max-w-sm">
         <button
@@ -860,7 +878,7 @@ const HashGenerator = () => {
           transform: scale(1.15);
         }
       ` }} />
-    </div>
+    </motion.div>
   );
 };
 

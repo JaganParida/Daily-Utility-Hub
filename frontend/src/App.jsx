@@ -56,6 +56,9 @@ const HtmlPreviewer = lazy(() => import('./pages/tools/HtmlPreviewer'));
 const MarkdownPreviewer = lazy(() => import('./pages/tools/MarkdownPreviewer'));
 const TypeConverter = lazy(() => import('./pages/tools/TypeConverter'));
 const GoogleSearchBuilder = lazy(() => import('./pages/tools/GoogleSearchBuilder'));
+const AiImageToMarkdown = lazy(() => import('./pages/tools/AiImageToMarkdown'));
+const AiPdfToMarkdown = lazy(() => import('./pages/tools/AiPdfToMarkdown'));
+const AiCodePlayground = lazy(() => import('./pages/tools/AiCodePlayground'));
 
 // PDF Tools (Lazy loaded)
 const PdfEdit = lazy(() => import('./pages/tools/PdfEdit'));
@@ -198,6 +201,9 @@ function AnimatedRoutes() {
             <Route path="/tools/markdown-previewer" element={<MarkdownPreviewer />} />
             <Route path="/tools/type-converter" element={<TypeConverter />} />
             <Route path="/tools/google-search-builder" element={<GoogleSearchBuilder />} />
+            <Route path="/tools/ai-image-to-markdown" element={<AiImageToMarkdown />} />
+            <Route path="/tools/ai-pdf-to-markdown" element={<AiPdfToMarkdown />} />
+            <Route path="/tools/ai-code-playground" element={<AiCodePlayground />} />
 
             {/* New PDF Tools Routes */}
             <Route path="/tools/pdf-merge" element={<PdfMerge />} />
