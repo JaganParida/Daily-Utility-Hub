@@ -310,8 +310,8 @@ const Dashboard = () => {
               className="relative mb-3 rounded-2xl"
             >
               {/* Spinning Border Container (Behind content, clips gradient) */}
-              <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none z-0">
-                <div className="absolute top-1/2 left-1/2 w-[200%] aspect-square -translate-x-1/2 -translate-y-1/2 bg-[conic-gradient(from_0deg,transparent_70%,#7C5CFC_85%,#A78BFA_100%)] animate-[spin_3s_linear_infinite]" />
+              <div className="absolute inset-0 rounded-2xl bg-[#222230] overflow-hidden pointer-events-none z-0">
+                <div className="absolute top-1/2 left-1/2 w-[200%] aspect-square -translate-x-1/2 -translate-y-1/2 bg-[conic-gradient(from_0deg,transparent_0_280deg,#7C5CFC_330deg,white_360deg)] animate-[spin_4s_linear_infinite]" />
               </div>
 
               {/* Content Container (Sits on top, padded by 1.5px to show border, no overflow hidden!) */}
