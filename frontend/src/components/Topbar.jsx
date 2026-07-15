@@ -110,17 +110,25 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
       <div className={`w-full transition-all duration-300 ${isScrolled ? "bg-[#09090b]/80 backdrop-blur-xl border-b border-[#27272a]" : "bg-transparent"}`}>
         <div ref={megamenuRef} className="max-w-[1200px] mx-auto flex items-center justify-between h-14 sm:h-16 px-4 sm:px-6 md:px-8">
 
-          {/* LEFT: Logo */}
+          {/* LEFT: Logo or Back Button */}
           <div className={`transition-[opacity,transform] duration-300 ease-out ${isSearchExpanded ? "opacity-0 pointer-events-none scale-95 md:opacity-100 md:pointer-events-auto md:scale-100 flex" : "opacity-100 pointer-events-auto scale-100 flex"} items-center gap-2.5 shrink-0`}>
-            <Link to="/" className="flex items-center gap-2.5 group shrink-0">
-              <div className="w-8 h-8 shrink-0 rounded-xl bg-[#2563eb] flex items-center justify-center text-white shadow-lg shadow-[#2563eb]/20 group-hover:shadow-[#2563eb]/30 group-hover:scale-105 transition-all">
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
-                  <polygon points="12 2 2 7 12 12 22 7 12 2" />
-                  <polyline points="2 17 12 22 22 17" />
-                </svg>
-              </div>
-              <span className="hidden sm:inline-block font-black text-[15px] tracking-tight text-white">UtilityHub</span>
-            </Link>
+            {currentPath.startsWith('/tools') ? (
+              <Link to="/" className="flex items-center gap-2 group shrink-0 text-[#a1a1aa] hover:text-white transition-colors bg-[#18181b] border border-[#27272a] hover:bg-[#27272a] px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs sm:text-[13px] font-bold shadow-sm">
+                <ArrowLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform group-hover:-translate-x-0.5" />
+                <span className="hidden sm:inline-block">Back to Home</span>
+                <span className="sm:hidden">Back</span>
+              </Link>
+            ) : (
+              <Link to="/" className="flex items-center gap-2.5 group shrink-0">
+                <div className="w-9 h-9 sm:w-8 sm:h-8 shrink-0 rounded-xl bg-[#2563eb] flex items-center justify-center text-white shadow-lg shadow-[#2563eb]/20 group-hover:shadow-[#2563eb]/30 group-hover:scale-105 transition-all">
+                  <svg className="w-5 h-5 sm:w-4 sm:h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+                    <polygon points="12 2 2 7 12 12 22 7 12 2" />
+                    <polyline points="2 17 12 22 22 17" />
+                  </svg>
+                </div>
+                <span className="hidden sm:inline-block font-black text-[15px] tracking-tight text-white">UtilityHub</span>
+              </Link>
+            )}
           </div>
 
           {/* CENTER: Nav (Stripe/CloudConvert style morphing megamenu) */}
@@ -501,10 +509,10 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                     setIsSearchExpanded(true);
                     setTimeout(() => searchInputRef.current?.focus(), 50);
                   }}
-                  className="block md:hidden w-8 h-8 rounded-full border border-[#3f3f46]/40 hover:border-[#2563eb]/40 hover:bg-[#2563eb]/5 flex items-center justify-center text-[#71717a] hover:text-white cursor-pointer bg-[#18181b]/90 transition-all shadow-md shrink-0"
+                  className="block md:hidden w-9 h-9 rounded-full border border-[#3f3f46]/40 hover:border-[#2563eb]/40 hover:bg-[#2563eb]/5 flex items-center justify-center text-[#71717a] hover:text-white cursor-pointer bg-[#18181b]/90 transition-all shadow-md shrink-0"
                   title="Search"
                 >
-                  <Search size={13} />
+                  <Search size={16} />
                 </button>
               )}
 
@@ -666,7 +674,7 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                 </button>
               </div>
             ) : (
-              <Link to="/login" className="flex items-center gap-1.5 px-4 py-1.5 rounded-none bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-bold transition-all text-[11px]">
+              <Link to="/login" className="flex items-center gap-1.5 px-5 py-2 sm:px-4 sm:py-1.5 rounded-none bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-bold transition-all text-xs sm:text-[11px]">
                 Sign up
               </Link>
             )}
@@ -674,13 +682,13 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
             {/* Mobile hamburger */}
             <button
               onClick={() => setIsMobileMenuOpen(p => !p)}
-              className="flex lg:hidden items-center justify-center w-8 h-8 text-[#a1a1aa] hover:text-white transition-colors cursor-pointer group"
+              className="flex lg:hidden items-center justify-center w-9 h-9 text-[#a1a1aa] hover:text-white transition-colors cursor-pointer group"
               title="Menu"
             >
-              <div className="flex flex-col gap-[3.5px] items-end justify-center w-4.5 h-4.5">
-                <span className="w-3.5 h-[1.5px] bg-current transition-all group-hover:w-4.5" />
-                <span className="w-4.5 h-[1.5px] bg-current transition-all" />
-                <span className="w-2.5 h-[1.5px] bg-current transition-all group-hover:w-4.5" />
+              <div className="flex flex-col gap-[4.5px] items-end justify-center w-5 h-5">
+                <span className="w-4 h-[2px] bg-current transition-all group-hover:w-5 rounded-full" />
+                <span className="w-5 h-[2px] bg-current transition-all rounded-full" />
+                <span className="w-3 h-[2px] bg-current transition-all group-hover:w-5 rounded-full" />
               </div>
             </button>
           </div>

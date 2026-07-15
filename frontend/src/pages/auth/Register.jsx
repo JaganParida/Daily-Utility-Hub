@@ -49,7 +49,7 @@ const Register = () => {
         </Link>
 
         {/* Brand Header */}
-        <div className="mb-8 text-center flex flex-col items-center">
+        <div className="mb-8 mt-16 md:mt-0 text-center flex flex-col items-center">
           <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-5 border border-primary/20">
             <Layers className="text-primary" size={24} />
           </div>

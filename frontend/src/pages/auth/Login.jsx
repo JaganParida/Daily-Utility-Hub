@@ -49,7 +49,7 @@ const Login = () => {
         </Link>
 
         {/* Brand Header */}
-        <div className="mb-8 text-center flex flex-col items-center">
+        <div className="mb-8 mt-16 md:mt-0 text-center flex flex-col items-center">
           <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-5 border border-primary/20">
             <svg className="w-6 h-6 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.8} strokeLinecap="round" strokeLinejoin="round">
               <polygon points="12 2 2 7 12 12 22 7 12 2" />

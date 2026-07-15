@@ -33,18 +33,18 @@ const Footer = () => {
               safely, entirely in the browser. No servers. No tracking.
             </p>
           </div>
-          <div className="flex items-center gap-4 shrink-0">
+          <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 shrink-0 w-full md:w-auto mt-6 md:mt-0">
             {!currentUser && (
               <Link
                 to="/register"
-                className="h-11 px-6 rounded-xl bg-[#2563eb] hover:bg-[#6A4BE0] text-white font-bold text-sm flex items-center justify-center transition-all shadow-[0_0_20px_rgba(124,92,252,0.3)] hover:shadow-[0_0_30px_rgba(124,92,252,0.5)]"
+                className="w-full sm:w-auto whitespace-nowrap h-11 px-4 sm:px-6 rounded-xl bg-[#2563eb] hover:bg-[#6A4BE0] text-white font-bold text-sm flex items-center justify-center transition-all shadow-[0_0_20px_rgba(124,92,252,0.3)] hover:shadow-[0_0_30px_rgba(124,92,252,0.5)]"
               >
                 Get Started Free
               </Link>
             )}
             <Link
               to="/dashboard"
-              className="h-11 px-6 rounded-xl bg-[#27272a] hover:bg-[#252532] text-white font-bold text-sm border border-[#2e2e3e] flex items-center justify-center transition-colors"
+              className="w-full sm:w-auto whitespace-nowrap h-11 px-4 sm:px-6 rounded-xl bg-[#27272a] hover:bg-[#252532] text-white font-bold text-sm border border-[#2e2e3e] flex items-center justify-center transition-colors"
             >
               Explore Tools <ArrowRight className="ml-2" size={16} />
             </Link>
