@@ -6,7 +6,7 @@ const Footer = () => {
   const { currentUser } = useAuth();
 
   return (
-    <footer className="w-full relative z-10 mt-auto bg-[#050507] border-t border-[#1e1e28]">
+    <footer className="w-full relative z-10 mt-auto bg-[#050507] border-t border-[#1e1e28] overflow-hidden">
       {/* Premium subtle background glow */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-[#7C5CFC]/5 blur-[120px] rounded-full pointer-events-none" />
       

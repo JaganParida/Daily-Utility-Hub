@@ -2,9 +2,9 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useRef, useCallback, useEffect } from "react";
 import {
-  ArrowRight, UploadCloud, X, FileCheck, ChevronDown, ChevronLeft, ChevronRight, Zap, Shield, Cpu,
+  ArrowRight, UploadCloud, X, FileCheck, ChevronDown, Zap, Shield, Cpu,
   FileText, ImageIcon, Code2, Type, Table2, FileSpreadsheet, MonitorPlay,
-  FolderArchive, Music, Layers, Search
+  FolderArchive, Music, Layers, Search, ChevronLeft, ChevronRight
 } from "lucide-react";
 import PageTransition from "../components/PageTransition";
 
@@ -333,36 +333,49 @@ const InteractiveHubGraphic = () => {
 const Dashboard = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
-  
-  // Tab scroll references
-  const tabsScrollRef = useRef(null);
-  const [showLeftArrow, setShowLeftArrow] = useState(false);
-  const [showRightArrow, setShowRightArrow] = useState(true);
 
   const [source, setSource] = useState("");
   const [operationIdx, setOperationIdx] = useState(0);
   const [droppedFile, setDroppedFile] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const [activeTab, setActiveTab] = useState("pdf");
+  
+  const tabsRef = useRef(null);
+  const [showLeftArrow, setShowLeftArrow] = useState(false);
+  const [showRightArrow, setShowRightArrow] = useState(false);
 
-  const checkScroll = useCallback(() => {
-    if (!tabsScrollRef.current) return;
-    const { scrollLeft, scrollWidth, clientWidth } = tabsScrollRef.current;
-    setShowLeftArrow(scrollLeft > 0);
-    // Add a 2px tolerance to account for decimal pixel rounding on some devices
-    setShowRightArrow(Math.ceil(scrollLeft + clientWidth) < scrollWidth - 2);
+  const updateScrollButtons = useCallback(() => {
+    if (tabsRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = tabsRef.current;
+      setShowLeftArrow(scrollLeft > 2);
+      setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 2);
+    }
   }, []);
 
   useEffect(() => {
-    checkScroll();
-    window.addEventListener("resize", checkScroll);
-    return () => window.removeEventListener("resize", checkScroll);
-  }, [checkScroll]);
+    const tabsEl = tabsRef.current;
+    if (tabsEl) {
+      updateScrollButtons();
+      tabsEl.addEventListener("scroll", updateScrollButtons, { passive: true });
+      window.addEventListener("resize", updateScrollButtons);
+      const t = setTimeout(updateScrollButtons, 100);
+      return () => {
+        tabsEl.removeEventListener("scroll", updateScrollButtons);
+        window.removeEventListener("resize", updateScrollButtons);
+        clearTimeout(t);
+      };
+    }
+  }, [updateScrollButtons]);
 
   const scrollTabs = (direction) => {
-    if (tabsScrollRef.current) {
-      const scrollAmount = direction === "left" ? -200 : 200;
-      tabsScrollRef.current.scrollBy({ left: scrollAmount, behavior: "smooth" });
+    if (tabsRef.current) {
+      const scrollAmount = 240;
+      const currentScroll = tabsRef.current.scrollLeft;
+      const target = direction === 'left' ? currentScroll - scrollAmount : currentScroll + scrollAmount;
+      tabsRef.current.scrollTo({
+        left: target,
+        behavior: 'smooth'
+      });
     }
   };
 
@@ -629,79 +642,77 @@ const Dashboard = () => {
               <h2 className="text-[10px] sm:text-xs font-black text-[#5a5a6a] uppercase tracking-widest text-center mb-4 sm:mb-5">
                 Browse by category
               </h2>
-
-              {/* Tabs — horizontally scrollable with Google-style arrow buttons */}
-              <div className="relative w-[calc(100%+32px)] -ml-4 sm:w-full sm:ml-0 max-w-4xl mx-auto mb-5 sm:mb-6 group">
-                {/* Left Arrow & Fade */}
+              {/* Slider Tabs Container */}
+              <div className="relative w-full mb-5 sm:mb-6 group">
+                
+                {/* Left shadow fade + Arrow */}
                 <AnimatePresence>
                   {showLeftArrow && (
                     <motion.div
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      className="absolute left-0 top-0 bottom-0 w-16 sm:w-24 bg-gradient-to-r from-[#0b0b0f] via-[#0b0b0f]/90 to-transparent z-20 flex items-center justify-start pointer-events-none"
+                      className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-[#060608] via-[#060608]/70 to-transparent z-20 flex items-center justify-start pointer-events-none"
                     >
                       <button
-                        onClick={() => scrollTabs("left")}
-                        className="w-7 h-7 sm:w-8 sm:h-8 ml-2 sm:ml-0 rounded-full bg-[#141419] border border-[#222230] shadow-[0_4px_12px_rgba(0,0,0,0.8)] flex items-center justify-center text-white hover:bg-[#1a1a22] transition-colors pointer-events-auto"
+                        onClick={() => scrollTabs('left')}
+                        className="w-7 h-7 rounded-full bg-[#121217] border border-[#222230] text-[#8a8a9a] hover:text-white hover:border-[#7C5CFC]/60 transition-all flex items-center justify-center shadow-[0_4px_12px_rgba(0,0,0,0.5)] pointer-events-auto ml-1 cursor-pointer hover:scale-105"
                       >
-                        <ChevronLeft size={14} className="sm:w-4 sm:h-4" />
+                        <ChevronLeft size={14} />
                       </button>
                     </motion.div>
                   )}
                 </AnimatePresence>
 
-                {/* Right Arrow & Fade */}
+                {/* Tabs Row */}
+                <div 
+                  ref={tabsRef}
+                  className="overflow-x-auto hide-scrollbar flex items-center justify-start gap-1.5 w-full flex-nowrap py-1 scroll-smooth"
+                >
+                  {CATEGORY_TABS.map((tab) => {
+                    const TabIcon = tab.icon;
+                    return (
+                      <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
+                        className={`relative px-3.5 py-2 rounded-xl text-[11px] sm:text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shrink-0 select-none ${
+                          activeTab === tab.id
+                            ? "text-white"
+                            : "text-[#5a5a6a] hover:text-[#8a8a9a] hover:bg-[#ffffff04]"
+                        }`}
+                      >
+                        {activeTab === tab.id && (
+                          <motion.div
+                            layoutId="activeTab"
+                            className="absolute inset-0 bg-[#7C5CFC]/15 border border-[#7C5CFC]/30 rounded-xl"
+                            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                          />
+                        )}
+                        <TabIcon size={13} className="relative z-10" />
+                        <span className="relative z-10">{tab.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Right shadow fade + Arrow */}
                 <AnimatePresence>
                   {showRightArrow && (
                     <motion.div
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      className="absolute right-0 top-0 bottom-0 w-16 sm:w-24 bg-gradient-to-l from-[#0b0b0f] via-[#0b0b0f]/90 to-transparent z-20 flex items-center justify-end pointer-events-none"
+                      className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-[#060608] via-[#060608]/70 to-transparent z-20 flex items-center justify-end pointer-events-none"
                     >
                       <button
-                        onClick={() => scrollTabs("right")}
-                        className="w-7 h-7 sm:w-8 sm:h-8 mr-2 sm:mr-0 rounded-full bg-[#141419] border border-[#222230] shadow-[0_4px_12px_rgba(0,0,0,0.8)] flex items-center justify-center text-white hover:bg-[#1a1a22] transition-colors pointer-events-auto"
+                        onClick={() => scrollTabs('right')}
+                        className="w-7 h-7 rounded-full bg-[#121217] border border-[#222230] text-[#8a8a9a] hover:text-white hover:border-[#7C5CFC]/60 transition-all flex items-center justify-center shadow-[0_4px_12px_rgba(0,0,0,0.5)] pointer-events-auto mr-1 cursor-pointer hover:scale-105"
                       >
-                        <ChevronRight size={14} className="sm:w-4 sm:h-4" />
+                        <ChevronRight size={14} />
                       </button>
                     </motion.div>
                   )}
                 </AnimatePresence>
-
-                <div 
-                  ref={tabsScrollRef}
-                  onScroll={checkScroll}
-                  className="overflow-x-auto hide-scrollbar scroll-smooth w-full px-4 sm:px-0"
-                >
-                  <div className="flex items-center gap-1 sm:gap-1.5 min-w-max pb-1">
-                    {CATEGORY_TABS.map((tab) => {
-                      const TabIcon = tab.icon;
-                      return (
-                        <button
-                          key={tab.id}
-                          onClick={() => setActiveTab(tab.id)}
-                          className={`relative px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${
-                            activeTab === tab.id
-                              ? "text-white"
-                              : "text-[#5a5a6a] hover:text-[#8a8a9a] hover:bg-[#ffffff04]"
-                          }`}
-                        >
-                          {activeTab === tab.id && (
-                            <motion.div
-                              layoutId="activeTab"
-                              className="absolute inset-0 bg-[#7C5CFC]/15 border border-[#7C5CFC]/30 rounded-lg sm:rounded-xl"
-                              transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                            />
-                          )}
-                          <TabIcon size={13} className="relative z-10 shrink-0" />
-                          <span className="relative z-10 whitespace-nowrap">{tab.label}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
               </div>
 
               {/* Operations grid */}
