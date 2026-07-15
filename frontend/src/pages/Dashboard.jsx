@@ -420,7 +420,9 @@ const Dashboard = () => {
   const [simulatedOpHighlight, setSimulatedOpHighlight] = useState(null);
   const simulationTimeouts = useRef([]);
   const hasUserInteracted = useRef(false);
-  const [isDemoActive, setIsDemoActive] = useState(false);
+
+  const DEMO_FORMATS = ["Format", "Image", "PDF", "Word Doc"];
+  const DEMO_OPERATIONS = ["Operation", "Convert to PDF", "Compress PDF", "Resize Image"];
   
   const clearSimulation = useCallback(() => {
     simulationTimeouts.current.forEach(clearTimeout);
@@ -429,14 +431,12 @@ const Dashboard = () => {
     setSimulatedOpHighlight(null);
     setIsFormatOpen(false);
     setIsOperationOpen(false);
-    setIsDemoActive(false);
   }, []);
 
   const stopDemoAndInteract = useCallback(() => {
     if (hasUserInteracted.current) return;
     hasUserInteracted.current = true;
     clearSimulation();
-    setIsDemoActive(false);
     setDroppedFile((prev) => {
       if (prev?.isDemo) {
         setSource("");
@@ -448,51 +448,24 @@ const Dashboard = () => {
   }, [clearSimulation]);
 
   const [isIconDropping, setIsIconDropping] = useState(false);
-
-  const runDemoLoop = useCallback(() => {
-    if (hasUserInteracted.current) return;
-    
-    setIsDemoActive(true);
-    setSource("");
-    setOperationIdx(0);
-    setDroppedFile(null);
-
-    setIsIconDropping(true);
-    const tResetDrop = setTimeout(() => setIsIconDropping(false), 600);
-    simulationTimeouts.current.push(tResetDrop);
-
-    const t1 = setTimeout(() => {
-      if (hasUserInteracted.current) return;
-      setSource("image");
-
-      const t2 = setTimeout(() => {
-        if (hasUserInteracted.current) return;
-        setOperationIdx(7);
-
-        const t3 = setTimeout(() => {
-          if (hasUserInteracted.current) return;
-          setSource("");
-          setOperationIdx(0);
-          setIsDemoActive(false);
-        }, 3500);
-        simulationTimeouts.current.push(t3);
-      }, 700);
-      simulationTimeouts.current.push(t2);
-    }, 700);
-    simulationTimeouts.current.push(t1);
-  }, []);
+  const [demoStep, setDemoStep] = useState(0);
 
   useEffect(() => {
-    if (droppedFile || hasUserInteracted.current) return;
+    if (droppedFile || hasUserInteracted.current) {
+      setDemoStep(0);
+      return;
+    }
 
-    const startTimer = setTimeout(() => {
-      if (!droppedFile && !hasUserInteracted.current) {
-        runDemoLoop();
-      }
-    }, 2500);
+    const interval = setInterval(() => {
+      setDemoStep((prev) => (prev + 1) % 4);
+      
+      setIsIconDropping(true);
+      const t = setTimeout(() => setIsIconDropping(false), 600);
+      simulationTimeouts.current.push(t);
+    }, 2800);
 
-    return () => clearTimeout(startTimer);
-  }, [droppedFile, runDemoLoop]);
+    return () => clearInterval(interval);
+  }, [droppedFile]);
 
   useEffect(() => {
     return () => {
@@ -846,9 +819,9 @@ const Dashboard = () => {
                           value={source} 
                           onChange={handleSourceChange} 
                           options={sourceOptions} 
-                          placeholder="Format" 
+                          placeholder={!droppedFile ? DEMO_FORMATS[demoStep] : "Format"} 
                           icon={Layers} 
-                          disabled={!droppedFile && !isDemoActive}
+                          disabled={!droppedFile}
                           open={isFormatOpen}
                           setOpen={setIsFormatOpen}
                           highlightedValue={simulatedFormatHighlight}
@@ -859,8 +832,8 @@ const Dashboard = () => {
                           value={operationIdx} 
                           onChange={(val) => setOperationIdx(val)} 
                           options={operationOptions} 
-                          placeholder="Operation" 
-                          disabled={(!droppedFile && !isDemoActive) || !source} 
+                          placeholder={!droppedFile ? DEMO_OPERATIONS[demoStep] : "Operation"} 
+                          disabled={!droppedFile || !source} 
                           icon={Zap} 
                           open={isOperationOpen}
                           setOpen={setIsOperationOpen}
@@ -873,9 +846,9 @@ const Dashboard = () => {
                     <motion.button
                       layout
                       onClick={handleLaunch}
-                      disabled={(!droppedFile && !isDemoActive) || !activeOp}
+                      disabled={!droppedFile || !activeOp}
                       className={`h-11 px-6 bg-[#7C5CFC] hover:bg-[#6B4FE0] text-white text-xs font-black transition-all rounded-xl flex items-center justify-center gap-1.5 shadow-[0_0_20px_rgba(124,92,252,0.15)] cursor-pointer shrink-0 ${
-                        (!droppedFile && !isDemoActive) || !activeOp
+                        !droppedFile || !activeOp
                           ? "opacity-35 cursor-not-allowed bg-[#1a1a22] text-[#3a3a48] shadow-none pointer-events-none"
                           : "hover:shadow-[0_0_20px_rgba(124,92,252,0.3)] hover:scale-[1.02] active:scale-[0.98]"
                       } ${
@@ -955,9 +928,9 @@ const Dashboard = () => {
                         value={source} 
                         onChange={handleSourceChange} 
                         options={sourceOptions} 
-                        placeholder="Format" 
+                        placeholder={!droppedFile ? DEMO_FORMATS[demoStep] : "Format"} 
                         icon={Layers} 
-                        disabled={!droppedFile && !isDemoActive} 
+                        disabled={!droppedFile} 
                         open={isFormatOpen}
                         setOpen={setIsFormatOpen}
                         highlightedValue={simulatedFormatHighlight}
@@ -966,8 +939,8 @@ const Dashboard = () => {
                         value={operationIdx} 
                         onChange={(val) => setOperationIdx(val)} 
                         options={operationOptions} 
-                        placeholder="Operation" 
-                        disabled={(!droppedFile && !isDemoActive) || !source} 
+                        placeholder={!droppedFile ? DEMO_OPERATIONS[demoStep] : "Operation"} 
+                        disabled={!droppedFile || !source} 
                         icon={Zap} 
                         open={isOperationOpen}
                         setOpen={setIsOperationOpen}
@@ -978,9 +951,9 @@ const Dashboard = () => {
                     <motion.button
                       layout
                       onClick={handleLaunch}
-                      disabled={(!droppedFile && !isDemoActive) || !activeOp}
+                      disabled={!droppedFile || !activeOp}
                       className={`w-full h-11 bg-[#7C5CFC] hover:bg-[#6B4FE0] text-white text-xs font-black transition-all rounded-xl flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(124,92,252,0.15)] cursor-pointer ${
-                        (!droppedFile && !isDemoActive) || !activeOp
+                        !droppedFile || !activeOp
                           ? "opacity-35 cursor-not-allowed bg-[#1a1a22] text-[#3a3a48] shadow-none pointer-events-none"
                           : "active:scale-[0.98]"
                       } ${
