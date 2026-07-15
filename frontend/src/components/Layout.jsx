@@ -2,6 +2,7 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import Topbar from './Topbar';
+import Footer from './Footer';
 import { toolCategories } from '../data/toolCategories';
 
 const Layout = () => {
@@ -249,6 +250,7 @@ const Layout = () => {
           <div className={`flex-1 flex flex-col pb-20 md:pb-12 ${isDashboard ? 'pt-0' : 'pt-24 lg:pt-28'}`}>
             <Outlet context={{ isScrolled, setIsScrolled }} />
           </div>
+          {!isTool && <Footer />}
         </main>
       </div>
     </div>
