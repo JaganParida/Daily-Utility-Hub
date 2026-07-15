@@ -160,6 +160,9 @@ const CustomDropdown = ({ value, onChange, options, placeholder, disabled = fals
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const ref = useRef(null);
+  
+  const [isFlashing, setIsFlashing] = useState(false);
+  const prevValue = useRef(value);
 
   useEffect(() => {
     const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
@@ -172,6 +175,16 @@ const CustomDropdown = ({ value, onChange, options, placeholder, disabled = fals
       setSearchQuery("");
     }
   }, [open]);
+
+  useEffect(() => {
+    if (value !== prevValue.current && value !== undefined && value !== "") {
+      setIsFlashing(true);
+      const timer = setTimeout(() => setIsFlashing(false), 800);
+      prevValue.current = value;
+      return () => clearTimeout(timer);
+    }
+    prevValue.current = value;
+  }, [value]);
 
   const selected = options.find((o) => o.value === value);
 
@@ -186,14 +199,27 @@ const CustomDropdown = ({ value, onChange, options, placeholder, disabled = fals
         onClick={() => !disabled && setOpen((p) => !p)}
         disabled={disabled}
         className={`w-full h-11 flex items-center gap-2.5 px-3.5 sm:px-4 text-left rounded-xl border border-[#222230] bg-[#141419] transition-all cursor-pointer select-none ${
+          isFlashing ? "animate-flash-glow" : ""
+        } ${
           disabled 
             ? "opacity-40 cursor-not-allowed border-[#1d1d28] bg-[#0e0e12]" 
             : "hover:border-[#7C5CFC]/50 hover:bg-[#1a1a24] active:scale-[0.98] focus:border-[#7C5CFC]/80 focus:ring-1 focus:ring-[#7C5CFC]/30"
         }`}
       >
         {Icon && <Icon size={13} className="text-[#6a6a7a] shrink-0" />}
-        <span className={`text-xs font-bold truncate ${selected ? "text-white" : "text-[#5a5a6a]"}`}>
-          {selected ? selected.label : placeholder}
+        <span className="text-xs font-bold truncate flex-1 block overflow-hidden h-4 relative">
+          <AnimatePresence mode="wait">
+            <motion.span
+              key={selected ? selected.label : placeholder}
+              initial={{ y: 8, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -8, opacity: 0 }}
+              transition={{ duration: 0.15, ease: "easeOut" }}
+              className={`absolute inset-y-0 left-0 truncate w-full flex items-center ${selected ? "text-white" : "text-[#5a5a6a]"}`}
+            >
+              {selected ? selected.label : placeholder}
+            </motion.span>
+          </AnimatePresence>
         </span>
         <ChevronDown size={11} className={`ml-auto text-[#6a6a7a] shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
@@ -423,6 +449,12 @@ const Dashboard = () => {
       <style>{`
         @keyframes gradient-shift { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
         @keyframes flow-pulse { 0% { transform: translateX(-100%); } 100% { transform: translateX(200%); } }
+        @keyframes flash-glow {
+          0% { border-color: #222230; box-shadow: 0 0 0 rgba(124, 92, 252, 0); }
+          30% { border-color: #7C5CFC; box-shadow: 0 0 15px rgba(124, 92, 252, 0.4); }
+          100% { border-color: #222230; box-shadow: 0 0 0 rgba(124, 92, 252, 0); }
+        }
+        .animate-flash-glow { animation: flash-glow 0.8s ease-out; }
         .gradient-text { background: linear-gradient(135deg, #7C5CFC, #A78BFA, #7C5CFC); background-size: 200% 200%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: gradient-shift 4s ease infinite; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
@@ -528,34 +560,48 @@ const Dashboard = () => {
                   {/* Desktop/Tablet Flow (visible format & operation at all times) */}
                   <div className="hidden sm:flex items-center justify-between gap-4">
                     {/* Source File Badge / Selector */}
-                    {droppedFile ? (
-                      <div className="flex items-center gap-2.5 bg-[#1a1a22] border border-[#222230] px-3.5 py-2 rounded-xl min-w-[200px] max-w-[260px] h-[44px]">
-                        <div className="w-7 h-7 rounded-lg bg-[#7C5CFC]/10 flex items-center justify-center text-[#7C5CFC] font-black text-[10px] shrink-0">
-                          {droppedFile.ext}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-xs font-bold text-white truncate">{droppedFile.name}</p>
-                          <p className="text-[10px] text-[#5a5a6a]">{droppedFile.size}</p>
-                        </div>
-                        <button onClick={clearFile} className="p-1 text-[#5a5a6a] hover:text-white rounded hover:bg-white/5 transition-colors cursor-pointer shrink-0">
-                          <X size={12} />
-                        </button>
-                      </div>
-                    ) : (
-                      <div
-                        onClick={() => fileInputRef.current?.click()}
-                        className="flex items-center gap-2 px-3.5 py-2 bg-[#1a1a22]/50 hover:bg-[#1a1a22] border border-dashed border-[#222230] hover:border-[#7C5CFC]/30 text-[#b0b0bc] hover:text-white rounded-xl transition-all cursor-pointer min-w-[200px] max-w-[260px] h-[44px] group"
-                      >
-                        <UploadCloud size={14} className="text-[#7C5CFC]/80 group-hover:text-[#7C5CFC] shrink-0" />
-                        <span className="text-xs font-bold truncate">Select or drop file</span>
-                        <input
-                          type="file"
-                          ref={fileInputRef}
-                          onChange={(e) => { if (e.target.files?.[0]) handleFileDrop(e.target.files[0]); e.target.value = ''; }}
-                          className="hidden"
-                        />
-                      </div>
-                    )}
+                    <AnimatePresence mode="wait">
+                      {droppedFile ? (
+                        <motion.div
+                          key="file-active"
+                          initial={{ scale: 0.9, opacity: 0, y: 10 }}
+                          animate={{ scale: 1, opacity: 1, y: 0 }}
+                          exit={{ scale: 0.9, opacity: 0, y: -10 }}
+                          transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                          className="flex items-center gap-2.5 bg-[#151522] border border-[#7C5CFC]/40 px-3.5 py-2 rounded-xl min-w-[200px] max-w-[260px] h-[44px] shadow-[0_0_15px_rgba(124,92,252,0.15)]"
+                        >
+                          <div className="w-7 h-7 rounded-lg bg-[#7C5CFC]/10 flex items-center justify-center text-[#7C5CFC] font-black text-[10px] shrink-0">
+                            {droppedFile.ext}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs font-bold text-white truncate">{droppedFile.name}</p>
+                            <p className="text-[10px] text-[#5a5a6a]">{droppedFile.size}</p>
+                          </div>
+                          <button onClick={clearFile} className="p-1 text-[#5a5a6a] hover:text-white rounded hover:bg-white/5 transition-colors cursor-pointer shrink-0">
+                            <X size={12} />
+                          </button>
+                        </motion.div>
+                      ) : (
+                        <motion.div
+                          key="file-empty"
+                          initial={{ scale: 0.95, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          exit={{ scale: 0.95, opacity: 0 }}
+                          transition={{ duration: 0.2 }}
+                          onClick={() => fileInputRef.current?.click()}
+                          className="flex items-center gap-2 px-3.5 py-2 bg-[#1a1a22]/50 hover:bg-[#1a1a22] border border-dashed border-[#222230] hover:border-[#7C5CFC]/30 text-[#b0b0bc] hover:text-white rounded-xl transition-all cursor-pointer min-w-[200px] max-w-[260px] h-[44px] group"
+                        >
+                          <UploadCloud size={14} className="text-[#7C5CFC]/80 group-hover:text-[#7C5CFC] shrink-0" />
+                          <span className="text-xs font-bold truncate">Select or drop file</span>
+                          <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={(e) => { if (e.target.files?.[0]) handleFileDrop(e.target.files[0]); e.target.value = ''; }}
+                            className="hidden"
+                          />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
 
                     {/* Animated Connector Line */}
                     <div className="flex-1 flex items-center justify-center relative min-w-[40px]">
@@ -589,34 +635,48 @@ const Dashboard = () => {
 
                   {/* Mobile Flow (stacked) */}
                   <div className="flex sm:hidden flex-col gap-3">
-                    {droppedFile ? (
-                      <div className="flex items-center gap-2.5 bg-[#1a1a22] border border-[#222230] px-3.5 py-2.5 rounded-xl">
-                        <div className="w-8 h-8 rounded-lg bg-[#7C5CFC]/10 flex items-center justify-center text-[#7C5CFC] font-black text-xs shrink-0">
-                          {droppedFile.ext}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-xs font-bold text-white truncate">{droppedFile.name}</p>
-                          <p className="text-[10px] text-[#5a5a6a]">{droppedFile.size}</p>
-                        </div>
-                        <button onClick={clearFile} className="p-1 text-[#5a5a6a] hover:text-white rounded hover:bg-white/5 transition-colors cursor-pointer shrink-0">
-                          <X size={12} />
-                        </button>
-                      </div>
-                    ) : (
-                      <div
-                        onClick={() => fileInputRef.current?.click()}
-                        className="flex items-center justify-center gap-2 py-3 bg-[#1a1a22]/50 border border-dashed border-[#222230] text-[#b0b0bc] rounded-xl transition-all cursor-pointer group"
-                      >
-                        <UploadCloud size={14} className="text-[#7C5CFC] shrink-0" />
-                        <span className="text-xs font-bold">Select or drop file</span>
-                        <input
-                          type="file"
-                          ref={fileInputRef}
-                          onChange={(e) => { if (e.target.files?.[0]) handleFileDrop(e.target.files[0]); e.target.value = ''; }}
-                          className="hidden"
-                        />
-                      </div>
-                    )}
+                    <AnimatePresence mode="wait">
+                      {droppedFile ? (
+                        <motion.div
+                          key="file-active-mobile"
+                          initial={{ scale: 0.9, opacity: 0, y: 10 }}
+                          animate={{ scale: 1, opacity: 1, y: 0 }}
+                          exit={{ scale: 0.9, opacity: 0, y: -10 }}
+                          transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                          className="flex items-center gap-2.5 bg-[#151522] border border-[#7C5CFC]/40 px-3.5 py-2.5 rounded-xl shadow-[0_0_15px_rgba(124,92,252,0.15)]"
+                        >
+                          <div className="w-8 h-8 rounded-lg bg-[#7C5CFC]/10 flex items-center justify-center text-[#7C5CFC] font-black text-xs shrink-0">
+                            {droppedFile.ext}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs font-bold text-white truncate">{droppedFile.name}</p>
+                            <p className="text-[10px] text-[#5a5a6a]">{droppedFile.size}</p>
+                          </div>
+                          <button onClick={clearFile} className="p-1 text-[#5a5a6a] hover:text-white rounded hover:bg-white/5 transition-colors cursor-pointer shrink-0">
+                            <X size={12} />
+                          </button>
+                        </motion.div>
+                      ) : (
+                        <motion.div
+                          key="file-empty-mobile"
+                          initial={{ scale: 0.95, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          exit={{ scale: 0.95, opacity: 0 }}
+                          transition={{ duration: 0.2 }}
+                          onClick={() => fileInputRef.current?.click()}
+                          className="flex items-center justify-center gap-2 py-3 bg-[#1a1a22]/50 border border-dashed border-[#222230] text-[#b0b0bc] rounded-xl transition-all cursor-pointer group"
+                        >
+                          <UploadCloud size={14} className="text-[#7C5CFC] shrink-0" />
+                          <span className="text-xs font-bold">Select or drop file</span>
+                          <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={(e) => { if (e.target.files?.[0]) handleFileDrop(e.target.files[0]); e.target.value = ''; }}
+                            className="hidden"
+                          />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
 
                     <div className="grid grid-cols-2 gap-2">
                       <CustomDropdown value={source} onChange={handleSourceChange} options={sourceOptions} placeholder="Format" icon={Layers} disabled={false} />
