@@ -21,6 +21,18 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
   const currentPath = location.pathname;
   const megamenuRef = useRef(null);
   const hoverTimeoutRef = useRef(null);
+  const prevTabRef = useRef(null);
+
+  useEffect(() => {
+    if (hoveredTab) {
+      prevTabRef.current = hoveredTab;
+    }
+  }, [hoveredTab]);
+
+  const TABS = ["tools", "instructions"];
+  const currentTabIndex = hoveredTab ? TABS.indexOf(hoveredTab) : -1;
+  const prevTabIndex = prevTabRef.current ? TABS.indexOf(prevTabRef.current) : -1;
+  const slideDirection = currentTabIndex > prevTabIndex ? 1 : -1;
 
   const handleCategoryHover = (catName) => {
     if (hoverTimeoutRef.current) {
@@ -150,215 +162,235 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
             <AnimatePresence>
               {hoveredTab && (
                 <motion.div
-                  initial={{ opacity: 0, y: 8, scale: 0.98 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 4, scale: 0.98 }}
-                  transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+                  initial={{ opacity: 0, y: 8, scale: 0.98, width: hoveredTab === "tools" ? 700 : 850, height: hoveredTab === "tools" ? 362 : 322 }}
+                  animate={{ opacity: 1, y: 0, scale: 1, width: hoveredTab === "tools" ? 700 : 850, height: hoveredTab === "tools" ? 362 : 322 }}
+                  exit={{ opacity: 0, y: 4, scale: 0.98, transition: { duration: 0.15 } }}
+                  transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                   className={`absolute top-[85%] left-1/2 -translate-x-1/2 mt-1 bg-[#111116] border border-[#1e1e28] rounded-xl shadow-[0_20px_60px_rgba(0,0,0,0.8)] z-[200] overflow-hidden`}
-                  layoutId="morphingDropdown"
-                  style={{ width: hoveredTab === "tools" ? "700px" : "850px" }}
                 >
                   {/* Top gradient bar */}
                   <div className="h-[2px] w-full bg-gradient-to-r from-[#7C5CFC] via-[#A78BFA] to-[#7C5CFC]" />
 
-                  {hoveredTab === "tools" ? (
-                    /* ─── TOOLS MEGAMENU CONTENT ─── */
-                    <div className="flex" style={{ minHeight: '360px' }}>
-                      {/* Left: Categories */}
-                      <div className="w-[195px] border-r border-[#1a1a22] flex flex-col py-2.5">
-                        <p className="text-[8px] font-black text-[#4a4a5a] uppercase tracking-[0.2em] px-5 py-1.5">Browse</p>
-                        <div className="flex-1 overflow-y-auto custom-scrollbar px-3 space-y-1">
-                          {Object.keys(toolCategories).map((catName) => {
-                            const isActive = catName === activeCategory;
-                            return (
-                              <button
-                                key={catName}
-                                onMouseEnter={() => handleCategoryHover(catName)}
-                                className={`w-full px-3 py-2 text-left text-[11px] font-bold flex items-center justify-between cursor-pointer rounded-lg relative ${
-                                  isActive ? "text-white" : "text-[#5a5a6a] hover:text-[#c0c0cc]"
-                                }`}
-                              >
-                                {isActive && (
-                                  <motion.div
-                                    layoutId="activeCategoryBg"
-                                    className="absolute inset-0 bg-[#ffffff05] border border-[#ffffff02] rounded-lg"
-                                    transition={{ type: "spring", damping: 25, stiffness: 250 }}
-                                  />
-                                )}
-                                {isActive && (
-                                  <motion.div
-                                    layoutId="catIndicator"
-                                    className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-4 bg-[#7C5CFC] rounded-r-full"
-                                    transition={{ type: "spring", damping: 20, stiffness: 300 }}
-                                  />
-                                )}
-                                <span className="truncate relative z-10">{catName}</span>
-                                <span className={`text-[9px] tabular-nums font-bold shrink-0 ml-2 relative z-10 ${isActive ? "text-[#7C5CFC]" : "text-[#3e3e4e]"}`}>
-                                  {toolCategories[catName].length}
-                                </span>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-
-                      {/* Right: Tools List */}
-                      <div className="flex-1 flex flex-col min-w-0">
-                        <div className="px-4 py-2.5 border-b border-[#1a1a22] flex items-center justify-between shrink-0">
-                          <div className="flex items-center gap-2">
-                            <h3 className="text-[13px] font-bold text-white">{activeCategory}</h3>
-                            <span className="text-[9px] text-[#3e3e4e] bg-[#1a1a22] px-1.5 py-0.5 rounded font-mono">{toolCategories[activeCategory]?.length}</span>
-                          </div>
-                          <button
-                            onClick={() => { setHoveredTab(null); setIsPaletteOpen(true); }}
-                            className="flex items-center gap-1 text-[10px] text-[#4a4a5a] hover:text-[#7C5CFC] transition-colors cursor-pointer"
-                          >
-                            <Search size={10} />
-                            <span>Search</span>
-                          </button>
-                        </div>
-
-                        <div className="flex-1 overflow-y-auto custom-scrollbar p-2.5">
-                          <div className="grid grid-cols-2 gap-[3px]">
-                            {toolCategories[activeCategory]?.map((tool) => {
-                              const Icon = tool.icon;
-                              const isCurrent = tool.to === currentPath;
-                              return (
-                                <Link
-                                  key={tool.to}
-                                  to={tool.to}
-                                  onClick={() => setHoveredTab(null)}
-                                  className={`group flex items-center gap-2.5 px-3 py-2.5 rounded-lg transition-all relative overflow-hidden ${
-                                    isCurrent
-                                      ? "bg-[#7C5CFC]/12 border-l-2 border-[#7C5CFC]"
-                                      : "hover:bg-[#ffffff04] border-l-2 border-transparent hover:border-[#7C5CFC]/40"
-                                  }`}
-                                >
-                                  <div className={`w-7 h-7 rounded-md shrink-0 flex items-center justify-center ${
-                                    isCurrent
-                                      ? "bg-[#7C5CFC]/20 text-[#7C5CFC]"
-                                      : (tool.color || "bg-[#1a1a22] text-[#6a6a7a] group-hover:text-[#7C5CFC] group-hover:bg-[#7C5CFC]/8")
-                                  } transition-colors`}>
-                                    <Icon size={13} />
-                                  </div>
-                                  <div className="min-w-0 flex-1">
-                                    <p className={`text-[11px] font-semibold truncate ${
-                                      isCurrent ? "text-[#7C5CFC]" : "text-[#b0b0bc] group-hover:text-white transition-colors"
-                                    }`}>{tool.name}</p>
-                                    <p className="text-[9px] leading-tight mt-0.5 text-[#3e3e4e] truncate">{tool.description}</p>
-                                  </div>
-                                  <svg className={`w-3 h-3 shrink-0 transition-all ${isCurrent ? "text-[#7C5CFC] opacity-100" : "text-[#3e3e4e] opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5"}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
-                                    <polyline points="9 18 15 12 9 6" />
-                                  </svg>
-                                </Link>
-                              );
-                            })}
-                          </div>
-                        </div>
-
-                        <div className="px-4 py-2 border-t border-[#1a1a22] shrink-0">
-                          <button
-                            onClick={() => { setHoveredTab(null); setIsPaletteOpen(true); }}
-                            className="text-[10px] text-[#4a4a5a] hover:text-[#7C5CFC] font-medium transition-colors cursor-pointer flex items-center gap-1"
-                          >
-                            Browse all tools
-                            <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
-                              <polyline points="9 18 15 12 9 6" />
-                            </svg>
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    /* ─── INSTRUCTIONS MEGAMENU CONTENT ─── */
-                    <div className="grid grid-cols-12 gap-6 p-6 text-left" style={{ minHeight: '320px' }}>
-                      {/* Left: Work Faster & Steps */}
-                      <div className="col-span-5 border-r border-[#1a1a22] pr-6 space-y-4">
-                        <div>
-                          <span className="text-[9px] font-black tracking-widest text-[#7C5CFC] uppercase">Work Faster. Think Bigger.</span>
-                          <h4 className="text-sm font-black text-white mt-1">The Modern Utility Hub</h4>
-                          <p className="text-[11.5px] text-[#6a6a7a] mt-1 leading-relaxed">
-                            We discarded the bloat and focused purely on performance, privacy, and speed. 50+ tools executing instantly in your browser.
-                          </p>
-                        </div>
-
-                        <div className="space-y-3.5 pt-1">
-                          <div>
-                            <p className="text-[10px] font-black text-[#A78BFA] uppercase tracking-wider">01 // Step: Locate instantly</p>
-                            <p className="text-[11px] text-[#8a8a9a] leading-relaxed mt-0.5">
-                              Hit <span className="bg-[#1a1a22] px-1.5 py-0.5 rounded text-white font-mono text-[10px] border border-[#222230]">CMD+K</span> anywhere to open the command palette.
-                            </p>
-                          </div>
-
-                          <div>
-                            <p className="text-[10px] font-black text-[#A78BFA] uppercase tracking-wider">02 // Step: Execute locally</p>
-                            <p className="text-[11px] text-[#8a8a9a] leading-relaxed mt-0.5">
-                              Paste your payload or drop files. Everything runs securely inside your local browser sandbox.
-                            </p>
-                          </div>
-
-                          <div>
-                            <p className="text-[10px] font-black text-[#A78BFA] uppercase tracking-wider">03 // Step: Export effortlessly</p>
-                            <p className="text-[11px] text-[#8a8a9a] leading-relaxed mt-0.5">
-                              Copy your formatted code with one click, or instantly download your processed assets.
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Middle: Feature Comparison Table */}
-                      <div className="col-span-4 border-r border-[#1a1a22] pr-6 space-y-3.5">
-                        <div>
-                          <span className="text-[9px] font-black tracking-widest text-[#7C5CFC] uppercase">Transparent Access</span>
-                          <h4 className="text-sm font-black text-white mt-1">Account Features</h4>
-                        </div>
-
-                        <div className="w-full text-[10.5px] text-[#8a8a9a]">
-                          <div className="grid grid-cols-3 border-b border-[#1d1d27] pb-2 font-bold text-white">
-                            <span>Utility Access</span>
-                            <span className="text-center">Guest</span>
-                            <span className="text-center">Member</span>
-                          </div>
-                          {[
-                            { name: "50+ Client-side tools", guest: true, user: true },
-                            { name: "Zero tracking & ads", guest: true, user: true },
-                            { name: "Recent history log", guest: true, user: true },
-                            { name: "Pin favorite tools", guest: false, user: true },
-                            { name: "Cloud sync configs", guest: false, user: true },
-                          ].map((row, i) => (
-                            <div key={i} className="grid grid-cols-3 py-2 border-b border-[#141419] items-center">
-                              <span className="text-[#6a6a7a] truncate pr-1">{row.name}</span>
-                              <span className="text-center">{row.guest ? "✓" : "✕"}</span>
-                              <span className="text-center text-[#7C5CFC] font-black">{row.user ? "✓" : "✕"}</span>
+                  <div className="relative w-full h-full overflow-hidden">
+                    <AnimatePresence mode="popLayout" custom={slideDirection} initial={false}>
+                      {hoveredTab === "tools" && (
+                        <motion.div
+                          key="tools"
+                          custom={slideDirection}
+                          initial={{ opacity: 0, x: slideDirection === 1 ? 30 : -30 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: slideDirection === 1 ? -30 : 30 }}
+                          transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                          className="flex" 
+                          style={{ minHeight: '360px', width: '700px' }}
+                        >
+                          {/* Left: Categories */}
+                          <div className="w-[195px] border-r border-[#1a1a22] flex flex-col py-2.5 shrink-0">
+                            <p className="text-[8px] font-black text-[#4a4a5a] uppercase tracking-[0.2em] px-5 py-1.5">Browse</p>
+                            <div className="flex-1 overflow-y-auto custom-scrollbar px-3 space-y-1">
+                              {Object.keys(toolCategories).map((catName) => {
+                                const isActive = catName === activeCategory;
+                                return (
+                                  <button
+                                    key={catName}
+                                    onMouseEnter={() => handleCategoryHover(catName)}
+                                    className={`w-full px-3 py-2 text-left text-[11px] font-bold flex items-center justify-between cursor-pointer rounded-lg relative ${
+                                      isActive ? "text-white" : "text-[#5a5a6a] hover:text-[#c0c0cc]"
+                                    }`}
+                                  >
+                                    {isActive && (
+                                      <motion.div
+                                        layoutId="activeCategoryBg"
+                                        className="absolute inset-0 bg-[#ffffff05] border border-[#ffffff02] rounded-lg"
+                                        transition={{ type: "spring", damping: 25, stiffness: 250 }}
+                                      />
+                                    )}
+                                    {isActive && (
+                                      <motion.div
+                                        layoutId="catIndicator"
+                                        className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-4 bg-[#7C5CFC] rounded-r-full"
+                                        transition={{ type: "spring", damping: 20, stiffness: 300 }}
+                                      />
+                                    )}
+                                    <span className="truncate relative z-10">{catName}</span>
+                                    <span className={`text-[9px] tabular-nums font-bold shrink-0 ml-2 relative z-10 ${isActive ? "text-[#7C5CFC]" : "text-[#3e3e4e]"}`}>
+                                      {toolCategories[catName].length}
+                                    </span>
+                                  </button>
+                                );
+                              })}
                             </div>
-                          ))}
-                        </div>
-                      </div>
+                          </div>
 
-                      {/* Right: FAQs */}
-                      <div className="col-span-3 space-y-4">
-                        <div>
-                          <span className="text-[9px] font-black tracking-widest text-[#7C5CFC] uppercase">Questions?</span>
-                          <h4 className="text-sm font-black text-white mt-1">Quick FAQ</h4>
-                        </div>
+                          {/* Right: Tools List */}
+                          <div className="flex-1 flex flex-col min-w-0">
+                            <div className="px-4 py-2.5 border-b border-[#1a1a22] flex items-center justify-between shrink-0">
+                              <div className="flex items-center gap-2">
+                                <h3 className="text-[13px] font-bold text-white">{activeCategory}</h3>
+                                <span className="text-[9px] text-[#3e3e4e] bg-[#1a1a22] px-1.5 py-0.5 rounded font-mono">{toolCategories[activeCategory]?.length}</span>
+                              </div>
+                              <button
+                                onClick={() => { setHoveredTab(null); setIsPaletteOpen(true); }}
+                                className="flex items-center gap-1 text-[10px] text-[#4a4a5a] hover:text-[#7C5CFC] transition-colors cursor-pointer"
+                              >
+                                <Search size={10} />
+                                <span>Search</span>
+                              </button>
+                            </div>
 
-                        <div className="space-y-3.5">
-                          <div>
-                            <p className="text-[10.5px] font-bold text-white">Is it 100% free?</p>
-                            <p className="text-[10px] text-[#6a6a7a] leading-relaxed mt-0.5">Yes. No paywalls, subscriptions, or hidden charges whatsoever.</p>
+                            <div className="flex-1 overflow-y-auto custom-scrollbar p-2.5">
+                              <div className="grid grid-cols-2 gap-[3px]">
+                                {toolCategories[activeCategory]?.map((tool) => {
+                                  const Icon = tool.icon;
+                                  const isCurrent = tool.to === currentPath;
+                                  return (
+                                    <Link
+                                      key={tool.to}
+                                      to={tool.to}
+                                      onClick={() => setHoveredTab(null)}
+                                      className={`group flex items-center gap-2.5 px-3 py-2.5 rounded-lg transition-all relative overflow-hidden ${
+                                        isCurrent
+                                          ? "bg-[#7C5CFC]/12 border-l-2 border-[#7C5CFC]"
+                                          : "hover:bg-[#ffffff04] border-l-2 border-transparent hover:border-[#7C5CFC]/40"
+                                      }`}
+                                    >
+                                      <div className={`w-7 h-7 rounded-md shrink-0 flex items-center justify-center ${
+                                        isCurrent
+                                          ? "bg-[#7C5CFC]/20 text-[#7C5CFC]"
+                                          : (tool.color || "bg-[#1a1a22] text-[#6a6a7a] group-hover:text-[#7C5CFC] group-hover:bg-[#7C5CFC]/8")
+                                      } transition-colors`}>
+                                        <Icon size={13} />
+                                      </div>
+                                      <div className="min-w-0 flex-1">
+                                        <p className={`text-[11px] font-semibold truncate ${
+                                          isCurrent ? "text-[#7C5CFC]" : "text-[#b0b0bc] group-hover:text-white transition-colors"
+                                        }`}>{tool.name}</p>
+                                        <p className="text-[9px] leading-tight mt-0.5 text-[#3e3e4e] truncate">{tool.description}</p>
+                                      </div>
+                                      <svg className={`w-3 h-3 shrink-0 transition-all ${isCurrent ? "text-[#7C5CFC] opacity-100" : "text-[#3e3e4e] opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5"}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+                                        <polyline points="9 18 15 12 9 6" />
+                                      </svg>
+                                    </Link>
+                                  );
+                                })}
+                              </div>
+                            </div>
+
+                            <div className="px-4 py-2 border-t border-[#1a1a22] shrink-0">
+                              <button
+                                onClick={() => { setHoveredTab(null); setIsPaletteOpen(true); }}
+                                className="text-[10px] text-[#4a4a5a] hover:text-[#7C5CFC] font-medium transition-colors cursor-pointer flex items-center gap-1"
+                              >
+                                Browse all tools
+                                <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+                                  <polyline points="9 18 15 12 9 6" />
+                                </svg>
+                              </button>
+                            </div>
                           </div>
-                          <div>
-                            <p className="text-[10.5px] font-bold text-white">Are files secure?</p>
-                            <p className="text-[10px] text-[#6a6a7a] leading-relaxed mt-0.5">Strict Privacy. Calculations are local. We never see your data.</p>
+                        </motion.div>
+                      )}
+
+                      {hoveredTab === "instructions" && (
+                        <motion.div
+                          key="instructions"
+                          custom={slideDirection}
+                          initial={{ opacity: 0, x: slideDirection === 1 ? 30 : -30 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: slideDirection === 1 ? -30 : 30 }}
+                          transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                          className="grid grid-cols-12 gap-6 p-6 text-left"
+                          style={{ minHeight: '320px', width: '850px' }}
+                        >
+                          {/* Left: Work Faster & Steps */}
+                          <div className="col-span-5 border-r border-[#1a1a22] pr-6 space-y-4">
+                            <div>
+                              <span className="text-[9px] font-black tracking-widest text-[#7C5CFC] uppercase">Work Faster. Think Bigger.</span>
+                              <h4 className="text-sm font-black text-white mt-1">The Modern Utility Hub</h4>
+                              <p className="text-[11.5px] text-[#6a6a7a] mt-1 leading-relaxed">
+                                We discarded the bloat and focused purely on performance, privacy, and speed. 50+ tools executing instantly in your browser.
+                              </p>
+                            </div>
+
+                            <div className="space-y-3.5 pt-1">
+                              <div>
+                                <p className="text-[10px] font-black text-[#A78BFA] uppercase tracking-wider">01 // Step: Locate instantly</p>
+                                <p className="text-[11px] text-[#8a8a9a] leading-relaxed mt-0.5">
+                                  Hit <span className="bg-[#1a1a22] px-1.5 py-0.5 rounded text-white font-mono text-[10px] border border-[#222230]">CMD+K</span> anywhere to open the command palette.
+                                </p>
+                              </div>
+
+                              <div>
+                                <p className="text-[10px] font-black text-[#A78BFA] uppercase tracking-wider">02 // Step: Execute locally</p>
+                                <p className="text-[11px] text-[#8a8a9a] leading-relaxed mt-0.5">
+                                  Paste your payload or drop files. Everything runs securely inside your local browser sandbox.
+                                </p>
+                              </div>
+
+                              <div>
+                                <p className="text-[10px] font-black text-[#A78BFA] uppercase tracking-wider">03 // Step: Export effortlessly</p>
+                                <p className="text-[11px] text-[#8a8a9a] leading-relaxed mt-0.5">
+                                  Copy your formatted code with one click, or instantly download your processed assets.
+                                </p>
+                              </div>
+                            </div>
                           </div>
-                          <div>
-                            <p className="text-[10.5px] font-bold text-white">Why register?</p>
-                            <p className="text-[10px] text-[#6a6a7a] leading-relaxed mt-0.5">Enable Zero Latency cross-device sync of your configuration logs.</p>
+
+                          {/* Middle: Feature Comparison Table */}
+                          <div className="col-span-4 border-r border-[#1a1a22] pr-6 space-y-3.5">
+                            <div>
+                              <span className="text-[9px] font-black tracking-widest text-[#7C5CFC] uppercase">Transparent Access</span>
+                              <h4 className="text-sm font-black text-white mt-1">Account Features</h4>
+                            </div>
+
+                            <div className="w-full text-[10.5px] text-[#8a8a9a]">
+                              <div className="grid grid-cols-3 border-b border-[#1d1d27] pb-2 font-bold text-white">
+                                <span>Utility Access</span>
+                                <span className="text-center">Guest</span>
+                                <span className="text-center">Member</span>
+                              </div>
+                              {[
+                                { name: "50+ Client-side tools", guest: true, user: true },
+                                { name: "Zero tracking & ads", guest: true, user: true },
+                                { name: "Recent history log", guest: true, user: true },
+                                { name: "Pin favorite tools", guest: false, user: true },
+                                { name: "Cloud sync configs", guest: false, user: true },
+                              ].map((row, i) => (
+                                <div key={i} className="grid grid-cols-3 py-2 border-b border-[#141419] items-center">
+                                  <span className="text-[#6a6a7a] truncate pr-1">{row.name}</span>
+                                  <span className="text-center">{row.guest ? "✓" : "✕"}</span>
+                                  <span className="text-center text-[#7C5CFC] font-black">{row.user ? "✓" : "✕"}</span>
+                                </div>
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
+
+                          {/* Right: FAQs */}
+                          <div className="col-span-3 space-y-4">
+                            <div>
+                              <span className="text-[9px] font-black tracking-widest text-[#7C5CFC] uppercase">Questions?</span>
+                              <h4 className="text-sm font-black text-white mt-1">Quick FAQ</h4>
+                            </div>
+
+                            <div className="space-y-3.5">
+                              <div>
+                                <p className="text-[10.5px] font-bold text-white">Is it 100% free?</p>
+                                <p className="text-[10px] text-[#6a6a7a] leading-relaxed mt-0.5">Yes. No paywalls, subscriptions, or hidden charges whatsoever.</p>
+                              </div>
+                              <div>
+                                <p className="text-[10.5px] font-bold text-white">Are files secure?</p>
+                                <p className="text-[10px] text-[#6a6a7a] leading-relaxed mt-0.5">Strict Privacy. Calculations are local. We never see your data.</p>
+                              </div>
+                              <div>
+                                <p className="text-[10.5px] font-bold text-white">Why register?</p>
+                                <p className="text-[10px] text-[#6a6a7a] leading-relaxed mt-0.5">Enable Zero Latency cross-device sync of your configuration logs.</p>
+                              </div>
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>

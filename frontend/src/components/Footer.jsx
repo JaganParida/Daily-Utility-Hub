@@ -1,7 +1,10 @@
 import { Link } from 'react-router-dom';
 import { Globe, Mail, ArrowRight, Zap, Shield, Sparkles } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const Footer = () => {
+  const { currentUser } = useAuth();
+
   return (
     <footer className="w-full relative z-10 mt-auto bg-[#050507] border-t border-[#1e1e28]">
       {/* Premium subtle background glow */}
@@ -20,9 +23,11 @@ const Footer = () => {
             </p>
           </div>
           <div className="flex items-center gap-4 shrink-0">
-            <Link to="/register" className="h-11 px-6 rounded-xl bg-[#7C5CFC] hover:bg-[#6A4BE0] text-white font-bold text-sm flex items-center justify-center transition-all shadow-[0_0_20px_rgba(124,92,252,0.3)] hover:shadow-[0_0_30px_rgba(124,92,252,0.5)]">
-              Get Started Free
-            </Link>
+            {!currentUser && (
+              <Link to="/register" className="h-11 px-6 rounded-xl bg-[#7C5CFC] hover:bg-[#6A4BE0] text-white font-bold text-sm flex items-center justify-center transition-all shadow-[0_0_20px_rgba(124,92,252,0.3)] hover:shadow-[0_0_30px_rgba(124,92,252,0.5)]">
+                Get Started Free
+              </Link>
+            )}
             <Link to="/dashboard" className="h-11 px-6 rounded-xl bg-[#1a1a24] hover:bg-[#252532] text-white font-bold text-sm border border-[#2e2e3e] flex items-center justify-center transition-colors">
               Explore Tools <ArrowRight className="ml-2" size={16} />
             </Link>
