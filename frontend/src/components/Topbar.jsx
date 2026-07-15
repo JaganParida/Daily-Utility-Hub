@@ -44,15 +44,46 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
     setIsMobileMenuOpen(false);
   }, [currentPath]);
 
+  const searchRef = useRef(null);
+  const searchInputRef = useRef(null);
+  const [isSearchExpanded, setIsSearchExpanded] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const allTools = Object.values(toolCategories).flat();
+  const uniqueTools = [];
+  const seenPaths = new Set();
+  for (const tool of allTools) {
+    if (!seenPaths.has(tool.to)) {
+      seenPaths.add(tool.to);
+      uniqueTools.push(tool);
+    }
+  }
+
+  const filteredTools = searchQuery
+    ? uniqueTools.filter(
+        (tool) =>
+          tool.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          tool.description.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : [];
+
   useEffect(() => {
     const handler = (e) => {
       if (megamenuRef.current && !megamenuRef.current.contains(e.target)) setHoveredTab(null);
+      if (searchRef.current && !searchRef.current.contains(e.target)) {
+        setIsSearchExpanded(false);
+        setSearchQuery("");
+      }
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  useHotkeys("ctrl+k, meta+k", (e) => { e.preventDefault(); navigate('/search'); }, { enableOnFormTags: true });
+  useHotkeys("ctrl+k, meta+k", (e) => {
+    e.preventDefault();
+    setIsSearchExpanded(true);
+    setTimeout(() => searchInputRef.current?.focus(), 50);
+  }, { enableOnFormTags: true });
 
 
 
@@ -334,16 +365,105 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
           {/* RIGHT: Actions */}
           <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
             {/* Search */}
-            <button
-              onClick={() => navigate('/search')}
-              className="h-8 flex items-center gap-1.5 px-2.5 rounded-lg text-[#6a6a7a] hover:text-[#8a8a9a] transition-colors cursor-text"
-            >
-              <Search size={14} />
-              <span className="hidden sm:inline text-[11px] font-medium">Search...</span>
-              <div className="hidden md:flex items-center gap-0.5 text-[9px] font-bold text-[#5a5a6a] bg-[#1a1a22] border border-[#2a2a35] px-1.5 py-0.5 rounded ml-1">
-                <span>⌘K</span>
-              </div>
-            </button>
+            <div className="relative shrink-0">
+              <AnimatePresence mode="wait">
+                {!isSearchExpanded ? (
+                  <motion.button
+                    key="collapsed-search"
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    onClick={() => {
+                      setIsSearchExpanded(true);
+                      setTimeout(() => searchInputRef.current?.focus(), 50);
+                    }}
+                    className="w-8 h-8 rounded-full border border-[#222230] hover:border-[#7C5CFC]/40 hover:bg-[#7C5CFC]/5 flex items-center justify-center text-[#6a6a7a] hover:text-white cursor-pointer bg-[#141419]/90 transition-all shadow-md shrink-0"
+                    title="Search (⌘K)"
+                  >
+                    <Search size={13} />
+                  </motion.button>
+                ) : (
+                  <motion.div
+                    key="expanded-search"
+                    ref={searchRef}
+                    initial={{ width: 32, opacity: 0 }}
+                    animate={{ width: 260, opacity: 1 }}
+                    exit={{ width: 32, opacity: 0 }}
+                    className="relative flex items-center h-8 rounded-full border border-[#7C5CFC]/50 bg-[#121216] px-3 shadow-lg shrink-0"
+                  >
+                    <Search size={12} className="text-[#7C5CFC] shrink-0 mr-2" />
+                    <input
+                      ref={searchInputRef}
+                      type="text"
+                      placeholder="Search tools..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full bg-transparent border-none text-[11px] text-white focus:outline-none placeholder:text-[#5a5a6a]"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsSearchExpanded(false);
+                        setSearchQuery("");
+                      }}
+                      className="text-[#5a5a6a] hover:text-white shrink-0 p-0.5 ml-1"
+                    >
+                      <X size={12} />
+                    </button>
+
+                    {/* Suggestions dropdown list */}
+                    <AnimatePresence>
+                      {searchQuery && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 8, scale: 0.98 }}
+                          transition={{ duration: 0.15 }}
+                          className="absolute right-0 top-full mt-2 w-[280px] xs:w-[320px] sm:w-[360px] max-h-[380px] overflow-hidden bg-[#111115] border border-[#24242e] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.7)] z-[300] flex flex-col"
+                        >
+                          <div className="flex-1 overflow-y-auto custom-scrollbar py-2">
+                            {filteredTools.length > 0 ? (
+                              filteredTools.map((tool) => {
+                                const ToolIcon = tool.icon;
+                                return (
+                                  <Link
+                                    key={tool.to}
+                                    to={tool.to}
+                                    onClick={() => {
+                                      setIsSearchExpanded(false);
+                                      setSearchQuery("");
+                                    }}
+                                    className="w-full flex items-start gap-3 px-4 py-2.5 hover:bg-[#7C5CFC]/5 hover:text-white transition-colors border-b border-[#181822]/40 last:border-b-0 group"
+                                  >
+                                    <div className="w-7 h-7 rounded-lg bg-[#1a1a22] group-hover:bg-[#7C5CFC]/10 flex items-center justify-center text-[#6a6a7a] group-hover:text-[#7C5CFC] transition-colors shrink-0 mt-0.5">
+                                      <ToolIcon size={13} />
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                      <div className="flex items-center justify-between gap-2">
+                                        <span className="text-[11px] font-bold text-[#d0d0dc] group-hover:text-white truncate">
+                                          {tool.name}
+                                        </span>
+                                      </div>
+                                      <p className="text-[9px] text-[#5a5a6a] leading-normal line-clamp-2 mt-0.5">
+                                        {tool.description}
+                                      </p>
+                                    </div>
+                                  </Link>
+                                );
+                              })
+                            ) : (
+                              <div className="px-4 py-6 text-center text-xs text-[#5a5a6a]">
+                                No matching tools found
+                              </div>
+                            )}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
 
             {/* User */}
             {user ? (
