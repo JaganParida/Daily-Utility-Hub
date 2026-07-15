@@ -1,5 +1,5 @@
 import {
-  User, LogOut, Search, Menu, X, ChevronDown, Layers, Moon, Sun
+  User, LogOut, Search, Menu, X, ChevronDown, Layers, Moon, Sun, HelpCircle, Shield
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -13,6 +13,7 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [isMegamenuOpen, setIsMegamenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isInfoOpen, setIsInfoOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState(Object.keys(toolCategories)[0]);
   const [mobileExpandedCat, setMobileExpandedCat] = useState(null);
 
@@ -227,6 +228,15 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
               </div>
             </button>
 
+             {/* How to use instruction help */}
+            <button
+              onClick={() => setIsInfoOpen(true)}
+              className="w-8 h-8 flex items-center justify-center rounded-lg text-[#6a6a7a] hover:text-white transition-colors cursor-pointer"
+              title="How to use instructions"
+            >
+              <HelpCircle size={15} />
+            </button>
+
             {/* Theme toggle */}
             <button
               onClick={toggleTheme}
@@ -347,6 +357,84 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                   </button>
                 </div>
               )}
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Instructions Modal Overlay */}
+      <AnimatePresence>
+        {isInfoOpen && (
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsInfoOpen(false)}
+              className="absolute inset-0 bg-[#0b0b0f]/80 backdrop-blur-sm"
+            />
+
+            {/* Modal Box */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ type: "spring", duration: 0.4 }}
+              className="relative z-10 w-full max-w-[460px] bg-[#111116] border border-[#1e1e28] rounded-xl shadow-[0_20px_60px_rgba(0,0,0,0.8)] overflow-hidden"
+            >
+              {/* Top Accent Line */}
+              <div className="h-[2px] w-full bg-gradient-to-r from-[#7C5CFC] via-[#A78BFA] to-[#7C5CFC]" />
+
+              <div className="p-5 sm:p-6">
+                {/* Header */}
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xs sm:text-sm font-black text-white uppercase tracking-wider">How to Use UtilityHub</h3>
+                  <button onClick={() => setIsInfoOpen(false)} className="p-1 hover:bg-[#1a1a22] rounded-lg text-[#6a6a7a] hover:text-white cursor-pointer transition-colors"><X size={14} /></button>
+                </div>
+
+                {/* Body Content */}
+                <div className="space-y-4 text-xs text-[#8a8a9a]">
+                  <p className="leading-relaxed">
+                    UtilityHub runs all operations <span className="text-[#A78BFA] font-bold">100% locally</span> on your device. We never upload your files to any server.
+                  </p>
+
+                  <div className="space-y-3.5 pt-2">
+                    <div className="flex gap-3">
+                      <div className="w-5 h-5 rounded-md bg-[#7C5CFC]/10 flex items-center justify-center text-[#7C5CFC] font-black text-[10px] shrink-0 mt-0.5">1</div>
+                      <div>
+                        <p className="font-bold text-white mb-0.5">Select a file (Optional)</p>
+                        <p className="leading-relaxed">Drop a file into the workspace or click "Select file". The system will auto-detect compatible operations.</p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-3">
+                      <div className="w-5 h-5 rounded-md bg-[#7C5CFC]/10 flex items-center justify-center text-[#7C5CFC] font-black text-[10px] shrink-0 mt-0.5">2</div>
+                      <div>
+                        <p className="font-bold text-white mb-0.5">Choose Format & Operation</p>
+                        <p className="leading-relaxed">Select your target format and the specific operation you'd like to perform from the dropdowns.</p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-3">
+                      <div className="w-5 h-5 rounded-md bg-[#7C5CFC]/10 flex items-center justify-center text-[#7C5CFC] font-black text-[10px] shrink-0 mt-0.5">3</div>
+                      <div>
+                        <p className="font-bold text-white mb-0.5">Launch & Process</p>
+                        <p className="leading-relaxed">Click "Launch" to start processing instantly. Once done, you'll see the download link or options.</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Privacy Alert */}
+                  <div className="mt-5 p-3 rounded-lg bg-[#7C5CFC]/5 border border-[#7C5CFC]/15 flex gap-2.5 items-start">
+                    <Shield size={14} className="text-[#7C5CFC] shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-bold text-white mb-0.5">Privacy First</p>
+                      <p className="leading-relaxed text-[11px]">Since everything is local, your files are secure and private. Ideal for processing confidential documents.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </motion.div>
           </div>
         )}
