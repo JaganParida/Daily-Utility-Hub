@@ -420,6 +420,7 @@ const Dashboard = () => {
   const [simulatedOpHighlight, setSimulatedOpHighlight] = useState(null);
   const simulationTimeouts = useRef([]);
   const hasUserInteracted = useRef(false);
+  const [isDemoActive, setIsDemoActive] = useState(false);
   
   const clearSimulation = useCallback(() => {
     simulationTimeouts.current.forEach(clearTimeout);
@@ -428,12 +429,14 @@ const Dashboard = () => {
     setSimulatedOpHighlight(null);
     setIsFormatOpen(false);
     setIsOperationOpen(false);
+    setIsDemoActive(false);
   }, []);
 
   const stopDemoAndInteract = useCallback(() => {
     if (hasUserInteracted.current) return;
     hasUserInteracted.current = true;
     clearSimulation();
+    setIsDemoActive(false);
     setDroppedFile((prev) => {
       if (prev?.isDemo) {
         setSource("");
@@ -449,6 +452,7 @@ const Dashboard = () => {
   const runDemoLoop = useCallback(() => {
     if (hasUserInteracted.current) return;
     
+    setIsDemoActive(true);
     setSource("");
     setOperationIdx(0);
     setDroppedFile(null);
@@ -469,6 +473,7 @@ const Dashboard = () => {
           if (hasUserInteracted.current) return;
           setSource("");
           setOperationIdx(0);
+          setIsDemoActive(false);
         }, 3500);
         simulationTimeouts.current.push(t3);
       }, 700);
@@ -843,7 +848,7 @@ const Dashboard = () => {
                           options={sourceOptions} 
                           placeholder="Format" 
                           icon={Layers} 
-                          disabled={false}
+                          disabled={!droppedFile && !isDemoActive}
                           open={isFormatOpen}
                           setOpen={setIsFormatOpen}
                           highlightedValue={simulatedFormatHighlight}
@@ -855,7 +860,7 @@ const Dashboard = () => {
                           onChange={(val) => setOperationIdx(val)} 
                           options={operationOptions} 
                           placeholder="Operation" 
-                          disabled={!source} 
+                          disabled={(!droppedFile && !isDemoActive) || !source} 
                           icon={Zap} 
                           open={isOperationOpen}
                           setOpen={setIsOperationOpen}
@@ -868,7 +873,7 @@ const Dashboard = () => {
                     <motion.button
                       layout
                       onClick={handleLaunch}
-                      disabled={!activeOp}
+                      disabled={(!droppedFile && !isDemoActive) || !activeOp}
                       className={`h-11 px-6 bg-[#7C5CFC] hover:bg-[#6B4FE0] text-white text-xs font-black transition-all disabled:bg-[#1a1a22] disabled:text-[#3a3a48] disabled:cursor-not-allowed cursor-pointer shrink-0 rounded-xl flex items-center justify-center gap-1.5 shadow-[0_0_20px_rgba(124,92,252,0.15)] hover:shadow-[0_0_20px_rgba(124,92,252,0.3)] hover:scale-[1.02] active:scale-[0.98] ${
                         isLaunchPop ? "animate-scale-pop" : ""
                       }`}
@@ -948,7 +953,7 @@ const Dashboard = () => {
                         options={sourceOptions} 
                         placeholder="Format" 
                         icon={Layers} 
-                        disabled={false} 
+                        disabled={!droppedFile && !isDemoActive} 
                         open={isFormatOpen}
                         setOpen={setIsFormatOpen}
                         highlightedValue={simulatedFormatHighlight}
@@ -958,7 +963,7 @@ const Dashboard = () => {
                         onChange={(val) => setOperationIdx(val)} 
                         options={operationOptions} 
                         placeholder="Operation" 
-                        disabled={!source} 
+                        disabled={(!droppedFile && !isDemoActive) || !source} 
                         icon={Zap} 
                         open={isOperationOpen}
                         setOpen={setIsOperationOpen}
@@ -969,7 +974,7 @@ const Dashboard = () => {
                     <motion.button
                       layout
                       onClick={handleLaunch}
-                      disabled={!activeOp}
+                      disabled={(!droppedFile && !isDemoActive) || !activeOp}
                       className={`w-full h-11 bg-[#7C5CFC] hover:bg-[#6B4FE0] text-white text-xs font-black transition-all disabled:bg-[#1a1a22] disabled:text-[#3a3a48] disabled:cursor-not-allowed cursor-pointer rounded-xl flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(124,92,252,0.15)] active:scale-[0.98] ${
                         isLaunchPop ? "animate-scale-pop" : ""
                       }`}
