@@ -330,16 +330,6 @@ const Dashboard = () => {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center mb-10 lg:mb-12">
               
               <div className="lg:col-span-7 text-center lg:text-left">
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5 }}
-                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#7C5CFC]/10 border border-[#7C5CFC]/20 mb-4"
-                >
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  <span className="text-[10px] font-black text-[#A78BFA] uppercase tracking-wider">100% Local & Secure</span>
-                </motion.div>
-
                 <motion.h1
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -404,10 +394,12 @@ const Dashboard = () => {
               </div>
 
               <div className="relative z-10 rounded-[calc(1rem-1px)] bg-[#141419]/95 backdrop-blur-xl p-4 sm:p-5 flex flex-col">
-                {droppedFile ? (
-                  <div className="w-full">
-                    <div className="hidden sm:flex items-center justify-between gap-4">
-                      <div className="flex items-center gap-2.5 bg-[#1a1a22] border border-[#222230] px-3.5 py-2 rounded-xl min-w-[200px] max-w-[260px]">
+                <div className="w-full">
+                  {/* Desktop/Tablet Flow (visible format & operation at all times) */}
+                  <div className="hidden sm:flex items-center justify-between gap-4">
+                    {/* Source File Badge / Selector */}
+                    {droppedFile ? (
+                      <div className="flex items-center gap-2.5 bg-[#1a1a22] border border-[#222230] px-3.5 py-2 rounded-xl min-w-[200px] max-w-[260px] h-[44px]">
                         <div className="w-7 h-7 rounded-lg bg-[#7C5CFC]/10 flex items-center justify-center text-[#7C5CFC] font-black text-[10px] shrink-0">
                           {droppedFile.ext}
                         </div>
@@ -419,35 +411,55 @@ const Dashboard = () => {
                           <X size={12} />
                         </button>
                       </div>
-
-                      <div className="flex-1 flex items-center justify-center relative min-w-[40px]">
-                        <div className="w-full h-[1px] bg-gradient-to-r from-[#7C5CFC]/20 via-[#7C5CFC]/80 to-[#7C5CFC]/20 relative overflow-hidden">
-                          <div className="absolute top-0 left-0 w-16 h-full bg-gradient-to-r from-transparent via-white to-transparent animate-[flow-pulse_1.5s_ease-in-out_infinite]" />
-                        </div>
-                        <div className="absolute w-5 h-5 rounded-full bg-[#1a1a22] border border-[#222230] flex items-center justify-center shadow-lg">
-                          <ArrowRight size={10} className="text-[#7C5CFC]" />
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2 shrink-0">
-                        <div className="w-[140px] md:w-[155px]">
-                          <CustomDropdown value={source} onChange={handleSourceChange} options={sourceOptions} placeholder="Format" icon={Layers} />
-                        </div>
-                        <div className="w-[150px] md:w-[170px]">
-                          <CustomDropdown value={operationIdx} onChange={(val) => setOperationIdx(val)} options={operationOptions} placeholder="Operation" disabled={!source} icon={Zap} />
-                        </div>
-                      </div>
-
-                      <button
-                        onClick={handleLaunch}
-                        disabled={!activeOp}
-                        className="px-5 py-2 bg-[#7C5CFC] hover:bg-[#6B4FE0] text-white text-xs font-black transition-all disabled:bg-[#1a1a22] disabled:text-[#3a3a48] disabled:cursor-not-allowed cursor-pointer shrink-0 rounded-xl flex items-center gap-1.5 shadow-[0_0_20px_rgba(124,92,252,0.15)] hover:shadow-[0_0_20px_rgba(124,92,252,0.3)]"
+                    ) : (
+                      <div
+                        onClick={() => fileInputRef.current?.click()}
+                        className="flex items-center gap-2 px-3.5 py-2 bg-[#1a1a22]/50 hover:bg-[#1a1a22] border border-dashed border-[#222230] hover:border-[#7C5CFC]/30 text-[#b0b0bc] hover:text-white rounded-xl transition-all cursor-pointer min-w-[200px] max-w-[260px] h-[44px] group"
                       >
-                        Launch <ArrowRight size={12} />
-                      </button>
+                        <UploadCloud size={14} className="text-[#7C5CFC]/80 group-hover:text-[#7C5CFC] shrink-0" />
+                        <span className="text-xs font-bold truncate">Select or drop file</span>
+                        <input
+                          type="file"
+                          ref={fileInputRef}
+                          onChange={(e) => { if (e.target.files?.[0]) handleFileDrop(e.target.files[0]); e.target.value = ''; }}
+                          className="hidden"
+                        />
+                      </div>
+                    )}
+
+                    {/* Animated Connector Line */}
+                    <div className="flex-1 flex items-center justify-center relative min-w-[40px]">
+                      <div className="w-full h-[1px] bg-gradient-to-r from-[#7C5CFC]/20 via-[#7C5CFC]/80 to-[#7C5CFC]/20 relative overflow-hidden">
+                        <div className="absolute top-0 left-0 w-16 h-full bg-gradient-to-r from-transparent via-white to-transparent animate-[flow-pulse_1.5s_ease-in-out_infinite]" />
+                      </div>
+                      <div className="absolute w-5 h-5 rounded-full bg-[#1a1a22] border border-[#222230] flex items-center justify-center shadow-lg">
+                        <ArrowRight size={10} className="text-[#7C5CFC]" />
+                      </div>
                     </div>
 
-                    <div className="flex sm:hidden flex-col gap-3">
+                    {/* Target Selectors */}
+                    <div className="flex items-center gap-2 shrink-0">
+                      <div className="w-[140px] md:w-[155px]">
+                        <CustomDropdown value={source} onChange={handleSourceChange} options={sourceOptions} placeholder="Format" icon={Layers} />
+                      </div>
+                      <div className="w-[150px] md:w-[170px]">
+                        <CustomDropdown value={operationIdx} onChange={(val) => setOperationIdx(val)} options={operationOptions} placeholder="Operation" disabled={!source} icon={Zap} />
+                      </div>
+                    </div>
+
+                    {/* Launch Button */}
+                    <button
+                      onClick={handleLaunch}
+                      disabled={!activeOp}
+                      className="px-5 py-2 bg-[#7C5CFC] hover:bg-[#6B4FE0] text-white text-xs font-black transition-all disabled:bg-[#1a1a22] disabled:text-[#3a3a48] disabled:cursor-not-allowed cursor-pointer shrink-0 rounded-xl flex items-center gap-1.5 shadow-[0_0_20px_rgba(124,92,252,0.15)] hover:shadow-[0_0_20px_rgba(124,92,252,0.3)]"
+                    >
+                      Launch <ArrowRight size={12} />
+                    </button>
+                  </div>
+
+                  {/* Mobile Flow (stacked) */}
+                  <div className="flex sm:hidden flex-col gap-3">
+                    {droppedFile ? (
                       <div className="flex items-center gap-2.5 bg-[#1a1a22] border border-[#222230] px-3.5 py-2.5 rounded-xl">
                         <div className="w-8 h-8 rounded-lg bg-[#7C5CFC]/10 flex items-center justify-center text-[#7C5CFC] font-black text-xs shrink-0">
                           {droppedFile.ext}
@@ -460,45 +472,36 @@ const Dashboard = () => {
                           <X size={12} />
                         </button>
                       </div>
-
-                      <div className="grid grid-cols-2 gap-2">
-                        <CustomDropdown value={source} onChange={handleSourceChange} options={sourceOptions} placeholder="Format" icon={Layers} />
-                        <CustomDropdown value={operationIdx} onChange={(val) => setOperationIdx(val)} options={operationOptions} placeholder="Operation" disabled={!source} icon={Zap} />
-                      </div>
-
-                      <button
-                        onClick={handleLaunch}
-                        disabled={!activeOp}
-                        className="w-full py-3 bg-[#7C5CFC] hover:bg-[#6B4FE0] text-white text-xs font-black transition-all disabled:bg-[#1a1a22] disabled:text-[#3a3a48] disabled:cursor-not-allowed cursor-pointer rounded-xl flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(124,92,252,0.15)]"
+                    ) : (
+                      <div
+                        onClick={() => fileInputRef.current?.click()}
+                        className="flex items-center justify-center gap-2 py-3 bg-[#1a1a22]/50 border border-dashed border-[#222230] text-[#b0b0bc] rounded-xl transition-all cursor-pointer group"
                       >
-                        Launch <ArrowRight size={13} />
-                      </button>
+                        <UploadCloud size={14} className="text-[#7C5CFC] shrink-0" />
+                        <span className="text-xs font-bold">Select or drop file</span>
+                        <input
+                          type="file"
+                          ref={fileInputRef}
+                          onChange={(e) => { if (e.target.files?.[0]) handleFileDrop(e.target.files[0]); e.target.value = ''; }}
+                          className="hidden"
+                        />
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <CustomDropdown value={source} onChange={handleSourceChange} options={sourceOptions} placeholder="Format" icon={Layers} />
+                      <CustomDropdown value={operationIdx} onChange={(val) => setOperationIdx(val)} options={operationOptions} placeholder="Operation" disabled={!source} icon={Zap} />
                     </div>
+
+                    <button
+                      onClick={handleLaunch}
+                      disabled={!activeOp}
+                      className="w-full py-3 bg-[#7C5CFC] hover:bg-[#6B4FE0] text-white text-xs font-black transition-all disabled:bg-[#1a1a22] disabled:text-[#3a3a48] disabled:cursor-not-allowed cursor-pointer rounded-xl flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(124,92,252,0.15)]"
+                    >
+                      Launch <ArrowRight size={13} />
+                    </button>
                   </div>
-                ) : (
-                  <div
-                    onClick={() => fileInputRef.current?.click()}
-                    className="w-full py-7 px-6 rounded-xl border border-dashed border-[#222230] hover:border-[#7C5CFC]/40 bg-[#161620]/30 hover:bg-[#161620]/60 transition-all duration-300 cursor-pointer flex flex-col items-center justify-center gap-2.5 group relative"
-                  >
-                    <div className="w-10 h-10 rounded-xl bg-[#141419] flex items-center justify-center border border-[#222230] group-hover:border-[#7C5CFC]/30 group-hover:text-[#7C5CFC] transition-all">
-                      <UploadCloud size={16} className="text-[#5a5a6a] group-hover:text-[#7C5CFC] group-hover:scale-110 transition-all duration-300" />
-                    </div>
-                    <div className="text-center">
-                      <p className="text-xs font-bold text-white mb-0.5">
-                        Select your file here to get started
-                      </p>
-                      <p className="text-[10px] text-[#5a5a6a]">
-                        or drag & drop your file here
-                      </p>
-                    </div>
-                    <input
-                      type="file"
-                      ref={fileInputRef}
-                      onChange={(e) => { if (e.target.files?.[0]) handleFileDrop(e.target.files[0]); e.target.value = ''; }}
-                      className="hidden"
-                    />
-                  </div>
-                )}
+                </div>
               </div>
             </motion.div>
 
