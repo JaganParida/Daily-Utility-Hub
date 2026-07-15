@@ -635,7 +635,7 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                 </button>
               </div>
             ) : (
-              <Link to="/login" className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-[#7C5CFC] hover:bg-[#6B4FE0] text-white font-bold transition-all text-[11px]">
+              <Link to="/login" className="flex items-center gap-1.5 px-4 py-1.5 rounded-none bg-[#7C5CFC] hover:bg-[#6B4FE0] text-white font-bold transition-all text-[11px]">
                 Sign up
               </Link>
             )}
@@ -643,9 +643,14 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
             {/* Mobile hamburger */}
             <button
               onClick={() => setIsMobileMenuOpen(p => !p)}
-              className="flex lg:hidden items-center justify-center w-8 h-8 rounded-lg text-[#8a8a9a] hover:text-white transition-colors cursor-pointer"
+              className="flex lg:hidden items-center justify-center w-8 h-8 text-[#8a8a9a] hover:text-white transition-colors cursor-pointer group"
+              title="Menu"
             >
-              <Menu size={18} />
+              <div className="flex flex-col gap-[3.5px] items-end justify-center w-4.5 h-4.5">
+                <span className="w-3.5 h-[1.5px] bg-current transition-all group-hover:w-4.5" />
+                <span className="w-4.5 h-[1.5px] bg-current transition-all" />
+                <span className="w-2.5 h-[1.5px] bg-current transition-all group-hover:w-4.5" />
+              </div>
             </button>
           </div>
         </div>
