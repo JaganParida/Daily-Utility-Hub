@@ -490,7 +490,7 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                   <Search size={13} />
                 </div>
 
-                {/* Input field (animated opacity/width) */}
+                 {/* Input field (animated opacity/width) */}
                 <motion.input
                   ref={searchInputRef}
                   type="text"
@@ -498,32 +498,32 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   animate={{
+                    width: isSearchExpanded ? 180 : 0,
                     opacity: isSearchExpanded ? 1 : 0,
                     pointerEvents: isSearchExpanded ? "auto" : "none"
                   }}
-                  transition={{ duration: 0.15 }}
-                  className="w-full bg-transparent border-none text-[11px] text-white focus:outline-none placeholder:text-[#5a5a6a] ml-1 pr-8"
+                  transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                  className="bg-transparent border-none text-[11px] text-white focus:outline-none placeholder:text-[#5a5a6a] ml-1 pr-6"
                 />
 
                 {/* Close Button */}
-                <AnimatePresence>
-                  {isSearchExpanded && (
-                    <motion.button
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setIsSearchExpanded(false);
-                        setSearchQuery("");
-                      }}
-                      className="absolute right-2 text-[#5a5a6a] hover:text-white shrink-0 p-0.5"
-                    >
-                      <X size={12} />
-                    </motion.button>
-                  )}
-                </AnimatePresence>
+                <motion.button
+                  animate={{
+                    opacity: isSearchExpanded ? 1 : 0,
+                    scale: isSearchExpanded ? 1 : 0,
+                    pointerEvents: isSearchExpanded ? "auto" : "none"
+                  }}
+                  transition={{ duration: 0.15 }}
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsSearchExpanded(false);
+                    setSearchQuery("");
+                  }}
+                  className="absolute right-2 text-[#5a5a6a] hover:text-white shrink-0 p-0.5"
+                >
+                  <X size={12} />
+                </motion.button>
               </motion.div>
 
               {/* Suggestions dropdown list */}
