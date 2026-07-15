@@ -9,7 +9,7 @@ const Layout = () => {
   const navigate = useNavigate();
   const mainRef = useRef(null);
   
-  const isDashboard = location.pathname === '/dashboard';
+  const isDashboard = location.pathname === '/' || location.pathname === '/dashboard';
   const isTool = location.pathname.startsWith('/tools');
   const isProfile = location.pathname === '/profile';
   

@@ -56,7 +56,7 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
         <div ref={megamenuRef} className="max-w-[1200px] mx-auto flex items-center justify-between h-14 sm:h-16 px-4 sm:px-6 md:px-8">
 
           {/* LEFT: Logo */}
-          <Link to="/dashboard" className="flex items-center gap-2.5 group shrink-0">
+          <Link to="/" className="flex items-center gap-2.5 group shrink-0">
             <div className="w-8 h-8 shrink-0 rounded-xl bg-[#7C5CFC] flex items-center justify-center text-white shadow-lg shadow-[#7C5CFC]/20 group-hover:shadow-[#7C5CFC]/30 group-hover:scale-105 transition-all">
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
                 <polygon points="12 2 2 7 12 12 22 7 12 2" />
@@ -69,9 +69,9 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
           {/* CENTER: Nav */}
           <nav className="hidden lg:flex items-center gap-0.5 mx-8">
             <Link
-              to="/dashboard"
+              to="/"
               className={`px-3 py-1.5 rounded-lg text-[13px] font-semibold transition-colors ${
-                currentPath === "/dashboard" ? "text-white" : "text-[#8a8a9a] hover:text-white"
+                currentPath === "/" ? "text-white" : "text-[#8a8a9a] hover:text-white"
               }`}
             >
               Home
@@ -298,7 +298,7 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
               </div>
 
               <div className="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-0.5">
-                <Link to="/dashboard" onClick={() => setIsMobileMenuOpen(false)} className={`block px-3 py-2.5 rounded-lg text-xs font-bold transition-all ${currentPath === "/dashboard" ? "bg-[#7C5CFC]/10 text-[#7C5CFC]" : "text-[#8a8a9a] hover:text-white hover:bg-[#ffffff06]"}`}>
+                <Link to="/" onClick={() => setIsMobileMenuOpen(false)} className={`block px-3 py-2.5 rounded-lg text-xs font-bold transition-all ${currentPath === "/" ? "bg-[#7C5CFC]/10 text-[#7C5CFC]" : "text-[#8a8a9a] hover:text-white hover:bg-[#ffffff06]"}`}>
                   Home
                 </Link>
                 <Link to="/profile" onClick={() => setIsMobileMenuOpen(false)} className={`block px-3 py-2.5 rounded-lg text-xs font-bold transition-all ${currentPath === "/profile" ? "bg-[#7C5CFC]/10 text-[#7C5CFC]" : "text-[#8a8a9a] hover:text-white hover:bg-[#ffffff06]"}`}>

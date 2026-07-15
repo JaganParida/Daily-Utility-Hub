@@ -12,7 +12,6 @@ const Dashboard = lazy(() => import('./pages/Dashboard'));
 const PinnedTools = lazy(() => import('./pages/PinnedTools'));
 const RecentTools = lazy(() => import('./pages/RecentTools'));
 const Profile = lazy(() => import('./pages/Profile'));
-const Home = lazy(() => import('./pages/Home'));
 
 // Auth Pages (Lazy loaded)
 const Login = lazy(() => import('./pages/auth/Login'));
@@ -154,7 +153,6 @@ function AnimatedRoutes() {
       <Suspense fallback={<PageLoader />}>
         <Routes location={location} key={location.pathname}>
           {/* Public Pages (No Sidebar) */}
-          <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -162,7 +160,8 @@ function AnimatedRoutes() {
 
           {/* App Pages (With Sidebar & Topbar) */}
           <Route element={<Layout />}>
-            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/dashboard" element={<Navigate to="/" replace />} />
             <Route path="/pinned" element={<PinnedTools />} />
             <Route path="/recent" element={<RecentTools />} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
