@@ -192,7 +192,7 @@ const CustomDropdown = ({ value, onChange, options, placeholder, disabled = fals
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 4, scale: 0.97 }}
             transition={{ duration: 0.15 }}
-            className="absolute top-full left-0 mt-2 w-full min-w-[180px] max-h-[240px] overflow-y-auto bg-[#1a1a22] border border-[#2a2a35] rounded-xl shadow-[0_12px_40px_rgba(0,0,0,0.5)] z-[200] py-1 custom-scrollbar"
+            className="absolute top-full left-0 mt-2 w-full min-w-[180px] max-h-[240px] overflow-y-auto bg-[#111115] border border-[#24242e] rounded-xl shadow-[0_12px_40px_rgba(0,0,0,0.6)] z-[200] py-1.5 custom-scrollbar"
           >
             {options.map((opt) => {
               const OptIcon = opt.icon;
@@ -423,7 +423,7 @@ const Dashboard = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.25 }}
-              className="relative mb-8 rounded-2xl p-[1px]"
+              className="relative z-30 mb-8 rounded-2xl p-[1px]"
             >
               <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none z-0">
                 <div className="absolute top-1/2 left-1/2 w-[200%] aspect-square -translate-x-1/2 -translate-y-1/2 bg-[conic-gradient(from_0deg,#7C5CFC,#A78BFA,#3b82f6,#7C5CFC)] animate-[spin_4s_linear_infinite]" />

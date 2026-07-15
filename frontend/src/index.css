@@ -103,17 +103,23 @@
   background: var(--muted-foreground);
 }
 
-/* For specific containers like panels or sidebars to have even cleaner scrollbars */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.08) transparent;
+}
 .custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 4px;
+  height: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 99px;
 }
 .custom-scrollbar:hover::-webkit-scrollbar-thumb {
-  background: var(--muted-foreground);
+  background: rgba(255, 255, 255, 0.18);
 }
 
 /* Hide scrollbar for elements with .no-scrollbar */
