@@ -419,6 +419,7 @@ const Dashboard = () => {
   const [simulatedFormatHighlight, setSimulatedFormatHighlight] = useState(null);
   const [simulatedOpHighlight, setSimulatedOpHighlight] = useState(null);
   const simulationTimeouts = useRef([]);
+  const hasUserInteracted = useRef(false);
   
   const clearSimulation = useCallback(() => {
     simulationTimeouts.current.forEach(clearTimeout);
@@ -428,6 +429,93 @@ const Dashboard = () => {
     setIsFormatOpen(false);
     setIsOperationOpen(false);
   }, []);
+
+  const stopDemoAndInteract = useCallback(() => {
+    if (hasUserInteracted.current) return;
+    hasUserInteracted.current = true;
+    clearSimulation();
+    setDroppedFile((prev) => {
+      if (prev?.isDemo) {
+        setSource("");
+        setOperationIdx(0);
+        return null;
+      }
+      return prev;
+    });
+  }, [clearSimulation]);
+
+  const runDemoLoop = useCallback(() => {
+    if (hasUserInteracted.current) return;
+    
+    setDroppedFile({
+      name: "demo-image.png",
+      size: "245.8 KB",
+      ext: "PNG",
+      isDemo: true
+    });
+    setSource("");
+    setOperationIdx(0);
+
+    const t1 = setTimeout(() => {
+      if (hasUserInteracted.current) return;
+      setIsFormatOpen(true);
+
+      const t2 = setTimeout(() => {
+        if (hasUserInteracted.current) return;
+        setSimulatedFormatHighlight("image");
+
+        const t3 = setTimeout(() => {
+          if (hasUserInteracted.current) return;
+          setSource("image");
+          setSimulatedFormatHighlight(null);
+          setIsFormatOpen(false);
+
+          const t4 = setTimeout(() => {
+            if (hasUserInteracted.current) return;
+            setIsOperationOpen(true);
+
+            const t5 = setTimeout(() => {
+              if (hasUserInteracted.current) return;
+              setSimulatedOpHighlight("Convert to PDF");
+
+              const t6 = setTimeout(() => {
+                if (hasUserInteracted.current) return;
+                setOperationIdx(7);
+                setSimulatedOpHighlight(null);
+                setIsOperationOpen(false);
+
+                const t7 = setTimeout(() => {
+                  if (hasUserInteracted.current) return;
+                  setDroppedFile(null);
+                  setSource("");
+                  setOperationIdx(0);
+                }, 3000);
+                simulationTimeouts.current.push(t7);
+              }, 450);
+              simulationTimeouts.current.push(t6);
+            }, 450);
+            simulationTimeouts.current.push(t5);
+          }, 600);
+          simulationTimeouts.current.push(t4);
+        }, 500);
+        simulationTimeouts.current.push(t3);
+      }, 450);
+      simulationTimeouts.current.push(t2);
+    }, 600);
+    simulationTimeouts.current.push(t1);
+  }, []);
+
+  useEffect(() => {
+    if (droppedFile || hasUserInteracted.current) return;
+
+    const startTimer = setTimeout(() => {
+      if (!droppedFile && !hasUserInteracted.current) {
+        runDemoLoop();
+      }
+    }, 2500);
+
+    return () => clearTimeout(startTimer);
+  }, [droppedFile, runDemoLoop]);
 
   useEffect(() => {
     return () => {
@@ -502,6 +590,7 @@ const Dashboard = () => {
   const handleFileDrop = useCallback((file) => {
     console.log("File drop event detected:", file.name);
     clearSimulation();
+    hasUserInteracted.current = true;
 
     const ext = file.name.split(".").pop().toLowerCase();
     const mapped = EXT_TO_SOURCE[ext] || "";
@@ -684,6 +773,7 @@ const Dashboard = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.25 }}
+              onMouseDownCapture={stopDemoAndInteract}
               className="relative z-30 mb-8 rounded-2xl p-[1px]"
             >
               <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none z-0">
@@ -714,7 +804,14 @@ const Dashboard = () => {
                             {droppedFile.ext}
                           </motion.div>
                           <div className="min-w-0 flex-1">
-                            <p className="text-xs font-bold text-white truncate">{droppedFile.name}</p>
+                            <div className="flex items-center gap-1.5 min-w-0">
+                              <p className="text-xs font-bold text-white truncate">{droppedFile.name}</p>
+                              {droppedFile.isDemo && (
+                                <span className="px-1.5 py-0.5 text-[8px] font-black bg-[#7C5CFC]/20 text-[#A78BFA] border border-[#7C5CFC]/40 rounded uppercase tracking-wider shrink-0 animate-pulse">
+                                  Demo
+                                </span>
+                              )}
+                            </div>
                             <p className="text-[10px] text-[#5a5a6a]">{droppedFile.size}</p>
                           </div>
                           <button onClick={clearFile} className="p-1 text-[#5a5a6a] hover:text-white rounded hover:bg-white/5 transition-colors cursor-pointer shrink-0">
@@ -819,7 +916,14 @@ const Dashboard = () => {
                             {droppedFile.ext}
                           </motion.div>
                           <div className="min-w-0 flex-1">
-                            <p className="text-xs font-bold text-white truncate">{droppedFile.name}</p>
+                            <div className="flex items-center gap-1.5 min-w-0">
+                              <p className="text-xs font-bold text-white truncate">{droppedFile.name}</p>
+                              {droppedFile.isDemo && (
+                                <span className="px-1.5 py-0.5 text-[8px] font-black bg-[#7C5CFC]/20 text-[#A78BFA] border border-[#7C5CFC]/40 rounded uppercase tracking-wider shrink-0 animate-pulse">
+                                  Demo
+                                </span>
+                              )}
+                            </div>
                             <p className="text-[10px] text-[#5a5a6a]">{droppedFile.size}</p>
                           </div>
                           <button onClick={clearFile} className="p-1 text-[#5a5a6a] hover:text-white rounded hover:bg-white/5 transition-colors cursor-pointer shrink-0">
