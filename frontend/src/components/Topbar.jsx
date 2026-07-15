@@ -123,12 +123,17 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                               <button
                                 key={catName}
                                 onMouseEnter={() => setActiveCategory(catName)}
-                                className={`w-full px-3 py-[6px] text-left text-[11px] font-medium transition-all flex items-center justify-between cursor-pointer rounded relative ${
-                                  isActive
-                                    ? "text-white bg-[#ffffff06]"
-                                    : "text-[#6a6a7a] hover:text-[#b0b0bc] hover:bg-[#ffffff03]"
+                                className={`w-full px-3 py-[6px] text-left text-[11px] font-medium flex items-center justify-between cursor-pointer rounded relative ${
+                                  isActive ? "text-white" : "text-[#6a6a7a] hover:text-[#b0b0bc]"
                                 }`}
                               >
+                                {isActive && (
+                                  <motion.div
+                                    layoutId="activeCategoryBg"
+                                    className="absolute inset-0 bg-[#ffffff06] rounded"
+                                    transition={{ type: "spring", damping: 25, stiffness: 250 }}
+                                  />
+                                )}
                                 {isActive && (
                                   <motion.div
                                     layoutId="catIndicator"
@@ -136,8 +141,8 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                                     transition={{ type: "spring", damping: 20, stiffness: 300 }}
                                   />
                                 )}
-                                <span className="truncate">{catName}</span>
-                                <span className={`text-[9px] tabular-nums shrink-0 ml-2 ${isActive ? "text-[#7C5CFC]" : "text-[#3e3e4e]"}`}>
+                                <span className="truncate relative z-10">{catName}</span>
+                                <span className={`text-[9px] tabular-nums shrink-0 ml-2 relative z-10 ${isActive ? "text-[#7C5CFC]" : "text-[#3e3e4e]"}`}>
                                   {toolCategories[catName].length}
                                 </span>
                               </button>
