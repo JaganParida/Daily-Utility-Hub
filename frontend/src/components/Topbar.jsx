@@ -477,41 +477,51 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                 </button>
               )}
 
-              {/* Desktop single-element morphing search container */}
-              <motion.div
-                ref={searchRef}
-                animate={{
-                  width: isSearchExpanded ? 260 : 32,
-                  borderColor: isSearchExpanded ? "rgba(124, 92, 252, 0.5)" : "rgba(34, 34, 48, 0.4)",
-                  backgroundColor: isSearchExpanded ? "#121216" : "rgba(20, 20, 25, 0.9)"
-                }}
-                transition={{ duration: 0.38, ease: [0.4, 0, 0.2, 1] }}
-                className="hidden md:flex items-center h-8 rounded-full border overflow-hidden shrink-0 cursor-pointer relative z-50 px-0.5"
-                onClick={() => {
-                  if (!isSearchExpanded) {
-                    setIsSearchExpanded(true);
-                    setTimeout(() => searchInputRef.current?.focus(), 50);
-                  }
-                }}
-                title={!isSearchExpanded ? "Search (⌘K)" : undefined}
-              >
-                {/* Search / Back Icon */}
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    if (isSearchExpanded) {
-                      e.stopPropagation();
-                      setIsSearchExpanded(false);
-                      setSearchQuery("");
+              <div className="hidden md:flex items-center gap-1.5 z-50">
+                {/* Desktop-only separate Back Button */}
+                <AnimatePresence>
+                  {isSearchExpanded && (
+                    <motion.button
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      transition={{ duration: 0.2 }}
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsSearchExpanded(false);
+                        setSearchQuery("");
+                      }}
+                      className="w-8 h-8 rounded-full border border-[#222230]/40 hover:border-[#7C5CFC]/40 hover:bg-[#7C5CFC]/5 flex items-center justify-center text-[#7C5CFC] bg-[#121216] transition-colors shrink-0 cursor-pointer shadow-md"
+                      title="Back"
+                    >
+                      <ArrowLeft size={13} />
+                    </motion.button>
+                  )}
+                </AnimatePresence>
+
+                {/* Desktop single-element morphing search container */}
+                <motion.div
+                  ref={searchRef}
+                  animate={{
+                    width: isSearchExpanded ? 260 : 32,
+                    borderColor: isSearchExpanded ? "rgba(124, 92, 252, 0.5)" : "rgba(34, 34, 48, 0.4)",
+                    backgroundColor: isSearchExpanded ? "#121216" : "rgba(20, 20, 25, 0.9)"
+                  }}
+                  transition={{ duration: 0.38, ease: [0.4, 0, 0.2, 1] }}
+                  className="flex items-center h-8 rounded-full border overflow-hidden shrink-0 cursor-pointer relative px-0.5"
+                  onClick={() => {
+                    if (!isSearchExpanded) {
+                      setIsSearchExpanded(true);
+                      setTimeout(() => searchInputRef.current?.focus(), 50);
                     }
                   }}
-                  className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-[#6a6a7a] hover:text-white transition-colors ${
-                    isSearchExpanded ? "cursor-pointer hover:bg-[#7C5CFC]/10 text-[#7C5CFC]" : "cursor-default pointer-events-none"
-                  }`}
-                  title={isSearchExpanded ? "Back" : undefined}
+                  title={!isSearchExpanded ? "Search (⌘K)" : undefined}
                 >
-                  {isSearchExpanded ? <ArrowLeft size={13} className="text-[#7C5CFC]" /> : <Search size={13} />}
-                </button>
+                  {/* Static Search Icon inside */}
+                  <div className="w-7 h-7 flex items-center justify-center shrink-0 text-[#6a6a7a] pointer-events-none">
+                    <Search size={13} />
+                  </div>
 
                  {/* Input field (animated opacity/width) */}
                 <motion.input
@@ -598,7 +608,7 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                   </motion.div>
                 )}
               </AnimatePresence>
-            </div>
+            </div></div>
 
             {/* User */}
             {user ? (
