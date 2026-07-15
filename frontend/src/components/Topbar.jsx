@@ -11,9 +11,9 @@ import { toolCategories } from "../data/toolCategories";
 
 const Topbar = ({ isScrolled, headerVisible = true }) => {
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
-  const [isMegamenuOpen, setIsMegamenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
+  const [hoveredTab, setHoveredTab] = useState(null); // 'tools' | 'instructions' | null
   const [activeCategory, setActiveCategory] = useState(Object.keys(toolCategories)[0]);
   const [mobileExpandedCat, setMobileExpandedCat] = useState(null);
 
@@ -23,13 +23,13 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
   const megamenuRef = useRef(null);
 
   useEffect(() => {
-    setIsMegamenuOpen(false);
+    setHoveredTab(null);
     setIsMobileMenuOpen(false);
   }, [currentPath]);
 
   useEffect(() => {
     const handler = (e) => {
-      if (megamenuRef.current && !megamenuRef.current.contains(e.target)) setIsMegamenuOpen(false);
+      if (megamenuRef.current && !megamenuRef.current.contains(e.target)) setHoveredTab(null);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
@@ -67,8 +67,8 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
             <span className="hidden sm:inline-block font-black text-[15px] tracking-tight text-white">UtilityHub</span>
           </Link>
 
-          {/* CENTER: Nav */}
-          <nav className="hidden lg:flex items-center gap-0.5 mx-8">
+          {/* CENTER: Nav (Stripe/CloudConvert style morphing megamenu) */}
+          <nav className="hidden lg:flex items-center gap-1.5 mx-8 h-full" onMouseLeave={() => setHoveredTab(null)}>
             <Link
               to="/"
               className={`px-3 py-1.5 rounded-lg text-[13px] font-semibold transition-colors ${
@@ -78,32 +78,47 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
               Home
             </Link>
 
-            {/* Tools dropdown */}
-            <div onMouseEnter={() => setIsMegamenuOpen(true)} className="relative">
+            {/* Tools hover wrapper */}
+            <div className="relative py-4" onMouseEnter={() => setHoveredTab("tools")}>
               <button
-                onClick={() => setIsMegamenuOpen(p => !p)}
                 className={`px-3 py-1.5 rounded-lg text-[13px] font-semibold transition-colors flex items-center gap-1 cursor-pointer ${
-                  isMegamenuOpen || currentPath.startsWith("/tools") ? "text-white" : "text-[#8a8a9a] hover:text-white"
+                  hoveredTab === "tools" || currentPath.startsWith("/tools") ? "text-white" : "text-[#8a8a9a] hover:text-white"
                 }`}
               >
                 Tools
-                <ChevronDown size={13} className={`transition-transform duration-200 ${isMegamenuOpen ? "rotate-180" : ""}`} />
+                <ChevronDown size={12} className={`transition-transform duration-200 ${hoveredTab === "tools" ? "rotate-180" : ""}`} />
               </button>
+            </div>
 
-              {/* ═══ MEGAMENU ═══ */}
-              <AnimatePresence>
-                {isMegamenuOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 8, scale: 0.98 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 4, scale: 0.98 }}
-                    transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
-                    onMouseLeave={() => setIsMegamenuOpen(false)}
-                    className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-[700px] bg-[#111116] border border-[#1e1e28] rounded-lg shadow-[0_20px_60px_rgba(0,0,0,0.7)] z-[200] overflow-hidden"
-                  >
-                    {/* Gradient accent strip */}
-                    <div className="h-[2px] w-full bg-gradient-to-r from-[#7C5CFC] via-[#A78BFA] to-[#7C5CFC]" />
+            {/* Instructions hover wrapper */}
+            <div className="relative py-4" onMouseEnter={() => setHoveredTab("instructions")}>
+              <button
+                className={`px-3 py-1.5 rounded-lg text-[13px] font-semibold transition-colors flex items-center gap-1 cursor-pointer ${
+                  hoveredTab === "instructions" ? "text-white" : "text-[#8a8a9a] hover:text-white"
+                }`}
+              >
+                Instructions
+                <ChevronDown size={12} className={`transition-transform duration-200 ${hoveredTab === "instructions" ? "rotate-180" : ""}`} />
+              </button>
+            </div>
 
+            {/* Morphing Dropdown Panel */}
+            <AnimatePresence>
+              {hoveredTab && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 4, scale: 0.98 }}
+                  transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+                  className={`absolute top-[85%] left-1/2 -translate-x-1/2 mt-1 bg-[#111116] border border-[#1e1e28] rounded-xl shadow-[0_20px_60px_rgba(0,0,0,0.8)] z-[200] overflow-hidden`}
+                  layoutId="morphingDropdown"
+                  style={{ width: hoveredTab === "tools" ? "700px" : "850px" }}
+                >
+                  {/* Top gradient bar */}
+                  <div className="h-[2px] w-full bg-gradient-to-r from-[#7C5CFC] via-[#A78BFA] to-[#7C5CFC]" />
+
+                  {hoveredTab === "tools" ? (
+                    /* ─── TOOLS MEGAMENU CONTENT ─── */
                     <div className="flex" style={{ minHeight: '360px' }}>
                       {/* Left: Categories */}
                       <div className="w-[180px] border-r border-[#1a1a22] flex flex-col py-2">
@@ -138,16 +153,15 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                         </div>
                       </div>
 
-                      {/* Right: Tools */}
+                      {/* Right: Tools List */}
                       <div className="flex-1 flex flex-col min-w-0">
-                        {/* Header with search */}
                         <div className="px-4 py-2.5 border-b border-[#1a1a22] flex items-center justify-between shrink-0">
                           <div className="flex items-center gap-2">
                             <h3 className="text-[13px] font-bold text-white">{activeCategory}</h3>
                             <span className="text-[9px] text-[#3e3e4e] bg-[#1a1a22] px-1.5 py-0.5 rounded font-mono">{toolCategories[activeCategory]?.length}</span>
                           </div>
                           <button
-                            onClick={() => { setIsMegamenuOpen(false); setIsPaletteOpen(true); }}
+                            onClick={() => { setHoveredTab(null); setIsPaletteOpen(true); }}
                             className="flex items-center gap-1 text-[10px] text-[#4a4a5a] hover:text-[#7C5CFC] transition-colors cursor-pointer"
                           >
                             <Search size={10} />
@@ -155,17 +169,16 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                           </button>
                         </div>
 
-                        {/* Tools grid */}
                         <div className="flex-1 overflow-y-auto custom-scrollbar p-2.5">
                           <div className="grid grid-cols-2 gap-[3px]">
-                            {toolCategories[activeCategory]?.map((tool, idx) => {
+                            {toolCategories[activeCategory]?.map((tool) => {
                               const Icon = tool.icon;
                               const isCurrent = tool.to === currentPath;
                               return (
                                 <Link
                                   key={tool.to}
                                   to={tool.to}
-                                  onClick={() => setIsMegamenuOpen(false)}
+                                  onClick={() => setHoveredTab(null)}
                                   className={`group flex items-center gap-2.5 px-3 py-2.5 rounded-lg transition-all relative overflow-hidden ${
                                     isCurrent
                                       ? "bg-[#7C5CFC]/12 border-l-2 border-[#7C5CFC]"
@@ -194,10 +207,9 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                           </div>
                         </div>
 
-                        {/* Footer */}
                         <div className="px-4 py-2 border-t border-[#1a1a22] shrink-0">
                           <button
-                            onClick={() => { setIsMegamenuOpen(false); setIsPaletteOpen(true); }}
+                            onClick={() => { setHoveredTab(null); setIsPaletteOpen(true); }}
                             className="text-[10px] text-[#4a4a5a] hover:text-[#7C5CFC] font-medium transition-colors cursor-pointer flex items-center gap-1"
                           >
                             Browse all tools
@@ -208,10 +220,99 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                         </div>
                       </div>
                     </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+                  ) : (
+                    /* ─── INSTRUCTIONS MEGAMENU CONTENT ─── */
+                    <div className="grid grid-cols-12 gap-6 p-6 text-left" style={{ minHeight: '320px' }}>
+                      {/* Left: Work Faster & Steps */}
+                      <div className="col-span-5 border-r border-[#1a1a22] pr-6 space-y-4">
+                        <div>
+                          <span className="text-[9px] font-black tracking-widest text-[#7C5CFC] uppercase">Work Faster. Think Bigger.</span>
+                          <h4 className="text-sm font-black text-white mt-1">The Modern Utility Hub</h4>
+                          <p className="text-[11.5px] text-[#6a6a7a] mt-1 leading-relaxed">
+                            We discarded the bloat and focused purely on performance, privacy, and speed. 50+ tools executing instantly in your browser.
+                          </p>
+                        </div>
+
+                        <div className="space-y-3.5 pt-1">
+                          <div>
+                            <p className="text-[10px] font-black text-[#A78BFA] uppercase tracking-wider">01 // Step: Locate instantly</p>
+                            <p className="text-[11px] text-[#8a8a9a] leading-relaxed mt-0.5">
+                              Hit <span className="bg-[#1a1a22] px-1.5 py-0.5 rounded text-white font-mono text-[10px] border border-[#222230]">CMD+K</span> anywhere to open the command palette.
+                            </p>
+                          </div>
+
+                          <div>
+                            <p className="text-[10px] font-black text-[#A78BFA] uppercase tracking-wider">02 // Step: Execute locally</p>
+                            <p className="text-[11px] text-[#8a8a9a] leading-relaxed mt-0.5">
+                              Paste your payload or drop files. Everything runs securely inside your local browser sandbox.
+                            </p>
+                          </div>
+
+                          <div>
+                            <p className="text-[10px] font-black text-[#A78BFA] uppercase tracking-wider">03 // Step: Export effortlessly</p>
+                            <p className="text-[11px] text-[#8a8a9a] leading-relaxed mt-0.5">
+                              Copy your formatted code with one click, or instantly download your processed assets.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Middle: Feature Comparison Table */}
+                      <div className="col-span-4 border-r border-[#1a1a22] pr-6 space-y-3.5">
+                        <div>
+                          <span className="text-[9px] font-black tracking-widest text-[#7C5CFC] uppercase">Transparent Access</span>
+                          <h4 className="text-sm font-black text-white mt-1">Account Features</h4>
+                        </div>
+
+                        <div className="w-full text-[10.5px] text-[#8a8a9a]">
+                          <div className="grid grid-cols-3 border-b border-[#1d1d27] pb-2 font-bold text-white">
+                            <span>Utility Access</span>
+                            <span className="text-center">Guest</span>
+                            <span className="text-center">Member</span>
+                          </div>
+                          {[
+                            { name: "50+ Client-side tools", guest: true, user: true },
+                            { name: "Zero tracking & ads", guest: true, user: true },
+                            { name: "Recent history log", guest: true, user: true },
+                            { name: "Pin favorite tools", guest: false, user: true },
+                            { name: "Cloud sync configs", guest: false, user: true },
+                          ].map((row, i) => (
+                            <div key={i} className="grid grid-cols-3 py-2 border-b border-[#141419] items-center">
+                              <span className="text-[#6a6a7a] truncate pr-1">{row.name}</span>
+                              <span className="text-center">{row.guest ? "✓" : "✕"}</span>
+                              <span className="text-center text-[#7C5CFC] font-black">{row.user ? "✓" : "✕"}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Right: FAQs */}
+                      <div className="col-span-3 space-y-4">
+                        <div>
+                          <span className="text-[9px] font-black tracking-widest text-[#7C5CFC] uppercase">Questions?</span>
+                          <h4 className="text-sm font-black text-white mt-1">Quick FAQ</h4>
+                        </div>
+
+                        <div className="space-y-3.5">
+                          <div>
+                            <p className="text-[10.5px] font-bold text-white">Is it 100% free?</p>
+                            <p className="text-[10px] text-[#6a6a7a] leading-relaxed mt-0.5">Yes. No paywalls, subscriptions, or hidden charges whatsoever.</p>
+                          </div>
+                          <div>
+                            <p className="text-[10.5px] font-bold text-white">Are files secure?</p>
+                            <p className="text-[10px] text-[#6a6a7a] leading-relaxed mt-0.5">Strict Privacy. Calculations are local. We never see your data.</p>
+                          </div>
+                          <div>
+                            <p className="text-[10.5px] font-bold text-white">Why register?</p>
+                            <p className="text-[10px] text-[#6a6a7a] leading-relaxed mt-0.5">Enable Zero Latency cross-device sync of your configuration logs.</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </nav>
 
           {/* RIGHT: Actions */}
@@ -314,6 +415,9 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                 <Link to="/profile" onClick={() => setIsMobileMenuOpen(false)} className={`block px-3 py-2.5 rounded-lg text-xs font-bold transition-all ${currentPath === "/profile" ? "bg-[#7C5CFC]/10 text-[#7C5CFC]" : "text-[#8a8a9a] hover:text-white hover:bg-[#ffffff06]"}`}>
                   Profile
                 </Link>
+                <button onClick={() => { setIsMobileMenuOpen(false); setIsInfoOpen(true); }} className="w-full text-left block px-3 py-2.5 rounded-lg text-xs font-bold text-[#8a8a9a] hover:text-white hover:bg-[#ffffff06] transition-all cursor-pointer">
+                  Instructions
+                </button>
 
                 <div className="pt-3 mt-2 border-t border-[#1a1a22]">
                   <p className="text-[9px] font-black text-[#4a4a5a] uppercase tracking-[0.15em] px-3 mb-2">Tools</p>
