@@ -246,7 +246,7 @@ const Layout = () => {
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
         <Topbar isScrolled={isScrolled && isDashboard} headerVisible={headerVisible} />
 
-        <main ref={mainRef} onScroll={handleScroll} className="flex-1 overflow-y-auto overflow-x-hidden flex flex-col relative z-10 scroll-smooth">
+        <main ref={mainRef} onScroll={handleScroll} className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden flex flex-col relative z-10 scroll-smooth">
           <div className={`w-full flex flex-col pb-20 md:pb-12 ${isDashboard ? 'pt-0' : 'pt-24 lg:pt-28'}`}>
             <Outlet context={{ isScrolled, setIsScrolled }} />
           </div>
