@@ -167,7 +167,7 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                   exit={{ opacity: 0, y: 4, scale: 0.98, transition: { duration: 0.15 } }}
                   transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                   className="absolute top-[85%] left-1/2 -translate-x-1/2 mt-1 bg-[#111116] border border-[#1e1e28] rounded-xl shadow-[0_20px_60px_rgba(0,0,0,0.8)] z-[200] overflow-hidden flex flex-col"
-                  style={{ width: 850, height: 400 }}
+                  style={{ width: 850, height: 480 }}
                 >
                   {/* Top gradient bar */}
                   <div className="h-[2px] w-full bg-gradient-to-r from-[#7C5CFC] via-[#A78BFA] to-[#7C5CFC] shrink-0" />
