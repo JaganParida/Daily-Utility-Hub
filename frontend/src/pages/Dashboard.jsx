@@ -672,48 +672,6 @@ const Dashboard = () => {
             </motion.div>
           </div>
         </section>
-
-        {/* ═══ POPULAR — Light/dark themed section ═══ */}
-        <section className="w-full bg-background py-10 sm:py-12 md:py-16">
-          <div className="w-full max-w-[900px] mx-auto px-4 sm:px-6 md:px-8">
-            <h2 className="text-sm sm:text-base font-black text-foreground tracking-tight mb-5 sm:mb-6">
-              Popular operations
-            </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-6 sm:gap-x-8 gap-y-3 sm:gap-y-4">
-              {[
-                { label: "Compress PDF", to: "/tools/pdf-compressor" },
-                { label: "Merge PDF", to: "/tools/pdf-merge" },
-                { label: "PDF to Text", to: "/tools/pdf-to-text" },
-                { label: "Edit PDF", to: "/tools/pdf-edit" },
-                { label: "Compress Image", to: "/tools/image-compressor" },
-                { label: "Resize Image", to: "/tools/image-resizer" },
-                { label: "Image to PDF", to: "/tools/image-to-pdf" },
-                { label: "Extract Colors", to: "/tools/image-color-extractor" },
-                { label: "JSON Formatter", to: "/tools/json-formatter" },
-                { label: "Regex Tester", to: "/tools/regex-tester" },
-                { label: "JWT Decoder", to: "/tools/jwt-decoder" },
-                { label: "UUID Generator", to: "/tools/uuid-generator" },
-                { label: "Markdown Editor", to: "/tools/markdown-editor" },
-                { label: "Text Diff", to: "/tools/text-diff" },
-                { label: "Password Generator", to: "/tools/password-generator" },
-                { label: "Code to Image", to: "/tools/code-to-image" },
-                { label: "Hash Generator", to: "/tools/hash-generator" },
-                { label: "File Vault", to: "/tools/file-vault" },
-                { label: "Word Counter", to: "/tools/word-counter" },
-                { label: "Cron Parser", to: "/tools/cron-parser" },
-              ].map((link) => (
-                <Link
-                  key={link.to}
-                  to={link.to}
-                  className="text-[11px] sm:text-xs text-muted-foreground hover:text-primary font-medium transition-colors relative group/lnk inline-block"
-                >
-                  {link.label}
-                  <span className="absolute -bottom-0.5 left-0 w-0 h-px bg-primary transition-all duration-300 group-hover/lnk:w-full" />
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
       </div>
     </PageTransition>
   );
