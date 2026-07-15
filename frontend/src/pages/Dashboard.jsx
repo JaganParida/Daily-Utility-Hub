@@ -204,8 +204,9 @@ const CustomDropdown = ({ value, onChange, options, placeholder, disabled = fals
   );
 
   return (
-    <div ref={ref} className="relative w-full h-full">
-      <button
+    <motion.div layout ref={ref} className="relative w-full h-full">
+      <motion.button
+        layout
         type="button"
         onClick={() => !disabled && setOpen((p) => !p)}
         disabled={disabled}
@@ -235,7 +236,7 @@ const CustomDropdown = ({ value, onChange, options, placeholder, disabled = fals
           </AnimatePresence>
         </span>
         <ChevronDown size={11} className={`ml-auto text-[#6a6a7a] shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
-      </button>
+      </motion.button>
 
       <AnimatePresence>
         {open && (
@@ -304,7 +305,7 @@ const CustomDropdown = ({ value, onChange, options, placeholder, disabled = fals
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </motion.div>
   );
 };
 
@@ -590,7 +591,7 @@ const Dashboard = () => {
               <div className="relative z-10 rounded-[calc(1rem-1px)] bg-[#141419]/95 backdrop-blur-xl p-4 sm:p-5 flex flex-col">
                 <div className="w-full">
                   {/* Desktop/Tablet Flow (visible format & operation at all times) */}
-                  <div className="hidden sm:flex items-center justify-between gap-4">
+                  <motion.div layout className="hidden sm:flex items-center justify-between gap-4">
                     {/* Source File Badge / Selector */}
                     <AnimatePresence mode="wait">
                       {droppedFile ? (
@@ -636,27 +637,28 @@ const Dashboard = () => {
                     </AnimatePresence>
 
                     {/* Animated Connector Line */}
-                    <div className="flex-1 flex items-center justify-center relative min-w-[40px]">
+                    <motion.div layout className="flex-1 flex items-center justify-center relative min-w-[40px]">
                       <div className="w-full h-[1px] bg-gradient-to-r from-[#7C5CFC]/20 via-[#7C5CFC]/80 to-[#7C5CFC]/20 relative overflow-hidden">
                         <div className="absolute top-0 left-0 w-16 h-full bg-gradient-to-r from-transparent via-white to-transparent animate-[flow-pulse_1.5s_ease-in-out_infinite]" />
                       </div>
                       <div className="absolute w-5 h-5 rounded-full bg-[#1a1a22] border border-[#222230] flex items-center justify-center shadow-lg">
                         <ArrowRight size={10} className="text-[#7C5CFC]" />
                       </div>
-                    </div>
+                    </motion.div>
 
                     {/* Target Selectors */}
-                    <div className="flex items-center gap-2 shrink-0">
-                      <div className="w-[140px] md:w-[155px]">
+                    <motion.div layout className="flex items-center gap-2 shrink-0">
+                      <motion.div layout className="w-[140px] md:w-[155px]">
                         <CustomDropdown value={source} onChange={handleSourceChange} options={sourceOptions} placeholder="Format" icon={Layers} disabled={false} />
-                      </div>
-                      <div className="w-[150px] md:w-[170px]">
+                      </motion.div>
+                      <motion.div layout className="w-[150px] md:w-[170px]">
                         <CustomDropdown value={operationIdx} onChange={(val) => setOperationIdx(val)} options={operationOptions} placeholder="Operation" disabled={!source} icon={Zap} />
-                      </div>
-                    </div>
+                      </motion.div>
+                    </motion.div>
 
                     {/* Launch Button */}
-                    <button
+                    <motion.button
+                      layout
                       onClick={handleLaunch}
                       disabled={!activeOp}
                       className={`h-11 px-6 bg-[#7C5CFC] hover:bg-[#6B4FE0] text-white text-xs font-black transition-all disabled:bg-[#1a1a22] disabled:text-[#3a3a48] disabled:cursor-not-allowed cursor-pointer shrink-0 rounded-xl flex items-center justify-center gap-1.5 shadow-[0_0_20px_rgba(124,92,252,0.15)] hover:shadow-[0_0_20px_rgba(124,92,252,0.3)] hover:scale-[1.02] active:scale-[0.98] ${
@@ -664,11 +666,11 @@ const Dashboard = () => {
                       }`}
                     >
                       Launch <ArrowRight size={12} />
-                    </button>
-                  </div>
+                    </motion.button>
+                  </motion.div>
 
-                  {/* Mobile Flow (stacked) */}
-                  <div className="flex sm:hidden flex-col gap-3">
+                   {/* Mobile Flow (stacked) */}
+                  <motion.div layout className="flex sm:hidden flex-col gap-3">
                     <AnimatePresence mode="wait">
                       {droppedFile ? (
                         <motion.div
@@ -712,12 +714,13 @@ const Dashboard = () => {
                       )}
                     </AnimatePresence>
 
-                    <div className="grid grid-cols-2 gap-2">
+                    <motion.div layout className="grid grid-cols-2 gap-2">
                       <CustomDropdown value={source} onChange={handleSourceChange} options={sourceOptions} placeholder="Format" icon={Layers} disabled={false} />
                       <CustomDropdown value={operationIdx} onChange={(val) => setOperationIdx(val)} options={operationOptions} placeholder="Operation" disabled={!source} icon={Zap} />
-                    </div>
+                    </motion.div>
 
-                    <button
+                    <motion.button
+                      layout
                       onClick={handleLaunch}
                       disabled={!activeOp}
                       className={`w-full h-11 bg-[#7C5CFC] hover:bg-[#6B4FE0] text-white text-xs font-black transition-all disabled:bg-[#1a1a22] disabled:text-[#3a3a48] disabled:cursor-not-allowed cursor-pointer rounded-xl flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(124,92,252,0.15)] active:scale-[0.98] ${
@@ -725,8 +728,8 @@ const Dashboard = () => {
                       }`}
                     >
                       Launch <ArrowRight size={13} />
-                    </button>
-                  </div>
+                    </motion.button>
+                  </motion.div>
                 </div>
               </div>
             </motion.div>
