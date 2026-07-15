@@ -240,9 +240,9 @@ const Dashboard = () => {
     <PageTransition>
       <style>{`
         @keyframes gradient-shift { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
-        @keyframes spin-comet { 0% { transform: translate(-50%, -50%) rotate(0deg); } 100% { transform: translate(-50%, -50%) rotate(360deg); } }
+        @keyframes train-border { 100% { stroke-dashoffset: -100; } }
         .gradient-text { background: linear-gradient(135deg, #7C5CFC, #A78BFA, #7C5CFC); background-size: 200% 200%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: gradient-shift 4s ease infinite; }
-        .border-comet { position: absolute; top: 50%; left: 50%; width: 250%; aspect-ratio: 1/1; background: conic-gradient(from 0deg, transparent 0deg, transparent 280deg, #7C5CFC 330deg, rgba(255,255,255,0.9) 360deg); animation: spin-comet 3.5s linear infinite; }
+        .animate-train-border { animation: train-border 4s linear infinite; stroke-linecap: round; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
       `}</style>
@@ -306,15 +306,14 @@ const Dashboard = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.25 }}
-              className="relative mb-3 rounded-2xl"
+              className="relative mb-3 bg-[#141419] rounded-2xl border border-transparent"
             >
-              {/* Spinning Border Container (Behind content, clips gradient) */}
-              <div className="absolute inset-0 rounded-2xl bg-[#222230] overflow-hidden pointer-events-none z-0">
-                <div className="border-comet" />
-              </div>
+              <svg className="absolute inset-0 w-full h-full pointer-events-none z-0" style={{ borderRadius: '1rem' }} xmlns="http://www.w3.org/2000/svg">
+                <rect x="0" y="0" width="100%" height="100%" rx="16" ry="16" fill="none" stroke="#2a2a35" strokeWidth="1" />
+                <rect x="0" y="0" width="100%" height="100%" rx="16" ry="16" fill="none" stroke="#7C5CFC" strokeWidth="2" pathLength="100" strokeDasharray="15 85" strokeDashoffset="0" className="animate-train-border" />
+              </svg>
 
-              {/* Content Container (Sits on top, padded by 1.5px to show border, no overflow hidden!) */}
-              <div className="relative z-10 m-[1.5px] rounded-[calc(1rem-1.5px)] bg-[#141419] flex flex-col">
+              <div className="relative z-10 flex flex-col">
                 {/* Desktop / Tablet: horizontal */}
                 <div className="hidden sm:flex items-stretch h-[52px]">
                 {/* File segment */}
