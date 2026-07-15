@@ -222,7 +222,7 @@ const CustomDropdown = ({
         type="button"
         onClick={() => !disabled && setOpen((p) => !p)}
         disabled={disabled}
-        className={`w-full h-11 flex items-center gap-2.5 px-3.5 sm:px-4 text-left rounded-xl border transition-all cursor-pointer select-none ${
+        className={`w-full h-11 flex items-center gap-2.5 px-3.5 sm:px-4 text-left rounded-xl border transition-all select-none ${
           isFlashing ? "animate-flash-glow" : ""
         } ${
           isPop ? "animate-scale-pop" : ""
@@ -232,8 +232,8 @@ const CustomDropdown = ({
             : "border-[#222230] bg-[#141419]"
         } ${
           disabled 
-            ? "opacity-40 cursor-not-allowed border-[#1d1d28] bg-[#0e0e12]" 
-            : "hover:border-[#7C5CFC]/50 hover:bg-[#1a1a24] active:scale-[0.98] focus:border-[#7C5CFC]/80 focus:ring-1 focus:ring-[#7C5CFC]/30"
+            ? "opacity-35 cursor-not-allowed border-[#1d1d28] bg-[#0e0e12] pointer-events-none" 
+            : "cursor-pointer hover:border-[#7C5CFC]/50 hover:bg-[#1a1a24] active:scale-[0.98] focus:border-[#7C5CFC]/80 focus:ring-1 focus:ring-[#7C5CFC]/30"
         }`}
       >
         {Icon && <Icon size={13} className="text-[#6a6a7a] shrink-0" />}
@@ -874,7 +874,11 @@ const Dashboard = () => {
                       layout
                       onClick={handleLaunch}
                       disabled={(!droppedFile && !isDemoActive) || !activeOp}
-                      className={`h-11 px-6 bg-[#7C5CFC] hover:bg-[#6B4FE0] text-white text-xs font-black transition-all disabled:bg-[#1a1a22] disabled:text-[#3a3a48] disabled:cursor-not-allowed cursor-pointer shrink-0 rounded-xl flex items-center justify-center gap-1.5 shadow-[0_0_20px_rgba(124,92,252,0.15)] hover:shadow-[0_0_20px_rgba(124,92,252,0.3)] hover:scale-[1.02] active:scale-[0.98] ${
+                      className={`h-11 px-6 bg-[#7C5CFC] hover:bg-[#6B4FE0] text-white text-xs font-black transition-all rounded-xl flex items-center justify-center gap-1.5 shadow-[0_0_20px_rgba(124,92,252,0.15)] cursor-pointer shrink-0 ${
+                        (!droppedFile && !isDemoActive) || !activeOp
+                          ? "opacity-35 cursor-not-allowed bg-[#1a1a22] text-[#3a3a48] shadow-none pointer-events-none"
+                          : "hover:shadow-[0_0_20px_rgba(124,92,252,0.3)] hover:scale-[1.02] active:scale-[0.98]"
+                      } ${
                         isLaunchPop ? "animate-scale-pop" : ""
                       }`}
                     >
@@ -975,7 +979,11 @@ const Dashboard = () => {
                       layout
                       onClick={handleLaunch}
                       disabled={(!droppedFile && !isDemoActive) || !activeOp}
-                      className={`w-full h-11 bg-[#7C5CFC] hover:bg-[#6B4FE0] text-white text-xs font-black transition-all disabled:bg-[#1a1a22] disabled:text-[#3a3a48] disabled:cursor-not-allowed cursor-pointer rounded-xl flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(124,92,252,0.15)] active:scale-[0.98] ${
+                      className={`w-full h-11 bg-[#7C5CFC] hover:bg-[#6B4FE0] text-white text-xs font-black transition-all rounded-xl flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(124,92,252,0.15)] cursor-pointer ${
+                        (!droppedFile && !isDemoActive) || !activeOp
+                          ? "opacity-35 cursor-not-allowed bg-[#1a1a22] text-[#3a3a48] shadow-none pointer-events-none"
+                          : "active:scale-[0.98]"
+                      } ${
                         isLaunchPop ? "animate-scale-pop" : ""
                       }`}
                     >
