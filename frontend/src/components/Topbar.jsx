@@ -386,10 +386,10 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                   <motion.div
                     key="expanded-search"
                     ref={searchRef}
-                    initial={{ width: 32, opacity: 0 }}
-                    animate={{ width: 260, opacity: 1 }}
-                    exit={{ width: 32, opacity: 0 }}
-                    className="relative flex items-center h-8 rounded-full border border-[#7C5CFC]/50 bg-[#121216] px-3 shadow-lg shrink-0"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    className="absolute left-4 right-4 md:relative md:left-auto md:right-auto md:w-[260px] flex items-center h-8 rounded-full border border-[#7C5CFC]/50 bg-[#121216] px-3 shadow-lg shrink-0 z-50"
                   >
                     <Search size={12} className="text-[#7C5CFC] shrink-0 mr-2" />
                     <input
@@ -419,7 +419,7 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                           animate={{ opacity: 1, y: 0, scale: 1 }}
                           exit={{ opacity: 0, y: 8, scale: 0.98 }}
                           transition={{ duration: 0.15 }}
-                          className="absolute right-0 top-full mt-2 w-[280px] xs:w-[320px] sm:w-[360px] max-h-[380px] overflow-hidden bg-[#111115] border border-[#24242e] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.7)] z-[300] flex flex-col"
+                          className="absolute right-0 top-full mt-2 w-full md:w-[360px] max-h-[380px] overflow-hidden bg-[#111115] border border-[#24242e] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.7)] z-[300] flex flex-col"
                         >
                           <div className="flex-1 overflow-y-auto custom-scrollbar py-2">
                             {filteredTools.length > 0 ? (
