@@ -166,14 +166,14 @@ const CustomDropdown = ({ value, onChange, options, placeholder, disabled = fals
                   onClick={() => { onChange(opt.value); setOpen(false); }}
                   className={`w-full flex items-center gap-2.5 px-3.5 py-2 text-left text-xs font-medium transition-colors cursor-pointer ${
                     opt.value === value
-                      ? "bg-[#E95144]/10 text-[#E95144]"
+                      ? "bg-[#7C5CFC]/10 text-[#7C5CFC]"
                       : "text-[#b0b0bc] hover:bg-[#ffffff08] hover:text-white"
                   }`}
                 >
                   {OptIcon && <OptIcon size={13} className="shrink-0 opacity-60" />}
                   <span className="truncate">{opt.label}</span>
                   {opt.value === value && (
-                    <svg className="w-3 h-3 ml-auto text-[#E95144] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round">
+                    <svg className="w-3 h-3 ml-auto text-[#7C5CFC] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round">
                       <polyline points="20 6 9 17 4 12" />
                     </svg>
                   )}
@@ -240,8 +240,8 @@ const Dashboard = () => {
     <PageTransition>
       <style>{`
         @keyframes gradient-shift { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
-        @keyframes glow-pulse { 0%,100% { box-shadow: 0 0 20px rgba(233,81,68,0.06), 0 0 40px rgba(233,81,68,0.03); } 50% { box-shadow: 0 0 28px rgba(233,81,68,0.12), 0 0 56px rgba(233,81,68,0.05); } }
-        .gradient-text { background: linear-gradient(135deg, #E95144, #ff8a65, #E95144); background-size: 200% 200%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: gradient-shift 4s ease infinite; }
+        @keyframes glow-pulse { 0%,100% { box-shadow: 0 0 20px rgba(124,92,252,0.06), 0 0 40px rgba(124,92,252,0.03); } 50% { box-shadow: 0 0 28px rgba(124,92,252,0.14), 0 0 56px rgba(124,92,252,0.06); } }
+        .gradient-text { background: linear-gradient(135deg, #7C5CFC, #A78BFA, #7C5CFC); background-size: 200% 200%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: gradient-shift 4s ease infinite; }
         .glow-strip { animation: glow-pulse 3s ease-in-out infinite; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
@@ -261,16 +261,16 @@ const Dashboard = () => {
         >
           {/* Textures */}
           <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
-          <div className="absolute top-[-100px] left-1/2 -translate-x-1/2 w-[500px] h-[350px] bg-[radial-gradient(ellipse_at_center,rgba(233,81,68,0.06),transparent_70%)] pointer-events-none" />
+          <div className="absolute top-[-100px] left-1/2 -translate-x-1/2 w-[500px] h-[350px] bg-[radial-gradient(ellipse_at_center,rgba(124,92,252,0.07),transparent_70%)] pointer-events-none" />
 
           {/* Full-screen drag overlay */}
           <AnimatePresence>
             {isDragging && (
               <motion.div
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                className="absolute inset-0 z-50 bg-[#0b0b0f]/90 border-2 border-dashed border-[#E95144] flex flex-col items-center justify-center gap-3 pointer-events-none"
+                className="absolute inset-0 z-50 bg-[#0b0b0f]/90 border-2 border-dashed border-[#7C5CFC] flex flex-col items-center justify-center gap-3 pointer-events-none"
               >
-                <UploadCloud size={36} className="text-[#E95144] animate-bounce" />
+                <UploadCloud size={36} className="text-[#7C5CFC] animate-bounce" />
                 <p className="text-sm font-bold text-white">Drop your file anywhere</p>
                 <p className="text-[11px] text-[#5a5a6a]">We'll auto-detect the format</p>
               </motion.div>
@@ -355,7 +355,7 @@ const Dashboard = () => {
                 <button
                   onClick={handleLaunch}
                   disabled={!activeOp}
-                  className="px-5 md:px-6 flex items-center gap-2 bg-[#E95144] hover:bg-[#d4443a] text-white text-xs font-black transition-all disabled:bg-[#1a1a22] disabled:text-[#3a3a48] disabled:cursor-not-allowed cursor-pointer shrink-0"
+                  className="px-5 md:px-6 flex items-center gap-2 bg-[#7C5CFC] hover:bg-[#6B4FE0] text-white text-xs font-black transition-all disabled:bg-[#1a1a22] disabled:text-[#3a3a48] disabled:cursor-not-allowed cursor-pointer shrink-0"
                 >
                   Launch <ArrowRight size={13} />
                 </button>
@@ -389,7 +389,7 @@ const Dashboard = () => {
                   </div>
                 </div>
                 {/* Launch */}
-                <button onClick={handleLaunch} disabled={!activeOp} className="w-full py-3 flex items-center justify-center gap-2 bg-[#E95144] hover:bg-[#d4443a] text-white text-xs font-black transition-all disabled:bg-[#1a1a22] disabled:text-[#3a3a48] cursor-pointer">
+                <button onClick={handleLaunch} disabled={!activeOp} className="w-full py-3 flex items-center justify-center gap-2 bg-[#7C5CFC] hover:bg-[#6B4FE0] text-white text-xs font-black transition-all disabled:bg-[#1a1a22] disabled:text-[#3a3a48] cursor-pointer">
                   Launch <ArrowRight size={13} />
                 </button>
               </div>

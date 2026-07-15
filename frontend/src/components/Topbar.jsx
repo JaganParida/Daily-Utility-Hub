@@ -48,7 +48,7 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
         {/* LEFT: Logo */}
         <div className="flex items-center shrink-0">
           <Link to="/dashboard" className="flex items-center gap-2 group">
-            <div className="w-7 h-7 sm:w-8 sm:h-8 shrink-0 rounded-lg bg-[#E95144] flex items-center justify-center text-white shadow-sm group-hover:scale-105 transition-transform">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 shrink-0 rounded-lg bg-[#7C5CFC] flex items-center justify-center text-white shadow-sm group-hover:scale-105 transition-transform">
               <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.8} strokeLinecap="round" strokeLinejoin="round">
                 <polygon points="12 2 2 7 12 12 22 7 12 2" />
                 <polyline points="2 17 12 22 22 17" />
@@ -60,7 +60,7 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
 
         {/* CENTER: Nav items */}
         <nav className="hidden lg:flex items-center gap-1 mx-6">
-          <Link to="/dashboard" className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${currentPath === "/dashboard" ? "bg-[#E95144]/10 text-[#E95144]" : "text-[#8a8a9a] hover:text-white hover:bg-[#ffffff08]"}`}>
+          <Link to="/dashboard" className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${currentPath === "/dashboard" ? "bg-[#7C5CFC]/10 text-[#7C5CFC]" : "text-[#8a8a9a] hover:text-white hover:bg-[#ffffff08]"}`}>
             Home
           </Link>
 
@@ -68,7 +68,7 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
           <div onMouseEnter={() => setIsMegamenuOpen(true)} className="relative">
             <button
               onClick={() => setIsMegamenuOpen(p => !p)}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer ${isMegamenuOpen || currentPath.startsWith("/tools") ? "bg-[#E95144]/10 text-[#E95144]" : "text-[#8a8a9a] hover:text-white hover:bg-[#ffffff08]"}`}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer ${isMegamenuOpen || currentPath.startsWith("/tools") ? "bg-[#7C5CFC]/10 text-[#7C5CFC]" : "text-[#8a8a9a] hover:text-white hover:bg-[#ffffff08]"}`}
             >
               Tools
               <ChevronDown size={12} className={`transition-transform duration-300 ${isMegamenuOpen ? "rotate-180" : ""}`} />
@@ -97,12 +97,12 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                             onMouseEnter={() => setActiveCategory(catName)}
                             className={`w-full px-3 py-2 rounded-lg text-left text-[11px] font-bold transition-all flex items-center justify-between cursor-pointer ${
                               isActive
-                                ? "bg-[#E95144]/10 text-[#E95144]"
+                                ? "bg-[#7C5CFC]/10 text-[#7C5CFC]"
                                 : "text-[#8a8a9a] hover:text-white hover:bg-[#ffffff06]"
                             }`}
                           >
                             <span className="truncate">{catName}</span>
-                            <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-md shrink-0 ml-2 ${isActive ? "bg-[#E95144]/15 text-[#E95144]" : "bg-[#1e1e28] text-[#5a5a6a]"}`}>
+                            <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-md shrink-0 ml-2 ${isActive ? "bg-[#7C5CFC]/15 text-[#7C5CFC]" : "bg-[#1e1e28] text-[#5a5a6a]"}`}>
                               {toolCategories[catName].length}
                             </span>
                           </button>
@@ -128,14 +128,14 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                             onClick={() => setIsMegamenuOpen(false)}
                             className={`group flex gap-2.5 p-2.5 rounded-xl transition-all text-left ${
                               isCurrent
-                                ? "bg-[#E95144] shadow-lg shadow-[#E95144]/20"
+                                ? "bg-[#7C5CFC] shadow-lg shadow-[#7C5CFC]/20"
                                 : "hover:bg-[#1a1a22]"
                             }`}
                           >
                             <div className={`w-7 h-7 rounded-lg shrink-0 flex items-center justify-center ${
                               isCurrent
                                 ? "bg-white/20 text-white"
-                                : (tool.color || "bg-[#E95144]/10 text-[#E95144]")
+                                : (tool.color || "bg-[#7C5CFC]/10 text-[#7C5CFC]")
                             }`}>
                               <Icon size={13} />
                             </div>
@@ -157,7 +157,7 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
         {/* RIGHT: Search + Profile */}
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           {/* Search trigger */}
-          <button onClick={() => setIsPaletteOpen(true)} className="h-7 sm:h-8 flex items-center bg-[#1a1a22] hover:bg-[#222230] border border-[#2a2a35] hover:border-[#E95144]/30 rounded-lg px-2 sm:px-2.5 transition-all text-[#6a6a7a] text-xs cursor-text gap-1.5">
+          <button onClick={() => setIsPaletteOpen(true)} className="h-7 sm:h-8 flex items-center bg-[#1a1a22] hover:bg-[#222230] border border-[#2a2a35] hover:border-[#7C5CFC]/30 rounded-lg px-2 sm:px-2.5 transition-all text-[#6a6a7a] text-xs cursor-text gap-1.5">
             <Search size={12} />
             <span className="hidden sm:inline text-[10px] font-medium select-none">Search...</span>
             <div className="hidden sm:flex items-center gap-0.5 text-[8px] font-black text-[#8a8a9a] bg-[#111116] border border-[#2a2a35] px-1 py-0.5 rounded shrink-0">
@@ -168,8 +168,8 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
           {/* User */}
           {user ? (
             <div className="flex items-center gap-1.5 sm:gap-2">
-              <Link to="/profile" className={`flex items-center gap-1.5 text-xs font-bold px-2 sm:px-2.5 py-1.5 rounded-lg border transition-all ${currentPath === "/profile" ? "bg-[#E95144]/10 border-[#E95144]/20 text-[#E95144]" : "bg-[#1a1a22] border-[#2a2a35] hover:border-[#E95144]/30 text-white"}`}>
-                <div className="w-5 h-5 rounded-md bg-[#E95144]/15 text-[#E95144] flex items-center justify-center font-black text-[9px] border border-[#E95144]/20">
+              <Link to="/profile" className={`flex items-center gap-1.5 text-xs font-bold px-2 sm:px-2.5 py-1.5 rounded-lg border transition-all ${currentPath === "/profile" ? "bg-[#7C5CFC]/10 border-[#7C5CFC]/20 text-[#7C5CFC]" : "bg-[#1a1a22] border-[#2a2a35] hover:border-[#7C5CFC]/30 text-white"}`}>
+                <div className="w-5 h-5 rounded-md bg-[#7C5CFC]/15 text-[#7C5CFC] flex items-center justify-center font-black text-[9px] border border-[#7C5CFC]/20">
                   {(user.name || user.displayName || user.email || 'U').charAt(0).toUpperCase()}
                 </div>
                 <span className="hidden lg:inline max-w-[60px] truncate text-[11px]">{user.name || user.displayName || 'Profile'}</span>
@@ -179,7 +179,7 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
               </button>
             </div>
           ) : (
-            <Link to="/login" className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#E95144] hover:bg-[#d4443a] text-white font-bold transition-all shadow text-[11px]">
+            <Link to="/login" className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#7C5CFC] hover:bg-[#6B4FE0] text-white font-bold transition-all shadow text-[11px]">
               <User size={11} /> Sign In
             </Link>
           )}
@@ -214,10 +214,10 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
 
               {/* Nav links */}
               <div className="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-1">
-                <Link to="/dashboard" onClick={() => setIsMobileMenuOpen(false)} className={`block px-3 py-2.5 rounded-lg text-xs font-bold transition-all ${currentPath === "/dashboard" ? "bg-[#E95144]/10 text-[#E95144]" : "text-[#8a8a9a] hover:text-white hover:bg-[#ffffff06]"}`}>
+                <Link to="/dashboard" onClick={() => setIsMobileMenuOpen(false)} className={`block px-3 py-2.5 rounded-lg text-xs font-bold transition-all ${currentPath === "/dashboard" ? "bg-[#7C5CFC]/10 text-[#7C5CFC]" : "text-[#8a8a9a] hover:text-white hover:bg-[#ffffff06]"}`}>
                   Home
                 </Link>
-                <Link to="/profile" onClick={() => setIsMobileMenuOpen(false)} className={`block px-3 py-2.5 rounded-lg text-xs font-bold transition-all ${currentPath === "/profile" ? "bg-[#E95144]/10 text-[#E95144]" : "text-[#8a8a9a] hover:text-white hover:bg-[#ffffff06]"}`}>
+                <Link to="/profile" onClick={() => setIsMobileMenuOpen(false)} className={`block px-3 py-2.5 rounded-lg text-xs font-bold transition-all ${currentPath === "/profile" ? "bg-[#7C5CFC]/10 text-[#7C5CFC]" : "text-[#8a8a9a] hover:text-white hover:bg-[#ffffff06]"}`}>
                   Profile
                 </Link>
 
@@ -244,7 +244,7 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                                 key={tool.to}
                                 to={tool.to}
                                 onClick={() => setIsMobileMenuOpen(false)}
-                                className={`block px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all ${tool.to === currentPath ? "text-[#E95144] bg-[#E95144]/10" : "text-[#6a6a7a] hover:text-white hover:bg-[#ffffff06]"}`}
+                                className={`block px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all ${tool.to === currentPath ? "text-[#7C5CFC] bg-[#7C5CFC]/10" : "text-[#6a6a7a] hover:text-white hover:bg-[#ffffff06]"}`}
                               >
                                 {tool.name}
                               </Link>
