@@ -185,15 +185,17 @@ const CustomDropdown = ({ value, onChange, options, placeholder, disabled = fals
         type="button"
         onClick={() => !disabled && setOpen((p) => !p)}
         disabled={disabled}
-        className={`w-full h-full flex items-center gap-2 px-3 sm:px-4 text-left cursor-pointer transition-colors ${
-          disabled ? "opacity-40 cursor-not-allowed" : "hover:bg-[#ffffff06]"
+        className={`w-full h-11 flex items-center gap-2.5 px-3.5 sm:px-4 text-left rounded-xl border border-[#222230] bg-[#141419] transition-all cursor-pointer select-none ${
+          disabled 
+            ? "opacity-40 cursor-not-allowed border-[#1d1d28] bg-[#0e0e12]" 
+            : "hover:border-[#7C5CFC]/50 hover:bg-[#1a1a24] active:scale-[0.98] focus:border-[#7C5CFC]/80 focus:ring-1 focus:ring-[#7C5CFC]/30"
         }`}
       >
-        {Icon && <Icon size={13} className="text-[#5a5a6a] shrink-0" />}
+        {Icon && <Icon size={13} className="text-[#6a6a7a] shrink-0" />}
         <span className={`text-xs font-bold truncate ${selected ? "text-white" : "text-[#5a5a6a]"}`}>
           {selected ? selected.label : placeholder}
         </span>
-        <ChevronDown size={11} className={`ml-auto text-[#5a5a6a] shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
+        <ChevronDown size={11} className={`ml-auto text-[#6a6a7a] shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
 
       <AnimatePresence>
@@ -568,7 +570,7 @@ const Dashboard = () => {
                     {/* Target Selectors */}
                     <div className="flex items-center gap-2 shrink-0">
                       <div className="w-[140px] md:w-[155px]">
-                        <CustomDropdown value={source} onChange={handleSourceChange} options={sourceOptions} placeholder="Format" icon={Layers} disabled={!!droppedFile} />
+                        <CustomDropdown value={source} onChange={handleSourceChange} options={sourceOptions} placeholder="Format" icon={Layers} disabled={false} />
                       </div>
                       <div className="w-[150px] md:w-[170px]">
                         <CustomDropdown value={operationIdx} onChange={(val) => setOperationIdx(val)} options={operationOptions} placeholder="Operation" disabled={!source} icon={Zap} />
@@ -579,7 +581,7 @@ const Dashboard = () => {
                     <button
                       onClick={handleLaunch}
                       disabled={!activeOp}
-                      className="px-5 py-2 bg-[#7C5CFC] hover:bg-[#6B4FE0] text-white text-xs font-black transition-all disabled:bg-[#1a1a22] disabled:text-[#3a3a48] disabled:cursor-not-allowed cursor-pointer shrink-0 rounded-xl flex items-center gap-1.5 shadow-[0_0_20px_rgba(124,92,252,0.15)] hover:shadow-[0_0_20px_rgba(124,92,252,0.3)]"
+                      className="h-11 px-6 bg-[#7C5CFC] hover:bg-[#6B4FE0] text-white text-xs font-black transition-all disabled:bg-[#1a1a22] disabled:text-[#3a3a48] disabled:cursor-not-allowed cursor-pointer shrink-0 rounded-xl flex items-center justify-center gap-1.5 shadow-[0_0_20px_rgba(124,92,252,0.15)] hover:shadow-[0_0_20px_rgba(124,92,252,0.3)] hover:scale-[1.02] active:scale-[0.98]"
                     >
                       Launch <ArrowRight size={12} />
                     </button>
@@ -617,14 +619,14 @@ const Dashboard = () => {
                     )}
 
                     <div className="grid grid-cols-2 gap-2">
-                      <CustomDropdown value={source} onChange={handleSourceChange} options={sourceOptions} placeholder="Format" icon={Layers} disabled={!!droppedFile} />
+                      <CustomDropdown value={source} onChange={handleSourceChange} options={sourceOptions} placeholder="Format" icon={Layers} disabled={false} />
                       <CustomDropdown value={operationIdx} onChange={(val) => setOperationIdx(val)} options={operationOptions} placeholder="Operation" disabled={!source} icon={Zap} />
                     </div>
 
                     <button
                       onClick={handleLaunch}
                       disabled={!activeOp}
-                      className="w-full py-3 bg-[#7C5CFC] hover:bg-[#6B4FE0] text-white text-xs font-black transition-all disabled:bg-[#1a1a22] disabled:text-[#3a3a48] disabled:cursor-not-allowed cursor-pointer rounded-xl flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(124,92,252,0.15)]"
+                      className="w-full h-11 bg-[#7C5CFC] hover:bg-[#6B4FE0] text-white text-xs font-black transition-all disabled:bg-[#1a1a22] disabled:text-[#3a3a48] disabled:cursor-not-allowed cursor-pointer rounded-xl flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(124,92,252,0.15)] active:scale-[0.98]"
                     >
                       Launch <ArrowRight size={13} />
                     </button>
