@@ -162,7 +162,9 @@ const CustomDropdown = ({ value, onChange, options, placeholder, disabled = fals
   const ref = useRef(null);
   
   const [isFlashing, setIsFlashing] = useState(false);
+  const [isPop, setIsPop] = useState(false);
   const prevValue = useRef(value);
+  const prevDisabled = useRef(disabled);
 
   useEffect(() => {
     const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
@@ -186,6 +188,15 @@ const CustomDropdown = ({ value, onChange, options, placeholder, disabled = fals
     prevValue.current = value;
   }, [value]);
 
+  useEffect(() => {
+    if (prevDisabled.current && !disabled) {
+      setIsPop(true);
+      const timer = setTimeout(() => setIsPop(false), 500);
+      return () => clearTimeout(timer);
+    }
+    prevDisabled.current = disabled;
+  }, [disabled]);
+
   const selected = options.find((o) => o.value === value);
 
   const filteredOptions = options.filter((opt) =>
@@ -200,6 +211,8 @@ const CustomDropdown = ({ value, onChange, options, placeholder, disabled = fals
         disabled={disabled}
         className={`w-full h-11 flex items-center gap-2.5 px-3.5 sm:px-4 text-left rounded-xl border border-[#222230] bg-[#141419] transition-all cursor-pointer select-none ${
           isFlashing ? "animate-flash-glow" : ""
+        } ${
+          isPop ? "animate-scale-pop" : ""
         } ${
           disabled 
             ? "opacity-40 cursor-not-allowed border-[#1d1d28] bg-[#0e0e12]" 
@@ -368,6 +381,9 @@ const Dashboard = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [activeTab, setActiveTab] = useState("pdf");
   
+  const [isLaunchPop, setIsLaunchPop] = useState(false);
+  const prevHasActiveOp = useRef(false);
+
   const tabsRef = useRef(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(false);
@@ -410,6 +426,16 @@ const Dashboard = () => {
   const operations = source ? (OPERATIONS_MAP[source] || []) : [];
   const activeOp = operations[operationIdx] || null;
   const tabOps = OPERATIONS_MAP[activeTab] || [];
+
+  useEffect(() => {
+    const hasOp = !!activeOp;
+    if (!prevHasActiveOp.current && hasOp) {
+      setIsLaunchPop(true);
+      const timer = setTimeout(() => setIsLaunchPop(false), 500);
+      return () => clearTimeout(timer);
+    }
+    prevHasActiveOp.current = hasOp;
+  }, [activeOp]);
 
   const handleSourceChange = (val) => { setSource(val); setOperationIdx(0); };
   const handleLaunch = () => { 
@@ -454,7 +480,13 @@ const Dashboard = () => {
           30% { border-color: #7C5CFC; box-shadow: 0 0 15px rgba(124, 92, 252, 0.4); }
           100% { border-color: #222230; box-shadow: 0 0 0 rgba(124, 92, 252, 0); }
         }
+        @keyframes scale-pop {
+          0% { transform: scale(1); }
+          50% { transform: scale(1.05); border-color: #7C5CFC; box-shadow: 0 0 12px rgba(124, 92, 252, 0.25); }
+          100% { transform: scale(1); }
+        }
         .animate-flash-glow { animation: flash-glow 0.8s ease-out; }
+        .animate-scale-pop { animation: scale-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1); }
         .gradient-text { background: linear-gradient(135deg, #7C5CFC, #A78BFA, #7C5CFC); background-size: 200% 200%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: gradient-shift 4s ease infinite; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
@@ -627,7 +659,9 @@ const Dashboard = () => {
                     <button
                       onClick={handleLaunch}
                       disabled={!activeOp}
-                      className="h-11 px-6 bg-[#7C5CFC] hover:bg-[#6B4FE0] text-white text-xs font-black transition-all disabled:bg-[#1a1a22] disabled:text-[#3a3a48] disabled:cursor-not-allowed cursor-pointer shrink-0 rounded-xl flex items-center justify-center gap-1.5 shadow-[0_0_20px_rgba(124,92,252,0.15)] hover:shadow-[0_0_20px_rgba(124,92,252,0.3)] hover:scale-[1.02] active:scale-[0.98]"
+                      className={`h-11 px-6 bg-[#7C5CFC] hover:bg-[#6B4FE0] text-white text-xs font-black transition-all disabled:bg-[#1a1a22] disabled:text-[#3a3a48] disabled:cursor-not-allowed cursor-pointer shrink-0 rounded-xl flex items-center justify-center gap-1.5 shadow-[0_0_20px_rgba(124,92,252,0.15)] hover:shadow-[0_0_20px_rgba(124,92,252,0.3)] hover:scale-[1.02] active:scale-[0.98] ${
+                        isLaunchPop ? "animate-scale-pop" : ""
+                      }`}
                     >
                       Launch <ArrowRight size={12} />
                     </button>
@@ -686,7 +720,9 @@ const Dashboard = () => {
                     <button
                       onClick={handleLaunch}
                       disabled={!activeOp}
-                      className="w-full h-11 bg-[#7C5CFC] hover:bg-[#6B4FE0] text-white text-xs font-black transition-all disabled:bg-[#1a1a22] disabled:text-[#3a3a48] disabled:cursor-not-allowed cursor-pointer rounded-xl flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(124,92,252,0.15)] active:scale-[0.98]"
+                      className={`w-full h-11 bg-[#7C5CFC] hover:bg-[#6B4FE0] text-white text-xs font-black transition-all disabled:bg-[#1a1a22] disabled:text-[#3a3a48] disabled:cursor-not-allowed cursor-pointer rounded-xl flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(124,92,252,0.15)] active:scale-[0.98] ${
+                        isLaunchPop ? "animate-scale-pop" : ""
+                      }`}
                     >
                       Launch <ArrowRight size={13} />
                     </button>
