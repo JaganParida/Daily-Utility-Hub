@@ -475,7 +475,7 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                   borderColor: isSearchExpanded ? "rgba(124, 92, 252, 0.5)" : "rgba(34, 34, 48, 0.4)",
                   backgroundColor: isSearchExpanded ? "#121216" : "rgba(20, 20, 25, 0.9)"
                 }}
-                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                transition={{ duration: 0.38, ease: [0.4, 0, 0.2, 1] }}
                 className="hidden md:flex items-center h-8 rounded-full border overflow-hidden shrink-0 cursor-pointer relative z-50 px-0.5"
                 onClick={() => {
                   if (!isSearchExpanded) {
@@ -502,7 +502,7 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                     opacity: isSearchExpanded ? 1 : 0,
                     pointerEvents: isSearchExpanded ? "auto" : "none"
                   }}
-                  transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                  transition={{ duration: 0.38, ease: [0.4, 0, 0.2, 1] }}
                   className="bg-transparent border-none text-[11px] text-white focus:outline-none placeholder:text-[#5a5a6a] ml-1 pr-6"
                 />
 
@@ -513,7 +513,7 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                     scale: isSearchExpanded ? 1 : 0,
                     pointerEvents: isSearchExpanded ? "auto" : "none"
                   }}
-                  transition={{ duration: 0.15 }}
+                  transition={{ duration: 0.2, ease: "easeOut" }}
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
