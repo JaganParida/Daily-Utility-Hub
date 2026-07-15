@@ -180,7 +180,7 @@ const ImageToPdf = () => {
   const hasImages = images.length > 0;
 
   return (
-    <div className="max-w-[1600px] mx-auto w-full px-2 md:px-8">
+    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
 
       {/* Header */}
       <div className="mb-6 flex items-center gap-3 shrink-0">
@@ -188,8 +188,8 @@ const ImageToPdf = () => {
           <FileText size={24} />
         </div>
         <div>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter text-foreground">Advanced Image to PDF</h1>
-          <p className="text-muted-foreground mt-1 text-xs md:text-sm">Convert photos to printable PDF documents — A4, Letter, and more.</p>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Advanced Image to PDF</h1>
+          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Convert photos to printable PDF documents — A4, Letter, and more.</p>
         </div>
       </div>
 

@@ -176,7 +176,7 @@ const Base64Converter = () => {
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: 'easeOut' }}
-      className="max-w-[1600px] mx-auto w-full px-2 md:px-8"
+      className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8"
     >
       {/* Header */}
       <div className="mb-6 flex items-center gap-3">
@@ -184,8 +184,8 @@ const Base64Converter = () => {
           <Binary size={24} />
         </div>
         <div>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter text-foreground">Base64 Encoder / Decoder</h1>
-          <p className="text-muted-foreground mt-1 text-xs md:text-sm">Encode plain text or images to Base64, or decode strings with auto image detection.</p>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Base64 Encoder / Decoder</h1>
+          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Encode plain text or images to Base64, or decode strings with auto image detection.</p>
         </div>
       </div>
 

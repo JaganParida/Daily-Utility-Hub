@@ -237,18 +237,18 @@ const PdfSplit = () => {
   };
 
   return (
-    <div className="max-w-[1600px] mx-auto w-full px-2 md:px-8">
+    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
       {/* Header Container */}
       <div className="mb-6 flex items-center gap-3">
         <div className="p-2 bg-primary/10 text-primary rounded-md shadow-sm">
           <Scissors size={24} className="transform -rotate-45" />
         </div>
         <div>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter text-foreground flex items-center gap-2">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground flex items-center gap-2">
             Extract & Split PDF
             <span className="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] uppercase font-bold tracking-wider">Premium</span>
           </h1>
-          <p className="text-muted-foreground mt-1 text-xs md:text-sm">
+          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">
             Visually select pages or ranges to extract or split into clean, new documents.
           </p>
         </div>

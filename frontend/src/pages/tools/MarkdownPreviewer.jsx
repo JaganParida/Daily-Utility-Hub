@@ -113,8 +113,8 @@ Use the helper buttons to format notes easily!`);
           <FileText size={24} />
         </div>
         <div>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter text-foreground">Advanced Markdown Notes Builder</h1>
-          <p className="text-muted-foreground mt-1 text-xs md:text-sm">Write markdown notes, compile rich assignments, preview structure, and print to PDF instantly.</p>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Advanced Markdown Notes Builder</h1>
+          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Write markdown notes, compile rich assignments, preview structure, and print to PDF instantly.</p>
         </div>
       </div>
 

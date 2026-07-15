@@ -89,15 +89,15 @@ const MarkdownEditor = () => {
   const readTime = Math.ceil(wordCount / 200);
 
   return (
-    <div className="max-w-[1600px] mx-auto w-full px-2 md:px-8">
+    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
       <div className="mb-6 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-primary/10 text-primary rounded-md shadow-sm">
             <BookOpen size={24} />
           </div>
           <div>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter text-foreground">Markdown Live Editor</h1>
-            <p className="text-muted-foreground mt-1 text-xs md:text-sm">Write beautiful documentation with instant GitHub-flavored previews and quick tools.</p>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Markdown Live Editor</h1>
+            <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Write beautiful documentation with instant GitHub-flavored previews and quick tools.</p>
           </div>
         </div>
       </div>

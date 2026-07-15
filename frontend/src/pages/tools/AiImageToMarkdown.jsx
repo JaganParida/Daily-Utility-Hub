@@ -280,7 +280,7 @@ const AiImageToMarkdown = () => {
           </div>
           <div>
             <h1 className="text-3xl sm:text-4xl font-black tracking-tighter text-foreground">AI Image to Code & Markdown</h1>
-            <p className="text-muted-foreground mt-1 text-xs md:text-sm">
+            <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">
               Convert design wireframes, whiteboard flowcharts, or app screenshots into structured clean documentation or code.
             </p>
           </div>

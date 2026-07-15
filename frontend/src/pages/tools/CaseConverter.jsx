@@ -89,15 +89,15 @@ const CaseConverter = () => {
   const hasText = text.trim().length > 0;
 
   return (
-    <div className="max-w-[1600px] mx-auto w-full px-2 md:px-8">
+    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
       {/* Header */}
       <div className="mb-6 flex items-center gap-3">
         <div className="p-2 bg-primary/10 text-primary rounded-lg shadow-sm">
           <Type size={24} />
         </div>
         <div>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter text-foreground">Advanced Case Converter</h1>
-          <p className="text-muted-foreground mt-1 text-xs md:text-sm">Transform blocks of text instantly between standard, developer, and fun cases.</p>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Advanced Case Converter</h1>
+          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Transform blocks of text instantly between standard, developer, and fun cases.</p>
         </div>
       </div>
 

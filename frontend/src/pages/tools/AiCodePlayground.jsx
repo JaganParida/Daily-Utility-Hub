@@ -251,7 +251,7 @@ Remember to return your response strictly using [CODE]...[/CODE] and [EXPLANATIO
           </div>
           <div>
             <h1 className="text-3xl sm:text-4xl font-black tracking-tighter text-foreground">AI Code Playground & Diff Editor</h1>
-            <p className="text-muted-foreground mt-1 text-xs md:text-sm">
+            <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">
               Refactor, optimize, debug, translate, or annotate your source snippets with interactive comparative code changes.
             </p>
           </div>

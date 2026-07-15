@@ -306,7 +306,7 @@ ${styleGuide ? `Additional Formatting Requirements: ${styleGuide}` : ''}`;
           </div>
           <div>
             <h1 className="text-3xl sm:text-4xl font-black tracking-tighter text-foreground">AI PDF to Markdown Parser</h1>
-            <p className="text-muted-foreground mt-1 text-xs md:text-sm">
+            <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">
               Convert raw PDF reports, specs, and reference manuals into beautiful clean Markdown documentation.
             </p>
           </div>

@@ -21,14 +21,14 @@ const PptPaletteGenerator = () => {
   };
 
   return (
-    <div className="max-w-[1600px] mx-auto w-full px-2 md:px-8">
+    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
       <div className="mb-6 flex items-center gap-3 shrink-0">
         <div className="p-2 bg-primary/10 text-primary rounded-md shadow-sm">
           <Palette size={24} />
         </div>
         <div>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter text-foreground">Projector Palette Swatches</h1>
-          <p className="text-muted-foreground mt-1 text-xs md:text-sm">Generate high-contrast color schemes calibrated specifically to preserve readability on light/dark digital projectors.</p>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Projector Palette Swatches</h1>
+          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Generate high-contrast color schemes calibrated specifically to preserve readability on light/dark digital projectors.</p>
         </div>
       </div>
 
