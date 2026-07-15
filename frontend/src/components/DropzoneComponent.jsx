@@ -1,5 +1,6 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
+import { useLocation } from 'react-router-dom';
 import { UploadCloud, X, File as FileIcon } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -15,6 +16,15 @@ const DropzoneComponent = ({
   onRemove,
   className = "",
 }) => {
+  const location = useLocation();
+
+  useEffect(() => {
+    const initialFile = location.state?.initialFile;
+    if (initialFile) {
+      onFilesAccepted([initialFile]);
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state, onFilesAccepted]);
 
   const onDrop = useCallback((acceptedFiles, fileRejections) => {
     if (fileRejections.length > 0) {

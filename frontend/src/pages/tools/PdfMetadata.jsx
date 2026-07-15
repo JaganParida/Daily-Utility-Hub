@@ -1,3 +1,4 @@
+import { useLocation } from 'react-router-dom';
 import { useState, useRef, useEffect } from 'react';
 import { Settings, UploadCloud, FileText, CheckCircle2, Loader2, Eye, ExternalLink, Info, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -10,6 +11,15 @@ import { PDFDocument } from 'pdf-lib';
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
 
 const PdfMetadata = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    const initialFile = location.state?.initialFile;
+    if (initialFile) {
+      loadPdf(initialFile);
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
   const [file, setFile] = useState(null);
   const [metadata, setMetadata] = useState({
     title: '',

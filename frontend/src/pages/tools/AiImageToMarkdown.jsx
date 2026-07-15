@@ -1,3 +1,4 @@
+import { useLocation } from 'react-router-dom';
 import { useState, useRef, useEffect } from 'react';
 import { 
   Image as ImageIcon, UploadCloud, Copy, Check, Download, 
@@ -11,6 +12,15 @@ import remarkGfm from 'remark-gfm';
 import { useAi, ALL_MODELS } from '../../hooks/useAi';
 
 const AiImageToMarkdown = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    const initialFile = location.state?.initialFile;
+    if (initialFile) {
+      processFile(initialFile);
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
   const {
     geminiKey,
     openaiKey,

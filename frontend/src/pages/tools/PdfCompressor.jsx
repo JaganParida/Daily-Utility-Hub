@@ -1,4 +1,5 @@
-import { useState, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
+import { useState, useRef, useEffect } from 'react';
 import { UploadCloud, FileText, CheckCircle2, Download, Loader2, X, RefreshCw, Layers } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -16,6 +17,15 @@ const COMPRESSION_LEVELS = [
 ];
 
 const PdfCompressor = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    const initialFile = location.state?.initialFile;
+    if (initialFile) {
+      loadPdf(initialFile);
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
   const [file, setFile] = useState(null);
   const [totalPages, setTotalPages] = useState(0);
   const [compressionLevel, setCompressionLevel] = useState('medium');

@@ -1,10 +1,20 @@
-import { useState, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
+import { useState, useRef, useEffect } from 'react';
 import { Layers, Download, Upload, Trash2, CheckCircle2, Split } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import * as XLSX from 'xlsx';
 import JSZip from 'jszip';
 
 const ExcelMergeSplit = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    const initialFile = location.state?.initialFile;
+    if (initialFile) {
+      handleFileUpload({ target: { files: [initialFile] } });
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
   const [mode, setMode] = useState('merge'); // merge, split
   const [files, setFiles] = useState([]);
   const [splitSheets, setSplitSheets] = useState([]);

@@ -1,3 +1,4 @@
+import { useLocation } from 'react-router-dom';
 import { useState, useRef, useEffect } from 'react';
 import { 
   Unlock, 
@@ -23,6 +24,15 @@ import { decryptPDF } from '@pdfsmaller/pdf-decrypt';
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
 
 const PdfUnlock = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    const initialFile = location.state?.initialFile;
+    if (initialFile) {
+      loadPdf(initialFile);
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
   const [file, setFile] = useState(null);
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);

@@ -1,3 +1,4 @@
+import { useLocation } from 'react-router-dom';
 import { useState, useRef, useEffect } from 'react';
 import { Type, UploadCloud, FileText, CheckCircle2, Copy, Check, Download, Eye, EyeOff, ExternalLink, X, Loader2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
@@ -9,6 +10,15 @@ import * as pdfjsLib from 'pdfjs-dist';
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
 
 const PdfToText = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    const initialFile = location.state?.initialFile;
+    if (initialFile) {
+      loadPdf(initialFile);
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
   const [file, setFile] = useState(null);
   const [extractedText, setExtractedText] = useState('');
   const [pagesCount, setPagesCount] = useState(0);

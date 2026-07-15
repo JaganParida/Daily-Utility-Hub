@@ -1,3 +1,4 @@
+import { useLocation } from 'react-router-dom';
 import { useState, useRef, useEffect } from 'react';
 import { Lock, UploadCloud, FileText, CheckCircle2, Eye, EyeOff, ShieldCheck, ShieldAlert, ExternalLink, Loader2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
@@ -6,6 +7,15 @@ import api from '../../lib/api';
 import { encryptPDF } from '@pdfsmaller/pdf-encrypt';
 
 const PdfLock = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    const initialFile = location.state?.initialFile;
+    if (initialFile) {
+      loadPdf(initialFile);
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
   const [file, setFile] = useState(null);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');

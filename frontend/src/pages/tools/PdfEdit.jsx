@@ -1,3 +1,4 @@
+import { useLocation } from 'react-router-dom';
 import { useState, useRef, useEffect } from 'react';
 import * as pdfjsLib from 'pdfjs-dist';
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
@@ -21,6 +22,15 @@ const hexToRgbFloat = (hex) => {
 };
 
 const PdfEdit = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    const initialFile = location.state?.initialFile;
+    if (initialFile) {
+      loadPdf(initialFile);
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
   const [file, setFile] = useState(null);
   const [pdfDocument, setPdfDocument] = useState(null);
   const [numPages, setNumPages] = useState(0);

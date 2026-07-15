@@ -1,4 +1,5 @@
-import { useState, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
+import { useState, useRef, useEffect } from 'react';
 import { FileText, Download, Upload, Copy, CheckCircle2, FileImage, Sparkles } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -6,6 +7,15 @@ import { jsPDF } from 'jspdf';
 import JSZip from 'jszip';
 
 const DocxConverter = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    const initialFile = location.state?.initialFile;
+    if (initialFile) {
+      handleFileUpload({ target: { files: [initialFile] } });
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
   const [file, setFile] = useState(null);
   const [content, setContent] = useState('');
   const [isCopied, setIsCopied] = useState(false);

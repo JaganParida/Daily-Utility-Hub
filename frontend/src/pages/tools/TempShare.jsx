@@ -1,3 +1,4 @@
+import { useLocation } from 'react-router-dom';
 import { useState, useRef, useEffect } from 'react';
 import { UploadCloud, File, CheckCircle2, Clipboard, Globe, X, QrCode, Share2, Timer, Code, Link } from 'lucide-react';
 import { toast } from 'react-hot-toast';
@@ -20,6 +21,15 @@ const WhatsAppIcon = ({ size = 16, className = '' }) => (
 );
 
 const TempShare = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    const initialFile = location.state?.initialFile;
+    if (initialFile) {
+      handleFileSelect({ target: { files: [initialFile] } });
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
   const [tab, setTab] = useState('file'); // 'file' | 'text'
   const [file, setFile] = useState(null);
   const [textVal, setTextVal] = useState('');

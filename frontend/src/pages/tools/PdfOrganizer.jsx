@@ -1,4 +1,5 @@
-import { useState, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
+import { useState, useRef, useEffect } from 'react';
 import { UploadCloud, FileText, CheckCircle2, Download, Loader2, X, RefreshCw, LayoutGrid, RotateCw, Trash2, Copy } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -86,6 +87,15 @@ const SortablePage = ({ page, index, onRemove, onDuplicate, onRotate }) => {
 };
 
 const PdfOrganizer = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    const initialFile = location.state?.initialFile;
+    if (initialFile) {
+      loadPdf(initialFile);
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
   const [file, setFile] = useState(null);
   const [pdfData, setPdfData] = useState(null); // original array buffer
   const [pages, setPages] = useState([]); // { id, originalIndex, rotation, thumbnailUrl }

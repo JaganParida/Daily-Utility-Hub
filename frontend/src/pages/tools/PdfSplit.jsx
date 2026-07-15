@@ -1,4 +1,5 @@
-import { useState, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
+import { useState, useRef, useEffect } from 'react';
 import { UploadCloud, FileText, CheckCircle2, Scissors, HelpCircle, Loader2, Eye, ExternalLink, Sparkles } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -51,6 +52,15 @@ const parseRangeString = (str, total) => {
 };
 
 const PdfSplit = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    const initialFile = location.state?.initialFile;
+    if (initialFile) {
+      loadPdf(initialFile);
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
   const [file, setFile] = useState(null);
   const [splitMode, setSplitMode] = useState('extract'); // 'extract' (1 PDF) or 'split' (ZIP of PDFs)
   const [pages, setPages] = useState('');

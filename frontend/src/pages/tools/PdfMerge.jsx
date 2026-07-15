@@ -1,3 +1,4 @@
+import { useLocation } from 'react-router-dom';
 import { useState, useRef, useEffect } from 'react';
 import { UploadCloud, FileText, CheckCircle2, GripVertical, Trash2, Eye, X, ExternalLink, Loader2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
@@ -62,6 +63,15 @@ const SortableItem = ({ id, file, index, removeFile, onPreview }) => {
 };
 
 const PdfMerge = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    const initialFile = location.state?.initialFile;
+    if (initialFile) {
+      handleFileSelect({ target: { files: [initialFile] } });
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
   const [files, setFiles] = useState([]);
   const [previewFile, setPreviewFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);

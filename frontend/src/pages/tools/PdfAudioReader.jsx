@@ -1,3 +1,4 @@
+import { useLocation } from 'react-router-dom';
 import { useState, useRef, useEffect } from 'react';
 import { UploadCloud, FileText, CheckCircle2, Play, Pause, Square, Settings, Volume2, Type, FastForward, SkipBack, X, RefreshCw, Loader2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
@@ -22,6 +23,15 @@ const bionifyText = (text) => {
 };
 
 const PdfAudioReader = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    const initialFile = location.state?.initialFile;
+    if (initialFile) {
+      loadPdf(initialFile);
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
   const [file, setFile] = useState(null);
   const [text, setText] = useState('');
   

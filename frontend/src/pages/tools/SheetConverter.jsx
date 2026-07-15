@@ -1,9 +1,19 @@
-import { useState, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
+import { useState, useRef, useEffect } from 'react';
 import { Braces, Download, Upload, Copy, CheckCircle2, RefreshCw } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import * as XLSX from 'xlsx';
 
 const SheetConverter = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    const initialFile = location.state?.initialFile;
+    if (initialFile) {
+      handleFileUpload({ target: { files: [initialFile] } });
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
   const [file, setFile] = useState(null);
   const [format, setFormat] = useState('JSON'); // JSON, XML, SQL
   const [parsedData, setParsedData] = useState([]);

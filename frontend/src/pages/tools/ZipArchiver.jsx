@@ -1,10 +1,20 @@
-import { useState, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
+import { useState, useRef, useEffect } from 'react';
 import { FolderArchive, File, Download, UploadCloud, FileArchive, CheckCircle2, FileText, FileImage, FileCode, Search, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 import JSZip from 'jszip';
 
 const ZipArchiver = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    const initialFile = location.state?.initialFile;
+    if (initialFile) {
+      handleFileSelect({ target: { files: [initialFile] } });
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
   const [mode, setMode] = useState('EXTRACT'); // 'EXTRACT' or 'COMPRESS'
   
   // Extract State

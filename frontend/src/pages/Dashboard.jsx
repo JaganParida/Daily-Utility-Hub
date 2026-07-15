@@ -301,12 +301,21 @@ const Dashboard = () => {
   const tabOps = OPERATIONS_MAP[activeTab] || [];
 
   const handleSourceChange = (val) => { setSource(val); setOperationIdx(0); };
-  const handleLaunch = () => { if (activeOp) navigate(activeOp.to); };
+  const handleLaunch = () => { 
+    if (activeOp) {
+      navigate(activeOp.to, { state: { initialFile: droppedFile?.rawFile } });
+    }
+  };
 
   const handleFileDrop = useCallback((file) => {
     const ext = file.name.split(".").pop().toLowerCase();
     const mapped = EXT_TO_SOURCE[ext] || "";
-    setDroppedFile({ name: file.name, size: (file.size / 1024).toFixed(1) + " KB", ext: ext.toUpperCase() });
+    setDroppedFile({ 
+      rawFile: file,
+      name: file.name, 
+      size: (file.size / 1024).toFixed(1) + " KB", 
+      ext: ext.toUpperCase() 
+    });
     if (mapped) { setSource(mapped); setOperationIdx(0); }
   }, []);
 

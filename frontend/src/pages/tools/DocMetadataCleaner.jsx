@@ -1,10 +1,20 @@
-import { useState, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
+import { useState, useRef, useEffect } from 'react';
 import { FileText, ShieldAlert, Upload, Download, ShieldCheck, Trash2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { motion } from 'framer-motion';
 import JSZip from 'jszip';
 
 const DocMetadataCleaner = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    const initialFile = location.state?.initialFile;
+    if (initialFile) {
+      handleFileUpload({ target: { files: [initialFile] } });
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
   const [file, setFile] = useState(null);
   const [metadata, setMetadata] = useState(null);
   const [cleanedBlob, setCleanedBlob] = useState(null);
