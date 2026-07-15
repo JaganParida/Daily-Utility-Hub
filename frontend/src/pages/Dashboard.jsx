@@ -1,346 +1,561 @@
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useState, useRef } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import {
-  Layers, Pin, Sparkles, Shield, Cpu, Activity,
-  ChevronRight, ArrowRight, Search, FileText, Code, CheckCircle,
-  AlertCircle, X, Terminal, Server, Folder
+  ArrowRight, UploadCloud, X, FileCheck, ChevronDown, Zap, Shield, Cpu,
+  FileText, ImageIcon, Code2, Type, Table2, FileSpreadsheet, MonitorPlay,
+  FolderArchive, Music, Layers
 } from "lucide-react";
 import PageTransition from "../components/PageTransition";
-import { useAnalytics } from "../hooks/useAnalytics";
-import { useAuth } from "../context/AuthContext";
-import { toolCategories, allTools } from "../data/toolCategories";
 
-// Cursor-glowing Tool Card Component
-const ToolCard = ({ tool, isPinned, togglePin }) => {
-  const [mouseCoords, setMouseCoords] = useState({ x: 0, y: 0 });
-  const [isHovered, setIsHovered] = useState(false);
-  const ToolIcon = tool.icon;
+// ─── DATA ───
 
-  const handleMouseMove = (e) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    setMouseCoords({
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top
-    });
-  };
+const SOURCE_FORMATS = [
+  { id: "pdf", label: "PDF", icon: FileText },
+  { id: "image", label: "Image", icon: ImageIcon },
+  { id: "spreadsheet", label: "Spreadsheet", icon: Table2 },
+  { id: "document", label: "Word Doc", icon: FileSpreadsheet },
+  { id: "code", label: "Code", icon: Code2 },
+  { id: "text", label: "Text", icon: Type },
+  { id: "presentation", label: "Slides", icon: MonitorPlay },
+  { id: "archive", label: "Archive", icon: FolderArchive },
+  { id: "media", label: "Audio / Video", icon: Music },
+];
 
-  // Build tags
-  const tags = [];
-  const isAi = tool.to.includes("ai-") || tool.description.toLowerCase().includes("ai ");
-  if (isAi) {
-    tags.push({ label: "AI Engine", color: "bg-indigo-500/10 text-indigo-500 border-indigo-500/20" });
-  } else {
-    tags.push({ label: "Offline", color: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" });
-  }
-  
-  if (tool.to.includes("pdf")) {
-    tags.push({ label: "PDF", color: "bg-rose-500/10 text-rose-500 border-rose-500/20" });
-  } else if (tool.to.includes("compress") || tool.to.includes("converter")) {
-    tags.push({ label: "Processor", color: "bg-blue-500/10 text-blue-500 border-blue-500/20" });
-  }
+const OPERATIONS_MAP = {
+  pdf: [
+    { label: "Compress", result: "Smaller PDF", to: "/tools/pdf-compressor" },
+    { label: "Convert to Image", result: "PNG Pages", to: "/tools/pdf-converter" },
+    { label: "Extract Text", result: "Plain Text", to: "/tools/pdf-to-text" },
+    { label: "Merge Files", result: "Combined PDF", to: "/tools/pdf-merge" },
+    { label: "Split Pages", result: "Individual PDFs", to: "/tools/pdf-split" },
+    { label: "Edit Content", result: "Edited PDF", to: "/tools/pdf-edit" },
+    { label: "Add Watermark", result: "Stamped PDF", to: "/tools/pdf-watermark" },
+    { label: "Lock & Encrypt", result: "Secured PDF", to: "/tools/pdf-lock" },
+    { label: "Unlock", result: "Open PDF", to: "/tools/pdf-unlock" },
+    { label: "Read Aloud", result: "Audio Stream", to: "/tools/pdf-audio-reader" },
+    { label: "AI → Markdown", result: "Markdown Doc", to: "/tools/ai-pdf-to-markdown" },
+  ],
+  image: [
+    { label: "Compress", result: "Optimized Image", to: "/tools/image-compressor" },
+    { label: "Resize", result: "Resized Image", to: "/tools/image-resizer" },
+    { label: "Crop", result: "Cropped Image", to: "/tools/image-cropper" },
+    { label: "Convert Format", result: "Converted File", to: "/tools/image-converter" },
+    { label: "Add Watermark", result: "Watermarked", to: "/tools/image-watermark" },
+    { label: "Make Collage", result: "Photo Collage", to: "/tools/image-collage" },
+    { label: "Extract Colors", result: "Color Palette", to: "/tools/image-color-extractor" },
+    { label: "Convert to PDF", result: "PDF Document", to: "/tools/image-to-pdf" },
+    { label: "OCR Text", result: "Extracted Text", to: "/tools/image-to-text" },
+    { label: "AI → Markdown", result: "Markdown Doc", to: "/tools/ai-image-to-markdown" },
+  ],
+  spreadsheet: [
+    { label: "Merge / Split", result: "Processed Sheets", to: "/tools/excel-merge-split" },
+    { label: "Formula Helper", result: "Generated Formula", to: "/tools/formula-helper" },
+    { label: "Pivot Table", result: "Pivot View", to: "/tools/pivot-table-builder" },
+    { label: "Clean Data", result: "Clean File", to: "/tools/sheet-cleaner" },
+  ],
+  document: [
+    { label: "Convert to PDF", result: "PDF Document", to: "/tools/docx-converter" },
+    { label: "Build Template", result: "Doc Template", to: "/tools/doc-template-builder" },
+    { label: "Strip Metadata", result: "Clean Document", to: "/tools/doc-metadata-cleaner" },
+  ],
+  code: [
+    { label: "Format JSON", result: "Pretty JSON", to: "/tools/json-formatter" },
+    { label: "Test Regex", result: "Regex Matches", to: "/tools/regex-tester" },
+    { label: "Decode JWT", result: "JWT Payload", to: "/tools/jwt-decoder" },
+    { label: "Generate UUID", result: "UUID Batch", to: "/tools/uuid-generator" },
+    { label: "Parse Cron", result: "Cron Schedule", to: "/tools/cron-parser" },
+    { label: "Preview HTML", result: "Rendered Page", to: "/tools/html-previewer" },
+    { label: "Code → Image", result: "Code Screenshot", to: "/tools/code-to-image" },
+    { label: "AI Optimize", result: "Refactored Code", to: "/tools/ai-code-playground" },
+  ],
+  text: [
+    { label: "Edit Markdown", result: "Formatted MD", to: "/tools/markdown-editor" },
+    { label: "Compare Diff", result: "Diff Report", to: "/tools/text-diff" },
+    { label: "Count Words", result: "Word Stats", to: "/tools/word-counter" },
+    { label: "Find & Replace", result: "Modified Text", to: "/tools/find-and-replace" },
+    { label: "Generate Lorem", result: "Placeholder Text", to: "/tools/lorem-ipsum" },
+    { label: "Change Case", result: "Cased Text", to: "/tools/case-converter" },
+  ],
+  presentation: [
+    { label: "Convert to PDF", result: "PDF Slides", to: "/tools/ppt-to-pdf" },
+    { label: "MD → Slides", result: "Slide Deck", to: "/tools/md-to-slides" },
+    { label: "Edit Metadata", result: "Clean PPTX", to: "/tools/pptx-metadata-editor" },
+  ],
+  archive: [
+    { label: "Create Archive", result: "ZIP File", to: "/tools/zip-archiver" },
+    { label: "Encrypt Vault", result: "Secured Vault", to: "/tools/file-vault" },
+    { label: "Temp Share", result: "Share Link", to: "/tools/temp-share" },
+    { label: "Batch Rename", result: "Renamed Files", to: "/tools/batch-renamer" },
+  ],
+  media: [
+    { label: "Transcribe", result: "Text Transcript", to: "/tools/audio-video-transcriber" },
+    { label: "Voice Helper", result: "Voice Output", to: "/tools/voice-helper" },
+    { label: "Read Aloud", result: "Audio Stream", to: "/tools/pdf-audio-reader" },
+  ],
+};
+
+const CATEGORY_TABS = [
+  { id: "pdf", label: "PDF", icon: FileText },
+  { id: "image", label: "Image", icon: ImageIcon },
+  { id: "code", label: "Developer", icon: Code2 },
+  { id: "text", label: "Text", icon: Type },
+  { id: "spreadsheet", label: "Sheets", icon: Table2 },
+  { id: "document", label: "Docs", icon: FileSpreadsheet },
+  { id: "presentation", label: "Slides", icon: MonitorPlay },
+  { id: "archive", label: "Files", icon: FolderArchive },
+  { id: "media", label: "Media", icon: Music },
+];
+
+const EXT_TO_SOURCE = {
+  pdf: "pdf",
+  png: "image", jpg: "image", jpeg: "image", webp: "image", svg: "image", gif: "image", bmp: "image",
+  xlsx: "spreadsheet", xls: "spreadsheet", csv: "spreadsheet",
+  docx: "document", doc: "document",
+  pptx: "presentation", ppt: "presentation",
+  js: "code", jsx: "code", ts: "code", tsx: "code", py: "code", html: "code", css: "code", json: "code",
+  zip: "archive", tar: "archive", gz: "archive", rar: "archive",
+  mp3: "media", wav: "media", mp4: "media", mkv: "media",
+  txt: "text", md: "text",
+};
+
+// ─── Custom Dropdown Component ───
+const CustomDropdown = ({ value, onChange, options, placeholder, disabled = false, icon: Icon }) => {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const selected = options.find((o) => o.value === value);
 
   return (
-    <motion.div
-      onMouseMove={handleMouseMove}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      initial={{ opacity: 0, y: 10, scale: 0.99 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ type: "spring", stiffness: 350, damping: 28 }}
-      className="group flex flex-col p-4 rounded-xl border border-border/80 bg-card hover:border-primary/45 transition-all shadow-sm justify-between min-h-[135px] relative overflow-hidden cursor-pointer"
-    >
-      {/* Radial Hover Glow Accent */}
-      {isHovered && (
-        <div
-          className="absolute inset-0 pointer-events-none transition-opacity duration-300 opacity-100"
-          style={{
-            background: `radial-gradient(150px circle at ${mouseCoords.x}px ${mouseCoords.y}px, rgba(233, 81, 68, 0.07), transparent 80%)`
-          }}
-        />
-      )}
+    <div ref={ref} className="relative w-full h-full">
+      <button
+        type="button"
+        onClick={() => !disabled && setOpen((p) => !p)}
+        disabled={disabled}
+        className={`w-full h-full flex items-center gap-2 px-3 sm:px-4 text-left cursor-pointer transition-colors ${
+          disabled ? "opacity-40 cursor-not-allowed" : "hover:bg-[#ffffff06]"
+        }`}
+      >
+        {Icon && <Icon size={13} className="text-[#5a5a6a] shrink-0" />}
+        <span className={`text-xs font-bold truncate ${selected ? "text-white" : "text-[#5a5a6a]"}`}>
+          {selected ? selected.label : placeholder}
+        </span>
+        <ChevronDown size={11} className={`ml-auto text-[#5a5a6a] shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
 
-      <div className="flex gap-3 relative z-10">
-        {/* Icon wrapper */}
-        <Link 
-          to={tool.to}
-          className={`p-2.5 rounded-lg shrink-0 flex items-center justify-center border border-border/40 transition-transform group-hover:scale-105 h-fit ${
-            tool.color || "bg-primary/10 text-primary"
-          }`}
-        >
-          <ToolIcon size={15} />
-        </Link>
-
-        {/* Text descriptions */}
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center justify-between gap-1.5">
-            <Link to={tool.to} className="min-w-0 flex-1 block">
-              <h4 className="text-xs font-bold text-foreground group-hover:text-primary transition-colors truncate">
-                {tool.name}
-              </h4>
-            </Link>
-            
-            {/* Pinned toggle */}
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                togglePin(tool.to);
-              }}
-              className={`p-1.5 rounded-md hover:bg-muted shrink-0 transition-all cursor-pointer ${
-                isPinned ? "text-primary bg-primary/10 border border-primary/10" : "text-muted-foreground hover:text-foreground"
-              }`}
-              title={isPinned ? "Unpin Favorite" : "Pin Favorite"}
-            >
-              <Pin size={10} className={isPinned ? "fill-current" : ""} />
-            </button>
-          </div>
-          <Link to={tool.to} className="block mt-1">
-            <p className="text-[10px] text-muted-foreground leading-normal line-clamp-2">
-              {tool.description}
-            </p>
-          </Link>
-        </div>
-      </div>
-
-      {/* Footer capabilities */}
-      <div className="flex items-center justify-between border-t border-border/40 pt-3 mt-4 relative z-10">
-        <div className="flex gap-1.5 flex-wrap">
-          {tags.map((tag, idx) => (
-            <span
-              key={idx}
-              className={`text-[8px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-md border ${tag.color}`}
-            >
-              {tag.label}
-            </span>
-          ))}
-        </div>
-
-        <Link
-          to={tool.to}
-          className="text-[10px] font-black text-primary group-hover:text-primary/80 transition-colors flex items-center gap-1 shrink-0"
-        >
-          Launch <ArrowRight size={10} className="group-hover:translate-x-0.5 transition-transform" />
-        </Link>
-      </div>
-    </motion.div>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: 6, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 4, scale: 0.97 }}
+            transition={{ duration: 0.15 }}
+            className="absolute top-full left-0 mt-2 w-full min-w-[180px] max-h-[240px] overflow-y-auto bg-[#1a1a22] border border-[#2a2a35] rounded-xl shadow-[0_12px_40px_rgba(0,0,0,0.5)] z-[200] py-1 custom-scrollbar"
+          >
+            {options.map((opt) => {
+              const OptIcon = opt.icon;
+              return (
+                <button
+                  key={opt.value}
+                  onClick={() => { onChange(opt.value); setOpen(false); }}
+                  className={`w-full flex items-center gap-2.5 px-3.5 py-2 text-left text-xs font-medium transition-colors cursor-pointer ${
+                    opt.value === value
+                      ? "bg-[#E95144]/10 text-[#E95144]"
+                      : "text-[#b0b0bc] hover:bg-[#ffffff08] hover:text-white"
+                  }`}
+                >
+                  {OptIcon && <OptIcon size={13} className="shrink-0 opacity-60" />}
+                  <span className="truncate">{opt.label}</span>
+                  {opt.value === value && (
+                    <svg className="w-3 h-3 ml-auto text-[#E95144] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  )}
+                </button>
+              );
+            })}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 };
 
-const Dashboard = () => {
-  const { pinnedTools, togglePin } = useAnalytics();
-
-  // Workbench layout states
-  const [activeCategory, setActiveCategory] = useState("all");
-  const [searchQuery, setSearchQuery] = useState("");
-
-  // Telemetry statuses
-  const [mockStats, setMockStats] = useState({ cpu: 1.2, ram: 42.4, uptime: "0s" });
-
-  // Update telemetry stats dynamically
+// ─── Animated Counter ───
+const AnimatedCounter = ({ end, suffix = "" }) => {
+  const [count, setCount] = useState(0);
   useEffect(() => {
-    const startTime = Date.now();
-    const interval = setInterval(() => {
-      const diffSecs = Math.floor((Date.now() - startTime) / 1000);
-      const uptimeStr = diffSecs < 60 ? `${diffSecs}s` : `${Math.floor(diffSecs / 60)}m ${diffSecs % 60}s`;
-      
-      setMockStats({
-        cpu: +(Math.random() * 3 + 0.8).toFixed(1),
-        ram: +(40 + Math.random() * 5).toFixed(1),
-        uptime: uptimeStr
-      });
-    }, 2000);
+    let start = 0;
+    const step = Math.max(1, Math.floor(end / 40));
+    const interval = 1200 / (end / step);
+    const timer = setInterval(() => {
+      start += step;
+      if (start >= end) { setCount(end); clearInterval(timer); }
+      else setCount(start);
+    }, interval);
+    return () => clearInterval(timer);
+  }, [end]);
+  return <span>{count}{suffix}</span>;
+};
 
-    return () => clearInterval(interval);
+// ─── MAIN COMPONENT ───
+
+const Dashboard = () => {
+  const navigate = useNavigate();
+  const fileInputRef = useRef(null);
+
+  const [source, setSource] = useState("");
+  const [operationIdx, setOperationIdx] = useState(0);
+  const [droppedFile, setDroppedFile] = useState(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [activeTab, setActiveTab] = useState("pdf");
+
+  const operations = source ? (OPERATIONS_MAP[source] || []) : [];
+  const activeOp = operations[operationIdx] || null;
+  const tabOps = OPERATIONS_MAP[activeTab] || [];
+
+  const handleSourceChange = (val) => { setSource(val); setOperationIdx(0); };
+  const handleLaunch = () => { if (activeOp) navigate(activeOp.to); };
+
+  const handleFileDrop = useCallback((file) => {
+    const ext = file.name.split(".").pop().toLowerCase();
+    const mapped = EXT_TO_SOURCE[ext] || "";
+    setDroppedFile({ name: file.name, size: (file.size / 1024).toFixed(1) + " KB", ext: ext.toUpperCase() });
+    if (mapped) { setSource(mapped); setOperationIdx(0); }
   }, []);
 
-  // Filter tools matching category and query
-  const getFilteredTools = () => {
-    let list = activeCategory === "all" ? allTools : toolCategories[activeCategory] || [];
-    
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      list = list.filter(
-        (t) =>
-          t.name.toLowerCase().includes(q) ||
-          t.description.toLowerCase().includes(q)
-      );
-    }
-    return list;
-  };
+  const clearFile = () => { setDroppedFile(null); setSource(""); };
 
-  const filteredTools = getFilteredTools();
+  // Dropdown option builders
+  const sourceOptions = SOURCE_FORMATS.map((sf) => ({ value: sf.id, label: sf.label, icon: sf.icon }));
+  const operationOptions = operations.map((op, idx) => ({ value: idx, label: op.label }));
 
   return (
     <PageTransition>
-      <div className="max-w-[1600px] mx-auto w-full px-4 md:px-12 lg:px-20 xl:px-32 pt-24 pb-20">
-        
-        {/* ========================================= */}
-        {/* WORKBENCH CONTAINER (Locked Viewport)     */}
-        {/* ========================================= */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch lg:h-[calc(100vh-10rem)] overflow-hidden min-h-[500px]">
-          
-          {/* LEFT PANEL: Directory folders & telemetry */}
-          <aside className="lg:col-span-3 bg-card border border-border/80 rounded-2xl p-4 flex flex-col justify-between h-full overflow-hidden shadow-sm">
-            
-            {/* Header / Search box */}
-            <div className="space-y-4 shrink-0">
-              <div className="flex items-center justify-between border-b border-border/60 pb-3">
-                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
-                  <Terminal size={12} className="text-primary animate-pulse" /> Utility Engine
-                </span>
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              </div>
+      <style>{`
+        @keyframes gradient-shift { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+        @keyframes glow-pulse { 0%,100% { box-shadow: 0 0 20px rgba(233,81,68,0.06), 0 0 40px rgba(233,81,68,0.03); } 50% { box-shadow: 0 0 28px rgba(233,81,68,0.12), 0 0 56px rgba(233,81,68,0.05); } }
+        .gradient-text { background: linear-gradient(135deg, #E95144, #ff8a65, #E95144); background-size: 200% 200%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: gradient-shift 4s ease infinite; }
+        .glow-strip { animation: glow-pulse 3s ease-in-out infinite; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+      `}</style>
 
-              {/* Sidebar Search input */}
-              <div className="relative w-full group">
-                <input
-                  type="text"
-                  placeholder="Filter utilities..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-8.5 pr-8 py-2 bg-background border border-border/80 rounded-xl text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all shadow-inner"
-                />
-                <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                {searchQuery && (
-                  <button
-                    onClick={() => setSearchQuery("")}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 hover:bg-muted rounded text-muted-foreground cursor-pointer"
-                  >
-                    <X size={10} />
-                  </button>
-                )}
-              </div>
-            </div>
+      <div className="w-full min-h-screen">
 
-            {/* Scrollable list of categories */}
-            <div className="flex-1 overflow-y-auto custom-scrollbar my-4 pr-1 space-y-0.5">
-              {/* All tab */}
-              <button
-                onClick={() => setActiveCategory("all")}
-                className={`w-full px-2.5 py-2 rounded-xl text-left text-xs font-bold transition-all flex items-center justify-between cursor-pointer ${
-                  activeCategory === "all"
-                    ? "bg-primary/10 text-primary border border-primary/10"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/30 border border-transparent"
-                }`}
+        {/* ═══ HERO — Dark section ═══ */}
+        <section
+          className="w-full bg-[#0b0b0f] relative overflow-hidden"
+          onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+          onDragLeave={(e) => { e.preventDefault(); setIsDragging(false); }}
+          onDrop={(e) => {
+            e.preventDefault(); setIsDragging(false);
+            if (e.dataTransfer.files?.[0]) handleFileDrop(e.dataTransfer.files[0]);
+          }}
+        >
+          {/* Textures */}
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
+          <div className="absolute top-[-100px] left-1/2 -translate-x-1/2 w-[500px] h-[350px] bg-[radial-gradient(ellipse_at_center,rgba(233,81,68,0.06),transparent_70%)] pointer-events-none" />
+
+          {/* Full-screen drag overlay */}
+          <AnimatePresence>
+            {isDragging && (
+              <motion.div
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                className="absolute inset-0 z-50 bg-[#0b0b0f]/90 border-2 border-dashed border-[#E95144] flex flex-col items-center justify-center gap-3 pointer-events-none"
               >
-                <span className="flex items-center gap-2">
-                  <Folder size={12} />
-                  <span>All Utilities</span>
-                </span>
-                <span className="text-[9px] font-semibold bg-muted px-1.5 py-0.5 rounded border border-border/40 text-muted-foreground shrink-0">
-                  {allTools.length}
-                </span>
-              </button>
+                <UploadCloud size={36} className="text-[#E95144] animate-bounce" />
+                <p className="text-sm font-bold text-white">Drop your file anywhere</p>
+                <p className="text-[11px] text-[#5a5a6a]">We'll auto-detect the format</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-              {Object.keys(toolCategories).map((catName) => {
-                const isActive = activeCategory === catName;
-                const toolsCount = toolCategories[catName].length;
+          <div className="relative z-10 w-full max-w-[900px] mx-auto px-4 sm:px-6 md:px-8 pt-28 sm:pt-32 md:pt-36 pb-12 sm:pb-14 md:pb-16">
 
-                return (
-                  <button
-                    key={catName}
-                    onClick={() => setActiveCategory(catName)}
-                    className={`w-full px-2.5 py-2 rounded-xl text-left text-xs font-bold transition-all flex items-center justify-between cursor-pointer ${
-                      isActive
-                        ? "bg-primary/10 text-primary border border-primary/10"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted/30 border border-transparent"
-                    }`}
-                  >
-                    <span className="flex items-center gap-2 truncate">
-                      <Folder size={12} />
-                      <span className="truncate">{catName}</span>
-                    </span>
-                    <span className="text-[9px] font-semibold bg-muted px-1.5 py-0.5 rounded border border-border/40 text-muted-foreground shrink-0">
-                      {toolsCount}
-                    </span>
-                  </button>
-                );
-              })}
+            {/* ── HEADLINE ── */}
+            <div className="text-center mb-8 sm:mb-10 md:mb-12">
+              <motion.h1
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                className="text-3xl sm:text-4xl md:text-5xl lg:text-[3.5rem] font-black tracking-tight text-white leading-[1.1] mb-3"
+              >
+                What do you want to
+                <span className="gradient-text"> process</span>
+                <span className="text-white">?</span>
+              </motion.h1>
+              <motion.p
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.15 }}
+                className="text-[#6a6a7a] text-xs sm:text-sm max-w-sm sm:max-w-md mx-auto leading-relaxed"
+              >
+                Pick your file, choose an action, and launch. Everything runs locally in your browser.
+              </motion.p>
             </div>
 
-            {/* Footer Telemetry Stats */}
-            <div className="shrink-0 bg-muted/30 border border-border/60 p-3 rounded-xl space-y-2">
-              <div className="text-[9px] font-black text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
-                <Server size={10} /> Local Diagnostics
-              </div>
-              <div className="grid grid-cols-2 gap-2 text-[10px] font-semibold text-muted-foreground">
-                <div>
-                  <span className="text-foreground block font-bold">{mockStats.cpu}%</span>
-                  <span>CPU engine</span>
-                </div>
-                <div>
-                  <span className="text-foreground block font-bold">{mockStats.ram} MB</span>
-                  <span>Sandbox RAM</span>
-                </div>
-              </div>
-              <div className="text-[8px] text-muted-foreground border-t border-border/50 pt-2 flex items-center justify-between">
-                <span>Session uptime:</span>
-                <span className="font-bold text-foreground">{mockStats.uptime}</span>
-              </div>
-            </div>
-
-          </aside>
-
-          {/* RIGHT PANEL: Folder workspace tools catalog */}
-          <main className="lg:col-span-9 bg-card border border-border/80 rounded-2xl p-5 flex flex-col h-full overflow-hidden shadow-sm">
-            {/* Header path breadcrumbs */}
-            <div className="flex items-center justify-between pb-3.5 border-b border-border/60 shrink-0">
-              <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground">
-                <span>Root</span>
-                <span>/</span>
-                <span className="text-foreground">{activeCategory === "all" ? "All Operations" : activeCategory}</span>
-              </div>
-              <div className="text-[10px] font-bold text-muted-foreground bg-muted border border-border/50 px-2 py-0.5 rounded-lg shrink-0">
-                {filteredTools.length} utilities matching
-              </div>
-            </div>
-
-            {/* Scrollable list of grid cards */}
-            <div className="flex-1 overflow-y-auto pr-1.5 custom-scrollbar mt-4">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={activeCategory + searchQuery}
-                  initial="hidden"
-                  animate="show"
-                  variants={{
-                    hidden: { opacity: 0 },
-                    show: {
-                      opacity: 1,
-                      transition: { staggerChildren: 0.015 }
-                    }
-                  }}
-                  className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4"
-                >
-                  {filteredTools.map((tool) => {
-                    const isPinned = pinnedTools.includes(tool.to);
-                    return (
-                      <ToolCard
-                        key={tool.to}
-                        tool={tool}
-                        isPinned={isPinned}
-                        togglePin={togglePin}
-                      />
-                    );
-                  })}
-
-                  {/* Empty state */}
-                  {filteredTools.length === 0 && (
-                    <div className="col-span-full flex flex-col items-center justify-center text-center p-12 opacity-60 my-auto">
-                      <AlertCircle size={24} className="text-muted-foreground mb-3" />
-                      <h4 className="font-bold text-foreground text-xs uppercase tracking-wider">No matching operations</h4>
-                      <p className="text-[10px] text-muted-foreground mt-1 max-w-[280px]">
-                        Refine your search query or select another directory folder on the left.
-                      </p>
+            {/* ── UNIFIED COMMAND STRIP ── */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.25 }}
+              className="glow-strip bg-[#141419] border border-[#222230] rounded-2xl overflow-hidden mb-3"
+            >
+              {/* Desktop / Tablet: horizontal */}
+              <div className="hidden sm:flex items-stretch h-[52px]">
+                {/* File segment */}
+                <div className="flex-1 flex items-center gap-2 px-4 border-r border-[#222230] min-w-0">
+                  {droppedFile ? (
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <FileCheck size={14} className="text-emerald-400 shrink-0" />
+                      <span className="text-xs font-bold text-white truncate">{droppedFile.name}</span>
+                      <span className="text-[9px] text-[#5a5a6a] shrink-0">{droppedFile.size}</span>
+                      <button onClick={clearFile} className="p-0.5 text-[#5a5a6a] hover:text-white rounded cursor-pointer shrink-0"><X size={11} /></button>
                     </div>
+                  ) : (
+                    <button onClick={() => fileInputRef.current?.click()} className="flex items-center gap-2 text-[#5a5a6a] hover:text-[#8a8a9a] transition-colors cursor-pointer w-full">
+                      <UploadCloud size={14} className="shrink-0" />
+                      <span className="text-xs font-medium">Select or drop a file</span>
+                    </button>
                   )}
-                </motion.div>
+                  <input type="file" ref={fileInputRef} onChange={(e) => { if (e.target.files?.[0]) handleFileDrop(e.target.files[0]); e.target.value = ''; }} className="hidden" />
+                </div>
+
+                {/* Format dropdown */}
+                <div className="w-[160px] md:w-[170px] border-r border-[#222230] shrink-0">
+                  <CustomDropdown
+                    value={source}
+                    onChange={handleSourceChange}
+                    options={sourceOptions}
+                    placeholder="Format"
+                    icon={Layers}
+                  />
+                </div>
+
+                {/* Operation dropdown */}
+                <div className="w-[170px] md:w-[190px] border-r border-[#222230] shrink-0">
+                  <CustomDropdown
+                    value={operationIdx}
+                    onChange={(val) => setOperationIdx(val)}
+                    options={operationOptions}
+                    placeholder="Operation"
+                    disabled={!source}
+                    icon={Zap}
+                  />
+                </div>
+
+                {/* Launch */}
+                <button
+                  onClick={handleLaunch}
+                  disabled={!activeOp}
+                  className="px-5 md:px-6 flex items-center gap-2 bg-[#E95144] hover:bg-[#d4443a] text-white text-xs font-black transition-all disabled:bg-[#1a1a22] disabled:text-[#3a3a48] disabled:cursor-not-allowed cursor-pointer shrink-0"
+                >
+                  Launch <ArrowRight size={13} />
+                </button>
+              </div>
+
+              {/* Mobile: vertical */}
+              <div className="flex sm:hidden flex-col">
+                {/* File */}
+                <div className="flex items-center gap-2 px-4 py-3.5 border-b border-[#222230]">
+                  {droppedFile ? (
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <FileCheck size={13} className="text-emerald-400 shrink-0" />
+                      <span className="text-xs font-bold text-white truncate">{droppedFile.name}</span>
+                      <button onClick={clearFile} className="p-0.5 text-[#5a5a6a] hover:text-white rounded cursor-pointer shrink-0 ml-auto"><X size={11} /></button>
+                    </div>
+                  ) : (
+                    <button onClick={() => fileInputRef.current?.click()} className="flex items-center gap-2 text-[#5a5a6a] hover:text-[#8a8a9a] transition-colors cursor-pointer w-full">
+                      <UploadCloud size={13} className="shrink-0" />
+                      <span className="text-xs font-medium">Select or drop a file</span>
+                    </button>
+                  )}
+                  <input type="file" ref={fileInputRef} onChange={(e) => { if (e.target.files?.[0]) handleFileDrop(e.target.files[0]); e.target.value = ''; }} className="hidden" />
+                </div>
+                {/* Selectors */}
+                <div className="flex items-stretch h-[44px] border-b border-[#222230]">
+                  <div className="flex-1 border-r border-[#222230]">
+                    <CustomDropdown value={source} onChange={handleSourceChange} options={sourceOptions} placeholder="Format" icon={Layers} />
+                  </div>
+                  <div className="flex-1">
+                    <CustomDropdown value={operationIdx} onChange={(val) => setOperationIdx(val)} options={operationOptions} placeholder="Operation" disabled={!source} icon={Zap} />
+                  </div>
+                </div>
+                {/* Launch */}
+                <button onClick={handleLaunch} disabled={!activeOp} className="w-full py-3 flex items-center justify-center gap-2 bg-[#E95144] hover:bg-[#d4443a] text-white text-xs font-black transition-all disabled:bg-[#1a1a22] disabled:text-[#3a3a48] cursor-pointer">
+                  Launch <ArrowRight size={13} />
+                </button>
+              </div>
+            </motion.div>
+
+            {/* Result hint */}
+            <div className="h-5 mb-6 sm:mb-8 flex items-center justify-center">
+              <AnimatePresence mode="wait">
+                {activeOp && (
+                  <motion.p
+                    key={activeOp.to}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -4 }}
+                    className="text-[11px] text-[#5a5a6a] flex items-center gap-1.5"
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    <span className="text-emerald-400 font-bold">{activeOp.result}</span>
+                    <span className="hidden xs:inline">— ready to launch</span>
+                  </motion.p>
+                )}
               </AnimatePresence>
             </div>
-          </main>
 
-        </div>
+            {/* ── STATS RIBBON ── */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4 }}
+              className="flex items-center justify-center gap-4 sm:gap-6 md:gap-10 mb-10 sm:mb-12 md:mb-14"
+            >
+              {[
+                { icon: Zap, value: 90, suffix: "+", label: "Tools" },
+                { icon: Shield, value: 100, suffix: "%", label: "Local" },
+                { icon: Cpu, value: 0, suffix: "", label: "Server Uploads", display: "Zero" },
+              ].map((stat, i) => (
+                <div key={i} className="flex items-center gap-1.5 sm:gap-2 text-[#4a4a5a]">
+                  <stat.icon size={12} className="text-[#3a3a48] shrink-0" />
+                  <span className="text-[10px] sm:text-xs font-black text-[#6a6a7a]">
+                    {stat.display || <AnimatedCounter end={stat.value} suffix={stat.suffix} />}
+                  </span>
+                  <span className="text-[9px] sm:text-[10px] font-medium">{stat.label}</span>
+                </div>
+              ))}
+            </motion.div>
 
+            {/* ═══ CATEGORY TABS ═══ */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.45, duration: 0.5 }}
+            >
+              <h2 className="text-[10px] sm:text-xs font-black text-[#5a5a6a] uppercase tracking-widest text-center mb-4 sm:mb-5">
+                Browse by category
+              </h2>
+
+              {/* Tabs — horizontally scrollable on mobile */}
+              <div className="overflow-x-auto hide-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0 mb-5 sm:mb-6">
+                <div className="flex items-center justify-start sm:justify-center gap-1 min-w-max sm:min-w-0 sm:flex-wrap">
+                  {CATEGORY_TABS.map((tab) => {
+                    const TabIcon = tab.icon;
+                    return (
+                      <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
+                        className={`relative px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${
+                          activeTab === tab.id
+                            ? "text-white"
+                            : "text-[#5a5a6a] hover:text-[#8a8a9a] hover:bg-[#ffffff04]"
+                        }`}
+                      >
+                        {activeTab === tab.id && (
+                          <motion.div
+                            layoutId="activeTab"
+                            className="absolute inset-0 bg-[#E95144]/15 border border-[#E95144]/30 rounded-lg sm:rounded-xl"
+                            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                          />
+                        )}
+                        <TabIcon size={13} className="relative z-10" />
+                        <span className="relative z-10">{tab.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Operations grid */}
+              <div className="min-h-[120px] sm:min-h-[140px]">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={activeTab}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.25 }}
+                    className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2"
+                  >
+                    {tabOps.map((op, i) => (
+                      <motion.div
+                        key={op.to}
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.2, delay: i * 0.03 }}
+                      >
+                        <Link
+                          to={op.to}
+                          className="group flex items-center gap-3 px-3.5 py-2.5 sm:px-4 sm:py-3 rounded-xl bg-[#141419] border border-[#1e1e28] hover:border-[#E95144]/30 hover:bg-[#E95144]/5 transition-all"
+                        >
+                          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#1e1e28] group-hover:bg-[#E95144]/10 flex items-center justify-center transition-colors shrink-0">
+                            <ArrowRight size={11} className="text-[#5a5a6a] group-hover:text-[#E95144] transition-colors" />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-[11px] sm:text-xs font-bold text-[#c0c0cc] group-hover:text-white transition-colors truncate">{op.label}</p>
+                            <p className="text-[9px] text-[#4a4a5a] group-hover:text-[#6a6a7a] transition-colors truncate">{op.result}</p>
+                          </div>
+                        </Link>
+                      </motion.div>
+                    ))}
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* ═══ POPULAR — Light/dark themed section ═══ */}
+        <section className="w-full bg-background py-10 sm:py-12 md:py-16">
+          <div className="w-full max-w-[900px] mx-auto px-4 sm:px-6 md:px-8">
+            <h2 className="text-sm sm:text-base font-black text-foreground tracking-tight mb-5 sm:mb-6">
+              Popular operations
+            </h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-6 sm:gap-x-8 gap-y-3 sm:gap-y-4">
+              {[
+                { label: "Compress PDF", to: "/tools/pdf-compressor" },
+                { label: "Merge PDF", to: "/tools/pdf-merge" },
+                { label: "PDF to Text", to: "/tools/pdf-to-text" },
+                { label: "Edit PDF", to: "/tools/pdf-edit" },
+                { label: "Compress Image", to: "/tools/image-compressor" },
+                { label: "Resize Image", to: "/tools/image-resizer" },
+                { label: "Image to PDF", to: "/tools/image-to-pdf" },
+                { label: "Extract Colors", to: "/tools/image-color-extractor" },
+                { label: "JSON Formatter", to: "/tools/json-formatter" },
+                { label: "Regex Tester", to: "/tools/regex-tester" },
+                { label: "JWT Decoder", to: "/tools/jwt-decoder" },
+                { label: "UUID Generator", to: "/tools/uuid-generator" },
+                { label: "Markdown Editor", to: "/tools/markdown-editor" },
+                { label: "Text Diff", to: "/tools/text-diff" },
+                { label: "Password Generator", to: "/tools/password-generator" },
+                { label: "Code to Image", to: "/tools/code-to-image" },
+                { label: "Hash Generator", to: "/tools/hash-generator" },
+                { label: "File Vault", to: "/tools/file-vault" },
+                { label: "Word Counter", to: "/tools/word-counter" },
+                { label: "Cron Parser", to: "/tools/cron-parser" },
+              ].map((link) => (
+                <Link
+                  key={link.to}
+                  to={link.to}
+                  className="text-[11px] sm:text-xs text-muted-foreground hover:text-primary font-medium transition-colors relative group/lnk inline-block"
+                >
+                  {link.label}
+                  <span className="absolute -bottom-0.5 left-0 w-0 h-px bg-primary transition-all duration-300 group-hover/lnk:w-full" />
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
       </div>
     </PageTransition>
   );
