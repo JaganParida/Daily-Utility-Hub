@@ -282,8 +282,8 @@ const PdfConverter = () => {
         zip.file('word/document.xml', documentXml);
 
         const content = await zip.generateAsync({ type: 'blob' });
-        
-        const downloadUrl = URL.createObjectURL(content);
+        const docxBlob = new Blob([content], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+        const downloadUrl = URL.createObjectURL(docxBlob);
         const link = document.createElement('a');
         link.href = downloadUrl;
         link.download = `${file.name.replace('.pdf', '')}.docx`;
