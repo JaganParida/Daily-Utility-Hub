@@ -648,24 +648,26 @@ const Dashboard = () => {
                           </button>
                         </motion.div>
                       ) : (
-                        <motion.div
-                          key="file-empty"
-                          initial={{ scale: 0.95, opacity: 0 }}
-                          animate={{ scale: 1, opacity: 1 }}
-                          exit={{ scale: 0.95, opacity: 0 }}
-                          transition={{ duration: 0.2 }}
-                          onClick={() => fileInputRefDesktop.current?.click()}
-                          className="flex items-center gap-2 px-3.5 py-2 bg-[#1a1a22]/50 hover:bg-[#1a1a22] border border-dashed border-[#222230] hover:border-[#7C5CFC]/30 text-[#b0b0bc] hover:text-white rounded-xl transition-all cursor-pointer min-w-[200px] max-w-[260px] h-[44px] group"
-                        >
-                          <UploadCloud size={14} className="text-[#7C5CFC]/80 group-hover:text-[#7C5CFC] shrink-0" />
-                          <span className="text-xs font-bold truncate">Select or drop file</span>
+                        <>
+                          <motion.div
+                            key="file-empty"
+                            initial={{ scale: 0.95, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.95, opacity: 0 }}
+                            transition={{ duration: 0.2 }}
+                            onClick={() => fileInputRefDesktop.current?.click()}
+                            className="flex items-center gap-2 px-3.5 py-2 bg-[#1a1a22]/50 hover:bg-[#1a1a22] border border-dashed border-[#222230] hover:border-[#7C5CFC]/30 text-[#b0b0bc] hover:text-white rounded-xl transition-all cursor-pointer min-w-[200px] max-w-[260px] h-[44px] group"
+                          >
+                            <UploadCloud size={14} className="text-[#7C5CFC]/80 group-hover:text-[#7C5CFC] shrink-0" />
+                            <span className="text-xs font-bold truncate">Select or drop file</span>
+                          </motion.div>
                           <input
                             type="file"
                             ref={fileInputRefDesktop}
                             onChange={(e) => { if (e.target.files?.[0]) handleFileDrop(e.target.files[0]); e.target.value = ''; }}
                             className="hidden"
                           />
-                        </motion.div>
+                        </>
                       )}
                     </AnimatePresence>
 
@@ -731,24 +733,26 @@ const Dashboard = () => {
                           </button>
                         </motion.div>
                       ) : (
-                        <motion.div
-                          key="file-empty-mobile"
-                          initial={{ scale: 0.95, opacity: 0 }}
-                          animate={{ scale: 1, opacity: 1 }}
-                          exit={{ scale: 0.95, opacity: 0 }}
-                          transition={{ duration: 0.2 }}
-                          onClick={() => fileInputRefMobile.current?.click()}
-                          className="flex items-center justify-center gap-2 py-3 bg-[#1a1a22]/50 border border-dashed border-[#222230] text-[#b0b0bc] rounded-xl transition-all cursor-pointer group"
-                        >
-                          <UploadCloud size={14} className="text-[#7C5CFC] shrink-0" />
-                          <span className="text-xs font-bold">Select or drop file</span>
+                        <>
+                          <motion.div
+                            key="file-empty-mobile"
+                            initial={{ scale: 0.95, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.95, opacity: 0 }}
+                            transition={{ duration: 0.2 }}
+                            onClick={() => fileInputRefMobile.current?.click()}
+                            className="flex items-center justify-center gap-2 py-3 bg-[#1a1a22]/50 border border-dashed border-[#222230] text-[#b0b0bc] rounded-xl transition-all cursor-pointer group"
+                          >
+                            <UploadCloud size={14} className="text-[#7C5CFC] shrink-0" />
+                            <span className="text-xs font-bold">Select or drop file</span>
+                          </motion.div>
                           <input
                             type="file"
                             ref={fileInputRefMobile}
                             onChange={(e) => { if (e.target.files?.[0]) handleFileDrop(e.target.files[0]); e.target.value = ''; }}
                             className="hidden"
                           />
-                        </motion.div>
+                        </>
                       )}
                     </AnimatePresence>
 
