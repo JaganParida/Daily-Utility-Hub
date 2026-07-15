@@ -93,36 +93,42 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
               <AnimatePresence>
                 {isMegamenuOpen && (
                   <motion.div
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 4 }}
-                    transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
+                    initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 4, scale: 0.98 }}
+                    transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
                     onMouseLeave={() => setIsMegamenuOpen(false)}
-                    className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-[780px] bg-[#111116] border border-[#1e1e28] rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.7)] z-[200] overflow-hidden"
+                    className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-[700px] bg-[#111116] border border-[#1e1e28] rounded-lg shadow-[0_20px_60px_rgba(0,0,0,0.7)] z-[200] overflow-hidden"
                   >
-                    <div className="flex min-h-[400px]">
+                    {/* Gradient accent strip */}
+                    <div className="h-[2px] w-full bg-gradient-to-r from-[#7C5CFC] via-[#A78BFA] to-[#7C5CFC]" />
+
+                    <div className="flex" style={{ minHeight: '360px' }}>
                       {/* Left: Categories */}
-                      <div className="w-[200px] bg-[#0e0e12] border-r border-[#1a1a22] py-2 flex flex-col">
-                        <div className="px-4 py-2">
-                          <p className="text-[9px] font-black text-[#4a4a5a] uppercase tracking-[0.15em]">Categories</p>
-                        </div>
-                        <div className="flex-1 overflow-y-auto custom-scrollbar px-1.5 space-y-0.5">
+                      <div className="w-[180px] border-r border-[#1a1a22] flex flex-col py-2">
+                        <p className="text-[8px] font-black text-[#3e3e4e] uppercase tracking-[0.2em] px-4 py-1.5">Browse</p>
+                        <div className="flex-1 overflow-y-auto custom-scrollbar px-1.5">
                           {Object.keys(toolCategories).map((catName) => {
                             const isActive = catName === activeCategory;
                             return (
                               <button
                                 key={catName}
                                 onMouseEnter={() => setActiveCategory(catName)}
-                                className={`w-full px-3 py-[7px] rounded-lg text-left text-[11px] font-semibold transition-all flex items-center justify-between cursor-pointer ${
+                                className={`w-full px-3 py-[6px] text-left text-[11px] font-medium transition-all flex items-center justify-between cursor-pointer rounded relative ${
                                   isActive
-                                    ? "bg-[#7C5CFC]/10 text-[#7C5CFC]"
-                                    : "text-[#8a8a9a] hover:text-white hover:bg-[#ffffff05]"
+                                    ? "text-white bg-[#ffffff06]"
+                                    : "text-[#6a6a7a] hover:text-[#b0b0bc] hover:bg-[#ffffff03]"
                                 }`}
                               >
+                                {isActive && (
+                                  <motion.div
+                                    layoutId="catIndicator"
+                                    className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-4 bg-[#7C5CFC] rounded-r-full"
+                                    transition={{ type: "spring", damping: 20, stiffness: 300 }}
+                                  />
+                                )}
                                 <span className="truncate">{catName}</span>
-                                <span className={`text-[9px] tabular-nums font-semibold px-1.5 py-0.5 rounded shrink-0 ml-2 ${
-                                  isActive ? "bg-[#7C5CFC]/15 text-[#7C5CFC]" : "text-[#4a4a5a]"
-                                }`}>
+                                <span className={`text-[9px] tabular-nums shrink-0 ml-2 ${isActive ? "text-[#7C5CFC]" : "text-[#3e3e4e]"}`}>
                                   {toolCategories[catName].length}
                                 </span>
                               </button>
@@ -133,16 +139,25 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
 
                       {/* Right: Tools */}
                       <div className="flex-1 flex flex-col min-w-0">
-                        {/* Category header */}
-                        <div className="px-5 py-3 border-b border-[#1a1a22] flex items-center justify-between shrink-0">
-                          <h3 className="text-sm font-bold text-white">{activeCategory}</h3>
-                          <span className="text-[10px] text-[#4a4a5a] font-medium">{toolCategories[activeCategory]?.length} tools</span>
+                        {/* Header with search */}
+                        <div className="px-4 py-2.5 border-b border-[#1a1a22] flex items-center justify-between shrink-0">
+                          <div className="flex items-center gap-2">
+                            <h3 className="text-[13px] font-bold text-white">{activeCategory}</h3>
+                            <span className="text-[9px] text-[#3e3e4e] bg-[#1a1a22] px-1.5 py-0.5 rounded font-mono">{toolCategories[activeCategory]?.length}</span>
+                          </div>
+                          <button
+                            onClick={() => { setIsMegamenuOpen(false); setIsPaletteOpen(true); }}
+                            className="flex items-center gap-1 text-[10px] text-[#4a4a5a] hover:text-[#7C5CFC] transition-colors cursor-pointer"
+                          >
+                            <Search size={10} />
+                            <span>Search</span>
+                          </button>
                         </div>
 
-                        {/* Tools grid — 3 columns, compact */}
-                        <div className="flex-1 overflow-y-auto custom-scrollbar p-3">
-                          <div className="grid grid-cols-3 gap-1">
-                            {toolCategories[activeCategory]?.map((tool) => {
+                        {/* Tools grid */}
+                        <div className="flex-1 overflow-y-auto custom-scrollbar p-2.5">
+                          <div className="grid grid-cols-2 gap-[3px]">
+                            {toolCategories[activeCategory]?.map((tool, idx) => {
                               const Icon = tool.icon;
                               const isCurrent = tool.to === currentPath;
                               return (
@@ -150,31 +165,45 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                                   key={tool.to}
                                   to={tool.to}
                                   onClick={() => setIsMegamenuOpen(false)}
-                                  className={`group flex items-start gap-2.5 p-2.5 rounded-xl transition-all ${
+                                  className={`group flex items-center gap-2.5 px-3 py-2.5 rounded-lg transition-all relative overflow-hidden ${
                                     isCurrent
-                                      ? "bg-[#7C5CFC] shadow-lg shadow-[#7C5CFC]/15"
-                                      : "hover:bg-[#1a1a22]"
+                                      ? "bg-[#7C5CFC]/12 border-l-2 border-[#7C5CFC]"
+                                      : "hover:bg-[#ffffff04] border-l-2 border-transparent hover:border-[#7C5CFC]/40"
                                   }`}
                                 >
-                                  <div className={`w-7 h-7 rounded-lg shrink-0 flex items-center justify-center mt-0.5 ${
+                                  <div className={`w-7 h-7 rounded-md shrink-0 flex items-center justify-center ${
                                     isCurrent
-                                      ? "bg-white/20 text-white"
-                                      : (tool.color || "bg-[#7C5CFC]/8 text-[#7C5CFC]")
-                                  }`}>
+                                      ? "bg-[#7C5CFC]/20 text-[#7C5CFC]"
+                                      : (tool.color || "bg-[#1a1a22] text-[#6a6a7a] group-hover:text-[#7C5CFC] group-hover:bg-[#7C5CFC]/8")
+                                  } transition-colors`}>
                                     <Icon size={13} />
                                   </div>
                                   <div className="min-w-0 flex-1">
-                                    <p className={`text-[11px] font-bold leading-tight truncate ${
-                                      isCurrent ? "text-white" : "text-[#c0c0cc] group-hover:text-white transition-colors"
+                                    <p className={`text-[11px] font-semibold truncate ${
+                                      isCurrent ? "text-[#7C5CFC]" : "text-[#b0b0bc] group-hover:text-white transition-colors"
                                     }`}>{tool.name}</p>
-                                    <p className={`text-[9px] leading-tight mt-0.5 line-clamp-2 ${
-                                      isCurrent ? "text-white/60" : "text-[#4a4a5a]"
-                                    }`}>{tool.description}</p>
+                                    <p className="text-[9px] leading-tight mt-0.5 text-[#3e3e4e] truncate">{tool.description}</p>
                                   </div>
+                                  <svg className={`w-3 h-3 shrink-0 transition-all ${isCurrent ? "text-[#7C5CFC] opacity-100" : "text-[#3e3e4e] opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5"}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+                                    <polyline points="9 18 15 12 9 6" />
+                                  </svg>
                                 </Link>
                               );
                             })}
                           </div>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="px-4 py-2 border-t border-[#1a1a22] shrink-0">
+                          <button
+                            onClick={() => { setIsMegamenuOpen(false); setIsPaletteOpen(true); }}
+                            className="text-[10px] text-[#4a4a5a] hover:text-[#7C5CFC] font-medium transition-colors cursor-pointer flex items-center gap-1"
+                          >
+                            Browse all tools
+                            <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+                              <polyline points="9 18 15 12 9 6" />
+                            </svg>
+                          </button>
                         </div>
                       </div>
                     </div>
