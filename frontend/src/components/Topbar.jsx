@@ -99,7 +99,7 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
         <div ref={megamenuRef} className="max-w-[1200px] mx-auto flex items-center justify-between h-14 sm:h-16 px-4 sm:px-6 md:px-8">
 
           {/* LEFT: Logo */}
-          <div className={`${isSearchExpanded ? "hidden md:flex" : "flex"} items-center gap-2.5 shrink-0`}>
+          <div className={`transition-[opacity,transform] duration-300 ease-out ${isSearchExpanded ? "opacity-0 pointer-events-none scale-95 md:opacity-100 md:pointer-events-auto md:scale-100 flex" : "opacity-100 pointer-events-auto scale-100 flex"} items-center gap-2.5 shrink-0`}>
             <Link to="/" className="flex items-center gap-2.5 group shrink-0">
               <div className="w-8 h-8 shrink-0 rounded-xl bg-[#7C5CFC] flex items-center justify-center text-white shadow-lg shadow-[#7C5CFC]/20 group-hover:shadow-[#7C5CFC]/30 group-hover:scale-105 transition-all">
                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
@@ -449,7 +449,7 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
           </AnimatePresence>
 
           {/* RIGHT: Actions */}
-          <div className={`flex items-center gap-2 sm:gap-2.5 shrink-0 transition-all duration-300 ease-out ${isSearchExpanded ? "opacity-0 pointer-events-none scale-95 md:opacity-100 md:pointer-events-auto md:scale-100 flex" : "opacity-100 pointer-events-auto scale-100 flex"}`}>
+          <div className={`flex items-center gap-2 sm:gap-2.5 shrink-0 transition-[opacity,transform] duration-300 ease-out ${isSearchExpanded ? "opacity-0 pointer-events-none scale-95 md:opacity-100 md:pointer-events-auto md:scale-100 flex" : "opacity-100 pointer-events-auto scale-100 flex"}`}>
             {/* Search */}
             <div className="relative shrink-0">
               {/* Mobile-only collapsed search button */}
