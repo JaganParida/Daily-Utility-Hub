@@ -20,6 +20,24 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
   const navigate = useNavigate();
   const currentPath = location.pathname;
   const megamenuRef = useRef(null);
+  const hoverTimeoutRef = useRef(null);
+
+  const handleCategoryHover = (catName) => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+    }
+    hoverTimeoutRef.current = setTimeout(() => {
+      setActiveCategory(catName);
+    }, 45);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     setHoveredTab(null);
@@ -114,23 +132,23 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                     /* ─── TOOLS MEGAMENU CONTENT ─── */
                     <div className="flex" style={{ minHeight: '360px' }}>
                       {/* Left: Categories */}
-                      <div className="w-[180px] border-r border-[#1a1a22] flex flex-col py-2">
-                        <p className="text-[8px] font-black text-[#3e3e4e] uppercase tracking-[0.2em] px-4 py-1.5">Browse</p>
-                        <div className="flex-1 overflow-y-auto custom-scrollbar px-1.5">
+                      <div className="w-[195px] border-r border-[#1a1a22] flex flex-col py-2.5">
+                        <p className="text-[8px] font-black text-[#4a4a5a] uppercase tracking-[0.2em] px-5 py-1.5">Browse</p>
+                        <div className="flex-1 overflow-y-auto custom-scrollbar px-3 space-y-1">
                           {Object.keys(toolCategories).map((catName) => {
                             const isActive = catName === activeCategory;
                             return (
                               <button
                                 key={catName}
-                                onMouseEnter={() => setActiveCategory(catName)}
-                                className={`w-full px-3 py-[6px] text-left text-[11px] font-medium flex items-center justify-between cursor-pointer rounded relative ${
-                                  isActive ? "text-white" : "text-[#6a6a7a] hover:text-[#b0b0bc]"
+                                onMouseEnter={() => handleCategoryHover(catName)}
+                                className={`w-full px-3 py-2 text-left text-[11px] font-bold flex items-center justify-between cursor-pointer rounded-lg relative ${
+                                  isActive ? "text-white" : "text-[#5a5a6a] hover:text-[#c0c0cc]"
                                 }`}
                               >
                                 {isActive && (
                                   <motion.div
                                     layoutId="activeCategoryBg"
-                                    className="absolute inset-0 bg-[#ffffff06] rounded"
+                                    className="absolute inset-0 bg-[#ffffff05] border border-[#ffffff02] rounded-lg"
                                     transition={{ type: "spring", damping: 25, stiffness: 250 }}
                                   />
                                 )}
@@ -142,7 +160,7 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                                   />
                                 )}
                                 <span className="truncate relative z-10">{catName}</span>
-                                <span className={`text-[9px] tabular-nums shrink-0 ml-2 relative z-10 ${isActive ? "text-[#7C5CFC]" : "text-[#3e3e4e]"}`}>
+                                <span className={`text-[9px] tabular-nums font-bold shrink-0 ml-2 relative z-10 ${isActive ? "text-[#7C5CFC]" : "text-[#3e3e4e]"}`}>
                                   {toolCategories[catName].length}
                                 </span>
                               </button>
