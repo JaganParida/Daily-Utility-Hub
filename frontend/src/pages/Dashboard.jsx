@@ -464,7 +464,7 @@ const Dashboard = () => {
                         {activeTab === tab.id && (
                           <motion.div
                             layoutId="activeTab"
-                            className="absolute inset-0 bg-[#E95144]/15 border border-[#E95144]/30 rounded-lg sm:rounded-xl"
+                            className="absolute inset-0 bg-[#7C5CFC]/15 border border-[#7C5CFC]/30 rounded-lg sm:rounded-xl"
                             transition={{ type: "spring", damping: 25, stiffness: 300 }}
                           />
                         )}
@@ -496,10 +496,10 @@ const Dashboard = () => {
                       >
                         <Link
                           to={op.to}
-                          className="group flex items-center gap-3 px-3.5 py-2.5 sm:px-4 sm:py-3 rounded-xl bg-[#141419] border border-[#1e1e28] hover:border-[#E95144]/30 hover:bg-[#E95144]/5 transition-all"
+                          className="group flex items-center gap-3 px-3.5 py-2.5 sm:px-4 sm:py-3 rounded-xl bg-[#141419] border border-[#1e1e28] hover:border-[#7C5CFC]/30 hover:bg-[#7C5CFC]/5 transition-all"
                         >
-                          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#1e1e28] group-hover:bg-[#E95144]/10 flex items-center justify-center transition-colors shrink-0">
-                            <ArrowRight size={11} className="text-[#5a5a6a] group-hover:text-[#E95144] transition-colors" />
+                          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#1e1e28] group-hover:bg-[#7C5CFC]/10 flex items-center justify-center transition-colors shrink-0">
+                            <ArrowRight size={11} className="text-[#5a5a6a] group-hover:text-[#7C5CFC] transition-colors" />
                           </div>
                           <div className="min-w-0">
                             <p className="text-[11px] sm:text-xs font-bold text-[#c0c0cc] group-hover:text-white transition-colors truncate">{op.label}</p>
