@@ -306,15 +306,15 @@ const Dashboard = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.25 }}
-              className="relative mb-3 rounded-2xl"
+              className="relative mb-3 rounded-2xl p-[1px]"
             >
               {/* Spinning Full Gradient Border */}
               <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none z-0">
                 <div className="absolute top-1/2 left-1/2 w-[200%] aspect-square -translate-x-1/2 -translate-y-1/2 bg-[conic-gradient(from_0deg,#7C5CFC,#A78BFA,#3b82f6,#7C5CFC)] animate-[spin_4s_linear_infinite]" />
               </div>
 
-              {/* Content Container (Sits on top, padded by exactly 1px for a thin, clean border) */}
-              <div className="relative z-10 m-[1px] rounded-[calc(1rem-1px)] bg-[#141419] flex flex-col">
+              {/* Content Container (Sits on top, padded by parent padding for a thin, clean border) */}
+              <div className="relative z-10 rounded-[calc(1rem-1px)] bg-[#141419] flex flex-col">
                 {/* Desktop / Tablet: horizontal */}
                 <div className="hidden sm:flex items-stretch h-[52px]">
                 {/* File segment */}
