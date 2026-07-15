@@ -307,11 +307,17 @@ const Dashboard = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.25 }}
-              className="animated-border mb-3"
+              className="relative mb-3 rounded-2xl"
             >
-             <div className="animated-border-inner relative z-10">
-              {/* Desktop / Tablet: horizontal */}
-              <div className="hidden sm:flex items-stretch h-[52px]">
+              {/* Spinning Border Container (Behind content, clips gradient) */}
+              <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none z-0">
+                <div className="absolute top-1/2 left-1/2 w-[200%] aspect-square -translate-x-1/2 -translate-y-1/2 bg-[conic-gradient(from_0deg,transparent_70%,#7C5CFC_85%,#A78BFA_100%)] animate-[spin_3s_linear_infinite]" />
+              </div>
+
+              {/* Content Container (Sits on top, padded by 1.5px to show border, no overflow hidden!) */}
+              <div className="relative z-10 m-[1.5px] rounded-[calc(1rem-1.5px)] bg-[#141419] flex flex-col">
+                {/* Desktop / Tablet: horizontal */}
+                <div className="hidden sm:flex items-stretch h-[52px]">
                 {/* File segment */}
                 <div className="flex-1 flex items-center gap-2 px-4 border-r border-[#222230] min-w-0">
                   {droppedFile ? (
