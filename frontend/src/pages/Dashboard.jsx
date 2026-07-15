@@ -349,7 +349,8 @@ const Dashboard = () => {
     if (!tabsScrollRef.current) return;
     const { scrollLeft, scrollWidth, clientWidth } = tabsScrollRef.current;
     setShowLeftArrow(scrollLeft > 0);
-    setShowRightArrow(Math.ceil(scrollLeft + clientWidth) < scrollWidth);
+    // Add a 2px tolerance to account for decimal pixel rounding on some devices
+    setShowRightArrow(Math.ceil(scrollLeft + clientWidth) < scrollWidth - 2);
   }, []);
 
   useEffect(() => {
@@ -630,7 +631,7 @@ const Dashboard = () => {
               </h2>
 
               {/* Tabs — horizontally scrollable with Google-style arrow buttons */}
-              <div className="relative w-full max-w-4xl mx-auto mb-5 sm:mb-6 group">
+              <div className="relative w-full max-w-4xl mx-auto mb-5 sm:mb-6 group overflow-hidden rounded-xl">
                 {/* Left Arrow & Fade */}
                 <AnimatePresence>
                   {showLeftArrow && (
