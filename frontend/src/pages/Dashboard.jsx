@@ -1,51 +1,68 @@
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
-  Layers, Pin, Clock, Sparkles, Shield, Cpu, Activity,
+  Layers, Pin, Sparkles, Shield, Cpu, Activity,
   ChevronRight, ArrowRight, Search, FileText, Code, CheckCircle,
-  AlertCircle
+  AlertCircle, UploadCloud, X, HelpCircle, FileCheck
 } from "lucide-react";
 import PageTransition from "../components/PageTransition";
 import { useAnalytics } from "../hooks/useAnalytics";
 import { useAuth } from "../context/AuthContext";
-import CommandPalette from "../components/CommandPalette";
 import { toolCategories, allTools } from "../data/toolCategories";
 
 const Dashboard = () => {
   const { pinnedTools, togglePin, recentTools = [] } = useAnalytics();
   const { currentUser } = useAuth();
 
-  // Dialog and panel states
-  const [isPaletteOpen, setIsPaletteOpen] = useState(false);
-  const [activeCategory, setActiveCategory] = useState("all"); // "all" or specific category name
-  const [greeting, setGreeting] = useState("Hello");
+  // Selector states (CloudConvert inspired)
+  const [actionFilter, setActionFilter] = useState(""); // "" | "convert" | "compress" | "generate" | "ocr" | "edit" | "compare"
+  const [targetFilter, setTargetFilter] = useState(""); // "" | "pdf" | "image" | "code" | "spreadsheet" | "text" | "file" | "finance"
   const [searchQuery, setSearchQuery] = useState("");
+  
+  // Drag and drop states
+  const [isDragging, setIsDragging] = useState(false);
+  const [detectedFile, setDetectedFile] = useState(null); // { name, type, size, ext }
+  const dropzoneRef = useRef(null);
 
-  // Check API keys locally
-  const [geminiKey, setGeminiKey] = useState(false);
-  const [openaiKey, setOpenaiKey] = useState(false);
+  // Helper to map tools to Actions and Targets
+  const getToolActionAndTarget = (tool) => {
+    const to = tool.to.toLowerCase();
+    const name = tool.name.toLowerCase();
+    const desc = tool.description.toLowerCase();
 
-  useEffect(() => {
-    setGeminiKey(!!localStorage.getItem("dev_hub_gemini_key"));
-    setOpenaiKey(!!localStorage.getItem("dev_hub_openai_key"));
-  }, []);
+    let action = "other";
+    let target = "other";
 
-  // Time-of-day greeting
-  useEffect(() => {
-    const hours = new Date().getHours();
-    if (hours < 12) setGreeting("Good Morning");
-    else if (hours < 17) setGreeting("Good Afternoon");
-    else setGreeting("Good Evening");
-  }, []);
+    // Detect Target
+    if (to.includes("pdf") || name.includes("pdf")) target = "pdf";
+    else if (to.includes("image") || to.includes("crop") || to.includes("watermark") || to.includes("collage") || to.includes("color-extractor") || name.includes("image")) target = "image";
+    else if (to.includes("code") || to.includes("json") || to.includes("xml") || to.includes("html") || to.includes("regex") || to.includes("jwt") || to.includes("uuid") || to.includes("cron") || to.includes("sandbox") || name.includes("json") || name.includes("jwt")) target = "code";
+    else if (to.includes("sheet") || to.includes("csv") || to.includes("excel") || to.includes("formula") || to.includes("cleaner") || to.includes("pivot") || name.includes("sheet") || name.includes("excel") || name.includes("csv")) target = "spreadsheet";
+    else if (to.includes("word") || to.includes("text") || to.includes("grammar") || to.includes("counter") || to.includes("case") || to.includes("font") || to.includes("lorem") || to.includes("diff") || to.includes("transcriber") || to.includes("voice") || to.includes("markdown") || to.includes("readme")) target = "text";
+    else if (to.includes("file") || to.includes("vault") || to.includes("share") || to.includes("renamer") || to.includes("zip")) target = "file";
+    else if (to.includes("calculator") || to.includes("emi") || to.includes("sip") || to.includes("gst") || to.includes("tax") || to.includes("scheduler") || to.includes("amortization")) target = "finance";
 
-  // Filter tools based on search and category
+    // Detect Action
+    if (to.includes("convert") || to.includes("to-") || to.includes("transcriber") || to.includes("parser") || to.includes("helper") || name.includes("convert") || name.includes("to")) action = "convert";
+    else if (to.includes("compress") || to.includes("resize") || to.includes("crop") || to.includes("zip") || to.includes("archiver") || name.includes("compress") || name.includes("resize") || name.includes("zip")) action = "compress";
+    else if (to.includes("generator") || to.includes("random") || to.includes("lorem") || to.includes("uuid") || to.includes("secret") || name.includes("generator")) action = "generate";
+    else if (to.includes("to-text") || to.includes("transcriber") || to.includes("image-to-markdown") || to.includes("pdf-to-markdown") || to.includes("grammar") || name.includes("ocr") || name.includes("extract")) action = "ocr";
+    else if (to.includes("edit") || to.includes("watermark") || to.includes("collage") || to.includes("picker") || to.includes("gradient") || to.includes("builder") || to.includes("designer") || to.includes("mockup") || to.includes("palette") || to.includes("sandbox") || to.includes("presentation") || to.includes("remote") || name.includes("edit")) action = "edit";
+    else if (to.includes("diff") || to.includes("similarity") || to.includes("checker") || to.includes("analyzer") || name.includes("compare") || name.includes("diff")) action = "compare";
+
+    return { action, target };
+  };
+
+  // Filter tools catalog
   const getFilteredTools = () => {
-    let list = [];
-    if (activeCategory === "all") {
-      list = allTools;
-    } else {
-      list = toolCategories[activeCategory] || [];
+    let list = allTools;
+
+    if (actionFilter) {
+      list = list.filter((t) => getToolActionAndTarget(t).action === actionFilter);
+    }
+    if (targetFilter) {
+      list = list.filter((t) => getToolActionAndTarget(t).target === targetFilter);
     }
 
     if (searchQuery.trim()) {
@@ -65,41 +82,83 @@ const Dashboard = () => {
   const pinnedToolObjects = (pinnedTools || [])
     .map((path) => allTools.find((t) => t.to === path))
     .filter(Boolean)
-    .slice(0, 8);
+    .slice(0, 6);
 
-  const recentToolObjects = (recentTools || [])
-    .map((path) => allTools.find((t) => t.to === path))
-    .filter(Boolean)
-    .slice(0, 8);
+  // File drag & drop triggers
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
 
-  // Command Shortcuts presets
-  const SHORTCUTS = [
-    { name: "Optimize & Refactor Code", to: "/tools/ai-code-playground", action: "Optimize", desc: "Code Playground" },
-    { name: "Convert image to Markdown", to: "/tools/ai-image-to-markdown", action: "Vision OCR", desc: "Image to Doc" },
-    { name: "Clean hidden document meta", to: "/tools/doc-metadata-cleaner", action: "Clean", desc: "Metadata Stripper" },
-    { name: "Generate UUID batches", to: "/tools/uuid-generator", action: "Batch", desc: "UUID Generator" }
-  ];
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
 
-  // Helper to determine capabilities/tags
-  const getToolTags = (tool) => {
-    const tags = [];
-    const isAi = tool.to.includes("ai-") || tool.description.toLowerCase().includes("ai ");
-    
-    if (isAi) {
-      tags.push({ label: "AI Engine", color: "bg-indigo-500/10 text-indigo-500 border-indigo-500/20" });
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      const file = e.dataTransfer.files[0];
+      detectFileCategory(file);
+    }
+  };
+
+  const detectFileCategory = (file) => {
+    const ext = file.name.split(".").pop().toLowerCase();
+    let detectedTarget = "";
+
+    if (ext === "pdf") detectedTarget = "pdf";
+    else if (["png", "jpg", "jpeg", "webp", "svg", "gif", "bmp"].includes(ext)) detectedTarget = "image";
+    else if (["xlsx", "xls", "csv", "ods"].includes(ext)) detectedTarget = "spreadsheet";
+    else if (["js", "jsx", "ts", "tsx", "py", "go", "java", "cpp", "c", "html", "css", "json", "sh", "yaml", "yml"].includes(ext)) detectedTarget = "code";
+    else if (["zip", "tar", "gz", "rar", "7z"].includes(ext)) detectedTarget = "file";
+    else if (["txt", "md", "docx", "doc", "rtf"].includes(ext)) detectedTarget = "text";
+
+    setDetectedFile({
+      name: file.name,
+      size: (file.size / 1024 / 1024).toFixed(2),
+      ext: ext.toUpperCase()
+    });
+
+    if (detectedTarget) {
+      setTargetFilter(detectedTarget);
+      setActionFilter(""); // Reset action to show all tools for this format
+      toastDetected(file.name, detectedTarget);
     } else {
-      tags.push({ label: "100% Offline", color: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" });
+      toastDetected(file.name, null);
     }
+  };
 
-    if (tool.to.includes("pdf") || tool.name.toLowerCase().includes("pdf")) {
-      tags.push({ label: "PDF Parser", color: "bg-red-500/10 text-red-500 border-red-500/20" });
-    } else if (tool.to.includes("compress") || tool.to.includes("converter")) {
-      tags.push({ label: "Converter", color: "bg-blue-500/10 text-blue-500 border-blue-500/20" });
-    } else if (tool.to.includes("generator") || tool.name.toLowerCase().includes("generator")) {
-      tags.push({ label: "Generator", color: "bg-purple-500/10 text-purple-500 border-purple-500/20" });
+  const toastDetected = (name, target) => {
+    const targetNames = {
+      pdf: "PDF Document",
+      image: "Image File",
+      spreadsheet: "Spreadsheet Table",
+      code: "Code / Script",
+      file: "Archive / File",
+      text: "Plain Text Document"
+    };
+
+    if (target) {
+      // Small visual success trigger
+      const cleanTargetName = targetNames[target] || target;
+      // Scroll smoothly to catalog
+      document.getElementById("catalog-frame")?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
+  };
 
-    return tags;
+  const clearDetectedFile = () => {
+    setDetectedFile(null);
+    setTargetFilter("");
+    setActionFilter("");
+  };
+
+  const handleResetFilters = () => {
+    setActionFilter("");
+    setTargetFilter("");
+    setSearchQuery("");
+    setDetectedFile(null);
   };
 
   return (
@@ -107,320 +166,315 @@ const Dashboard = () => {
       <div className="max-w-[1600px] mx-auto w-full px-4 md:px-12 lg:px-20 xl:px-32 relative pt-24 pb-20">
         
         {/* ========================================= */}
-        {/* WORKBENCH METRICS PANEL (Top Bar Grid)    */}
+        {/* HERO SECTION: TASK SELECTOR (CloudConvert)*/}
         {/* ========================================= */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          {/* Greeting */}
-          <div className="bg-card border border-border/80 p-5 rounded-[22px] shadow-sm flex flex-col justify-between">
-            <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Workbench Session</div>
-            <div className="mt-2">
-              <h2 className="text-xl font-black text-foreground leading-tight tracking-tight">
-                {greeting}, {currentUser ? currentUser.name || "Developer" : "Guest Developer"}
-              </h2>
-              <p className="text-[10px] text-muted-foreground mt-1">Status: active workspace</p>
+        <div 
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          className={`relative z-10 w-full bg-card/60 dark:bg-card/40 border border-border/80 rounded-[32px] p-6 md:p-12 shadow-xl backdrop-blur-xl transition-all duration-300 mb-8 flex flex-col items-center justify-center text-center ${
+            isDragging ? "border-primary bg-primary/5 ring-4 ring-primary/10" : ""
+          }`}
+        >
+          {/* Subtle decoration grids */}
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none rounded-[32px]"></div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="relative z-10 w-full max-w-4xl flex flex-col items-center"
+          >
+            {/* Tagline */}
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-widest mb-6">
+              <Sparkles size={11} /> Offline-First Utility Hub
             </div>
-          </div>
 
-          {/* total tools */}
-          <div className="bg-card border border-border/80 p-5 rounded-[22px] shadow-sm flex flex-col justify-between">
-            <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Operations Index</div>
-            <div className="mt-2 flex items-baseline gap-2">
-              <span className="text-3xl font-black text-foreground">{allTools.length}</span>
-              <span className="text-xs font-semibold text-muted-foreground">utilities loaded</span>
-            </div>
-            <p className="text-[10px] text-muted-foreground mt-1">100% verified locally</p>
-          </div>
-
-          {/* key status */}
-          <div className="bg-card border border-border/80 p-5 rounded-[22px] shadow-sm flex flex-col justify-between">
-            <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest">AI Credentials</div>
-            <div className="mt-2 space-y-1">
-              <div className="flex items-center gap-1.5 text-xs">
-                <span className={`w-1.5 h-1.5 rounded-full ${geminiKey ? "bg-emerald-500" : "bg-muted-foreground/30"}`} />
-                <span className="font-semibold text-foreground">Gemini API:</span>
-                <span className="text-muted-foreground">{geminiKey ? "Active" : "Offline"}</span>
-              </div>
-              <div className="flex items-center gap-1.5 text-xs">
-                <span className={`w-1.5 h-1.5 rounded-full ${openaiKey ? "bg-emerald-500" : "bg-muted-foreground/30"}`} />
-                <span className="font-semibold text-foreground">OpenAI API:</span>
-                <span className="text-muted-foreground">{openaiKey ? "Active" : "Offline"}</span>
-              </div>
-            </div>
-            <p className="text-[10px] text-muted-foreground mt-1">Managed securely in browser</p>
-          </div>
-
-          {/* offline stats */}
-          <div className="bg-card border border-border/80 p-5 rounded-[22px] shadow-sm flex flex-col justify-between">
-            <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Privacy Guard</div>
-            <div className="mt-2">
-              <span className="text-lg font-bold text-emerald-500 flex items-center gap-1.5">
-                <Shield size={16} /> Sandbox Secure
-              </span>
-              <p className="text-xs text-muted-foreground mt-1">Zero server logs or uploads</p>
-            </div>
-            <p className="text-[10px] text-muted-foreground mt-1">AES-256 local integrity</p>
-          </div>
-        </div>
-
-        {/* ========================================= */}
-        {/* MAIN PANEL GRID (Sidebar + Catalog)      */}
-        {/* ========================================= */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          
-          {/* Left Sticky Sidebar: Navigation folders */}
-          <aside className="lg:col-span-3 lg:sticky lg:top-28 space-y-6">
-            <div className="bg-card border border-border/80 p-4 rounded-[24px] shadow-sm">
-              <h3 className="text-xs font-black text-muted-foreground uppercase tracking-widest px-2.5 mb-3 flex items-center gap-1.5">
-                <Layers size={13} /> Directory Index
-              </h3>
-
-              <div className="space-y-0.5 max-h-[380px] lg:max-h-none overflow-y-auto pr-1 custom-scrollbar">
-                {/* All category link */}
-                <button
-                  onClick={() => setActiveCategory("all")}
-                  className={`w-full px-3 py-2.5 rounded-xl text-left text-xs font-bold transition-all flex items-center justify-between cursor-pointer ${
-                    activeCategory === "all"
-                      ? "bg-primary/10 text-primary border border-primary/10"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted/30 border border-transparent"
-                  }`}
+            {/* CloudConvert style sentence selector */}
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-foreground leading-snug mb-8 max-w-3xl">
+              I want to{" "}
+              <span className="inline-block relative mx-1 select-none">
+                <select
+                  value={actionFilter}
+                  onChange={(e) => setActionFilter(e.target.value)}
+                  className="appearance-none bg-muted/40 hover:bg-muted border border-border/80 hover:border-primary/40 px-3.5 py-1.5 pr-8 rounded-xl font-black text-primary outline-none cursor-pointer text-xl sm:text-2xl md:text-3xl tracking-tight transition-all shadow-sm"
                 >
-                  <span>All Categories</span>
-                  <span className="text-[9px] font-black px-1.5 py-0.5 rounded-lg bg-muted text-muted-foreground">
-                    {allTools.length}
-                  </span>
-                </button>
+                  <option value="" className="bg-card text-foreground font-semibold text-sm">Select Operation</option>
+                  <option value="convert" className="bg-card text-foreground font-semibold text-sm">Convert</option>
+                  <option value="compress" className="bg-card text-foreground font-semibold text-sm">Compress & Resize</option>
+                  <option value="generate" className="bg-card text-foreground font-semibold text-sm">Generate</option>
+                  <option value="ocr" className="bg-card text-foreground font-semibold text-sm">Parse & OCR</option>
+                  <option value="edit" className="bg-card text-foreground font-semibold text-sm">Edit & Design</option>
+                  <option value="compare" className="bg-card text-foreground font-semibold text-sm">Compare & Diff</option>
+                </select>
+                <ChevronDown size={14} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-primary pointer-events-none" />
+              </span>{" "}
+              my{" "}
+              <span className="inline-block relative mx-1 select-none">
+                <select
+                  value={targetFilter}
+                  onChange={(e) => setTargetFilter(e.target.value)}
+                  className="appearance-none bg-muted/40 hover:bg-muted border border-border/80 hover:border-primary/40 px-3.5 py-1.5 pr-8 rounded-xl font-black text-primary outline-none cursor-pointer text-xl sm:text-2xl md:text-3xl tracking-tight transition-all shadow-sm"
+                >
+                  <option value="" className="bg-card text-foreground font-semibold text-sm">Select Format</option>
+                  <option value="pdf" className="bg-card text-foreground font-semibold text-sm">PDF Document</option>
+                  <option value="image" className="bg-card text-foreground font-semibold text-sm">Image File</option>
+                  <option value="code" className="bg-card text-foreground font-semibold text-sm">Code / Script</option>
+                  <option value="spreadsheet" className="bg-card text-foreground font-semibold text-sm">Spreadsheet</option>
+                  <option value="text" className="bg-card text-foreground font-semibold text-sm">Plain Text</option>
+                  <option value="file" className="bg-card text-foreground font-semibold text-sm">Archive / File</option>
+                  <option value="finance" className="bg-card text-foreground font-semibold text-sm">Finance & Numbers</option>
+                </select>
+                <ChevronDown size={14} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-primary pointer-events-none" />
+              </span>
+            </h1>
 
-                {Object.keys(toolCategories).map((catName) => {
-                  const isActive = activeCategory === catName;
-                  const count = toolCategories[catName].length;
-                  return (
-                    <button
-                      key={catName}
-                      onClick={() => setActiveCategory(catName)}
-                      className={`w-full px-3 py-2.5 rounded-xl text-left text-xs font-bold transition-all flex items-center justify-between cursor-pointer ${
-                        isActive
-                          ? "bg-primary/10 text-primary border border-primary/10"
-                          : "text-muted-foreground hover:text-foreground hover:bg-muted/30 border border-transparent"
-                      }`}
-                    >
-                      <span>{catName}</span>
-                      <span className="text-[9px] font-black px-1.5 py-0.5 rounded-lg bg-muted text-muted-foreground">
-                        {count}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Quick Presets Menu */}
-            <div className="bg-card border border-border/80 p-4 rounded-[24px] shadow-sm space-y-3">
-              <h3 className="text-xs font-black text-muted-foreground uppercase tracking-widest px-2.5 flex items-center gap-1.5">
-                <Sparkles size={13} /> Command Presets
-              </h3>
-              <div className="space-y-1.5">
-                {SHORTCUTS.map((sc, idx) => (
-                  <Link
-                    key={idx}
-                    to={sc.to}
-                    className="group block p-2 rounded-xl border border-border/50 hover:border-primary/20 bg-muted/10 hover:bg-muted/30 transition-all text-left"
+            {/* Dropzone container */}
+            <div className="w-full max-w-lg mt-2 relative">
+              <AnimatePresence mode="wait">
+                {detectedFile ? (
+                  <motion.div
+                    key="detected-banner"
+                    initial={{ opacity: 0, scale: 0.96 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.96 }}
+                    className="p-4 bg-primary/10 border border-primary/20 rounded-2xl flex items-center justify-between gap-4 text-xs font-semibold"
                   >
-                    <div className="flex justify-between items-center text-[10px] font-bold text-muted-foreground group-hover:text-primary">
-                      <span>{sc.action}</span>
-                      <ChevronRight size={10} className="group-hover:translate-x-0.5 transition-transform" />
-                    </div>
-                    <div className="text-xs font-black text-foreground truncate mt-0.5">
-                      {sc.name}
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </aside>
-
-          {/* Right Panel: Catalog Directory & Favorites */}
-          <div className="lg:col-span-9 space-y-8">
-            
-            {/* Pinned & Recents workbench (Only show if populated) */}
-            {(pinnedToolObjects.length > 0 || recentToolObjects.length > 0) && (
-              <div className="bg-card border border-border/80 p-5 rounded-[28px] shadow-sm space-y-6">
-                <div>
-                  <h3 className="text-base font-black tracking-tight text-foreground flex items-center gap-2">
-                    <Pin size={16} className="text-primary fill-primary/10" /> Workspace Favorites
-                  </h3>
-                  <p className="text-xs text-muted-foreground mt-0.5">Quick relaunch for frequently used active processes.</p>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                  {pinnedToolObjects.map((tool) => {
-                    const ToolIcon = tool.icon;
-                    return (
-                      <div
-                        key={tool.to}
-                        className="group flex items-center justify-between p-3 rounded-xl border border-border bg-muted/10 hover:bg-muted/40 hover:border-primary/25 transition-all shadow-sm"
-                      >
-                        <Link to={tool.to} className="flex items-center gap-3 min-w-0 flex-1">
-                          <div className={`p-2 rounded-lg shrink-0 flex items-center justify-center ${tool.color || "bg-primary/10 text-primary"}`}>
-                            <ToolIcon size={15} />
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <h4 className="text-xs font-black text-foreground truncate group-hover:text-primary transition-colors">{tool.name}</h4>
-                            <p className="text-[10px] text-muted-foreground truncate">{tool.description}</p>
-                          </div>
-                        </Link>
-                        <button
-                          onClick={() => togglePin(tool.to)}
-                          className="p-1 hover:bg-red-500/10 text-muted-foreground hover:text-red-500 rounded cursor-pointer shrink-0 transition-colors ml-2"
-                          title="Unpin"
-                        >
-                          <X size={12} />
-                        </button>
+                    <div className="flex items-center gap-2 text-left truncate">
+                      <FileCheck className="text-primary shrink-0" size={16} />
+                      <div className="truncate">
+                        <span className="text-foreground font-bold block truncate">{detectedFile.name}</span>
+                        <span className="text-[10px] text-muted-foreground block">{detectedFile.size} MB • format: {detectedFile.ext}</span>
                       </div>
-                    );
-                  })}
-                  {pinnedToolObjects.length === 0 && recentToolObjects.map((tool) => {
-                    const ToolIcon = tool.icon;
-                    return (
-                      <Link
-                        key={tool.to}
-                        to={tool.to}
-                        className="group flex items-center gap-3 p-3 rounded-xl border border-border bg-muted/10 hover:bg-muted/40 hover:border-primary/25 transition-all shadow-sm"
-                      >
-                        <div className={`p-2 rounded-lg shrink-0 flex items-center justify-center ${tool.color || "bg-primary/10 text-primary"}`}>
-                          <ToolIcon size={15} />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <h4 className="text-xs font-black text-foreground truncate group-hover:text-primary transition-colors">{tool.name}</h4>
-                          <p className="text-[10px] text-muted-foreground truncate">{tool.description}</p>
-                        </div>
-                      </Link>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Catalog Main Frame */}
-            <div className="bg-card border border-border/80 p-5 rounded-[28px] shadow-sm space-y-6">
-              {/* Header search filter */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/60 pb-5">
-                <div>
-                  <h3 className="text-base font-black text-foreground">
-                    {activeCategory === "all" ? "Full Utilities Index" : `${activeCategory} List`}
-                  </h3>
-                  <p className="text-xs text-muted-foreground mt-0.5">Showing {filteredTools.length} compiled operations.</p>
-                </div>
-
-                {/* Inline filter search input */}
-                <div className="relative w-full sm:max-w-xs group">
-                  <input
-                    type="text"
-                    placeholder="Search category tools..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2 bg-background border border-border/80 rounded-xl text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all shadow-inner"
-                  />
-                  <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                  {searchQuery && (
+                    </div>
                     <button
-                      onClick={() => setSearchQuery("")}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 hover:bg-muted rounded text-muted-foreground"
+                      onClick={clearDetectedFile}
+                      className="p-1 hover:bg-muted text-muted-foreground hover:text-foreground rounded-lg transition-colors cursor-pointer shrink-0"
+                      title="Clear File"
                     >
-                      <X size={10} />
+                      <X size={14} />
                     </button>
-                  )}
-                </div>
-              </div>
-
-              {/* Tools Catalog grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 min-h-[220px]">
-                {filteredTools.map((tool) => {
-                  const ToolIcon = tool.icon;
-                  const isPinned = pinnedTools.includes(tool.to);
-                  const tags = getToolTags(tool);
-
-                  return (
-                    <div
-                      key={tool.to}
-                      className="group flex flex-col p-4 rounded-xl border border-border/60 bg-muted/10 hover:bg-muted/40 hover:border-primary/25 transition-all shadow-sm justify-between"
-                    >
-                      <div className="flex gap-3">
-                        {/* Icon */}
-                        <Link
-                          to={tool.to}
-                          className={`p-2.5 rounded-lg shrink-0 flex items-center justify-center transition-transform group-hover:scale-105 h-fit ${
-                            tool.color || "bg-primary/10 text-primary"
-                          }`}
-                        >
-                          <ToolIcon size={16} />
-                        </Link>
-
-                        {/* Text */}
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center justify-between gap-2">
-                            <Link to={tool.to} className="min-w-0 flex-1 block">
-                              <h4 className="text-xs font-black text-foreground group-hover:text-primary transition-colors truncate">
-                                {tool.name}
-                              </h4>
-                            </Link>
-                            {/* Pin / Favorite toggle */}
-                            <button
-                              onClick={() => togglePin(tool.to)}
-                              className={`p-1.5 rounded-lg hover:bg-muted shrink-0 transition-colors cursor-pointer ${
-                                isPinned ? "text-primary bg-primary/10 border border-primary/10" : "text-muted-foreground hover:text-foreground"
-                              }`}
-                              title={isPinned ? "Unpin tool" : "Pin tool"}
-                            >
-                              <Pin size={10} className={isPinned ? "fill-current" : ""} />
-                            </button>
-                          </div>
-                          <Link to={tool.to} className="block mt-1">
-                            <p className="text-[10px] text-muted-foreground leading-normal line-clamp-2">
-                              {tool.description}
-                            </p>
-                          </Link>
-                        </div>
-                      </div>
-
-                      {/* Capabilities badges footer */}
-                      <div className="flex items-center justify-between border-t border-border/50 pt-3 mt-3">
-                        <div className="flex gap-1.5 flex-wrap">
-                          {tags.map((tag, idx) => (
-                            <span
-                              key={idx}
-                              className={`text-[8px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border ${tag.color}`}
-                            >
-                              {tag.label}
-                            </span>
-                          ))}
-                        </div>
-                        <Link
-                          to={tool.to}
-                          className="text-[10px] font-black text-primary group-hover:text-primary/80 transition-colors flex items-center gap-1.5 shrink-0"
-                        >
-                          Launch <ArrowRight size={10} className="group-hover:translate-x-0.5 transition-transform" />
-                        </Link>
-                      </div>
-                    </div>
-                  );
-                })}
-
-                {filteredTools.length === 0 && (
-                  <div className="col-span-2 flex flex-col items-center justify-center text-center p-8 my-auto opacity-50 select-none">
-                    <div className="p-3.5 bg-muted rounded-2xl text-muted-foreground border border-border/40">
-                      <AlertCircle size={24} />
-                    </div>
-                    <div className="mt-3">
-                      <h4 className="font-bold text-foreground text-xs uppercase tracking-wider">No matching operations</h4>
-                      <p className="text-[10px] text-muted-foreground mt-1 max-w-[280px]">
-                        Refine your search term or select another folder in the directory index.
-                      </p>
+                  </motion.div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center gap-2 p-4 border border-dashed border-border/80 rounded-2xl bg-muted/10 opacity-70">
+                    <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground">
+                      <UploadCloud size={14} className="animate-pulse" />
+                      <span>Drag and drop a file anywhere here to auto-detect matching tools</span>
                     </div>
                   </div>
                 )}
-              </div>
+              </AnimatePresence>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* ========================================= */}
+        {/* FAVORITES SHELF (Pinned Tools Workspace)  */}
+        {/* ========================================= */}
+        {pinnedToolObjects.length > 0 && (
+          <div className="mb-8 bg-card border border-border/80 p-5 rounded-[28px] shadow-sm">
+            <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-4 flex items-center gap-2">
+              <Pin size={13} className="text-primary fill-primary/10" /> Workspace Favorites
+            </h3>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+              {pinnedToolObjects.map((tool) => {
+                const ToolIcon = tool.icon;
+                return (
+                  <div
+                    key={tool.to}
+                    className="group flex items-center justify-between p-3 rounded-xl border border-border bg-muted/10 hover:bg-muted/40 hover:border-primary/25 transition-all shadow-sm"
+                  >
+                    <Link to={tool.to} className="flex items-center gap-3 min-w-0 flex-1">
+                      <div className={`p-2 rounded-lg shrink-0 flex items-center justify-center ${tool.color || "bg-primary/10 text-primary"}`}>
+                        <ToolIcon size={15} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h4 className="text-xs font-black text-foreground truncate group-hover:text-primary transition-colors">{tool.name}</h4>
+                        <p className="text-[10px] text-muted-foreground truncate">{tool.description}</p>
+                      </div>
+                    </Link>
+                    <button
+                      onClick={() => togglePin(tool.to)}
+                      className="p-1 hover:bg-red-500/10 text-muted-foreground hover:text-red-500 rounded cursor-pointer shrink-0 transition-colors ml-2"
+                      title="Unpin Favorite"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* ========================================= */}
+        {/* CATALOG DIRECTORY GRID                     */}
+        {/* ========================================= */}
+        <div id="catalog-frame" className="bg-card border border-border/80 p-5 md:p-8 rounded-[32px] shadow-sm space-y-6 scroll-mt-28">
+          
+          {/* Catalog header */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/60 pb-5">
+            <div>
+              <h2 className="text-lg md:text-xl font-black text-foreground tracking-tight">
+                {actionFilter || targetFilter ? "Filtered Utilities Catalog" : "All Web Utilities Index"}
+              </h2>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Found {filteredTools.length} matching client-side operations.
+              </p>
             </div>
 
+            {/* Catalog inline search */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <div className="relative w-full sm:max-w-xs group">
+                <input
+                  type="text"
+                  placeholder="Filter by name..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-9 pr-8 py-2 bg-background border border-border/85 rounded-xl text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all shadow-inner"
+                />
+                <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 hover:bg-muted rounded text-muted-foreground"
+                  >
+                    <X size={10} />
+                  </button>
+                )}
+              </div>
+
+              {(actionFilter || targetFilter || searchQuery) && (
+                <button
+                  onClick={handleResetFilters}
+                  className="text-xs font-bold px-3 py-2 bg-muted hover:bg-muted/80 border border-border rounded-xl text-muted-foreground hover:text-foreground cursor-pointer"
+                >
+                  Clear Filters
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Tools Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 min-h-[220px]">
+            {filteredTools.map((tool) => {
+              const ToolIcon = tool.icon;
+              const isPinned = pinnedTools.includes(tool.to);
+              
+              // Resolve metadata tags
+              const isAi = tool.to.includes("ai-") || tool.description.toLowerCase().includes("ai ");
+              const formatTags = [];
+              if (isAi) {
+                formatTags.push({ label: "AI Engine", color: "bg-indigo-500/10 text-indigo-500 border-indigo-500/20" });
+              } else {
+                formatTags.push({ label: "100% Offline", color: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" });
+              }
+
+              // Target tag
+              const mapping = getToolActionAndTarget(tool);
+              const targetNames = {
+                pdf: "PDF Doc",
+                image: "Image",
+                code: "Code",
+                spreadsheet: "Spreadsheet",
+                text: "Text",
+                file: "File",
+                finance: "Finance"
+              };
+              if (mapping.target !== "other") {
+                formatTags.push({ label: targetNames[mapping.target] || mapping.target, color: "bg-blue-500/10 text-blue-500 border-blue-500/20" });
+              }
+
+              return (
+                <div
+                  key={tool.to}
+                  className="group flex flex-col p-4 rounded-2xl border border-border/50 bg-muted/10 hover:bg-muted/40 hover:border-primary/25 transition-all shadow-sm justify-between min-h-[140px]"
+                >
+                  <div className="flex gap-3.5">
+                    {/* Icon container */}
+                    <Link
+                      to={tool.to}
+                      className={`p-3 rounded-xl shrink-0 flex items-center justify-center transition-transform group-hover:scale-105 h-fit ${
+                        tool.color || "bg-primary/10 text-primary"
+                      }`}
+                    >
+                      <ToolIcon size={16} />
+                    </Link>
+
+                    {/* Content */}
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <Link to={tool.to} className="min-w-0 flex-1 block">
+                          <h4 className="text-xs font-black text-foreground group-hover:text-primary transition-colors truncate">
+                            {tool.name}
+                          </h4>
+                        </Link>
+                        
+                        {/* Pin favorite button */}
+                        <button
+                          onClick={() => togglePin(tool.to)}
+                          className={`p-1.5 rounded-lg hover:bg-muted shrink-0 transition-colors cursor-pointer ${
+                            isPinned ? "text-primary bg-primary/10 border border-primary/10" : "text-muted-foreground hover:text-foreground"
+                          }`}
+                          title={isPinned ? "Unpin from favorites" : "Pin as favorite"}
+                        >
+                          <Pin size={10} className={isPinned ? "fill-current" : ""} />
+                        </button>
+                      </div>
+
+                      <Link to={tool.to} className="block mt-1">
+                        <p className="text-[10px] text-muted-foreground leading-normal line-clamp-2">
+                          {tool.description}
+                        </p>
+                      </Link>
+                    </div>
+                  </div>
+
+                  {/* Badges footer */}
+                  <div className="flex items-center justify-between border-t border-border/50 pt-3 mt-4">
+                    <div className="flex gap-1.5 flex-wrap">
+                      {formatTags.map((tag, idx) => (
+                        <span
+                          key={idx}
+                          className={`text-[8px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-md border ${tag.color}`}
+                        >
+                          {tag.label}
+                        </span>
+                      ))}
+                    </div>
+                    
+                    <Link
+                      to={tool.to}
+                      className="text-[10px] font-black text-primary group-hover:text-primary/80 transition-colors flex items-center gap-1 shrink-0"
+                    >
+                      Launch <ArrowRight size={10} className="group-hover:translate-x-0.5 transition-transform" />
+                    </Link>
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* Empty filter state */}
+            {filteredTools.length === 0 && (
+              <div className="col-span-2 flex flex-col items-center justify-center text-center p-12 my-auto opacity-55 animate-in fade-in duration-200">
+                <div className="p-4 bg-muted rounded-2xl text-muted-foreground border border-border/40 mb-3">
+                  <AlertCircle size={28} />
+                </div>
+                <div>
+                  <h4 className="font-bold text-foreground text-xs uppercase tracking-wider">No matching operations</h4>
+                  <p className="text-[10px] text-muted-foreground mt-1 max-w-[280px] mx-auto">
+                    Try changing your action or target options above, or search for another term.
+                  </p>
+                </div>
+                <button
+                  onClick={handleResetFilters}
+                  className="mt-4 text-xs font-bold px-4 py-2 bg-primary text-white rounded-xl shadow cursor-pointer transition-transform active:scale-95"
+                >
+                  Reset All Filters
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
@@ -429,8 +483,8 @@ const Dashboard = () => {
   );
 };
 
-// Quick helper icon for removal in favourites
-const X = ({ size, ...props }) => (
+// ChevronDown component
+const ChevronDown = ({ size, ...props }) => (
   <svg
     {...props}
     width={size}
@@ -442,8 +496,7 @@ const X = ({ size, ...props }) => (
     strokeLinecap="round"
     strokeLinejoin="round"
   >
-    <line x1="18" y1="6" x2="6" y2="18"></line>
-    <line x1="6" y1="6" x2="18" y2="18"></line>
+    <polyline points="6 9 12 15 18 9"></polyline>
   </svg>
 );
 
