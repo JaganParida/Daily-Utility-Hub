@@ -45,7 +45,7 @@ export const toolCategories = {
   ],
   'PDF Tools': [
     { name: 'Edit PDF', description: 'Draw, write text, highlight, and redact elements directly.', icon: FileText, to: '/tools/pdf-edit', color: 'text-red-500 bg-red-500/10' },
-    { name: 'PDF Converter', description: 'Convert PDF documents into editable Word files or images.', icon: FileText, to: '/tools/pdf-converter', color: 'text-rose-500 bg-rose-500/10' },
+    { name: 'PDF to Word / Image Converter', description: 'Convert PDF documents into editable Word files or images.', icon: FileText, to: '/tools/pdf-converter', color: 'text-rose-500 bg-rose-500/10' },
     { name: 'Merge PDF', description: 'Combine multiple PDF files into one securely.', icon: FileText, to: '/tools/pdf-merge', color: 'text-red-500 bg-red-500/10' },
     { name: 'Split PDF', description: 'Extract specific pages or page ranges from a PDF.', icon: FileText, to: '/tools/pdf-split', color: 'text-blue-500 bg-blue-500/10' },
     { name: 'Watermark PDF', description: 'Add a text watermark across all pages of a PDF document.', icon: FileText, to: '/tools/pdf-watermark', color: 'text-purple-500 bg-purple-500/10' },
@@ -80,7 +80,7 @@ export const toolCategories = {
     { name: 'Secure File Vault', description: 'Military-grade client-side AES-256 file encryption.', icon: Shield, to: '/tools/file-vault', color: 'text-primary bg-primary/10' },
   ],
   'Word & Docs Tools': [
-    { name: 'Word to PDF/Image', description: 'Convert Word documents to clean PDF and PNG images.', icon: FileText, to: '/tools/docx-converter', color: 'text-blue-500 bg-blue-500/10' },
+    { name: 'Word to PDF / Image Converter', description: 'Convert Word documents to clean PDF and PNG images.', icon: FileText, to: '/tools/docx-converter', color: 'text-blue-500 bg-blue-500/10' },
     { name: 'Document Builder', description: 'Build formal proposals, Resumes, and NDAs instantly.', icon: Layers, to: '/tools/doc-template-builder', color: 'text-indigo-500 bg-indigo-500/10' },
     { name: 'Smart Grammar Checker', description: 'Check spelling and grammatical errors client-side.', icon: AlignLeft, to: '/tools/grammar-checker', color: 'text-emerald-500 bg-emerald-500/10' },
     { name: 'Doc Metadata Stripper', description: 'Erase hidden corporate metadata properties from document files.', icon: FileText, to: '/tools/doc-metadata-cleaner', color: 'text-rose-500 bg-rose-500/10' },

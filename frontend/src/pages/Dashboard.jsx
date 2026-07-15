@@ -25,7 +25,7 @@ const SOURCE_FORMATS = [
 const OPERATIONS_MAP = {
   pdf: [
     { label: "Compress", result: "Smaller PDF", to: "/tools/pdf-compressor" },
-    { label: "Convert to Image", result: "PNG Pages", to: "/tools/pdf-converter" },
+    { label: "Convert to Word / Image", result: "Word / Image", to: "/tools/pdf-converter" },
     { label: "Extract Text", result: "Plain Text", to: "/tools/pdf-to-text" },
     { label: "Merge Files", result: "Combined PDF", to: "/tools/pdf-merge" },
     { label: "Split Pages", result: "Individual PDFs", to: "/tools/pdf-split" },
@@ -55,7 +55,7 @@ const OPERATIONS_MAP = {
     { label: "Clean Data", result: "Clean File", to: "/tools/sheet-cleaner" },
   ],
   document: [
-    { label: "Convert to PDF", result: "PDF Document", to: "/tools/docx-converter" },
+    { label: "Convert to PDF / Image", result: "PDF / Image", to: "/tools/docx-converter" },
     { label: "Build Template", result: "Doc Template", to: "/tools/doc-template-builder" },
     { label: "Strip Metadata", result: "Clean Document", to: "/tools/doc-metadata-cleaner" },
   ],
