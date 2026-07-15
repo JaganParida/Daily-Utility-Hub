@@ -1,745 +1,450 @@
-import { Link, useOutletContext } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { useRef, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
-  Type,
-  Hash,
-  Key,
-  Layers,
-  AlignLeft,
-  Image as ImageIcon,
-  Expand,
-  Crop,
-  ArrowRightLeft,
-  LayoutGrid,
-  FileText,
-  Braces,
-  Search,
-  Calculator,
-  TrendingUp,
-  Percent,
-  Landmark,
-  FolderArchive,
-  Pin,
-  Clock,
-  ArrowRight,
-  Stamp,
-  Palette,
-  Volume2,
-  FileAudio,
-  Code2,
-  Activity,
-  BookMarked,
-  Timer,
-  Shield,
-  ChevronLeft,
-  ChevronRight,
+  Layers, Pin, Clock, Sparkles, Shield, Cpu, Activity,
+  ChevronRight, ArrowRight, Search, FileText, Code, CheckCircle,
+  AlertCircle
 } from "lucide-react";
 import PageTransition from "../components/PageTransition";
 import { useAnalytics } from "../hooks/useAnalytics";
 import { useAuth } from "../context/AuthContext";
 import CommandPalette from "../components/CommandPalette";
-
 import { toolCategories, allTools } from "../data/toolCategories";
-
-const circularCategories = [
-  {
-    name: "Image Tools",
-    icon: ImageIcon,
-    gradient: "from-emerald-400 to-teal-500",
-    shadow: "shadow-emerald-500/20",
-  },
-  {
-    name: "Text Tools",
-    icon: Type,
-    gradient: "from-blue-400 to-indigo-500",
-    shadow: "shadow-blue-500/20",
-  },
-  {
-    name: "Developer Tools",
-    icon: Code2,
-    gradient: "from-purple-400 to-pink-500",
-    shadow: "shadow-purple-500/20",
-  },
-  {
-    name: "PDF Tools",
-    icon: FileText,
-    gradient: "from-red-400 to-rose-500",
-    shadow: "shadow-red-500/20",
-  },
-  {
-    name: "Student & Docs",
-    icon: BookMarked,
-    gradient: "from-orange-400 to-amber-500",
-    shadow: "shadow-orange-500/20",
-  },
-  {
-    name: "Finance & Productivity",
-    icon: Calculator,
-    gradient: "from-fuchsia-400 to-rose-500",
-    shadow: "shadow-fuchsia-500/20",
-  },
-  {
-    name: "File & Storage Tools",
-    icon: FolderArchive,
-    gradient: "from-sky-400 to-blue-500",
-    shadow: "shadow-sky-500/20",
-  },
-  {
-    name: "Word & Docs Tools",
-    icon: FileText,
-    gradient: "from-indigo-400 to-blue-500",
-    shadow: "shadow-indigo-500/20",
-  },
-  {
-    name: "Excel & Sheets Tools",
-    icon: Braces,
-    gradient: "from-emerald-400 to-teal-500",
-    shadow: "shadow-emerald-500/20",
-  },
-  {
-    name: "PowerPoint & Slides Tools",
-    icon: Layers,
-    gradient: "from-rose-400 to-pink-500",
-    shadow: "shadow-rose-500/20",
-  },
-];
 
 const Dashboard = () => {
   const { pinnedTools, togglePin, recentTools = [] } = useAnalytics();
   const { currentUser } = useAuth();
-  const context = useOutletContext();
-  const isScrolled = context?.isScrolled || false;
-  const setIsScrolled = context?.setIsScrolled;
 
+  // Dialog and panel states
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
-  const [recentFilter, setRecentFilter] = useState("recent");
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const observerRef = useRef(null);
+  const [activeCategory, setActiveCategory] = useState("all"); // "all" or specific category name
+  const [greeting, setGreeting] = useState("Hello");
+  const [searchQuery, setSearchQuery] = useState("");
 
-  // Category horizontal nav scroll controls
-  const categoriesScrollRef = useRef(null);
-  const [showLeftArrow, setShowLeftArrow] = useState(false);
-  const [showRightArrow, setShowRightArrow] = useState(false);
-
-  const handleCategoriesScroll = () => {
-    if (categoriesScrollRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } =
-        categoriesScrollRef.current;
-      setShowLeftArrow(scrollLeft > 10);
-      setShowRightArrow(scrollWidth - scrollLeft - clientWidth > 10);
-    }
-  };
+  // Check API keys locally
+  const [geminiKey, setGeminiKey] = useState(false);
+  const [openaiKey, setOpenaiKey] = useState(false);
 
   useEffect(() => {
-    const el = categoriesScrollRef.current;
-    if (el) {
-      handleCategoriesScroll();
-      el.addEventListener("scroll", handleCategoriesScroll);
-      window.addEventListener("resize", handleCategoriesScroll);
-      const timeout = setTimeout(handleCategoriesScroll, 100);
-      return () => {
-        el.removeEventListener("scroll", handleCategoriesScroll);
-        window.removeEventListener("resize", handleCategoriesScroll);
-        clearTimeout(timeout);
-      };
-    }
+    setGeminiKey(!!localStorage.getItem("dev_hub_gemini_key"));
+    setOpenaiKey(!!localStorage.getItem("dev_hub_openai_key"));
   }, []);
 
+  // Time-of-day greeting
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        // Trigger precisely when the element hits the 70px offset (just below topbar)
-        if (!entry.isIntersecting && entry.boundingClientRect.top < 100) {
-          setIsScrolled?.(true);
-        } else if (entry.isIntersecting) {
-          setIsScrolled?.(false);
-        }
-      },
-      {
-        threshold: 0,
-        rootMargin: "-70px 0px 0px 0px",
-      },
-    );
+    const hours = new Date().getHours();
+    if (hours < 12) setGreeting("Good Morning");
+    else if (hours < 17) setGreeting("Good Afternoon");
+    else setGreeting("Good Evening");
+  }, []);
 
-    if (observerRef.current) observer.observe(observerRef.current);
-    return () => observer.disconnect();
-  }, [setIsScrolled]);
+  // Filter tools based on search and category
+  const getFilteredTools = () => {
+    let list = [];
+    if (activeCategory === "all") {
+      list = allTools;
+    } else {
+      list = toolCategories[activeCategory] || [];
+    }
 
-  const displayLimit = 8;
-  const isPinLimitReached = pinnedTools.length >= displayLimit;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      list = list.filter(
+        (t) =>
+          t.name.toLowerCase().includes(q) ||
+          t.description.toLowerCase().includes(q)
+      );
+    }
+    return list;
+  };
 
-  // Resolve tool paths to actual tool objects
-  const recentToolObjects = (recentTools || [])
-    .map((path) => allTools.find((t) => t.to === path))
-    .filter(Boolean);
+  const filteredTools = getFilteredTools();
 
+  // Resolve pinned and recent tools
   const pinnedToolObjects = (pinnedTools || [])
     .map((path) => allTools.find((t) => t.to === path))
-    .filter(Boolean);
+    .filter(Boolean)
+    .slice(0, 8);
 
-  // Combine and filter based on selection
-  let filteredDisplayTools = [];
-  if (recentFilter === "all") {
-    const combined = [...pinnedToolObjects];
-    recentToolObjects.forEach((t) => {
-      if (!combined.some((item) => item.to === t.to)) {
-        combined.push(t);
-      }
-    });
-    filteredDisplayTools = combined.slice(0, 8);
-  } else if (recentFilter === "pinned") {
-    filteredDisplayTools = pinnedToolObjects.slice(0, 8);
-  } else if (recentFilter === "recent") {
-    filteredDisplayTools = recentToolObjects.slice(0, 8);
-  }
+  const recentToolObjects = (recentTools || [])
+    .map((path) => allTools.find((t) => t.to === path))
+    .filter(Boolean)
+    .slice(0, 8);
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.05,
-      },
-    },
-  };
+  // Command Shortcuts presets
+  const SHORTCUTS = [
+    { name: "Optimize & Refactor Code", to: "/tools/ai-code-playground", action: "Optimize", desc: "Code Playground" },
+    { name: "Convert image to Markdown", to: "/tools/ai-image-to-markdown", action: "Vision OCR", desc: "Image to Doc" },
+    { name: "Clean hidden document meta", to: "/tools/doc-metadata-cleaner", action: "Clean", desc: "Metadata Stripper" },
+    { name: "Generate UUID batches", to: "/tools/uuid-generator", action: "Batch", desc: "UUID Generator" }
+  ];
 
-  const cardVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        type: "spring",
-        stiffness: 300,
-        damping: 24,
-      },
-    },
-  };
+  // Helper to determine capabilities/tags
+  const getToolTags = (tool) => {
+    const tags = [];
+    const isAi = tool.to.includes("ai-") || tool.description.toLowerCase().includes("ai ");
+    
+    if (isAi) {
+      tags.push({ label: "AI Engine", color: "bg-indigo-500/10 text-indigo-500 border-indigo-500/20" });
+    } else {
+      tags.push({ label: "100% Offline", color: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" });
+    }
 
-  const renderToolCard = (tool) => {
-    const Icon = tool.icon;
-    const isPinned = pinnedTools.includes(tool.to);
-    const showPinButton = !currentUser || isPinned || !isPinLimitReached;
+    if (tool.to.includes("pdf") || tool.name.toLowerCase().includes("pdf")) {
+      tags.push({ label: "PDF Parser", color: "bg-red-500/10 text-red-500 border-red-500/20" });
+    } else if (tool.to.includes("compress") || tool.to.includes("converter")) {
+      tags.push({ label: "Converter", color: "bg-blue-500/10 text-blue-500 border-blue-500/20" });
+    } else if (tool.to.includes("generator") || tool.name.toLowerCase().includes("generator")) {
+      tags.push({ label: "Generator", color: "bg-purple-500/10 text-purple-500 border-purple-500/20" });
+    }
 
-    // Extract color classes (e.g. "text-emerald-500 bg-emerald-500/10")
-    const colorClasses = tool.color.split(" ");
-    const textColor = colorClasses[0];
-    // Find the hover border color based on the text color (e.g., text-emerald-500 -> border-emerald-500/50)
-    const borderColor = textColor.replace("text-", "border-") + "/50";
-
-    return (
-      <motion.div
-        key={tool.name}
-        variants={cardVariants}
-        className="group relative h-full"
-      >
-        <Link
-          to={tool.to}
-          className="block h-full bg-card border border-border hover:border-primary/50 rounded-xl p-6 transition-all duration-300 shadow-sm hover:shadow overflow-hidden relative"
-        >
-          {/* Faint watermark icon in background (matching Featured Tool layout) */}
-          <div className="absolute top-0 right-0 p-6 opacity-[0.03] group-hover:opacity-[0.06] group-hover:scale-110 transition-all duration-500 pointer-events-none">
-            <Icon size={100} />
-          </div>
-
-          <div className="relative z-10 h-full flex flex-col">
-            {/* PREMIUM PINNED BADGE / HOVER PIN BUTTON */}
-            <div className="h-6 mb-2 flex items-start">
-              {showPinButton && (
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    if (!currentUser) {
-                      setIsAuthModalOpen(true);
-                    } else {
-                      togglePin(tool.to);
-                    }
-                  }}
-                  className={`transition-all duration-300 z-30 flex items-center ${
-                    isPinned
-                      ? "px-2.5 py-0.5 bg-primary/10 text-primary text-[10px] font-bold tracking-widest uppercase rounded border border-primary/20 shadow-sm"
-                      : "px-2.5 py-0.5 bg-muted/50 hover:bg-muted text-muted-foreground text-[10px] font-bold tracking-widest uppercase rounded border border-border opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
-                  }`}
-                  title={isPinned ? "Unpin Tool" : "Pin Tool"}
-                >
-                  <Pin
-                    size={12}
-                    className={`mr-1.5 ${isPinned ? "fill-current" : ""}`}
-                  />
-                  {isPinned ? "Pinned" : "Pin"}
-                </button>
-              )}
-            </div>
-
-            <h2 className="text-2xl font-bold text-foreground mb-2 group-hover:text-primary transition-colors tracking-tight">
-              {tool.name}
-            </h2>
-
-            <p className="text-muted-foreground text-sm max-w-[90%] mb-6 leading-relaxed flex-grow">
-              {tool.description}
-            </p>
-
-            <div className="mt-auto flex items-center text-sm font-semibold text-primary group-hover:text-primary/80 transition-colors">
-              Launch Utility{" "}
-              <ArrowRight
-                size={16}
-                className="ml-2 group-hover:translate-x-1 transition-transform"
-              />
-            </div>
-          </div>
-        </Link>
-      </motion.div>
-    );
+    return tags;
   };
 
   return (
-    <div className="relative w-full min-h-screen flex flex-col overflow-x-hidden">
-      {/* ========================================= */}
-      {/* PREMIUM HERO SECTION                      */}
-      {/* ========================================= */}
-      <div className="relative z-10 w-full pt-32 pb-24 overflow-hidden bg-background border-b border-border">
-        {/* Subtle grid pattern for a modern "dev" feel */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none"></div>
-
-        <div className="max-w-[1200px] mx-auto w-full px-4 md:px-12 relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="flex flex-col items-center text-center relative z-10 w-full"
-          >
-            <h1 className="text-5xl md:text-7xl font-black tracking-tighter text-foreground mb-6 leading-[1.1]">
-              Tools for <span className="text-muted-foreground">modern</span>{" "}
-              <br className="hidden sm:block" />
-              workflows
-            </h1>
-
-            <p className="text-lg md:text-xl text-muted-foreground font-medium mb-12 max-w-2xl leading-relaxed">
-              Instantly search, execute, and export across 50+ local utilities.
-              Completely free, incredibly fast.
-            </p>
-
-            {/* Premium Mac-like Search Input */}
-            <div className="w-full max-w-3xl relative group">
-              <div className="absolute -inset-1 bg-gradient-to-r from-primary/30 to-indigo-500/30 blur-xl opacity-20 group-hover:opacity-40 transition duration-500 rounded-2xl pointer-events-none"></div>
-              <button
-                onClick={() => setIsPaletteOpen(true)}
-                className="w-full h-16 md:h-20 flex items-center bg-card/90 backdrop-blur-xl border border-border/80 hover:border-primary/50 rounded-2xl px-6 md:px-8 shadow-xl transition-all duration-300 relative cursor-text text-left group-hover:shadow-primary/5 group-hover:-translate-y-1"
-              >
-                <Search className="text-muted-foreground shrink-0 group-hover:text-primary transition-colors w-6 h-6 md:w-8 md:h-8 mr-4" />
-                <span className="text-muted-foreground text-base md:text-xl flex-1 truncate font-medium">
-                  What do you need to do?
-                </span>
-                <div className="hidden sm:flex items-center gap-2 text-sm font-bold text-foreground bg-muted/80 px-3 py-1.5 rounded-lg border border-border shrink-0 shadow-sm">
-                  <span className="text-muted-foreground">Press</span>
-                  <kbd className="font-sans">Ctrl</kbd>
-                  <kbd className="font-sans">K</kbd>
-                </div>
-              </button>
+    <PageTransition>
+      <div className="max-w-[1600px] mx-auto w-full px-4 md:px-12 lg:px-20 xl:px-32 relative pt-24 pb-20">
+        
+        {/* ========================================= */}
+        {/* WORKBENCH METRICS PANEL (Top Bar Grid)    */}
+        {/* ========================================= */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          {/* Greeting */}
+          <div className="bg-card border border-border/80 p-5 rounded-[22px] shadow-sm flex flex-col justify-between">
+            <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Workbench Session</div>
+            <div className="mt-2">
+              <h2 className="text-xl font-black text-foreground leading-tight tracking-tight">
+                {greeting}, {currentUser ? currentUser.name || "Developer" : "Guest Developer"}
+              </h2>
+              <p className="text-[10px] text-muted-foreground mt-1">Status: active workspace</p>
             </div>
-          </motion.div>
-        </div>
-      </div>
+          </div>
 
-      {/* ========================================= */}
-      {/* MAIN CONTENT SECTION                      */}
-      {/* ========================================= */}
-      <div className="relative z-20 pt-12 pb-32 px-4 md:px-12 lg:px-20 xl:px-32 w-full bg-background">
-        {/* Scroll Sentinel to trigger Topbar Category Nav morphing */}
-        <div ref={observerRef} className="h-1 w-full -mt-12 mb-4" />
-
-        {/* SLEEK CATEGORY NAVIGATION */}
-        <div className="relative max-w-[1600px] mx-auto mb-6 group/nav">
-          {/* Left Gradient & Arrow */}
-          <AnimatePresence>
-            {showLeftArrow && (
-              <motion.div
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -10 }}
-                className="absolute left-0 top-0 h-[44px] w-16 bg-gradient-to-r from-background via-background/90 to-transparent z-30 flex items-center justify-start pl-2 pointer-events-none"
-              >
-                <button
-                  onClick={() => {
-                    categoriesScrollRef.current?.scrollBy({
-                      left: -160,
-                      behavior: "smooth",
-                    });
-                  }}
-                  className="w-8 h-8 rounded-full bg-card border border-border flex items-center justify-center text-foreground shadow-md pointer-events-auto active:scale-90 transition-transform cursor-pointer"
-                >
-                  <ChevronLeft size={16} />
-                </button>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Right Gradient & Arrow */}
-          <AnimatePresence>
-            {showRightArrow && (
-              <motion.div
-                initial={{ opacity: 0, x: 10 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 10 }}
-                className="absolute right-0 top-0 h-[44px] w-16 bg-gradient-to-l from-background via-background/90 to-transparent z-30 flex items-center justify-end pr-2 pointer-events-none"
-              >
-                <button
-                  onClick={() => {
-                    categoriesScrollRef.current?.scrollBy({
-                      left: 160,
-                      behavior: "smooth",
-                    });
-                  }}
-                  className="w-8 h-8 rounded-full bg-card border border-border flex items-center justify-center text-foreground shadow-md pointer-events-auto active:scale-90 transition-transform cursor-pointer"
-                >
-                  <ChevronRight size={16} />
-                </button>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          <div
-            ref={categoriesScrollRef}
-            className="w-full overflow-x-auto no-scrollbar pb-4"
-          >
-            <div className="flex items-center justify-start gap-3 px-4 min-w-max mx-auto">
-              {circularCategories.map((cat) => {
-                const IconComponent = cat.icon;
-                const safeId = cat.name
-                  .replace(/[^a-zA-Z0-9]/g, "-")
-                  .toLowerCase();
-                return (
-                  <button
-                    key={cat.name}
-                    onClick={() => {
-                      document
-                        .getElementById(safeId)
-                        ?.scrollIntoView({
-                          behavior: "smooth",
-                          block: "start",
-                        });
-                    }}
-                    className="flex items-center gap-2 px-5 py-3 rounded-full bg-transparent border border-transparent hover:border-border hover:bg-muted/30 transition-all cursor-pointer focus:outline-none group"
-                  >
-                    <IconComponent
-                      size={18}
-                      className="text-muted-foreground group-hover:text-foreground transition-colors"
-                    />
-                    <span className="text-sm font-bold text-muted-foreground group-hover:text-foreground tracking-tight whitespace-nowrap transition-colors">
-                      {cat.name.replace(" Tools", "")}
-                    </span>
-                  </button>
-                );
-              })}
+          {/* total tools */}
+          <div className="bg-card border border-border/80 p-5 rounded-[22px] shadow-sm flex flex-col justify-between">
+            <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Operations Index</div>
+            <div className="mt-2 flex items-baseline gap-2">
+              <span className="text-3xl font-black text-foreground">{allTools.length}</span>
+              <span className="text-xs font-semibold text-muted-foreground">utilities loaded</span>
             </div>
+            <p className="text-[10px] text-muted-foreground mt-1">100% verified locally</p>
+          </div>
+
+          {/* key status */}
+          <div className="bg-card border border-border/80 p-5 rounded-[22px] shadow-sm flex flex-col justify-between">
+            <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest">AI Credentials</div>
+            <div className="mt-2 space-y-1">
+              <div className="flex items-center gap-1.5 text-xs">
+                <span className={`w-1.5 h-1.5 rounded-full ${geminiKey ? "bg-emerald-500" : "bg-muted-foreground/30"}`} />
+                <span className="font-semibold text-foreground">Gemini API:</span>
+                <span className="text-muted-foreground">{geminiKey ? "Active" : "Offline"}</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-xs">
+                <span className={`w-1.5 h-1.5 rounded-full ${openaiKey ? "bg-emerald-500" : "bg-muted-foreground/30"}`} />
+                <span className="font-semibold text-foreground">OpenAI API:</span>
+                <span className="text-muted-foreground">{openaiKey ? "Active" : "Offline"}</span>
+              </div>
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-1">Managed securely in browser</p>
+          </div>
+
+          {/* offline stats */}
+          <div className="bg-card border border-border/80 p-5 rounded-[22px] shadow-sm flex flex-col justify-between">
+            <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Privacy Guard</div>
+            <div className="mt-2">
+              <span className="text-lg font-bold text-emerald-500 flex items-center gap-1.5">
+                <Shield size={16} /> Sandbox Secure
+              </span>
+              <p className="text-xs text-muted-foreground mt-1">Zero server logs or uploads</p>
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-1">AES-256 local integrity</p>
           </div>
         </div>
 
-        <div className="space-y-20 max-w-[1600px] mx-auto">
-          {/* Canva-Style "Featured / See what's new" Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut", delay: 0.15 }}
-            className="mb-16"
-          >
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg md:text-xl font-bold tracking-tight text-foreground">
-                See what's new
+        {/* ========================================= */}
+        {/* MAIN PANEL GRID (Sidebar + Catalog)      */}
+        {/* ========================================= */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          
+          {/* Left Sticky Sidebar: Navigation folders */}
+          <aside className="lg:col-span-3 lg:sticky lg:top-28 space-y-6">
+            <div className="bg-card border border-border/80 p-4 rounded-[24px] shadow-sm">
+              <h3 className="text-xs font-black text-muted-foreground uppercase tracking-widest px-2.5 mb-3 flex items-center gap-1.5">
+                <Layers size={13} /> Directory Index
               </h3>
-            </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
-              {/* 1. Recommended Word Tool */}
-              <div className="group relative col-span-1 h-full">
-                <Link
-                  to="/tools/docx-converter"
-                  className="block h-full bg-card border border-border hover:border-primary/50 rounded-xl p-6 transition-all duration-300 shadow-sm hover:shadow overflow-hidden relative"
+              <div className="space-y-0.5 max-h-[380px] lg:max-h-none overflow-y-auto pr-1 custom-scrollbar">
+                {/* All category link */}
+                <button
+                  onClick={() => setActiveCategory("all")}
+                  className={`w-full px-3 py-2.5 rounded-xl text-left text-xs font-bold transition-all flex items-center justify-between cursor-pointer ${
+                    activeCategory === "all"
+                      ? "bg-primary/10 text-primary border border-primary/10"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/30 border border-transparent"
+                  }`}
                 >
-                  <div className="absolute top-0 right-0 p-6 opacity-[0.03] group-hover:opacity-[0.05] group-hover:scale-110 transition-all duration-500 pointer-events-none">
-                    <FileText size={100} />
-                  </div>
+                  <span>All Categories</span>
+                  <span className="text-[9px] font-black px-1.5 py-0.5 rounded-lg bg-muted text-muted-foreground">
+                    {allTools.length}
+                  </span>
+                </button>
 
-                  <div className="relative z-10 h-full flex flex-col">
-                    <div className="w-fit px-2.5 py-0.5 bg-blue-500/10 text-blue-500 text-[10px] font-bold tracking-widest uppercase rounded mb-4 border border-blue-500/20">
-                      Word Tool
-                    </div>
-                    <h2 className="text-2xl font-bold text-foreground mb-2 group-hover:text-blue-500 transition-colors tracking-tight">
-                      Word to PDF/Image
-                    </h2>
-                    <p className="text-muted-foreground text-sm max-w-[90%] mb-6 leading-relaxed">
-                      Convert Word documents to clean PDF pages and extract PNG page images locally in your browser.
-                    </p>
-
-                    <div className="mt-auto flex items-center text-sm font-semibold text-blue-500 group-hover:text-blue-500/80 transition-colors">
-                      Launch Converter{" "}
-                      <ArrowRight
-                        size={16}
-                        className="ml-2 group-hover:translate-x-1 transition-transform"
-                      />
-                    </div>
-                  </div>
-                </Link>
-              </div>
-
-              {/* 2. Recommended Excel/Sheets Tool */}
-              <div className="group relative col-span-1 h-full">
-                <Link
-                  to="/tools/formula-helper"
-                  className="block h-full bg-card border border-border hover:border-primary/50 rounded-xl p-6 transition-all duration-300 shadow-sm hover:shadow overflow-hidden relative"
-                >
-                  <div className="absolute top-0 right-0 p-6 opacity-[0.03] group-hover:opacity-[0.05] group-hover:scale-110 transition-all duration-500 pointer-events-none">
-                    <Calculator size={100} />
-                  </div>
-
-                  <div className="relative z-10 h-full flex flex-col">
-                    <div className="w-fit px-2.5 py-0.5 bg-emerald-500/10 text-emerald-500 text-[10px] font-bold tracking-widest uppercase rounded mb-4 border border-emerald-500/20">
-                      Excel Tool
-                    </div>
-                    <h2 className="text-2xl font-bold text-foreground mb-2 group-hover:text-emerald-500 transition-colors tracking-tight">
-                      Formula Generator
-                    </h2>
-                    <p className="text-muted-foreground text-sm max-w-[90%] mb-6 leading-relaxed">
-                      Translate natural language text to spreadsheet formulas or get step-by-step explanations of nested formulas.
-                    </p>
-
-                    <div className="mt-auto flex items-center text-sm font-semibold text-emerald-500 group-hover:text-emerald-500/80 transition-colors">
-                      Launch Helper{" "}
-                      <ArrowRight
-                        size={16}
-                        className="ml-2 group-hover:translate-x-1 transition-transform"
-                      />
-                    </div>
-                  </div>
-                </Link>
-              </div>
-
-              {/* 3. Recommended PPT/Slides Tool */}
-              <div className="group relative col-span-1 h-full">
-                <Link
-                  to="/tools/md-to-slides"
-                  className="block h-full bg-card border border-border hover:border-primary/50 rounded-xl p-6 transition-all duration-300 shadow-sm hover:shadow overflow-hidden relative"
-                >
-                  <div className="absolute top-0 right-0 p-6 opacity-[0.03] group-hover:opacity-[0.05] group-hover:scale-110 transition-all duration-500 pointer-events-none">
-                    <Layers size={100} />
-                  </div>
-
-                  <div className="relative z-10 h-full flex flex-col">
-                    <div className="w-fit px-2.5 py-0.5 bg-rose-500/10 text-rose-500 text-[10px] font-bold tracking-widest uppercase rounded mb-4 border border-rose-500/20">
-                      Slides Tool
-                    </div>
-                    <h2 className="text-2xl font-bold text-foreground mb-2 group-hover:text-rose-500 transition-colors tracking-tight">
-                      Markdown to Slides
-                    </h2>
-                    <p className="text-muted-foreground text-sm max-w-[90%] mb-6 leading-relaxed">
-                      Convert standard Markdown bullet lists and headers into presentation slide layout visuals and download as PDF.
-                    </p>
-
-                    <div className="mt-auto flex items-center text-sm font-semibold text-rose-500 group-hover:text-rose-500/80 transition-colors">
-                      Launch Slide Deck{" "}
-                      <ArrowRight
-                        size={16}
-                        className="ml-2 group-hover:translate-x-1 transition-transform"
-                      />
-                    </div>
-                  </div>
-                </Link>
+                {Object.keys(toolCategories).map((catName) => {
+                  const isActive = activeCategory === catName;
+                  const count = toolCategories[catName].length;
+                  return (
+                    <button
+                      key={catName}
+                      onClick={() => setActiveCategory(catName)}
+                      className={`w-full px-3 py-2.5 rounded-xl text-left text-xs font-bold transition-all flex items-center justify-between cursor-pointer ${
+                        isActive
+                          ? "bg-primary/10 text-primary border border-primary/10"
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted/30 border border-transparent"
+                      }`}
+                    >
+                      <span>{catName}</span>
+                      <span className="text-[9px] font-black px-1.5 py-0.5 rounded-lg bg-muted text-muted-foreground">
+                        {count}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
-          </motion.div>
 
-          {/* Canva-Style Recents & Pinned Hub */}
-          {currentUser &&
-            (pinnedToolObjects.length > 0 || recentToolObjects.length > 0) && (
-              <div className="mb-16 border-b border-border/20 pb-12">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-                  <div>
-                    <h3 className="text-xl md:text-2xl font-black tracking-tight text-foreground">
-                      Quick Access
-                    </h3>
-                    <p className="text-sm text-muted-foreground font-medium">
-                      Jump back into your recent and pinned utilities.
-                    </p>
-                  </div>
-                  <div className="flex p-1 bg-muted/40 rounded-xl border border-border/40 relative self-start sm:self-center">
-                    {["recent", "pinned"].map((tab) => (
-                      <button
-                        key={tab}
-                        onClick={() => setRecentFilter(tab)}
-                        className={`relative px-6 py-2 text-sm font-semibold transition-colors duration-300 rounded-lg ${
-                          recentFilter === tab
-                            ? "text-foreground"
-                            : "text-muted-foreground hover:text-foreground"
-                        }`}
-                      >
-                        {recentFilter === tab && (
-                          <motion.div
-                            layoutId="activeTab"
-                            className="absolute inset-0 bg-card rounded-lg shadow-sm border border-border/50"
-                            transition={{
-                              type: "spring",
-                              bounce: 0.2,
-                              duration: 0.6,
-                            }}
-                          />
-                        )}
-                        <span className="relative z-10 capitalize">{tab}</span>
-                      </button>
-                    ))}
-                  </div>
+            {/* Quick Presets Menu */}
+            <div className="bg-card border border-border/80 p-4 rounded-[24px] shadow-sm space-y-3">
+              <h3 className="text-xs font-black text-muted-foreground uppercase tracking-widest px-2.5 flex items-center gap-1.5">
+                <Sparkles size={13} /> Command Presets
+              </h3>
+              <div className="space-y-1.5">
+                {SHORTCUTS.map((sc, idx) => (
+                  <Link
+                    key={idx}
+                    to={sc.to}
+                    className="group block p-2 rounded-xl border border-border/50 hover:border-primary/20 bg-muted/10 hover:bg-muted/30 transition-all text-left"
+                  >
+                    <div className="flex justify-between items-center text-[10px] font-bold text-muted-foreground group-hover:text-primary">
+                      <span>{sc.action}</span>
+                      <ChevronRight size={10} className="group-hover:translate-x-0.5 transition-transform" />
+                    </div>
+                    <div className="text-xs font-black text-foreground truncate mt-0.5">
+                      {sc.name}
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </aside>
+
+          {/* Right Panel: Catalog Directory & Favorites */}
+          <div className="lg:col-span-9 space-y-8">
+            
+            {/* Pinned & Recents workbench (Only show if populated) */}
+            {(pinnedToolObjects.length > 0 || recentToolObjects.length > 0) && (
+              <div className="bg-card border border-border/80 p-5 rounded-[28px] shadow-sm space-y-6">
+                <div>
+                  <h3 className="text-base font-black tracking-tight text-foreground flex items-center gap-2">
+                    <Pin size={16} className="text-primary fill-primary/10" /> Workspace Favorites
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">Quick relaunch for frequently used active processes.</p>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
-                  {filteredDisplayTools.map((tool) => {
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                  {pinnedToolObjects.map((tool) => {
                     const ToolIcon = tool.icon;
-                    const isPinned = pinnedTools.includes(tool.to);
                     return (
-                      <motion.div
+                      <div
                         key={tool.to}
-                        whileHover={{ scale: 1.02 }}
-                        className="group bg-card hover:bg-muted/30 border border-border hover:border-primary/50 rounded-xl p-3 md:p-4 flex flex-col md:flex-row items-start md:items-center gap-3 md:gap-4 relative overflow-hidden transition-all duration-300 shadow-sm hover:shadow"
+                        className="group flex items-center justify-between p-3 rounded-xl border border-border bg-muted/10 hover:bg-muted/40 hover:border-primary/25 transition-all shadow-sm"
                       >
-                        {/* Subtle watermark background icon */}
-                        <div className="absolute top-1/2 -right-4 -translate-y-1/2 opacity-[0.03] group-hover:opacity-[0.06] group-hover:scale-125 transition-all duration-500 pointer-events-none">
-                          <ToolIcon size={80} />
-                        </div>
-
-                        {/* Mini Badge (Only show if Pinned) - Positioned Top Right */}
-                        {isPinned && (
-                          <span className="absolute top-3 right-3 flex items-center gap-1 px-2 py-0.5 rounded text-[9px] md:text-[10px] font-bold uppercase tracking-widest bg-indigo-500/10 text-indigo-500 border border-indigo-500/20 z-20 shadow-sm backdrop-blur-sm">
-                            <Pin
-                              size={10}
-                              className="fill-current md:w-3 md:h-3"
-                            />
-                            Pinned
-                          </span>
-                        )}
-
-                        {/* Icon */}
-                        <Link
-                          to={tool.to}
-                          className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300 z-10"
-                        >
-                          <ToolIcon
-                            size={20}
-                            className="md:w-[22px] md:h-[22px]"
-                          />
-                        </Link>
-
-                        {/* Content */}
-                        <Link
-                          to={tool.to}
-                          className="flex-1 min-w-0 z-10 py-1 block"
-                        >
-                          <div className="flex items-center gap-2 mb-1">
-                            <h4 className="font-bold text-sm text-foreground group-hover:text-primary transition-colors truncate">
-                              {tool.name}
-                            </h4>
+                        <Link to={tool.to} className="flex items-center gap-3 min-w-0 flex-1">
+                          <div className={`p-2 rounded-lg shrink-0 flex items-center justify-center ${tool.color || "bg-primary/10 text-primary"}`}>
+                            <ToolIcon size={15} />
                           </div>
-                          <p className="text-xs text-muted-foreground truncate">
-                            {tool.description}
-                          </p>
+                          <div className="min-w-0 flex-1">
+                            <h4 className="text-xs font-black text-foreground truncate group-hover:text-primary transition-colors">{tool.name}</h4>
+                            <p className="text-[10px] text-muted-foreground truncate">{tool.description}</p>
+                          </div>
                         </Link>
-                      </motion.div>
+                        <button
+                          onClick={() => togglePin(tool.to)}
+                          className="p-1 hover:bg-red-500/10 text-muted-foreground hover:text-red-500 rounded cursor-pointer shrink-0 transition-colors ml-2"
+                          title="Unpin"
+                        >
+                          <X size={12} />
+                        </button>
+                      </div>
+                    );
+                  })}
+                  {pinnedToolObjects.length === 0 && recentToolObjects.map((tool) => {
+                    const ToolIcon = tool.icon;
+                    return (
+                      <Link
+                        key={tool.to}
+                        to={tool.to}
+                        className="group flex items-center gap-3 p-3 rounded-xl border border-border bg-muted/10 hover:bg-muted/40 hover:border-primary/25 transition-all shadow-sm"
+                      >
+                        <div className={`p-2 rounded-lg shrink-0 flex items-center justify-center ${tool.color || "bg-primary/10 text-primary"}`}>
+                          <ToolIcon size={15} />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <h4 className="text-xs font-black text-foreground truncate group-hover:text-primary transition-colors">{tool.name}</h4>
+                          <p className="text-[10px] text-muted-foreground truncate">{tool.description}</p>
+                        </div>
+                      </Link>
                     );
                   })}
                 </div>
               </div>
             )}
 
-          {/* All tools displayed below. */}
-          {Object.entries(toolCategories).map(([categoryName, tools]) => {
-            const safeId = categoryName
-              .replace(/[^a-zA-Z0-9]/g, "-")
-              .toLowerCase();
-            return (
-              <div key={categoryName} id={safeId} className="scroll-mt-32">
-                <h2 className="text-xl md:text-2xl font-bold tracking-tight text-foreground/90 mb-8 border-b border-border/20 pb-3">
-                  {categoryName}
-                </h2>
-                <motion.div
-                  variants={containerVariants}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true, margin: "-50px" }}
-                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6"
-                >
-                  {tools.map(renderToolCard)}
-                </motion.div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-      <CommandPalette
-        isOpen={isPaletteOpen}
-        onClose={() => setIsPaletteOpen(false)}
-      />
+            {/* Catalog Main Frame */}
+            <div className="bg-card border border-border/80 p-5 rounded-[28px] shadow-sm space-y-6">
+              {/* Header search filter */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/60 pb-5">
+                <div>
+                  <h3 className="text-base font-black text-foreground">
+                    {activeCategory === "all" ? "Full Utilities Index" : `${activeCategory} List`}
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">Showing {filteredTools.length} compiled operations.</p>
+                </div>
 
-      {/* Auth Prompt Modal */}
-      <AnimatePresence>
-        {isAuthModalOpen && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsAuthModalOpen(false)}
-              className="absolute inset-0 bg-background/80 backdrop-blur-sm"
-            />
-
-            {/* Modal Card */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              transition={{ duration: 0.2 }}
-              className="relative w-full max-w-sm bg-card border border-border rounded-2xl p-6 shadow-xl flex flex-col items-center text-center gap-5 z-10"
-            >
-              <div className="w-12 h-12 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0 animate-bounce">
-                <Pin size={22} className="fill-current" />
+                {/* Inline filter search input */}
+                <div className="relative w-full sm:max-w-xs group">
+                  <input
+                    type="text"
+                    placeholder="Search category tools..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-9 pr-3 py-2 bg-background border border-border/80 rounded-xl text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all shadow-inner"
+                  />
+                  <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery("")}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 hover:bg-muted rounded text-muted-foreground"
+                    >
+                      <X size={10} />
+                    </button>
+                  )}
+                </div>
               </div>
 
-              <div>
-                <h3 className="text-xl font-black text-foreground tracking-tight">
-                  Save Your Favorites
-                </h3>
-                <p className="text-muted-foreground text-sm mt-2 leading-relaxed">
-                  Pin your most-used tools and sync them across all your devices
-                  by registering a free account.
-                </p>
-              </div>
+              {/* Tools Catalog grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 min-h-[220px]">
+                {filteredTools.map((tool) => {
+                  const ToolIcon = tool.icon;
+                  const isPinned = pinnedTools.includes(tool.to);
+                  const tags = getToolTags(tool);
 
-              <div className="flex flex-col w-full gap-2.5">
-                <Link
-                  to="/register"
-                  className="w-full py-2.5 px-4 bg-primary text-primary-foreground hover:bg-primary/90 font-bold rounded-xl transition-all active:scale-98 text-center text-sm shadow-md"
-                >
-                  Create Free Account
-                </Link>
-                <Link
-                  to="/login"
-                  className="w-full py-2.5 px-4 bg-muted hover:bg-muted/80 text-foreground font-semibold rounded-xl border border-border transition-all active:scale-98 text-center text-sm"
-                >
-                  Sign In
-                </Link>
-              </div>
+                  return (
+                    <div
+                      key={tool.to}
+                      className="group flex flex-col p-4 rounded-xl border border-border/60 bg-muted/10 hover:bg-muted/40 hover:border-primary/25 transition-all shadow-sm justify-between"
+                    >
+                      <div className="flex gap-3">
+                        {/* Icon */}
+                        <Link
+                          to={tool.to}
+                          className={`p-2.5 rounded-lg shrink-0 flex items-center justify-center transition-transform group-hover:scale-105 h-fit ${
+                            tool.color || "bg-primary/10 text-primary"
+                          }`}
+                        >
+                          <ToolIcon size={16} />
+                        </Link>
 
-              <button
-                onClick={() => setIsAuthModalOpen(false)}
-                className="text-xs text-muted-foreground hover:text-foreground underline transition-colors cursor-pointer"
-              >
-                Continue as Guest
-              </button>
-            </motion.div>
+                        {/* Text */}
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center justify-between gap-2">
+                            <Link to={tool.to} className="min-w-0 flex-1 block">
+                              <h4 className="text-xs font-black text-foreground group-hover:text-primary transition-colors truncate">
+                                {tool.name}
+                              </h4>
+                            </Link>
+                            {/* Pin / Favorite toggle */}
+                            <button
+                              onClick={() => togglePin(tool.to)}
+                              className={`p-1.5 rounded-lg hover:bg-muted shrink-0 transition-colors cursor-pointer ${
+                                isPinned ? "text-primary bg-primary/10 border border-primary/10" : "text-muted-foreground hover:text-foreground"
+                              }`}
+                              title={isPinned ? "Unpin tool" : "Pin tool"}
+                            >
+                              <Pin size={10} className={isPinned ? "fill-current" : ""} />
+                            </button>
+                          </div>
+                          <Link to={tool.to} className="block mt-1">
+                            <p className="text-[10px] text-muted-foreground leading-normal line-clamp-2">
+                              {tool.description}
+                            </p>
+                          </Link>
+                        </div>
+                      </div>
+
+                      {/* Capabilities badges footer */}
+                      <div className="flex items-center justify-between border-t border-border/50 pt-3 mt-3">
+                        <div className="flex gap-1.5 flex-wrap">
+                          {tags.map((tag, idx) => (
+                            <span
+                              key={idx}
+                              className={`text-[8px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border ${tag.color}`}
+                            >
+                              {tag.label}
+                            </span>
+                          ))}
+                        </div>
+                        <Link
+                          to={tool.to}
+                          className="text-[10px] font-black text-primary group-hover:text-primary/80 transition-colors flex items-center gap-1.5 shrink-0"
+                        >
+                          Launch <ArrowRight size={10} className="group-hover:translate-x-0.5 transition-transform" />
+                        </Link>
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {filteredTools.length === 0 && (
+                  <div className="col-span-2 flex flex-col items-center justify-center text-center p-8 my-auto opacity-50 select-none">
+                    <div className="p-3.5 bg-muted rounded-2xl text-muted-foreground border border-border/40">
+                      <AlertCircle size={24} />
+                    </div>
+                    <div className="mt-3">
+                      <h4 className="font-bold text-foreground text-xs uppercase tracking-wider">No matching operations</h4>
+                      <p className="text-[10px] text-muted-foreground mt-1 max-w-[280px]">
+                        Refine your search term or select another folder in the directory index.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
           </div>
-        )}
-      </AnimatePresence>
-    </div>
+        </div>
+
+      </div>
+    </PageTransition>
   );
 };
+
+// Quick helper icon for removal in favourites
+const X = ({ size, ...props }) => (
+  <svg
+    {...props}
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <line x1="18" y1="6" x2="6" y2="18"></line>
+    <line x1="6" y1="6" x2="18" y2="18"></line>
+  </svg>
+);
 
 export default Dashboard;

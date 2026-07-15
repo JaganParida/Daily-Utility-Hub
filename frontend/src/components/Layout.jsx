@@ -13,10 +13,6 @@ const Layout = () => {
   const isTool = location.pathname.startsWith('/tools');
   const isProfile = location.pathname === '/profile';
   
-  // Only show topbar on Dashboard
-  const showTopbar = isDashboard;
-  const showBackButton = isTool || isProfile;
-
   const [isScrolled, setIsScrolled] = useState(false);
   const [headerVisible, setHeaderVisible] = useState(true);
   const lastScrollY = useRef(0);
@@ -247,23 +243,10 @@ const Layout = () => {
   return (
     <div className="flex h-screen bg-background overflow-hidden relative">
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
-        {showTopbar && <Topbar isScrolled={isScrolled && isDashboard} headerVisible={headerVisible} />}
-        
-        {/* Global Tool/Profile Header - Static Back Button */}
-        {showBackButton && (
-          <div className="w-full px-4 md:px-8 py-4 shrink-0 bg-background z-40 flex items-center">
-            <button
-              onClick={() => navigate('/dashboard')}
-              className="inline-flex items-center gap-2 font-bold text-muted-foreground hover:text-foreground bg-card hover:bg-muted/80 border border-border px-5 py-2.5 rounded-full transition-all shadow-sm group whitespace-nowrap cursor-pointer"
-            >
-              <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
-              <span>Back to Dashboard</span>
-            </button>
-          </div>
-        )}
+        <Topbar isScrolled={isScrolled && isDashboard} headerVisible={headerVisible} />
 
         <main ref={mainRef} onScroll={handleScroll} className="flex-1 overflow-y-auto flex flex-col relative z-10 scroll-smooth">
-          <div className={`flex-1 flex flex-col ${showBackButton ? 'pt-4 pb-32 md:pt-12 md:pb-12' : 'p-0'}`}>
+          <div className={`flex-1 flex flex-col pb-20 md:pb-12 ${isDashboard ? 'pt-0' : 'pt-24 lg:pt-28'}`}>
             <Outlet context={{ isScrolled, setIsScrolled }} />
           </div>
         </main>
