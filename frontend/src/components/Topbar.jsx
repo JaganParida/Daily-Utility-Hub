@@ -365,57 +365,70 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
 
 
 
-      {/* Mobile Drawer */}
+      {/* Mobile Drawer (Bottom Sheet) */}
       <AnimatePresence>
         {isMobileMenuOpen && (
-          <div className="fixed inset-0 z-[150] flex lg:hidden">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsMobileMenuOpen(false)} className="fixed inset-0 bg-black/70" />
+          <div className="fixed inset-0 z-[150] flex flex-col justify-end lg:hidden">
+            {/* Backdrop */}
             <motion.div
-              initial={{ x: "-100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "-100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 220 }}
-              className="fixed top-0 left-0 bottom-0 w-[280px] bg-[#111116] border-r border-[#1e1e28] shadow-2xl flex flex-col overflow-hidden z-[160]"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="fixed inset-0 bg-black/80 backdrop-blur-xs"
+            />
+            {/* Sheet Card */}
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 28, stiffness: 240 }}
+              className="relative w-full max-h-[82vh] bg-[#0d0d12] border-t border-[#1e1e28] rounded-t-[28px] shadow-[0_-15px_40px_rgba(0,0,0,0.6)] flex flex-col overflow-hidden z-[160]"
             >
-              <div className="flex items-center justify-between px-5 py-4 border-b border-[#1a1a22]">
-                <span className="font-black text-[15px] tracking-tight text-white">UtilityHub</span>
+              {/* Drag Handle Indicator */}
+              <div className="w-12 h-1 bg-[#272733] rounded-full mx-auto my-3 shrink-0" />
+
+              {/* Title bar */}
+              <div className="flex items-center justify-between px-6 pb-3 border-b border-[#1a1a22]/50 shrink-0">
+                <span className="font-black text-xs tracking-wider text-white uppercase tracking-[0.1em]">Workspace Menu</span>
                 <button onClick={() => setIsMobileMenuOpen(false)} className="p-1.5 hover:bg-[#1a1a22] rounded-lg text-[#6a6a7a] hover:text-white cursor-pointer"><X size={14} /></button>
               </div>
 
-              <div className="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-0.5">
-                <Link to="/" onClick={() => setIsMobileMenuOpen(false)} className={`block px-3 py-2.5 rounded-lg text-xs font-bold transition-all ${currentPath === "/" ? "bg-[#7C5CFC]/10 text-[#7C5CFC]" : "text-[#8a8a9a] hover:text-white hover:bg-[#ffffff06]"}`}>
+              {/* Content area */}
+              <div className="flex-1 overflow-y-auto custom-scrollbar px-5 py-4 space-y-1.5 pb-8">
+                <Link to="/" onClick={() => setIsMobileMenuOpen(false)} className={`block px-4 py-3 rounded-xl text-xs font-bold transition-all ${currentPath === "/" ? "bg-[#7C5CFC]/10 text-[#7C5CFC]" : "text-[#8a8a9a] hover:text-white hover:bg-[#ffffff06]"}`}>
                   Home
                 </Link>
-                <Link to="/profile" onClick={() => setIsMobileMenuOpen(false)} className={`block px-3 py-2.5 rounded-lg text-xs font-bold transition-all ${currentPath === "/profile" ? "bg-[#7C5CFC]/10 text-[#7C5CFC]" : "text-[#8a8a9a] hover:text-white hover:bg-[#ffffff06]"}`}>
+                <Link to="/profile" onClick={() => setIsMobileMenuOpen(false)} className={`block px-4 py-3 rounded-xl text-xs font-bold transition-all ${currentPath === "/profile" ? "bg-[#7C5CFC]/10 text-[#7C5CFC]" : "text-[#8a8a9a] hover:text-white hover:bg-[#ffffff06]"}`}>
                   Profile
                 </Link>
-                <button onClick={() => { setIsMobileMenuOpen(false); setIsInfoOpen(true); }} className="w-full text-left block px-3 py-2.5 rounded-lg text-xs font-bold text-[#8a8a9a] hover:text-white hover:bg-[#ffffff06] transition-all cursor-pointer">
+                <button onClick={() => { setIsMobileMenuOpen(false); setIsInfoOpen(true); }} className="w-full text-left block px-4 py-3 rounded-xl text-xs font-bold text-[#8a8a9a] hover:text-white hover:bg-[#ffffff06] transition-all cursor-pointer">
                   Instructions
                 </button>
 
-                <div className="pt-3 mt-2 border-t border-[#1a1a22]">
-                  <p className="text-[9px] font-black text-[#4a4a5a] uppercase tracking-[0.15em] px-3 mb-2">Tools</p>
+                <div className="pt-4 mt-2 border-t border-[#1a1a22]">
+                  <p className="text-[10px] font-black text-[#4a4a5a] uppercase tracking-[0.15em] px-4 mb-2.5">Tools</p>
                   {Object.keys(toolCategories).map((catName) => (
                     <div key={catName}>
                       <button
                         onClick={() => setMobileExpandedCat(mobileExpandedCat === catName ? null : catName)}
-                        className="w-full px-3 py-2 rounded-lg text-left text-[11px] font-semibold text-[#8a8a9a] hover:text-white flex items-center justify-between cursor-pointer hover:bg-[#ffffff05]"
+                        className="w-full px-4 py-3 rounded-xl text-left text-xs font-semibold text-[#8a8a9a] hover:text-white flex items-center justify-between cursor-pointer hover:bg-[#ffffff04]"
                       >
                         <span>{catName}</span>
                         <div className="flex items-center gap-1.5">
-                          <span className="text-[9px] text-[#4a4a5a]">{toolCategories[catName].length}</span>
-                          <ChevronDown size={11} className={`transition-transform text-[#4a4a5a] ${mobileExpandedCat === catName ? "rotate-180" : ""}`} />
+                          <span className="text-[10px] text-[#4a4a5a] font-bold bg-[#141419] px-2 py-0.5 rounded-full border border-[#1f1f2a]">{toolCategories[catName].length}</span>
+                          <ChevronDown size={12} className={`transition-transform text-[#4a4a5a] ${mobileExpandedCat === catName ? "rotate-180" : ""}`} />
                         </div>
                       </button>
                       <AnimatePresence>
                         {mobileExpandedCat === catName && (
-                          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden pl-4 space-y-0.5 border-l border-[#1a1a22] ml-4 mb-1">
+                          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden pl-4 space-y-0.5 border-l border-[#1a1a22]/80 ml-5 mt-1 mb-2">
                             {toolCategories[catName].map((tool) => (
                               <Link
                                 key={tool.to}
                                 to={tool.to}
                                 onClick={() => setIsMobileMenuOpen(false)}
-                                className={`block px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all ${tool.to === currentPath ? "text-[#7C5CFC] bg-[#7C5CFC]/10" : "text-[#5a5a6a] hover:text-white hover:bg-[#ffffff06]"}`}
+                                className={`block px-3.5 py-2.5 rounded-lg text-[11px] font-medium transition-all ${tool.to === currentPath ? "text-[#7C5CFC] bg-[#7C5CFC]/10" : "text-[#5a5a6a] hover:text-white hover:bg-[#ffffff06]"}`}
                               >
                                 {tool.name}
                               </Link>
@@ -429,9 +442,9 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
               </div>
 
               {user && (
-                <div className="border-t border-[#1a1a22] p-3">
-                  <button onClick={() => { logout(); setIsMobileMenuOpen(false); }} className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-xs font-bold text-red-400 hover:bg-red-500/10 transition-all cursor-pointer">
-                    <LogOut size={13} /> Sign Out
+                <div className="border-t border-[#1a1a22] p-4 bg-[#09090d] shrink-0">
+                  <button onClick={() => { logout(); setIsMobileMenuOpen(false); }} className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-xs font-bold text-red-400 hover:bg-red-500/10 transition-all cursor-pointer">
+                    <LogOut size={14} /> Sign Out
                   </button>
                 </div>
               )}
