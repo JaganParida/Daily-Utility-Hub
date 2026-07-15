@@ -240,17 +240,10 @@ const Dashboard = () => {
     <PageTransition>
       <style>{`
         @keyframes gradient-shift { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
-        @keyframes glow-pulse { 0%,100% { box-shadow: 0 0 15px rgba(124,92,252,0.04), 0 0 30px rgba(124,92,252,0.02); } 50% { box-shadow: 0 0 20px rgba(124,92,252,0.08), 0 0 40px rgba(124,92,252,0.04); } }
-        @keyframes scan-sweep { 0% { transform: translateX(-100%); } 100% { transform: translateX(400%); } }
-        @keyframes shimmer-text { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
-        @keyframes border-breathe { 0%,100% { border-color: rgba(30,30,40,1); } 50% { border-color: rgba(124,92,252,0.12); } }
-        @keyframes pulse-ring { 0%,100% { box-shadow: 0 0 0 0 rgba(124,92,252,0.3); } 50% { box-shadow: 0 0 0 4px rgba(124,92,252,0); } }
-        @keyframes float-dot { 0%,100% { transform: scale(1); opacity: 0.4; } 50% { transform: scale(1.5); opacity: 1; } }
+        @keyframes border-flow { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
         .gradient-text { background: linear-gradient(135deg, #7C5CFC, #A78BFA, #7C5CFC); background-size: 200% 200%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: gradient-shift 4s ease infinite; }
-        .cmd-strip { position: relative; animation: glow-pulse 4s ease-in-out infinite, border-breathe 5s ease-in-out infinite; }
-        .cmd-strip::before { content: ''; position: absolute; bottom: 0; left: 0; width: 25%; height: 1px; background: linear-gradient(90deg, transparent, rgba(124,92,252,0.2), transparent); animation: scan-sweep 6s ease-in-out infinite; pointer-events: none; z-index: 2; }
-        .shimmer-placeholder { background: linear-gradient(90deg, #4a4a5a 0%, #7a7a8a 50%, #4a4a5a 100%); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: shimmer-text 3s ease-in-out infinite; }
-        .step-num { width: 16px; height: 16px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 800; flex-shrink: 0; transition: all 0.3s ease; }
+        .animated-border { background: linear-gradient(90deg, transparent 0%, transparent 40%, rgba(124,92,252,0.8) 50%, rgba(167,139,250,1) 50%, rgba(124,92,252,0.8) 50%, transparent 60%, transparent 100%); background-size: 200% 100%; animation: border-flow 3s linear infinite; padding: 1px; border-radius: 1rem; }
+        .animated-border-inner { background: #141419; border-radius: calc(1rem - 1px); height: 100%; width: 100%; display: flex; flex-direction: column; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
       `}</style>
@@ -309,150 +302,100 @@ const Dashboard = () => {
               </motion.p>
             </div>
 
-            {/* ── COMMAND STRIP ── */}
+            {/* ── UNIFIED COMMAND STRIP ── */}
             <motion.div
-              initial={{ opacity: 0, y: 16 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.25, ease: [0.16, 1, 0.3, 1] }}
-              className="cmd-strip bg-[#12121a] border border-[#1e1e28] rounded-xl overflow-hidden mb-3"
+              transition={{ duration: 0.5, delay: 0.25 }}
+              className="animated-border mb-3"
             >
-              {/* Desktop */}
-              <div className="hidden sm:flex items-stretch h-[50px]">
-                {/* Step 1: File */}
-                <motion.div
-                  initial={{ opacity: 0, x: -8 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.35, delay: 0.35 }}
-                  className="flex-1 flex items-center gap-2 px-3.5 min-w-0 group hover:bg-[#ffffff02] transition-all duration-300"
-                >
-                  <span className={`step-num ${droppedFile ? 'bg-emerald-500/15 text-emerald-400' : 'bg-[#1e1e28] text-[#4a4a5a] group-hover:text-[#7C5CFC] group-hover:bg-[#7C5CFC]/8'}`}>1</span>
+             <div className="animated-border-inner relative z-10">
+              {/* Desktop / Tablet: horizontal */}
+              <div className="hidden sm:flex items-stretch h-[52px]">
+                {/* File segment */}
+                <div className="flex-1 flex items-center gap-2 px-4 border-r border-[#222230] min-w-0">
                   {droppedFile ? (
-                    <motion.div
-                      initial={{ opacity: 0, x: -4 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ type: "spring", damping: 20, stiffness: 300 }}
-                      className="flex items-center gap-1.5 min-w-0 flex-1"
-                    >
-                      <span className="text-[11px] font-semibold text-white truncate">{droppedFile.name}</span>
-                      <span className="text-[8px] text-[#4a4a5a] shrink-0 font-mono">{droppedFile.size}</span>
-                      <button onClick={clearFile} className="p-0.5 text-[#4a4a5a] hover:text-white rounded cursor-pointer shrink-0 transition-colors"><X size={10} /></button>
-                    </motion.div>
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <FileCheck size={14} className="text-emerald-400 shrink-0" />
+                      <span className="text-xs font-bold text-white truncate">{droppedFile.name}</span>
+                      <span className="text-[9px] text-[#5a5a6a] shrink-0">{droppedFile.size}</span>
+                      <button onClick={clearFile} className="p-0.5 text-[#5a5a6a] hover:text-white rounded cursor-pointer shrink-0"><X size={11} /></button>
+                    </div>
                   ) : (
-                    <button onClick={() => fileInputRef.current?.click()} className="flex items-center gap-1.5 cursor-pointer w-full">
-                      <span className="text-[11px] font-medium shimmer-placeholder">Select or drop a file</span>
+                    <button onClick={() => fileInputRef.current?.click()} className="flex items-center gap-2 text-[#5a5a6a] hover:text-[#8a8a9a] transition-colors cursor-pointer w-full">
+                      <UploadCloud size={14} className="shrink-0" />
+                      <span className="text-xs font-medium">Select or drop a file</span>
                     </button>
                   )}
                   <input type="file" ref={fileInputRef} onChange={(e) => { if (e.target.files?.[0]) handleFileDrop(e.target.files[0]); e.target.value = ''; }} className="hidden" />
-                </motion.div>
+                </div>
 
-                <div className="w-px bg-[#1e1e28] self-stretch my-2.5" />
+                {/* Format dropdown */}
+                <div className="w-[160px] md:w-[170px] border-r border-[#222230] shrink-0">
+                  <CustomDropdown
+                    value={source}
+                    onChange={handleSourceChange}
+                    options={sourceOptions}
+                    placeholder="Format"
+                    icon={Layers}
+                  />
+                </div>
 
-                {/* Step 2: Format */}
-                <motion.div
-                  initial={{ opacity: 0, y: 4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.35, delay: 0.45 }}
-                  className="w-[155px] md:w-[165px] shrink-0 flex items-center hover:bg-[#ffffff02] transition-all duration-300"
-                >
-                  <span className={`step-num ml-3 ${source ? 'bg-[#7C5CFC]/15 text-[#7C5CFC]' : 'bg-[#1e1e28] text-[#4a4a5a]'}`}>2</span>
-                  <div className="flex-1 min-w-0">
-                    <CustomDropdown
-                      value={source}
-                      onChange={handleSourceChange}
-                      options={sourceOptions}
-                      placeholder="Format"
-                      icon={Layers}
-                    />
-                  </div>
-                </motion.div>
-
-                <div className="w-px bg-[#1e1e28] self-stretch my-2.5" />
-
-                {/* Step 3: Operation */}
-                <motion.div
-                  initial={{ opacity: 0, y: 4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.35, delay: 0.55 }}
-                  className="w-[165px] md:w-[185px] shrink-0 flex items-center hover:bg-[#ffffff02] transition-all duration-300"
-                >
-                  <span className={`step-num ml-3 ${operationIdx !== '' ? 'bg-[#7C5CFC]/15 text-[#7C5CFC]' : 'bg-[#1e1e28] text-[#4a4a5a]'}`}>3</span>
-                  <div className="flex-1 min-w-0">
-                    <CustomDropdown
-                      value={operationIdx}
-                      onChange={(val) => setOperationIdx(val)}
-                      options={operationOptions}
-                      placeholder="Operation"
-                      disabled={!source}
-                      icon={Zap}
-                    />
-                  </div>
-                </motion.div>
+                {/* Operation dropdown */}
+                <div className="w-[170px] md:w-[190px] border-r border-[#222230] shrink-0">
+                  <CustomDropdown
+                    value={operationIdx}
+                    onChange={(val) => setOperationIdx(val)}
+                    options={operationOptions}
+                    placeholder="Operation"
+                    disabled={!source}
+                    icon={Zap}
+                  />
+                </div>
 
                 {/* Launch */}
-                <motion.button
-                  initial={{ opacity: 0, x: 6 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.35, delay: 0.65 }}
+                <button
                   onClick={handleLaunch}
                   disabled={!activeOp}
-                  whileHover={activeOp ? { scale: 1.015 } : {}}
-                  whileTap={activeOp ? { scale: 0.97 } : {}}
-                  className={`mx-1.5 my-1.5 px-4 md:px-5 flex items-center gap-1.5 rounded-lg text-[11px] font-bold transition-all shrink-0 cursor-pointer ${
-                    activeOp
-                      ? "bg-[#7C5CFC] hover:bg-[#6B4FE0] text-white shadow-md shadow-[#7C5CFC]/15"
-                      : "bg-[#1a1a22] text-[#3a3a48] cursor-not-allowed"
-                  }`}
-                  style={activeOp ? { animation: 'pulse-ring 2.5s ease-in-out infinite' } : {}}
+                  className="px-5 md:px-6 flex items-center gap-2 bg-[#7C5CFC] hover:bg-[#6B4FE0] text-white text-xs font-black transition-all disabled:bg-[#1a1a22] disabled:text-[#3a3a48] disabled:cursor-not-allowed cursor-pointer shrink-0 rounded-r-[calc(1rem-1px)]"
                 >
-                  Launch
-                  <motion.span
-                    animate={activeOp ? { x: [0, 2, 0] } : {}}
-                    transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                  >
-                    <ArrowRight size={12} />
-                  </motion.span>
-                </motion.button>
+                  Launch <ArrowRight size={13} />
+                </button>
               </div>
 
-              {/* Mobile */}
+              {/* Mobile: vertical */}
               <div className="flex sm:hidden flex-col">
-                <div className="flex items-center gap-2 px-3.5 py-3 border-b border-[#1e1e28]">
-                  <span className={`step-num ${droppedFile ? 'bg-emerald-500/15 text-emerald-400' : 'bg-[#1e1e28] text-[#4a4a5a]'}`}>1</span>
+                {/* File */}
+                <div className="flex items-center gap-2 px-4 py-3.5 border-b border-[#222230]">
                   {droppedFile ? (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-1.5 min-w-0 flex-1">
-                      <span className="text-[11px] font-semibold text-white truncate">{droppedFile.name}</span>
-                      <button onClick={clearFile} className="p-0.5 text-[#4a4a5a] hover:text-white rounded cursor-pointer shrink-0 ml-auto"><X size={10} /></button>
-                    </motion.div>
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <FileCheck size={13} className="text-emerald-400 shrink-0" />
+                      <span className="text-xs font-bold text-white truncate">{droppedFile.name}</span>
+                      <button onClick={clearFile} className="p-0.5 text-[#5a5a6a] hover:text-white rounded cursor-pointer shrink-0 ml-auto"><X size={11} /></button>
+                    </div>
                   ) : (
-                    <button onClick={() => fileInputRef.current?.click()} className="flex items-center cursor-pointer w-full">
-                      <span className="text-[11px] font-medium shimmer-placeholder">Select or drop a file</span>
+                    <button onClick={() => fileInputRef.current?.click()} className="flex items-center gap-2 text-[#5a5a6a] hover:text-[#8a8a9a] transition-colors cursor-pointer w-full">
+                      <UploadCloud size={13} className="shrink-0" />
+                      <span className="text-xs font-medium">Select or drop a file</span>
                     </button>
                   )}
                   <input type="file" ref={fileInputRef} onChange={(e) => { if (e.target.files?.[0]) handleFileDrop(e.target.files[0]); e.target.value = ''; }} className="hidden" />
                 </div>
-                <div className="flex items-stretch h-[42px] border-b border-[#1e1e28]">
-                  <div className="flex-1 flex items-center border-r border-[#1e1e28]">
-                    <span className="step-num ml-3 bg-[#1e1e28] text-[#4a4a5a]">2</span>
-                    <div className="flex-1"><CustomDropdown value={source} onChange={handleSourceChange} options={sourceOptions} placeholder="Format" icon={Layers} /></div>
+                {/* Selectors */}
+                <div className="flex items-stretch h-[44px] border-b border-[#222230]">
+                  <div className="flex-1 border-r border-[#222230]">
+                    <CustomDropdown value={source} onChange={handleSourceChange} options={sourceOptions} placeholder="Format" icon={Layers} />
                   </div>
-                  <div className="flex-1 flex items-center">
-                    <span className="step-num ml-3 bg-[#1e1e28] text-[#4a4a5a]">3</span>
-                    <div className="flex-1"><CustomDropdown value={operationIdx} onChange={(val) => setOperationIdx(val)} options={operationOptions} placeholder="Operation" disabled={!source} icon={Zap} /></div>
+                  <div className="flex-1">
+                    <CustomDropdown value={operationIdx} onChange={(val) => setOperationIdx(val)} options={operationOptions} placeholder="Operation" disabled={!source} icon={Zap} />
                   </div>
                 </div>
-                <div className="p-1.5">
-                  <motion.button
-                    onClick={handleLaunch}
-                    disabled={!activeOp}
-                    whileTap={activeOp ? { scale: 0.97 } : {}}
-                    className={`w-full py-2.5 flex items-center justify-center gap-1.5 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
-                      activeOp ? "bg-[#7C5CFC] hover:bg-[#6B4FE0] text-white" : "bg-[#1a1a22] text-[#3a3a48]"
-                    }`}
-                  >
-                    Launch <ArrowRight size={12} />
-                  </motion.button>
-                </div>
+                {/* Launch */}
+                <button onClick={handleLaunch} disabled={!activeOp} className="w-full py-3 flex items-center justify-center gap-2 bg-[#7C5CFC] hover:bg-[#6B4FE0] text-white text-xs font-black transition-all disabled:bg-[#1a1a22] disabled:text-[#3a3a48] cursor-pointer rounded-b-[calc(1rem-1px)]">
+                  Launch <ArrowRight size={13} />
+                </button>
               </div>
+             </div>
             </motion.div>
 
             {/* Result hint */}
