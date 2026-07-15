@@ -801,53 +801,100 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
               {/* Top Accent Line */}
               <div className="h-[2px] w-full bg-gradient-to-r from-[#7C5CFC] via-[#A78BFA] to-[#7C5CFC]" />
 
-              <div className="p-5 sm:p-6">
+              <div className="p-5 sm:p-6 flex flex-col h-full max-h-[85vh]">
                 {/* Header */}
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-xs sm:text-sm font-black text-white uppercase tracking-wider">How to Use UtilityHub</h3>
+                <div className="flex items-center justify-between mb-4 shrink-0">
+                  <h3 className="text-xs sm:text-sm font-black text-white uppercase tracking-wider">Instructions</h3>
                   <button onClick={() => setIsInfoOpen(false)} className="p-1 hover:bg-[#1a1a22] rounded-lg text-[#6a6a7a] hover:text-white cursor-pointer transition-colors"><X size={14} /></button>
                 </div>
 
                 {/* Body Content */}
-                <div className="space-y-4 text-xs text-[#8a8a9a]">
-                  <p className="leading-relaxed">
-                    UtilityHub runs all operations <span className="text-[#A78BFA] font-bold">100% locally</span> on your device. We never upload your files to any server.
-                  </p>
-
-                  <div className="space-y-3.5 pt-2">
-                    <div className="flex gap-3">
-                      <div className="w-5 h-5 rounded-md bg-[#7C5CFC]/10 flex items-center justify-center text-[#7C5CFC] font-black text-[10px] shrink-0 mt-0.5">1</div>
-                      <div>
-                        <p className="font-bold text-white mb-0.5">Select a file (Optional)</p>
-                        <p className="leading-relaxed">Drop a file into the workspace or click "Select file". The system will auto-detect compatible operations.</p>
-                      </div>
-                    </div>
-
-                    <div className="flex gap-3">
-                      <div className="w-5 h-5 rounded-md bg-[#7C5CFC]/10 flex items-center justify-center text-[#7C5CFC] font-black text-[10px] shrink-0 mt-0.5">2</div>
-                      <div>
-                        <p className="font-bold text-white mb-0.5">Choose Format & Operation</p>
-                        <p className="leading-relaxed">Select your target format and the specific operation you'd like to perform from the dropdowns.</p>
-                      </div>
-                    </div>
-
-                    <div className="flex gap-3">
-                      <div className="w-5 h-5 rounded-md bg-[#7C5CFC]/10 flex items-center justify-center text-[#7C5CFC] font-black text-[10px] shrink-0 mt-0.5">3</div>
-                      <div>
-                        <p className="font-bold text-white mb-0.5">Launch & Process</p>
-                        <p className="leading-relaxed">Click "Launch" to start processing instantly. Once done, you'll see the download link or options.</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Privacy Alert */}
-                  <div className="mt-5 p-3 rounded-lg bg-[#7C5CFC]/5 border border-[#7C5CFC]/15 flex gap-2.5 items-start">
-                    <Shield size={14} className="text-[#7C5CFC] shrink-0 mt-0.5" />
+                <div className="overflow-y-auto custom-scrollbar pr-2 space-y-8 pb-4">
+                  
+                  {/* Work Faster & Steps */}
+                  <div className="space-y-4">
                     <div>
-                      <p className="font-bold text-white mb-0.5">Privacy First</p>
-                      <p className="leading-relaxed text-[11px]">Since everything is local, your files are secure and private. Ideal for processing confidential documents.</p>
+                      <span className="text-[9px] font-black tracking-widest text-[#7C5CFC] uppercase">Work Faster. Think Bigger.</span>
+                      <h4 className="text-sm font-black text-white mt-1">The Modern Utility Hub</h4>
+                      <p className="text-[11.5px] text-[#6a6a7a] mt-1 leading-relaxed">
+                        We discarded the bloat and focused purely on performance, privacy, and speed. 50+ tools executing instantly in your browser.
+                      </p>
+                    </div>
+
+                    <div className="space-y-3.5 pt-1">
+                      <div>
+                        <p className="text-[10px] font-black text-[#A78BFA] uppercase tracking-wider">01 // Step: Locate instantly</p>
+                        <p className="text-[11px] text-[#8a8a9a] leading-relaxed mt-0.5">
+                          Hit <span className="bg-[#1a1a22] px-1.5 py-0.5 rounded text-white font-mono text-[10px] border border-[#222230]">CMD+K</span> anywhere to open the command palette.
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-black text-[#A78BFA] uppercase tracking-wider">02 // Step: Execute locally</p>
+                        <p className="text-[11px] text-[#8a8a9a] leading-relaxed mt-0.5">
+                          Paste your payload or drop files. Everything runs securely inside your local browser sandbox.
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-black text-[#A78BFA] uppercase tracking-wider">03 // Step: Export effortlessly</p>
+                        <p className="text-[11px] text-[#8a8a9a] leading-relaxed mt-0.5">
+                          Copy your formatted code with one click, or instantly download your processed assets.
+                        </p>
+                      </div>
                     </div>
                   </div>
+
+                  {/* Feature Comparison Table */}
+                  <div className="space-y-3.5 pt-2 border-t border-[#1a1a22]">
+                    <div>
+                      <span className="text-[9px] font-black tracking-widest text-[#7C5CFC] uppercase">Transparent Access</span>
+                      <h4 className="text-sm font-black text-white mt-1">Account Features</h4>
+                    </div>
+
+                    <div className="w-full text-[10.5px] text-[#8a8a9a]">
+                      <div className="grid grid-cols-3 border-b border-[#1d1d27] pb-2 font-bold text-white">
+                        <span>Utility Access</span>
+                        <span className="text-center">Guest</span>
+                        <span className="text-center">Member</span>
+                      </div>
+                      {[
+                        { name: "50+ Client-side tools", guest: true, user: true },
+                        { name: "Zero tracking & ads", guest: true, user: true },
+                        { name: "Recent history log", guest: true, user: true },
+                        { name: "Pin favorite tools", guest: false, user: true },
+                        { name: "Cloud sync configs", guest: false, user: true },
+                      ].map((row, i) => (
+                        <div key={i} className="grid grid-cols-3 py-2 border-b border-[#141419] items-center">
+                          <span className="text-[#6a6a7a] truncate pr-1">{row.name}</span>
+                          <span className="text-center">{row.guest ? "✓" : "✕"}</span>
+                          <span className="text-center text-[#7C5CFC] font-black">{row.user ? "✓" : "✕"}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* FAQs */}
+                  <div className="space-y-4 pt-2 border-t border-[#1a1a22]">
+                    <div>
+                      <span className="text-[9px] font-black tracking-widest text-[#7C5CFC] uppercase">Questions?</span>
+                      <h4 className="text-sm font-black text-white mt-1">Quick FAQ</h4>
+                    </div>
+
+                    <div className="space-y-3.5">
+                      <div>
+                        <p className="text-[10.5px] font-bold text-white">Is it 100% free?</p>
+                        <p className="text-[10px] text-[#6a6a7a] leading-relaxed mt-0.5">Yes. No paywalls, subscriptions, or hidden charges whatsoever.</p>
+                      </div>
+                      <div>
+                        <p className="text-[10.5px] font-bold text-white">Are files secure?</p>
+                        <p className="text-[10px] text-[#6a6a7a] leading-relaxed mt-0.5">Strict Privacy. Calculations are local. We never see your data.</p>
+                      </div>
+                      <div>
+                        <p className="text-[10.5px] font-bold text-white">Why register?</p>
+                        <p className="text-[10px] text-[#6a6a7a] leading-relaxed mt-0.5">Enable Zero Latency cross-device sync of your configuration logs.</p>
+                      </div>
+                    </div>
+                  </div>
+
                 </div>
               </div>
             </motion.div>
