@@ -3,14 +3,12 @@ import {
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useHotkeys } from "react-hotkeys-hook";
-import CommandPalette from "./CommandPalette";
 import { toolCategories } from "../data/toolCategories";
 
 const Topbar = ({ isScrolled, headerVisible = true }) => {
-  const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
   const [hoveredTab, setHoveredTab] = useState(null); // 'tools' | 'instructions' | null
@@ -19,6 +17,7 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
 
   const { currentUser: user, logout } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const currentPath = location.pathname;
   const megamenuRef = useRef(null);
 
@@ -35,15 +34,9 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  useHotkeys("ctrl+k, meta+k", (e) => { e.preventDefault(); setIsPaletteOpen(true); }, { enableOnFormTags: true });
+  useHotkeys("ctrl+k, meta+k", (e) => { e.preventDefault(); navigate('/search'); }, { enableOnFormTags: true });
 
-  // Dark mode toggle
-  const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains("dark"));
-  const toggleTheme = () => {
-    document.documentElement.classList.toggle("dark");
-    setIsDark((p) => !p);
-    localStorage.setItem("theme", document.documentElement.classList.contains("dark") ? "dark" : "light");
-  };
+
 
   return (
     <motion.header
@@ -319,7 +312,7 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
           <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
             {/* Search */}
             <button
-              onClick={() => setIsPaletteOpen(true)}
+              onClick={() => navigate('/search')}
               className="h-8 flex items-center gap-1.5 px-2.5 rounded-lg text-[#6a6a7a] hover:text-[#8a8a9a] transition-colors cursor-text"
             >
               <Search size={14} />
@@ -327,24 +320,6 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
               <div className="hidden md:flex items-center gap-0.5 text-[9px] font-bold text-[#5a5a6a] bg-[#1a1a22] border border-[#2a2a35] px-1.5 py-0.5 rounded ml-1">
                 <span>⌘K</span>
               </div>
-            </button>
-
-             {/* How to use instruction help */}
-            <button
-              onClick={() => setIsInfoOpen(true)}
-              className="w-8 h-8 flex items-center justify-center rounded-lg text-[#6a6a7a] hover:text-white transition-colors cursor-pointer"
-              title="How to use instructions"
-            >
-              <HelpCircle size={15} />
-            </button>
-
-            {/* Theme toggle */}
-            <button
-              onClick={toggleTheme}
-              className="w-8 h-8 flex items-center justify-center rounded-lg text-[#6a6a7a] hover:text-white transition-colors cursor-pointer"
-              title="Toggle theme"
-            >
-              {isDark ? <Sun size={15} /> : <Moon size={15} />}
             </button>
 
             {/* User */}
@@ -388,8 +363,7 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
         </div>
       </div>
 
-      {/* Command Palette */}
-      <CommandPalette isOpen={isPaletteOpen} onClose={() => setIsPaletteOpen(false)} />
+
 
       {/* Mobile Drawer */}
       <AnimatePresence>

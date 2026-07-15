@@ -12,6 +12,7 @@ const Dashboard = lazy(() => import('./pages/Dashboard'));
 const PinnedTools = lazy(() => import('./pages/PinnedTools'));
 const RecentTools = lazy(() => import('./pages/RecentTools'));
 const Profile = lazy(() => import('./pages/Profile'));
+const SearchPage = lazy(() => import('./pages/Search'));
 
 // Auth Pages (Lazy loaded)
 const Login = lazy(() => import('./pages/auth/Login'));
@@ -162,6 +163,7 @@ function AnimatedRoutes() {
           <Route element={<Layout />}>
             <Route path="/" element={<Dashboard />} />
             <Route path="/dashboard" element={<Navigate to="/" replace />} />
+            <Route path="/search" element={<SearchPage />} />
             <Route path="/pinned" element={<PinnedTools />} />
             <Route path="/recent" element={<RecentTools />} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
