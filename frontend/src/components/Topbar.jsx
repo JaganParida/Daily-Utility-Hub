@@ -162,16 +162,17 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
             <AnimatePresence>
               {hoveredTab && (
                 <motion.div
-                  initial={{ opacity: 0, y: 8, scale: 0.98, width: hoveredTab === "tools" ? 700 : 850, height: hoveredTab === "tools" ? 362 : 322 }}
-                  animate={{ opacity: 1, y: 0, scale: 1, width: hoveredTab === "tools" ? 700 : 850, height: hoveredTab === "tools" ? 362 : 322 }}
+                  initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 4, scale: 0.98, transition: { duration: 0.15 } }}
                   transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                  className={`absolute top-[85%] left-1/2 -translate-x-1/2 mt-1 bg-[#111116] border border-[#1e1e28] rounded-xl shadow-[0_20px_60px_rgba(0,0,0,0.8)] z-[200] overflow-hidden`}
+                  className="absolute top-[85%] left-1/2 -translate-x-1/2 mt-1 bg-[#111116] border border-[#1e1e28] rounded-xl shadow-[0_20px_60px_rgba(0,0,0,0.8)] z-[200] overflow-hidden flex flex-col"
+                  style={{ width: 850, height: 400 }}
                 >
                   {/* Top gradient bar */}
-                  <div className="h-[2px] w-full bg-gradient-to-r from-[#7C5CFC] via-[#A78BFA] to-[#7C5CFC]" />
+                  <div className="h-[2px] w-full bg-gradient-to-r from-[#7C5CFC] via-[#A78BFA] to-[#7C5CFC] shrink-0" />
 
-                  <div className="relative w-full h-full overflow-hidden">
+                  <div className="relative w-full flex-1 overflow-hidden">
                     <AnimatePresence mode="popLayout" custom={slideDirection} initial={false}>
                       {hoveredTab === "tools" && (
                         <motion.div
@@ -181,8 +182,7 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                           animate={{ opacity: 1, x: 0 }}
                           exit={{ opacity: 0, x: slideDirection === 1 ? -30 : 30 }}
                           transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                          className="flex" 
-                          style={{ minHeight: '360px', width: '700px' }}
+                          className="flex absolute inset-0" 
                         >
                           {/* Left: Categories */}
                           <div className="w-[195px] border-r border-[#1a1a22] flex flex-col py-2.5 shrink-0">
@@ -299,8 +299,7 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                           animate={{ opacity: 1, x: 0 }}
                           exit={{ opacity: 0, x: slideDirection === 1 ? -30 : 30 }}
                           transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                          className="grid grid-cols-12 gap-6 p-6 text-left"
-                          style={{ minHeight: '320px', width: '850px' }}
+                          className="grid grid-cols-12 gap-6 p-6 text-left absolute inset-0"
                         >
                           {/* Left: Work Faster & Steps */}
                           <div className="col-span-5 border-r border-[#1a1a22] pr-6 space-y-4">
