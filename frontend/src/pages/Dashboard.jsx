@@ -470,7 +470,18 @@ const Dashboard = () => {
       size: (file.size / 1024).toFixed(1) + " KB", 
       ext: ext.toUpperCase() 
     });
-    if (mapped) { setSource(mapped); setOperationIdx(0); }
+
+    setSource("");
+    setOperationIdx(0);
+
+    if (mapped) {
+      setTimeout(() => {
+        setSource(mapped);
+        setTimeout(() => {
+          setOperationIdx(0);
+        }, 350);
+      }, 350);
+    }
   }, []);
 
   const clearFile = () => { setDroppedFile(null); setSource(""); };
@@ -619,9 +630,14 @@ const Dashboard = () => {
                           transition={{ type: "spring", stiffness: 300, damping: 20 }}
                           className="flex items-center gap-2.5 bg-[#151522] border border-[#7C5CFC]/40 px-3.5 py-2 rounded-xl min-w-[200px] max-w-[260px] h-[44px] shadow-[0_0_15px_rgba(124,92,252,0.15)]"
                         >
-                          <div className="w-7 h-7 rounded-lg bg-[#7C5CFC]/10 flex items-center justify-center text-[#7C5CFC] font-black text-[10px] shrink-0">
+                          <motion.div 
+                            initial={{ y: -30, opacity: 0, scale: 0.5 }}
+                            animate={{ y: 0, opacity: 1, scale: 1 }}
+                            transition={{ type: "spring", stiffness: 450, damping: 15, delay: 0.12 }}
+                            className="w-7 h-7 rounded-lg bg-[#7C5CFC]/10 flex items-center justify-center text-[#7C5CFC] font-black text-[10px] shrink-0"
+                          >
                             {droppedFile.ext}
-                          </div>
+                          </motion.div>
                           <div className="min-w-0 flex-1">
                             <p className="text-xs font-bold text-white truncate">{droppedFile.name}</p>
                             <p className="text-[10px] text-[#5a5a6a]">{droppedFile.size}</p>
@@ -697,9 +713,14 @@ const Dashboard = () => {
                           transition={{ type: "spring", stiffness: 300, damping: 20 }}
                           className="flex items-center gap-2.5 bg-[#151522] border border-[#7C5CFC]/40 px-3.5 py-2.5 rounded-xl shadow-[0_0_15px_rgba(124,92,252,0.15)]"
                         >
-                          <div className="w-8 h-8 rounded-lg bg-[#7C5CFC]/10 flex items-center justify-center text-[#7C5CFC] font-black text-xs shrink-0">
+                          <motion.div 
+                            initial={{ y: -35, opacity: 0, scale: 0.5 }}
+                            animate={{ y: 0, opacity: 1, scale: 1 }}
+                            transition={{ type: "spring", stiffness: 450, damping: 15, delay: 0.12 }}
+                            className="w-8 h-8 rounded-lg bg-[#7C5CFC]/10 flex items-center justify-center text-[#7C5CFC] font-black text-xs shrink-0"
+                          >
                             {droppedFile.ext}
-                          </div>
+                          </motion.div>
                           <div className="min-w-0 flex-1">
                             <p className="text-xs font-bold text-white truncate">{droppedFile.name}</p>
                             <p className="text-[10px] text-[#5a5a6a]">{droppedFile.size}</p>
