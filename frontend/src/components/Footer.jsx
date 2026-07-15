@@ -8,7 +8,7 @@ const Footer = () => {
   const [activeModal, setActiveModal] = useState(null);
 
   return (
-    <footer className="w-full relative z-10 mt-auto bg-[#050507] border-t border-[#1e1e28] overflow-hidden">
+    <footer className="w-full relative z-10 mt-auto bg-[#050507] border-t border-[#1e1e28] overflow-hidden shrink-0">
       {/* Premium subtle background glow */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-[#7C5CFC]/5 blur-[120px] rounded-full pointer-events-none" />
       
