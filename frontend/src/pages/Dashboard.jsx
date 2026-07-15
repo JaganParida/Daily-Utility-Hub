@@ -228,15 +228,15 @@ const CustomDropdown = ({
           isPop ? "animate-scale-pop" : ""
         } ${
           open 
-            ? "border-[#7C5CFC] bg-[#1a1a25] shadow-[0_0_15px_rgba(124,92,252,0.15)] ring-1 ring-[#7C5CFC]/30" 
-            : "border-[#222230] bg-[#141419]"
+            ? "border-[#2563eb] bg-[#27272a] shadow-[0_0_15px_rgba(124,92,252,0.15)] ring-1 ring-[#2563eb]/30" 
+            : "border-[#3f3f46] bg-[#18181b]"
         } ${
           disabled 
             ? "opacity-35 cursor-not-allowed border-[#1d1d28] bg-[#0e0e12] pointer-events-none" 
-            : "cursor-pointer hover:border-[#7C5CFC]/50 hover:bg-[#1a1a24] active:scale-[0.98] focus:border-[#7C5CFC]/80 focus:ring-1 focus:ring-[#7C5CFC]/30"
+            : "cursor-pointer hover:border-[#2563eb]/50 hover:bg-[#27272a] active:scale-[0.98] focus:border-[#2563eb]/80 focus:ring-1 focus:ring-[#2563eb]/30"
         }`}
       >
-        {Icon && <Icon size={13} className="text-[#6a6a7a] shrink-0" />}
+        {Icon && <Icon size={13} className="text-[#71717a] shrink-0" />}
         <span className="text-xs font-bold truncate flex-1 block overflow-hidden h-4 relative">
           <AnimatePresence mode="wait">
             <motion.span
@@ -245,13 +245,13 @@ const CustomDropdown = ({
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: -8, opacity: 0 }}
               transition={{ duration: 0.15, ease: "easeOut" }}
-              className={`absolute inset-y-0 left-0 truncate w-full flex items-center ${selected ? "text-white" : "text-[#5a5a6a]"}`}
+              className={`absolute inset-y-0 left-0 truncate w-full flex items-center ${selected ? "text-white" : "text-[#52525b]"}`}
             >
               {selected ? selected.label : placeholder}
             </motion.span>
           </AnimatePresence>
         </span>
-        <ChevronDown size={11} className={`ml-auto text-[#6a6a7a] shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
+        <ChevronDown size={11} className={`ml-auto text-[#71717a] shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
       </motion.button>
 
       <AnimatePresence>
@@ -261,25 +261,25 @@ const CustomDropdown = ({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 4, scale: 0.97 }}
             transition={{ duration: 0.15 }}
-            className="absolute top-full left-0 mt-2 w-full min-w-[180px] max-h-[260px] overflow-hidden bg-[#111115] border border-[#24242e] rounded-xl shadow-[0_12px_40px_rgba(0,0,0,0.6)] z-[200] flex flex-col"
+            className="absolute top-full left-0 mt-2 w-full min-w-[180px] max-h-[260px] overflow-hidden bg-[#18181b] border border-[#3f3f46] rounded-xl shadow-[0_12px_40px_rgba(0,0,0,0.6)] z-[200] flex flex-col"
           >
             {options.length > 5 && (
-              <div className="px-2 py-1.5 border-b border-[#24242e] sticky top-0 bg-[#111115] z-10 shrink-0">
-                <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-[#181820] border border-[#24242e] focus-within:border-[#7C5CFC]/50 transition-colors">
-                  <Search size={11} className="text-[#5a5a6a]" />
+              <div className="px-2 py-1.5 border-b border-[#3f3f46] sticky top-0 bg-[#18181b] z-10 shrink-0">
+                <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-[#27272a] border border-[#3f3f46] focus-within:border-[#2563eb]/50 transition-colors">
+                  <Search size={11} className="text-[#52525b]" />
                   <input
                     type="text"
                     placeholder="Search..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-transparent border-none text-[11px] text-white focus:outline-none placeholder:text-[#3e3e4e]"
+                    className="w-full bg-transparent border-none text-[11px] text-white focus:outline-none placeholder:text-[#27272a]"
                     onClick={(e) => e.stopPropagation()}
                   />
                   {searchQuery && (
                     <button
                       type="button"
                       onClick={(e) => { e.stopPropagation(); setSearchQuery(""); }}
-                      className="text-[#5a5a6a] hover:text-white"
+                      className="text-[#52525b] hover:text-white"
                     >
                       <X size={10} />
                     </button>
@@ -310,14 +310,14 @@ const CustomDropdown = ({
                       onClick={() => { onChange(opt.value); setOpen(false); }}
                       className={`w-full flex items-center gap-2.5 px-3.5 py-2 text-left text-xs font-medium transition-all duration-200 cursor-pointer ${
                         (opt.value === value || opt.value === highlightedValue || opt.label === highlightedValue)
-                          ? "bg-[#7C5CFC]/15 text-[#7C5CFC] font-extrabold border-l-2 border-[#7C5CFC]"
-                          : "text-[#b0b0bc] hover:bg-[#ffffff08] hover:text-white"
+                          ? "bg-[#2563eb]/15 text-[#2563eb] font-extrabold border-l-2 border-[#2563eb]"
+                          : "text-[#d4d4d8] hover:bg-[#ffffff08] hover:text-white"
                       }`}
                     >
                       {OptIcon && <OptIcon size={13} className="shrink-0 opacity-60" />}
                       <span className="truncate">{opt.label}</span>
                       {opt.value === value && (
-                        <svg className="w-3 h-3 ml-auto text-[#7C5CFC] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round">
+                        <svg className="w-3 h-3 ml-auto text-[#2563eb] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round">
                           <polyline points="20 6 9 17 4 12" />
                         </svg>
                       )}
@@ -325,7 +325,7 @@ const CustomDropdown = ({
                   );
                 })
               ) : (
-                <div className="px-3.5 py-3 text-center text-[10px] text-[#5a5a6a]">
+                <div className="px-3.5 py-3 text-center text-[10px] text-[#52525b]">
                   No results found
                 </div>
               )}
@@ -365,12 +365,12 @@ const InteractiveHubGraphic = () => {
 
   return (
     <div className="relative w-full h-[240px] flex items-center justify-center overflow-hidden">
-      <div className="absolute w-[180px] h-[180px] rounded-full bg-[#7C5CFC]/10 blur-[60px]" />
-      <div className="absolute w-[240px] h-[240px] rounded-full border border-[#222230]/40 border-dashed animate-[spin_40s_linear_infinite]" />
-      <div className="absolute w-[160px] h-[160px] rounded-full border border-[#222230]/60 animate-[spin_25s_linear_infinite_reverse]" />
-      <div className="relative z-10 w-[72px] h-[72px] rounded-2xl bg-gradient-to-tr from-[#7C5CFC] to-[#A78BFA] p-[1.5px] shadow-[0_0_30px_rgba(124,92,252,0.3)]">
-        <div className="w-full h-full rounded-2xl bg-[#0b0b0f] flex items-center justify-center">
-          <Cpu className="text-[#7C5CFC] animate-pulse" size={24} />
+      <div className="absolute w-[180px] h-[180px] rounded-full bg-[#2563eb]/10 blur-[60px]" />
+      <div className="absolute w-[240px] h-[240px] rounded-full border border-[#3f3f46]/40 border-dashed animate-[spin_40s_linear_infinite]" />
+      <div className="absolute w-[160px] h-[160px] rounded-full border border-[#3f3f46]/60 animate-[spin_25s_linear_infinite_reverse]" />
+      <div className="relative z-10 w-[72px] h-[72px] rounded-2xl bg-gradient-to-tr from-[#2563eb] to-[#60a5fa] p-[1.5px] shadow-[0_0_30px_rgba(124,92,252,0.3)]">
+        <div className="w-full h-full rounded-2xl bg-[#09090b] flex items-center justify-center">
+          <Cpu className="text-[#2563eb] animate-pulse" size={24} />
         </div>
       </div>
       {fileTypes.map((type) => (
@@ -388,9 +388,9 @@ const InteractiveHubGraphic = () => {
             delay: type.delay,
           }}
         >
-          <div className="px-3 py-1.5 rounded-lg bg-[#141419]/90 border border-[#222230] hover:border-[#7C5CFC]/50 transition-all shadow-[0_8px_20px_rgba(0,0,0,0.4)] flex items-center gap-1.5 cursor-default group">
+          <div className="px-3 py-1.5 rounded-lg bg-[#18181b]/90 border border-[#3f3f46] hover:border-[#2563eb]/50 transition-all shadow-[0_8px_20px_rgba(0,0,0,0.4)] flex items-center gap-1.5 cursor-default group">
             <span className={`w-1.5 h-1.5 rounded-full bg-gradient-to-r ${type.color}`} />
-            <span className="text-[10px] font-black text-white group-hover:text-[#A78BFA] transition-colors">{type.label}</span>
+            <span className="text-[10px] font-black text-white group-hover:text-[#60a5fa] transition-colors">{type.label}</span>
           </div>
         </motion.div>
       ))}
@@ -623,18 +623,18 @@ const Dashboard = () => {
           100% { transform: translateY(0) scale(1); }
         }
         @keyframes flash-glow {
-          0% { border-color: #222230; box-shadow: 0 0 0 rgba(124, 92, 252, 0); }
-          30% { border-color: #7C5CFC; box-shadow: 0 0 15px rgba(124, 92, 252, 0.4); }
-          100% { border-color: #222230; box-shadow: 0 0 0 rgba(124, 92, 252, 0); }
+          0% { border-color: #3f3f46; box-shadow: 0 0 0 rgba(124, 92, 252, 0); }
+          30% { border-color: #2563eb; box-shadow: 0 0 15px rgba(124, 92, 252, 0.4); }
+          100% { border-color: #3f3f46; box-shadow: 0 0 0 rgba(124, 92, 252, 0); }
         }
         @keyframes scale-pop {
           0% { transform: scale(1); }
-          50% { transform: scale(1.05); border-color: #7C5CFC; box-shadow: 0 0 12px rgba(124, 92, 252, 0.25); }
+          50% { transform: scale(1.05); border-color: #2563eb; box-shadow: 0 0 12px rgba(124, 92, 252, 0.25); }
           100% { transform: scale(1); }
         }
         .animate-flash-glow { animation: flash-glow 0.8s ease-out; }
         .animate-scale-pop { animation: scale-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1); }
-        .gradient-text { background: linear-gradient(135deg, #7C5CFC, #A78BFA, #7C5CFC); background-size: 200% 200%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: gradient-shift 4s ease infinite; }
+        .gradient-text { background: linear-gradient(135deg, #2563eb, #60a5fa, #2563eb); background-size: 200% 200%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: gradient-shift 4s ease infinite; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
       `}</style>
@@ -642,7 +642,7 @@ const Dashboard = () => {
       <div className="w-full min-h-screen">
 
         <section
-          className="w-full bg-[#0b0b0f] relative overflow-hidden"
+          className="w-full bg-[#09090b] relative overflow-hidden"
           onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
           onDragLeave={(e) => { e.preventDefault(); setIsDragging(false); }}
           onDrop={(e) => {
@@ -657,11 +657,11 @@ const Dashboard = () => {
             {isDragging && (
               <motion.div
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                className="absolute inset-0 z-50 bg-[#0b0b0f]/90 border-2 border-dashed border-[#7C5CFC] flex flex-col items-center justify-center gap-3 pointer-events-none"
+                className="absolute inset-0 z-50 bg-[#09090b]/90 border-2 border-dashed border-[#2563eb] flex flex-col items-center justify-center gap-3 pointer-events-none"
               >
-                <UploadCloud size={36} className="text-[#7C5CFC] animate-bounce" />
+                <UploadCloud size={36} className="text-[#2563eb] animate-bounce" />
                 <p className="text-sm font-bold text-white">Drop your file anywhere</p>
-                <p className="text-[11px] text-[#5a5a6a]">We'll auto-detect the format</p>
+                <p className="text-[11px] text-[#52525b]">We'll auto-detect the format</p>
               </motion.div>
             )}
           </AnimatePresence>
@@ -686,7 +686,7 @@ const Dashboard = () => {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: 0.2 }}
-                  className="text-[#6a6a7a] text-xs sm:text-sm max-w-sm sm:max-w-md mx-auto lg:mx-0 leading-relaxed mb-6"
+                  className="text-[#71717a] text-xs sm:text-sm max-w-sm sm:max-w-md mx-auto lg:mx-0 leading-relaxed mb-6"
                 >
                   Supercharge your files. Daily Utility Hub offers over 90+ utilities to convert, compress, and edit documents locally in your browser.
                 </motion.p>
@@ -702,9 +702,9 @@ const Dashboard = () => {
                     { icon: Shield, value: 100, suffix: "%", label: "Local" },
                     { icon: Cpu, value: 0, suffix: "", label: "Server Uploads", display: "Zero" },
                   ].map((stat, i) => (
-                    <div key={i} className="flex items-center gap-1.5 sm:gap-2 text-[#4a4a5a]">
-                      <stat.icon size={12} className="text-[#3a3a48] shrink-0" />
-                      <span className="text-[10px] sm:text-xs font-black text-[#6a6a7a]">
+                    <div key={i} className="flex items-center gap-1.5 sm:gap-2 text-[#3f3f46]">
+                      <stat.icon size={12} className="text-[#27272a] shrink-0" />
+                      <span className="text-[10px] sm:text-xs font-black text-[#71717a]">
                         {stat.display || <AnimatedCounter end={stat.value} suffix={stat.suffix} />}
                       </span>
                       <span className="text-[9px] sm:text-[10px] font-medium">{stat.label}</span>
@@ -732,10 +732,10 @@ const Dashboard = () => {
               className="relative z-30 mb-8 rounded-2xl p-[1px]"
             >
               <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none z-0">
-                <div className="absolute top-1/2 left-1/2 w-[200%] aspect-square -translate-x-1/2 -translate-y-1/2 bg-[conic-gradient(from_0deg,#7C5CFC,#A78BFA,#3b82f6,#7C5CFC)] animate-[spin_4s_linear_infinite]" />
+                <div className="absolute top-1/2 left-1/2 w-[200%] aspect-square -translate-x-1/2 -translate-y-1/2 bg-[conic-gradient(from_0deg,#2563eb,#60a5fa,#3b82f6,#2563eb)] animate-[spin_4s_linear_infinite]" />
               </div>
 
-              <div className="relative z-10 rounded-[calc(1rem-1px)] bg-[#141419]/95 backdrop-blur-xl p-4 sm:p-5 flex flex-col">
+              <div className="relative z-10 rounded-[calc(1rem-1px)] bg-[#18181b]/95 backdrop-blur-xl p-4 sm:p-5 flex flex-col">
                 <div className="w-full">
                   {/* Desktop/Tablet Flow (visible format & operation at all times) */}
                   <motion.div layout className="hidden sm:flex items-center justify-between gap-4">
@@ -748,13 +748,13 @@ const Dashboard = () => {
                           animate={{ scale: 1, opacity: 1, y: 0 }}
                           exit={{ scale: 0.9, opacity: 0, y: -10 }}
                           transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                          className="flex items-center gap-2.5 bg-[#151522] border border-[#7C5CFC]/40 px-3.5 py-2 rounded-xl min-w-[200px] max-w-[260px] h-[44px] shadow-[0_0_15px_rgba(124,92,252,0.15)]"
+                          className="flex items-center gap-2.5 bg-[#18181b] border border-[#2563eb]/40 px-3.5 py-2 rounded-xl min-w-[200px] max-w-[260px] h-[44px] shadow-[0_0_15px_rgba(124,92,252,0.15)]"
                         >
                           <motion.div 
                             initial={{ y: -30, opacity: 0, scale: 0.5 }}
                             animate={{ y: 0, opacity: 1, scale: 1 }}
                             transition={{ type: "spring", stiffness: 450, damping: 15, delay: 0.12 }}
-                            className="w-7 h-7 rounded-lg bg-[#7C5CFC]/10 flex items-center justify-center text-[#7C5CFC] font-black text-[10px] shrink-0"
+                            className="w-7 h-7 rounded-lg bg-[#2563eb]/10 flex items-center justify-center text-[#2563eb] font-black text-[10px] shrink-0"
                           >
                             {droppedFile.ext}
                           </motion.div>
@@ -762,14 +762,14 @@ const Dashboard = () => {
                             <div className="flex items-center gap-1.5 min-w-0">
                               <p className="text-xs font-bold text-white truncate">{droppedFile.name}</p>
                               {droppedFile.isDemo && (
-                                <span className="px-1.5 py-0.5 text-[8px] font-black bg-[#7C5CFC]/20 text-[#A78BFA] border border-[#7C5CFC]/40 rounded uppercase tracking-wider shrink-0 animate-pulse">
+                                <span className="px-1.5 py-0.5 text-[8px] font-black bg-[#2563eb]/20 text-[#60a5fa] border border-[#2563eb]/40 rounded uppercase tracking-wider shrink-0 animate-pulse">
                                   Demo
                                 </span>
                               )}
                             </div>
-                            <p className="text-[10px] text-[#5a5a6a]">{droppedFile.size}</p>
+                            <p className="text-[10px] text-[#52525b]">{droppedFile.size}</p>
                           </div>
-                          <button onClick={clearFile} className="p-1 text-[#5a5a6a] hover:text-white rounded hover:bg-white/5 transition-colors cursor-pointer shrink-0">
+                          <button onClick={clearFile} className="p-1 text-[#52525b] hover:text-white rounded hover:bg-white/5 transition-colors cursor-pointer shrink-0">
                             <X size={12} />
                           </button>
                         </motion.div>
@@ -782,12 +782,12 @@ const Dashboard = () => {
                             exit={{ scale: 0.95, opacity: 0 }}
                             transition={{ duration: 0.2 }}
                             onClick={() => fileInputRefDesktop.current?.click()}
-                            className="flex items-center gap-2 px-3.5 py-2 bg-[#1a1a22]/50 hover:bg-[#1a1a22] border border-dashed border-[#222230] hover:border-[#7C5CFC]/30 text-[#b0b0bc] hover:text-white rounded-xl transition-all cursor-pointer min-w-[200px] max-w-[260px] h-[44px] group"
+                            className="flex items-center gap-2 px-3.5 py-2 bg-[#27272a]/50 hover:bg-[#27272a] border border-dashed border-[#3f3f46] hover:border-[#2563eb]/30 text-[#d4d4d8] hover:text-white rounded-xl transition-all cursor-pointer min-w-[200px] max-w-[260px] h-[44px] group"
                           >
                             <UploadCloud 
                               size={14} 
-                              className={`text-[#7C5CFC]/80 group-hover:text-[#7C5CFC] shrink-0 ${
-                                isIconDropping ? "animate-[icon-drop_0.6s_cubic-bezier(0.34,1.56,0.64,1)] text-[#7C5CFC]" : ""
+                              className={`text-[#2563eb]/80 group-hover:text-[#2563eb] shrink-0 ${
+                                isIconDropping ? "animate-[icon-drop_0.6s_cubic-bezier(0.34,1.56,0.64,1)] text-[#2563eb]" : ""
                               }`} 
                             />
                             <span className="text-xs font-bold truncate">Select or drop file</span>
@@ -804,11 +804,11 @@ const Dashboard = () => {
 
                     {/* Animated Connector Line */}
                     <motion.div layout className="flex-1 flex items-center justify-center relative min-w-[40px]">
-                      <div className="w-full h-[1px] bg-gradient-to-r from-[#7C5CFC]/20 via-[#7C5CFC]/80 to-[#7C5CFC]/20 relative overflow-hidden">
+                      <div className="w-full h-[1px] bg-gradient-to-r from-[#2563eb]/20 via-[#2563eb]/80 to-[#2563eb]/20 relative overflow-hidden">
                         <div className="absolute top-0 left-0 w-16 h-full bg-gradient-to-r from-transparent via-white to-transparent animate-[flow-pulse_1.5s_ease-in-out_infinite]" />
                       </div>
-                      <div className="absolute w-5 h-5 rounded-full bg-[#1a1a22] border border-[#222230] flex items-center justify-center shadow-lg">
-                        <ArrowRight size={10} className="text-[#7C5CFC]" />
+                      <div className="absolute w-5 h-5 rounded-full bg-[#27272a] border border-[#3f3f46] flex items-center justify-center shadow-lg">
+                        <ArrowRight size={10} className="text-[#2563eb]" />
                       </div>
                     </motion.div>
 
@@ -847,9 +847,9 @@ const Dashboard = () => {
                       layout
                       onClick={handleLaunch}
                       disabled={!droppedFile || !activeOp}
-                      className={`h-11 px-6 bg-[#7C5CFC] hover:bg-[#6B4FE0] text-white text-xs font-black transition-all rounded-xl flex items-center justify-center gap-1.5 shadow-[0_0_20px_rgba(124,92,252,0.15)] cursor-pointer shrink-0 ${
+                      className={`h-11 px-6 bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-xs font-black transition-all rounded-xl flex items-center justify-center gap-1.5 shadow-[0_0_20px_rgba(124,92,252,0.15)] cursor-pointer shrink-0 ${
                         !droppedFile || !activeOp
-                          ? "opacity-35 cursor-not-allowed bg-[#1a1a22] text-[#3a3a48] shadow-none pointer-events-none"
+                          ? "opacity-35 cursor-not-allowed bg-[#27272a] text-[#27272a] shadow-none pointer-events-none"
                           : "hover:shadow-[0_0_20px_rgba(124,92,252,0.3)] hover:scale-[1.02] active:scale-[0.98]"
                       } ${
                         isLaunchPop ? "animate-scale-pop" : ""
@@ -869,13 +869,13 @@ const Dashboard = () => {
                           animate={{ scale: 1, opacity: 1, y: 0 }}
                           exit={{ scale: 0.9, opacity: 0, y: -10 }}
                           transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                          className="flex items-center gap-2.5 bg-[#151522] border border-[#7C5CFC]/40 px-3.5 py-2.5 rounded-xl shadow-[0_0_15px_rgba(124,92,252,0.15)]"
+                          className="flex items-center gap-2.5 bg-[#18181b] border border-[#2563eb]/40 px-3.5 py-2.5 rounded-xl shadow-[0_0_15px_rgba(124,92,252,0.15)]"
                         >
                           <motion.div 
                             initial={{ y: -35, opacity: 0, scale: 0.5 }}
                             animate={{ y: 0, opacity: 1, scale: 1 }}
                             transition={{ type: "spring", stiffness: 450, damping: 15, delay: 0.12 }}
-                            className="w-8 h-8 rounded-lg bg-[#7C5CFC]/10 flex items-center justify-center text-[#7C5CFC] font-black text-xs shrink-0"
+                            className="w-8 h-8 rounded-lg bg-[#2563eb]/10 flex items-center justify-center text-[#2563eb] font-black text-xs shrink-0"
                           >
                             {droppedFile.ext}
                           </motion.div>
@@ -883,14 +883,14 @@ const Dashboard = () => {
                             <div className="flex items-center gap-1.5 min-w-0">
                               <p className="text-xs font-bold text-white truncate">{droppedFile.name}</p>
                               {droppedFile.isDemo && (
-                                <span className="px-1.5 py-0.5 text-[8px] font-black bg-[#7C5CFC]/20 text-[#A78BFA] border border-[#7C5CFC]/40 rounded uppercase tracking-wider shrink-0 animate-pulse">
+                                <span className="px-1.5 py-0.5 text-[8px] font-black bg-[#2563eb]/20 text-[#60a5fa] border border-[#2563eb]/40 rounded uppercase tracking-wider shrink-0 animate-pulse">
                                   Demo
                                 </span>
                               )}
                             </div>
-                            <p className="text-[10px] text-[#5a5a6a]">{droppedFile.size}</p>
+                            <p className="text-[10px] text-[#52525b]">{droppedFile.size}</p>
                           </div>
-                          <button onClick={clearFile} className="p-1 text-[#5a5a6a] hover:text-white rounded hover:bg-white/5 transition-colors cursor-pointer shrink-0">
+                          <button onClick={clearFile} className="p-1 text-[#52525b] hover:text-white rounded hover:bg-white/5 transition-colors cursor-pointer shrink-0">
                             <X size={12} />
                           </button>
                         </motion.div>
@@ -903,11 +903,11 @@ const Dashboard = () => {
                             exit={{ scale: 0.95, opacity: 0 }}
                             transition={{ duration: 0.2 }}
                             onClick={() => fileInputRefMobile.current?.click()}
-                            className="flex items-center justify-center gap-2 py-3 bg-[#1a1a22]/50 border border-dashed border-[#222230] text-[#b0b0bc] rounded-xl transition-all cursor-pointer group"
+                            className="flex items-center justify-center gap-2 py-3 bg-[#27272a]/50 border border-dashed border-[#3f3f46] text-[#d4d4d8] rounded-xl transition-all cursor-pointer group"
                           >
                             <UploadCloud 
                               size={14} 
-                              className={`text-[#7C5CFC] shrink-0 ${
+                              className={`text-[#2563eb] shrink-0 ${
                                 isIconDropping ? "animate-[icon-drop_0.6s_cubic-bezier(0.34,1.56,0.64,1)]" : ""
                               }`} 
                             />
@@ -952,9 +952,9 @@ const Dashboard = () => {
                       layout
                       onClick={handleLaunch}
                       disabled={!droppedFile || !activeOp}
-                      className={`w-full h-11 bg-[#7C5CFC] hover:bg-[#6B4FE0] text-white text-xs font-black transition-all rounded-xl flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(124,92,252,0.15)] cursor-pointer ${
+                      className={`w-full h-11 bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-xs font-black transition-all rounded-xl flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(124,92,252,0.15)] cursor-pointer ${
                         !droppedFile || !activeOp
-                          ? "opacity-35 cursor-not-allowed bg-[#1a1a22] text-[#3a3a48] shadow-none pointer-events-none"
+                          ? "opacity-35 cursor-not-allowed bg-[#27272a] text-[#27272a] shadow-none pointer-events-none"
                           : "active:scale-[0.98]"
                       } ${
                         isLaunchPop ? "animate-scale-pop" : ""
@@ -973,7 +973,7 @@ const Dashboard = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.45, duration: 0.5 }}
             >
-              <h2 className="text-[10px] sm:text-xs font-black text-[#5a5a6a] uppercase tracking-widest text-center mb-4 sm:mb-5">
+              <h2 className="text-[10px] sm:text-xs font-black text-[#52525b] uppercase tracking-widest text-center mb-4 sm:mb-5">
                 Browse by category
               </h2>
               {/* Slider Tabs Container */}
@@ -990,7 +990,7 @@ const Dashboard = () => {
                     >
                       <button
                         onClick={() => scrollTabs('left')}
-                        className="w-7 h-7 rounded-full bg-[#121217] border border-[#222230] text-[#8a8a9a] hover:text-white hover:border-[#7C5CFC]/60 transition-all flex items-center justify-center shadow-[0_4px_12px_rgba(0,0,0,0.5)] pointer-events-auto ml-1 cursor-pointer hover:scale-105"
+                        className="w-7 h-7 rounded-full bg-[#121217] border border-[#3f3f46] text-[#a1a1aa] hover:text-white hover:border-[#2563eb]/60 transition-all flex items-center justify-center shadow-[0_4px_12px_rgba(0,0,0,0.5)] pointer-events-auto ml-1 cursor-pointer hover:scale-105"
                       >
                         <ChevronLeft size={14} />
                       </button>
@@ -1012,13 +1012,13 @@ const Dashboard = () => {
                         className={`relative px-3.5 py-2 rounded-xl text-[11px] sm:text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shrink-0 select-none ${
                           activeTab === tab.id
                             ? "text-white"
-                            : "text-[#5a5a6a] hover:text-[#8a8a9a] hover:bg-[#ffffff04]"
+                            : "text-[#52525b] hover:text-[#a1a1aa] hover:bg-[#ffffff04]"
                         }`}
                       >
                         {activeTab === tab.id && (
                           <motion.div
                             layoutId="activeTab"
-                            className="absolute inset-0 bg-[#7C5CFC]/15 border border-[#7C5CFC]/30 rounded-xl"
+                            className="absolute inset-0 bg-[#2563eb]/15 border border-[#2563eb]/30 rounded-xl"
                             transition={{ type: "spring", damping: 25, stiffness: 300 }}
                           />
                         )}
@@ -1040,7 +1040,7 @@ const Dashboard = () => {
                     >
                       <button
                         onClick={() => scrollTabs('right')}
-                        className="w-7 h-7 rounded-full bg-[#121217] border border-[#222230] text-[#8a8a9a] hover:text-white hover:border-[#7C5CFC]/60 transition-all flex items-center justify-center shadow-[0_4px_12px_rgba(0,0,0,0.5)] pointer-events-auto mr-1 cursor-pointer hover:scale-105"
+                        className="w-7 h-7 rounded-full bg-[#121217] border border-[#3f3f46] text-[#a1a1aa] hover:text-white hover:border-[#2563eb]/60 transition-all flex items-center justify-center shadow-[0_4px_12px_rgba(0,0,0,0.5)] pointer-events-auto mr-1 cursor-pointer hover:scale-105"
                       >
                         <ChevronRight size={14} />
                       </button>
@@ -1069,14 +1069,14 @@ const Dashboard = () => {
                       >
                         <Link
                           to={op.to}
-                          className="group flex items-center gap-3 px-3.5 py-2.5 sm:px-4 sm:py-3 rounded-xl bg-[#141419] border border-[#1e1e28] hover:border-[#7C5CFC]/30 hover:bg-[#7C5CFC]/5 transition-all"
+                          className="group flex items-center gap-3 px-3.5 py-2.5 sm:px-4 sm:py-3 rounded-xl bg-[#18181b] border border-[#27272a] hover:border-[#2563eb]/30 hover:bg-[#2563eb]/5 transition-all"
                         >
-                          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#1e1e28] group-hover:bg-[#7C5CFC]/10 flex items-center justify-center transition-colors shrink-0">
-                            <ArrowRight size={11} className="text-[#5a5a6a] group-hover:text-[#7C5CFC] transition-colors" />
+                          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#27272a] group-hover:bg-[#2563eb]/10 flex items-center justify-center transition-colors shrink-0">
+                            <ArrowRight size={11} className="text-[#52525b] group-hover:text-[#2563eb] transition-colors" />
                           </div>
                           <div className="min-w-0">
-                            <p className="text-[11px] sm:text-xs font-bold text-[#c0c0cc] group-hover:text-white transition-colors truncate">{op.label}</p>
-                            <p className="text-[9px] text-[#4a4a5a] group-hover:text-[#6a6a7a] transition-colors truncate">{op.result}</p>
+                            <p className="text-[11px] sm:text-xs font-bold text-[#e4e4e7] group-hover:text-white transition-colors truncate">{op.label}</p>
+                            <p className="text-[9px] text-[#3f3f46] group-hover:text-[#71717a] transition-colors truncate">{op.result}</p>
                           </div>
                         </Link>
                       </motion.div>

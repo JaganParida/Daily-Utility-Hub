@@ -30,35 +30,44 @@
 
 @layer base {
   :root {
-    --background: #ffffff;
+    --background: #fafafa;
     --foreground: #09090b;
-
-    --background: #f8fafc;
-    --foreground: #0f172a;
     --card: #ffffff;
-    --card-foreground: #0f172a;
-    --primary: #3b82f6;
+    --card-foreground: #09090b;
+    --primary: #2563eb;
     --primary-foreground: #ffffff;
-    --muted: #f1f5f9;
-    --muted-foreground: #64748b;
-    --border: #e2e8f0;
+    --secondary: #f4f4f5;
+    --secondary-foreground: #18181b;
+    --muted: #f4f4f5;
+    --muted-foreground: #71717a;
+    --accent: #f4f4f5;
+    --accent-foreground: #09090b;
+    --border: #e4e4e7;
+    --input: #e4e4e7;
+    --ring: #2563eb;
     --destructive: #ef4444;
-    --destructive-foreground: #f8fafc;
-    --radius: 1rem;
+    --destructive-foreground: #fafafa;
+    --radius: 0.75rem;
   }
  
   .dark {
-    --background: #060608;
-    --foreground: #f4f4f5;
-    --card: #0d0d10;
-    --card-foreground: #f4f4f5;
-    --primary: #4f46e5;
+    --background: #09090b;
+    --foreground: #fafafa;
+    --card: #141415;
+    --card-foreground: #fafafa;
+    --primary: #3b82f6;
     --primary-foreground: #ffffff;
-    --muted: #18181b;
-    --muted-foreground: #8e8e93;
-    --border: #1c1c21;
+    --secondary: #27272a;
+    --secondary-foreground: #fafafa;
+    --muted: #27272a;
+    --muted-foreground: #a1a1aa;
+    --accent: #27272a;
+    --accent-foreground: #fafafa;
+    --border: #27272a;
+    --input: #27272a;
+    --ring: #3b82f6;
     --destructive: #ef4444;
-    --destructive-foreground: #f4f4f5;
+    --destructive-foreground: #fafafa;
   }
 }
 
@@ -71,7 +80,7 @@
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     font-feature-settings: "rlig" 1, "calt" 1;
     /* Soft premium background texture/gradient */
-    background-image: radial-gradient(circle at 50% -20%, rgba(59, 130, 246, 0.05), transparent 60%);
+    background-image: radial-gradient(circle at 50% 0%, rgba(37, 99, 235, 0.04), transparent 70%);
   }
 }
 

@@ -107,13 +107,13 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
       className="w-full fixed top-0 inset-x-0 z-50"
     >
       {/* Subtle border at bottom when scrolled */}
-      <div className={`w-full transition-all duration-300 ${isScrolled ? "bg-[#0b0b0f]/80 backdrop-blur-xl border-b border-[#1e1e28]" : "bg-transparent"}`}>
+      <div className={`w-full transition-all duration-300 ${isScrolled ? "bg-[#09090b]/80 backdrop-blur-xl border-b border-[#27272a]" : "bg-transparent"}`}>
         <div ref={megamenuRef} className="max-w-[1200px] mx-auto flex items-center justify-between h-14 sm:h-16 px-4 sm:px-6 md:px-8">
 
           {/* LEFT: Logo */}
           <div className={`transition-[opacity,transform] duration-300 ease-out ${isSearchExpanded ? "opacity-0 pointer-events-none scale-95 md:opacity-100 md:pointer-events-auto md:scale-100 flex" : "opacity-100 pointer-events-auto scale-100 flex"} items-center gap-2.5 shrink-0`}>
             <Link to="/" className="flex items-center gap-2.5 group shrink-0">
-              <div className="w-8 h-8 shrink-0 rounded-xl bg-[#7C5CFC] flex items-center justify-center text-white shadow-lg shadow-[#7C5CFC]/20 group-hover:shadow-[#7C5CFC]/30 group-hover:scale-105 transition-all">
+              <div className="w-8 h-8 shrink-0 rounded-xl bg-[#2563eb] flex items-center justify-center text-white shadow-lg shadow-[#2563eb]/20 group-hover:shadow-[#2563eb]/30 group-hover:scale-105 transition-all">
                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
                   <polygon points="12 2 2 7 12 12 22 7 12 2" />
                   <polyline points="2 17 12 22 22 17" />
@@ -128,7 +128,7 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
             <Link
               to="/"
               className={`px-3 py-1.5 rounded-lg text-[13px] font-semibold transition-colors ${
-                currentPath === "/" ? "text-white" : "text-[#8a8a9a] hover:text-white"
+                currentPath === "/" ? "text-white" : "text-[#a1a1aa] hover:text-white"
               }`}
             >
               Home
@@ -138,7 +138,7 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
             <div className="relative py-4" onMouseEnter={() => setHoveredTab("tools")}>
               <button
                 className={`px-3 py-1.5 rounded-lg text-[13px] font-semibold transition-colors flex items-center gap-1 cursor-pointer ${
-                  hoveredTab === "tools" || currentPath.startsWith("/tools") ? "text-white" : "text-[#8a8a9a] hover:text-white"
+                  hoveredTab === "tools" || currentPath.startsWith("/tools") ? "text-white" : "text-[#a1a1aa] hover:text-white"
                 }`}
               >
                 Tools
@@ -150,7 +150,7 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
             <div className="relative py-4" onMouseEnter={() => setHoveredTab("instructions")}>
               <button
                 className={`px-3 py-1.5 rounded-lg text-[13px] font-semibold transition-colors flex items-center gap-1 cursor-pointer ${
-                  hoveredTab === "instructions" ? "text-white" : "text-[#8a8a9a] hover:text-white"
+                  hoveredTab === "instructions" ? "text-white" : "text-[#a1a1aa] hover:text-white"
                 }`}
               >
                 Instructions
@@ -166,11 +166,11 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 4, scale: 0.98, transition: { duration: 0.15 } }}
                   transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                  className="absolute top-[85%] left-1/2 -translate-x-1/2 mt-1 bg-[#111116] border border-[#1e1e28] rounded-xl shadow-[0_20px_60px_rgba(0,0,0,0.8)] z-[200] overflow-hidden flex flex-col"
+                  className="absolute top-[85%] left-1/2 -translate-x-1/2 mt-1 bg-[#111116] border border-[#27272a] rounded-xl shadow-[0_20px_60px_rgba(0,0,0,0.8)] z-[200] overflow-hidden flex flex-col"
                   style={{ width: 850, height: 430 }}
                 >
                   {/* Top gradient bar */}
-                  <div className="h-[2px] w-full bg-gradient-to-r from-[#7C5CFC] via-[#A78BFA] to-[#7C5CFC] shrink-0" />
+                  <div className="h-[2px] w-full bg-gradient-to-r from-[#2563eb] via-[#60a5fa] to-[#2563eb] shrink-0" />
 
                   <div className="relative w-full flex-1 overflow-hidden">
                     <AnimatePresence mode="popLayout" custom={slideDirection} initial={false}>
@@ -185,8 +185,8 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                           className="flex absolute inset-0" 
                         >
                           {/* Left: Categories */}
-                          <div className="w-[195px] border-r border-[#1a1a22] flex flex-col py-2.5 shrink-0">
-                            <p className="text-[8px] font-black text-[#4a4a5a] uppercase tracking-[0.2em] px-5 py-1.5">Browse</p>
+                          <div className="w-[195px] border-r border-[#27272a] flex flex-col py-2.5 shrink-0">
+                            <p className="text-[8px] font-black text-[#3f3f46] uppercase tracking-[0.2em] px-5 py-1.5">Browse</p>
                             <div className="flex-1 overflow-y-auto custom-scrollbar px-3 space-y-1">
                               {Object.keys(toolCategories).map((catName) => {
                                 const isActive = catName === activeCategory;
@@ -195,7 +195,7 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                                     key={catName}
                                     onMouseEnter={() => handleCategoryHover(catName)}
                                     className={`w-full px-3 py-2 text-left text-[11px] font-bold flex items-center justify-between cursor-pointer rounded-lg relative ${
-                                      isActive ? "text-white" : "text-[#5a5a6a] hover:text-[#c0c0cc]"
+                                      isActive ? "text-white" : "text-[#52525b] hover:text-[#e4e4e7]"
                                     }`}
                                   >
                                     {isActive && (
@@ -208,12 +208,12 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                                     {isActive && (
                                       <motion.div
                                         layoutId="catIndicator"
-                                        className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-4 bg-[#7C5CFC] rounded-r-full"
+                                        className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-4 bg-[#2563eb] rounded-r-full"
                                         transition={{ type: "spring", damping: 20, stiffness: 300 }}
                                       />
                                     )}
                                     <span className="truncate relative z-10">{catName}</span>
-                                    <span className={`text-[9px] tabular-nums font-bold shrink-0 ml-2 relative z-10 ${isActive ? "text-[#7C5CFC]" : "text-[#3e3e4e]"}`}>
+                                    <span className={`text-[9px] tabular-nums font-bold shrink-0 ml-2 relative z-10 ${isActive ? "text-[#2563eb]" : "text-[#27272a]"}`}>
                                       {toolCategories[catName].length}
                                     </span>
                                   </button>
@@ -224,14 +224,14 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
 
                           {/* Right: Tools List */}
                           <div className="flex-1 flex flex-col min-w-0">
-                            <div className="px-4 py-2.5 border-b border-[#1a1a22] flex items-center justify-between shrink-0">
+                            <div className="px-4 py-2.5 border-b border-[#27272a] flex items-center justify-between shrink-0">
                               <div className="flex items-center gap-2">
                                 <h3 className="text-[13px] font-bold text-white">{activeCategory}</h3>
-                                <span className="text-[9px] text-[#3e3e4e] bg-[#1a1a22] px-1.5 py-0.5 rounded font-mono">{toolCategories[activeCategory]?.length}</span>
+                                <span className="text-[9px] text-[#27272a] bg-[#27272a] px-1.5 py-0.5 rounded font-mono">{toolCategories[activeCategory]?.length}</span>
                               </div>
                               <button
                                 onClick={() => { setHoveredTab(null); setIsPaletteOpen(true); }}
-                                className="flex items-center gap-1 text-[10px] text-[#4a4a5a] hover:text-[#7C5CFC] transition-colors cursor-pointer"
+                                className="flex items-center gap-1 text-[10px] text-[#3f3f46] hover:text-[#2563eb] transition-colors cursor-pointer"
                               >
                                 <Search size={10} />
                                 <span>Search</span>
@@ -250,24 +250,24 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                                       onClick={() => setHoveredTab(null)}
                                       className={`group flex items-center gap-2.5 px-3 py-2.5 rounded-lg transition-all relative overflow-hidden ${
                                         isCurrent
-                                          ? "bg-[#7C5CFC]/12 border-l-2 border-[#7C5CFC]"
-                                          : "hover:bg-[#ffffff04] border-l-2 border-transparent hover:border-[#7C5CFC]/40"
+                                          ? "bg-[#2563eb]/12 border-l-2 border-[#2563eb]"
+                                          : "hover:bg-[#ffffff04] border-l-2 border-transparent hover:border-[#2563eb]/40"
                                       }`}
                                     >
                                       <div className={`w-7 h-7 rounded-md shrink-0 flex items-center justify-center ${
                                         isCurrent
-                                          ? "bg-[#7C5CFC]/20 text-[#7C5CFC]"
-                                          : (tool.color || "bg-[#1a1a22] text-[#6a6a7a] group-hover:text-[#7C5CFC] group-hover:bg-[#7C5CFC]/8")
+                                          ? "bg-[#2563eb]/20 text-[#2563eb]"
+                                          : (tool.color || "bg-[#27272a] text-[#71717a] group-hover:text-[#2563eb] group-hover:bg-[#2563eb]/8")
                                       } transition-colors`}>
                                         <Icon size={13} />
                                       </div>
                                       <div className="min-w-0 flex-1">
                                         <p className={`text-[11px] font-semibold truncate ${
-                                          isCurrent ? "text-[#7C5CFC]" : "text-[#b0b0bc] group-hover:text-white transition-colors"
+                                          isCurrent ? "text-[#2563eb]" : "text-[#d4d4d8] group-hover:text-white transition-colors"
                                         }`}>{tool.name}</p>
-                                        <p className="text-[9px] leading-tight mt-0.5 text-[#3e3e4e] truncate">{tool.description}</p>
+                                        <p className="text-[9px] leading-tight mt-0.5 text-[#27272a] truncate">{tool.description}</p>
                                       </div>
-                                      <svg className={`w-3 h-3 shrink-0 transition-all ${isCurrent ? "text-[#7C5CFC] opacity-100" : "text-[#3e3e4e] opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5"}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+                                      <svg className={`w-3 h-3 shrink-0 transition-all ${isCurrent ? "text-[#2563eb] opacity-100" : "text-[#27272a] opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5"}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
                                         <polyline points="9 18 15 12 9 6" />
                                       </svg>
                                     </Link>
@@ -276,10 +276,10 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                               </div>
                             </div>
 
-                            <div className="px-4 py-2 border-t border-[#1a1a22] shrink-0">
+                            <div className="px-4 py-2 border-t border-[#27272a] shrink-0">
                               <button
                                 onClick={() => { setHoveredTab(null); setIsPaletteOpen(true); }}
-                                className="text-[10px] text-[#4a4a5a] hover:text-[#7C5CFC] font-medium transition-colors cursor-pointer flex items-center gap-1"
+                                className="text-[10px] text-[#3f3f46] hover:text-[#2563eb] font-medium transition-colors cursor-pointer flex items-center gap-1"
                               >
                                 Browse all tools
                                 <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
@@ -302,33 +302,33 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                           className="grid grid-cols-12 gap-6 p-6 text-left absolute inset-0"
                         >
                           {/* Left: Work Faster & Steps */}
-                          <div className="col-span-5 border-r border-[#1a1a22] pr-6 space-y-4">
+                          <div className="col-span-5 border-r border-[#27272a] pr-6 space-y-4">
                             <div>
-                              <span className="text-[9px] font-black tracking-widest text-[#7C5CFC] uppercase">Work Faster. Think Bigger.</span>
+                              <span className="text-[9px] font-black tracking-widest text-[#2563eb] uppercase">Work Faster. Think Bigger.</span>
                               <h4 className="text-sm font-black text-white mt-1">The Modern Utility Hub</h4>
-                              <p className="text-[11.5px] text-[#6a6a7a] mt-1 leading-relaxed">
+                              <p className="text-[11.5px] text-[#71717a] mt-1 leading-relaxed">
                                 We discarded the bloat and focused purely on performance, privacy, and speed. 50+ tools executing instantly in your browser.
                               </p>
                             </div>
 
                             <div className="space-y-3.5 pt-1">
                               <div>
-                                <p className="text-[10px] font-black text-[#A78BFA] uppercase tracking-wider">01 // Step: Locate instantly</p>
-                                <p className="text-[11px] text-[#8a8a9a] leading-relaxed mt-0.5">
-                                  Hit <span className="bg-[#1a1a22] px-1.5 py-0.5 rounded text-white font-mono text-[10px] border border-[#222230]">CMD+K</span> anywhere to open the command palette.
+                                <p className="text-[10px] font-black text-[#60a5fa] uppercase tracking-wider">01 // Step: Locate instantly</p>
+                                <p className="text-[11px] text-[#a1a1aa] leading-relaxed mt-0.5">
+                                  Hit <span className="bg-[#27272a] px-1.5 py-0.5 rounded text-white font-mono text-[10px] border border-[#3f3f46]">CMD+K</span> anywhere to open the command palette.
                                 </p>
                               </div>
 
                               <div>
-                                <p className="text-[10px] font-black text-[#A78BFA] uppercase tracking-wider">02 // Step: Execute locally</p>
-                                <p className="text-[11px] text-[#8a8a9a] leading-relaxed mt-0.5">
+                                <p className="text-[10px] font-black text-[#60a5fa] uppercase tracking-wider">02 // Step: Execute locally</p>
+                                <p className="text-[11px] text-[#a1a1aa] leading-relaxed mt-0.5">
                                   Paste your payload or drop files. Everything runs securely inside your local browser sandbox.
                                 </p>
                               </div>
 
                               <div>
-                                <p className="text-[10px] font-black text-[#A78BFA] uppercase tracking-wider">03 // Step: Export effortlessly</p>
-                                <p className="text-[11px] text-[#8a8a9a] leading-relaxed mt-0.5">
+                                <p className="text-[10px] font-black text-[#60a5fa] uppercase tracking-wider">03 // Step: Export effortlessly</p>
+                                <p className="text-[11px] text-[#a1a1aa] leading-relaxed mt-0.5">
                                   Copy your formatted code with one click, or instantly download your processed assets.
                                 </p>
                               </div>
@@ -336,14 +336,14 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                           </div>
 
                           {/* Middle: Feature Comparison Table */}
-                          <div className="col-span-4 border-r border-[#1a1a22] pr-6 space-y-3.5">
+                          <div className="col-span-4 border-r border-[#27272a] pr-6 space-y-3.5">
                             <div>
-                              <span className="text-[9px] font-black tracking-widest text-[#7C5CFC] uppercase">Transparent Access</span>
+                              <span className="text-[9px] font-black tracking-widest text-[#2563eb] uppercase">Transparent Access</span>
                               <h4 className="text-sm font-black text-white mt-1">Account Features</h4>
                             </div>
 
-                            <div className="w-full text-[10.5px] text-[#8a8a9a]">
-                              <div className="grid grid-cols-3 border-b border-[#1d1d27] pb-2 font-bold text-white">
+                            <div className="w-full text-[10.5px] text-[#a1a1aa]">
+                              <div className="grid grid-cols-3 border-b border-[#27272a] pb-2 font-bold text-white">
                                 <span>Utility Access</span>
                                 <span className="text-center">Guest</span>
                                 <span className="text-center">Member</span>
@@ -355,10 +355,10 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                                 { name: "Pin favorite tools", guest: false, user: true },
                                 { name: "Cloud sync configs", guest: false, user: true },
                               ].map((row, i) => (
-                                <div key={i} className="grid grid-cols-3 py-2 border-b border-[#141419] items-center">
-                                  <span className="text-[#6a6a7a] truncate pr-1">{row.name}</span>
+                                <div key={i} className="grid grid-cols-3 py-2 border-b border-[#18181b] items-center">
+                                  <span className="text-[#71717a] truncate pr-1">{row.name}</span>
                                   <span className="text-center">{row.guest ? "✓" : "✕"}</span>
-                                  <span className="text-center text-[#7C5CFC] font-black">{row.user ? "✓" : "✕"}</span>
+                                  <span className="text-center text-[#2563eb] font-black">{row.user ? "✓" : "✕"}</span>
                                 </div>
                               ))}
                             </div>
@@ -367,22 +367,22 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                           {/* Right: FAQs */}
                           <div className="col-span-3 space-y-4">
                             <div>
-                              <span className="text-[9px] font-black tracking-widest text-[#7C5CFC] uppercase">Questions?</span>
+                              <span className="text-[9px] font-black tracking-widest text-[#2563eb] uppercase">Questions?</span>
                               <h4 className="text-sm font-black text-white mt-1">Quick FAQ</h4>
                             </div>
 
                             <div className="space-y-3.5">
                               <div>
                                 <p className="text-[10.5px] font-bold text-white">Is it 100% free?</p>
-                                <p className="text-[10px] text-[#6a6a7a] leading-relaxed mt-0.5">Yes. No paywalls, subscriptions, or hidden charges whatsoever.</p>
+                                <p className="text-[10px] text-[#71717a] leading-relaxed mt-0.5">Yes. No paywalls, subscriptions, or hidden charges whatsoever.</p>
                               </div>
                               <div>
                                 <p className="text-[10.5px] font-bold text-white">Are files secure?</p>
-                                <p className="text-[10px] text-[#6a6a7a] leading-relaxed mt-0.5">Strict Privacy. Calculations are local. We never see your data.</p>
+                                <p className="text-[10px] text-[#71717a] leading-relaxed mt-0.5">Strict Privacy. Calculations are local. We never see your data.</p>
                               </div>
                               <div>
                                 <p className="text-[10.5px] font-bold text-white">Why register?</p>
-                                <p className="text-[10px] text-[#6a6a7a] leading-relaxed mt-0.5">Enable Zero Latency cross-device sync of your configuration logs.</p>
+                                <p className="text-[10px] text-[#71717a] leading-relaxed mt-0.5">Enable Zero Latency cross-device sync of your configuration logs.</p>
                               </div>
                             </div>
                           </div>
@@ -406,14 +406,14 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                 className="block md:hidden absolute left-4 right-4 top-1/2 z-50"
                 ref={searchRef}
               >
-                <div className="relative flex items-center h-8 rounded-full border border-[#7C5CFC]/50 bg-[#121216] px-3 shadow-lg w-full">
+                <div className="relative flex items-center h-8 rounded-full border border-[#2563eb]/50 bg-[#18181b] px-3 shadow-lg w-full">
                   <button
                     type="button"
                     onClick={() => {
                       setIsSearchExpanded(false);
                       setSearchQuery("");
                     }}
-                    className="w-7 h-7 rounded-full flex items-center justify-center text-[#7C5CFC] hover:bg-[#7C5CFC]/10 transition-colors shrink-0 mr-1.5 cursor-pointer"
+                    className="w-7 h-7 rounded-full flex items-center justify-center text-[#2563eb] hover:bg-[#2563eb]/10 transition-colors shrink-0 mr-1.5 cursor-pointer"
                     title="Back"
                   >
                     <ArrowLeft size={13} />
@@ -424,7 +424,7 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                     placeholder="Search tools..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-transparent border-none text-[11px] text-white focus:outline-none placeholder:text-[#5a5a6a]"
+                    className="w-full bg-transparent border-none text-[11px] text-white focus:outline-none placeholder:text-[#52525b]"
                   />
                   <button
                     type="button"
@@ -432,7 +432,7 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                       setIsSearchExpanded(false);
                       setSearchQuery("");
                     }}
-                    className="text-[#5a5a6a] hover:text-white shrink-0 p-0.5 ml-1"
+                    className="text-[#52525b] hover:text-white shrink-0 p-0.5 ml-1"
                   >
                     <X size={12} />
                   </button>
@@ -445,7 +445,7 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 8, scale: 0.98 }}
                         transition={{ duration: 0.15 }}
-                        className="absolute left-0 right-0 top-full mt-2 max-h-[380px] overflow-hidden bg-[#111115] border border-[#24242e] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.7)] z-[300] flex flex-col"
+                        className="absolute left-0 right-0 top-full mt-2 max-h-[380px] overflow-hidden bg-[#18181b] border border-[#3f3f46] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.7)] z-[300] flex flex-col"
                       >
                         <div className="flex-1 overflow-y-auto custom-scrollbar py-2">
                           {filteredTools.length > 0 ? (
@@ -459,16 +459,16 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                                     setIsSearchExpanded(false);
                                     setSearchQuery("");
                                   }}
-                                  className="w-full flex items-start gap-3 px-4 py-2.5 hover:bg-[#7C5CFC]/5 hover:text-white transition-colors border-b border-[#181822]/40 last:border-b-0 group"
+                                  className="w-full flex items-start gap-3 px-4 py-2.5 hover:bg-[#2563eb]/5 hover:text-white transition-colors border-b border-[#27272a]/40 last:border-b-0 group"
                                 >
-                                  <div className="w-7 h-7 rounded-lg bg-[#1a1a22] group-hover:bg-[#7C5CFC]/10 flex items-center justify-center text-[#6a6a7a] group-hover:text-[#7C5CFC] transition-colors shrink-0 mt-0.5">
+                                  <div className="w-7 h-7 rounded-lg bg-[#27272a] group-hover:bg-[#2563eb]/10 flex items-center justify-center text-[#71717a] group-hover:text-[#2563eb] transition-colors shrink-0 mt-0.5">
                                     <ToolIcon size={13} />
                                   </div>
                                   <div className="min-w-0 flex-1">
-                                    <span className="text-[11px] font-bold text-[#d0d0dc] group-hover:text-white truncate">
+                                    <span className="text-[11px] font-bold text-[#e4e4e7] group-hover:text-white truncate">
                                       {tool.name}
                                     </span>
-                                    <p className="text-[9px] text-[#5a5a6a] leading-normal line-clamp-2 mt-0.5">
+                                    <p className="text-[9px] text-[#52525b] leading-normal line-clamp-2 mt-0.5">
                                       {tool.description}
                                     </p>
                                   </div>
@@ -476,7 +476,7 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                               );
                             })
                           ) : (
-                            <div className="px-4 py-6 text-center text-xs text-[#5a5a6a]">
+                            <div className="px-4 py-6 text-center text-xs text-[#52525b]">
                               No matching tools found
                             </div>
                           )}
@@ -501,7 +501,7 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                     setIsSearchExpanded(true);
                     setTimeout(() => searchInputRef.current?.focus(), 50);
                   }}
-                  className="block md:hidden w-8 h-8 rounded-full border border-[#222230]/40 hover:border-[#7C5CFC]/40 hover:bg-[#7C5CFC]/5 flex items-center justify-center text-[#6a6a7a] hover:text-white cursor-pointer bg-[#141419]/90 transition-all shadow-md shrink-0"
+                  className="block md:hidden w-8 h-8 rounded-full border border-[#3f3f46]/40 hover:border-[#2563eb]/40 hover:bg-[#2563eb]/5 flex items-center justify-center text-[#71717a] hover:text-white cursor-pointer bg-[#18181b]/90 transition-all shadow-md shrink-0"
                   title="Search"
                 >
                   <Search size={13} />
@@ -523,7 +523,7 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                         setIsSearchExpanded(false);
                         setSearchQuery("");
                       }}
-                      className="w-8 h-8 rounded-full border border-[#222230]/40 hover:border-[#7C5CFC]/40 hover:bg-[#7C5CFC]/5 flex items-center justify-center text-[#7C5CFC] bg-[#121216] transition-colors shrink-0 cursor-pointer shadow-md"
+                      className="w-8 h-8 rounded-full border border-[#3f3f46]/40 hover:border-[#2563eb]/40 hover:bg-[#2563eb]/5 flex items-center justify-center text-[#2563eb] bg-[#18181b] transition-colors shrink-0 cursor-pointer shadow-md"
                       title="Back"
                     >
                       <ArrowLeft size={13} />
@@ -537,7 +537,7 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                   animate={{
                     width: isSearchExpanded ? 260 : 32,
                     borderColor: isSearchExpanded ? "rgba(124, 92, 252, 0.5)" : "rgba(34, 34, 48, 0.4)",
-                    backgroundColor: isSearchExpanded ? "#121216" : "rgba(20, 20, 25, 0.9)"
+                    backgroundColor: isSearchExpanded ? "#18181b" : "rgba(20, 20, 25, 0.9)"
                   }}
                   transition={{ duration: 0.38, ease: [0.4, 0, 0.2, 1] }}
                   className="flex items-center h-8 rounded-full border overflow-hidden shrink-0 cursor-pointer relative px-0.5"
@@ -550,7 +550,7 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                   title={!isSearchExpanded ? "Search (⌘K)" : undefined}
                 >
                   {/* Static Search Icon inside */}
-                  <div className="w-7 h-7 flex items-center justify-center shrink-0 text-[#6a6a7a] pointer-events-none">
+                  <div className="w-7 h-7 flex items-center justify-center shrink-0 text-[#71717a] pointer-events-none">
                     <Search size={13} />
                   </div>
 
@@ -567,7 +567,7 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                     pointerEvents: isSearchExpanded ? "auto" : "none"
                   }}
                   transition={{ duration: 0.38, ease: [0.4, 0, 0.2, 1] }}
-                  className="bg-transparent border-none text-[11px] text-white focus:outline-none placeholder:text-[#5a5a6a] ml-1 pr-6"
+                  className="bg-transparent border-none text-[11px] text-white focus:outline-none placeholder:text-[#52525b] ml-1 pr-6"
                 />
 
                 {/* Close Button */}
@@ -584,7 +584,7 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                     setIsSearchExpanded(false);
                     setSearchQuery("");
                   }}
-                  className="absolute right-2 text-[#5a5a6a] hover:text-white shrink-0 p-0.5"
+                  className="absolute right-2 text-[#52525b] hover:text-white shrink-0 p-0.5"
                 >
                   <X size={12} />
                 </motion.button>
@@ -598,7 +598,7 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 8, scale: 0.98 }}
                     transition={{ duration: 0.15 }}
-                    className="absolute right-0 top-full mt-2 w-[360px] max-h-[380px] overflow-hidden bg-[#111115] border border-[#24242e] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.7)] z-[300] flex flex-col"
+                    className="absolute right-0 top-full mt-2 w-[360px] max-h-[380px] overflow-hidden bg-[#18181b] border border-[#3f3f46] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.7)] z-[300] flex flex-col"
                   >
                     <div className="flex-1 overflow-y-auto custom-scrollbar py-2">
                       {filteredTools.length > 0 ? (
@@ -612,18 +612,18 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                                 setIsSearchExpanded(false);
                                 setSearchQuery("");
                               }}
-                              className="w-full flex items-start gap-3 px-4 py-2.5 hover:bg-[#7C5CFC]/5 hover:text-white transition-colors border-b border-[#181822]/40 last:border-b-0 group"
+                              className="w-full flex items-start gap-3 px-4 py-2.5 hover:bg-[#2563eb]/5 hover:text-white transition-colors border-b border-[#27272a]/40 last:border-b-0 group"
                             >
-                              <div className="w-7 h-7 rounded-lg bg-[#1a1a22] group-hover:bg-[#7C5CFC]/10 flex items-center justify-center text-[#6a6a7a] group-hover:text-[#7C5CFC] transition-colors shrink-0 mt-0.5">
+                              <div className="w-7 h-7 rounded-lg bg-[#27272a] group-hover:bg-[#2563eb]/10 flex items-center justify-center text-[#71717a] group-hover:text-[#2563eb] transition-colors shrink-0 mt-0.5">
                                 <ToolIcon size={13} />
                               </div>
                               <div className="min-w-0 flex-1">
                                 <div className="flex items-center justify-between gap-2">
-                                  <span className="text-[11px] font-bold text-[#d0d0dc] group-hover:text-white truncate">
+                                  <span className="text-[11px] font-bold text-[#e4e4e7] group-hover:text-white truncate">
                                     {tool.name}
                                   </span>
                                 </div>
-                                <p className="text-[9px] text-[#5a5a6a] leading-normal line-clamp-2 mt-0.5">
+                                <p className="text-[9px] text-[#52525b] leading-normal line-clamp-2 mt-0.5">
                                   {tool.description}
                                 </p>
                               </div>
@@ -631,7 +631,7 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                           );
                         })
                       ) : (
-                        <div className="px-4 py-6 text-center text-xs text-[#5a5a6a]">
+                        <div className="px-4 py-6 text-center text-xs text-[#52525b]">
                           No matching tools found
                         </div>
                       )}
@@ -648,25 +648,25 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                   to="/profile"
                   className={`flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1.5 rounded-lg transition-all ${
                     currentPath === "/profile"
-                      ? "text-[#7C5CFC]"
-                      : "text-[#8a8a9a] hover:text-white"
+                      ? "text-[#2563eb]"
+                      : "text-[#a1a1aa] hover:text-white"
                   }`}
                 >
-                  <div className="w-6 h-6 rounded-lg bg-[#7C5CFC] text-white flex items-center justify-center font-black text-[10px]">
+                  <div className="w-6 h-6 rounded-lg bg-[#2563eb] text-white flex items-center justify-center font-black text-[10px]">
                     {(user.name || user.displayName || user.email || 'U').charAt(0).toUpperCase()}
                   </div>
                   <span className="hidden lg:inline max-w-[70px] truncate">{user.name || user.displayName || 'Profile'}</span>
                 </Link>
                 <button
                   onClick={logout}
-                  className="w-8 h-8 flex items-center justify-center rounded-lg text-[#5a5a6a] hover:text-red-400 transition-colors cursor-pointer"
+                  className="w-8 h-8 flex items-center justify-center rounded-lg text-[#52525b] hover:text-red-400 transition-colors cursor-pointer"
                   title="Logout"
                 >
                   <LogOut size={14} />
                 </button>
               </div>
             ) : (
-              <Link to="/login" className="flex items-center gap-1.5 px-4 py-1.5 rounded-none bg-[#7C5CFC] hover:bg-[#6B4FE0] text-white font-bold transition-all text-[11px]">
+              <Link to="/login" className="flex items-center gap-1.5 px-4 py-1.5 rounded-none bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-bold transition-all text-[11px]">
                 Sign up
               </Link>
             )}
@@ -674,7 +674,7 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
             {/* Mobile hamburger */}
             <button
               onClick={() => setIsMobileMenuOpen(p => !p)}
-              className="flex lg:hidden items-center justify-center w-8 h-8 text-[#8a8a9a] hover:text-white transition-colors cursor-pointer group"
+              className="flex lg:hidden items-center justify-center w-8 h-8 text-[#a1a1aa] hover:text-white transition-colors cursor-pointer group"
               title="Menu"
             >
               <div className="flex flex-col gap-[3.5px] items-end justify-center w-4.5 h-4.5">
@@ -707,52 +707,52 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 28, stiffness: 240 }}
-              className="relative w-full max-h-[82vh] bg-[#0d0d12] border-t border-[#1e1e28] rounded-t-[28px] shadow-[0_-15px_40px_rgba(0,0,0,0.6)] flex flex-col overflow-hidden z-[160]"
+              className="relative w-full max-h-[82vh] bg-[#09090b] border-t border-[#27272a] rounded-t-[28px] shadow-[0_-15px_40px_rgba(0,0,0,0.6)] flex flex-col overflow-hidden z-[160]"
             >
               {/* Drag Handle Indicator */}
-              <div className="w-12 h-1 bg-[#272733] rounded-full mx-auto my-3 shrink-0" />
+              <div className="w-12 h-1 bg-[#3f3f46] rounded-full mx-auto my-3 shrink-0" />
 
               {/* Title bar */}
-              <div className="flex items-center justify-between px-6 pb-3 border-b border-[#1a1a22]/50 shrink-0">
+              <div className="flex items-center justify-between px-6 pb-3 border-b border-[#27272a]/50 shrink-0">
                 <span className="font-black text-xs tracking-wider text-white uppercase tracking-[0.1em]">Workspace Menu</span>
-                <button onClick={() => setIsMobileMenuOpen(false)} className="p-1.5 hover:bg-[#1a1a22] rounded-lg text-[#6a6a7a] hover:text-white cursor-pointer"><X size={14} /></button>
+                <button onClick={() => setIsMobileMenuOpen(false)} className="p-1.5 hover:bg-[#27272a] rounded-lg text-[#71717a] hover:text-white cursor-pointer"><X size={14} /></button>
               </div>
 
               {/* Content area */}
               <div className="flex-1 overflow-y-auto custom-scrollbar px-5 py-4 space-y-1.5 pb-8">
-                <Link to="/" onClick={() => setIsMobileMenuOpen(false)} className={`block px-4 py-3 rounded-xl text-xs font-bold transition-all ${currentPath === "/" ? "bg-[#7C5CFC]/10 text-[#7C5CFC]" : "text-[#8a8a9a] hover:text-white hover:bg-[#ffffff06]"}`}>
+                <Link to="/" onClick={() => setIsMobileMenuOpen(false)} className={`block px-4 py-3 rounded-xl text-xs font-bold transition-all ${currentPath === "/" ? "bg-[#2563eb]/10 text-[#2563eb]" : "text-[#a1a1aa] hover:text-white hover:bg-[#ffffff06]"}`}>
                   Home
                 </Link>
-                <Link to="/profile" onClick={() => setIsMobileMenuOpen(false)} className={`block px-4 py-3 rounded-xl text-xs font-bold transition-all ${currentPath === "/profile" ? "bg-[#7C5CFC]/10 text-[#7C5CFC]" : "text-[#8a8a9a] hover:text-white hover:bg-[#ffffff06]"}`}>
+                <Link to="/profile" onClick={() => setIsMobileMenuOpen(false)} className={`block px-4 py-3 rounded-xl text-xs font-bold transition-all ${currentPath === "/profile" ? "bg-[#2563eb]/10 text-[#2563eb]" : "text-[#a1a1aa] hover:text-white hover:bg-[#ffffff06]"}`}>
                   Profile
                 </Link>
-                <button onClick={() => { setIsMobileMenuOpen(false); setIsInfoOpen(true); }} className="w-full text-left block px-4 py-3 rounded-xl text-xs font-bold text-[#8a8a9a] hover:text-white hover:bg-[#ffffff06] transition-all cursor-pointer">
+                <button onClick={() => { setIsMobileMenuOpen(false); setIsInfoOpen(true); }} className="w-full text-left block px-4 py-3 rounded-xl text-xs font-bold text-[#a1a1aa] hover:text-white hover:bg-[#ffffff06] transition-all cursor-pointer">
                   Instructions
                 </button>
 
-                <div className="pt-4 mt-2 border-t border-[#1a1a22]">
-                  <p className="text-[10px] font-black text-[#4a4a5a] uppercase tracking-[0.15em] px-4 mb-2.5">Tools</p>
+                <div className="pt-4 mt-2 border-t border-[#27272a]">
+                  <p className="text-[10px] font-black text-[#3f3f46] uppercase tracking-[0.15em] px-4 mb-2.5">Tools</p>
                   {Object.keys(toolCategories).map((catName) => (
                     <div key={catName}>
                       <button
                         onClick={() => setMobileExpandedCat(mobileExpandedCat === catName ? null : catName)}
-                        className="w-full px-4 py-3 rounded-xl text-left text-xs font-semibold text-[#8a8a9a] hover:text-white flex items-center justify-between cursor-pointer hover:bg-[#ffffff04]"
+                        className="w-full px-4 py-3 rounded-xl text-left text-xs font-semibold text-[#a1a1aa] hover:text-white flex items-center justify-between cursor-pointer hover:bg-[#ffffff04]"
                       >
                         <span>{catName}</span>
                         <div className="flex items-center gap-1.5">
-                          <span className="text-[10px] text-[#4a4a5a] font-bold bg-[#141419] px-2 py-0.5 rounded-full border border-[#1f1f2a]">{toolCategories[catName].length}</span>
-                          <ChevronDown size={12} className={`transition-transform text-[#4a4a5a] ${mobileExpandedCat === catName ? "rotate-180" : ""}`} />
+                          <span className="text-[10px] text-[#3f3f46] font-bold bg-[#18181b] px-2 py-0.5 rounded-full border border-[#27272a]">{toolCategories[catName].length}</span>
+                          <ChevronDown size={12} className={`transition-transform text-[#3f3f46] ${mobileExpandedCat === catName ? "rotate-180" : ""}`} />
                         </div>
                       </button>
                       <AnimatePresence>
                         {mobileExpandedCat === catName && (
-                          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden pl-4 space-y-0.5 border-l border-[#1a1a22]/80 ml-5 mt-1 mb-2">
+                          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden pl-4 space-y-0.5 border-l border-[#27272a]/80 ml-5 mt-1 mb-2">
                             {toolCategories[catName].map((tool) => (
                               <Link
                                 key={tool.to}
                                 to={tool.to}
                                 onClick={() => setIsMobileMenuOpen(false)}
-                                className={`block px-3.5 py-2.5 rounded-lg text-[11px] font-medium transition-all ${tool.to === currentPath ? "text-[#7C5CFC] bg-[#7C5CFC]/10" : "text-[#5a5a6a] hover:text-white hover:bg-[#ffffff06]"}`}
+                                className={`block px-3.5 py-2.5 rounded-lg text-[11px] font-medium transition-all ${tool.to === currentPath ? "text-[#2563eb] bg-[#2563eb]/10" : "text-[#52525b] hover:text-white hover:bg-[#ffffff06]"}`}
                               >
                                 {tool.name}
                               </Link>
@@ -766,7 +766,7 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
               </div>
 
               {user && (
-                <div className="border-t border-[#1a1a22] p-4 bg-[#09090d] shrink-0">
+                <div className="border-t border-[#27272a] p-4 bg-[#09090b] shrink-0">
                   <button onClick={() => { logout(); setIsMobileMenuOpen(false); }} className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-xs font-bold text-red-400 hover:bg-red-500/10 transition-all cursor-pointer">
                     <LogOut size={14} /> Sign Out
                   </button>
@@ -787,7 +787,7 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsInfoOpen(false)}
-              className="absolute inset-0 bg-[#0b0b0f]/80 backdrop-blur-sm"
+              className="absolute inset-0 bg-[#09090b]/80 backdrop-blur-sm"
             />
 
             {/* Modal Box */}
@@ -796,16 +796,16 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
               transition={{ type: "spring", duration: 0.4 }}
-              className="relative z-10 w-full max-w-[460px] bg-[#111116] border border-[#1e1e28] rounded-xl shadow-[0_20px_60px_rgba(0,0,0,0.8)] overflow-hidden"
+              className="relative z-10 w-full max-w-[460px] bg-[#111116] border border-[#27272a] rounded-xl shadow-[0_20px_60px_rgba(0,0,0,0.8)] overflow-hidden"
             >
               {/* Top Accent Line */}
-              <div className="h-[2px] w-full bg-gradient-to-r from-[#7C5CFC] via-[#A78BFA] to-[#7C5CFC]" />
+              <div className="h-[2px] w-full bg-gradient-to-r from-[#2563eb] via-[#60a5fa] to-[#2563eb]" />
 
               <div className="p-5 sm:p-6 flex flex-col h-full max-h-[85vh]">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-4 shrink-0">
                   <h3 className="text-xs sm:text-sm font-black text-white uppercase tracking-wider">Instructions</h3>
-                  <button onClick={() => setIsInfoOpen(false)} className="p-1 hover:bg-[#1a1a22] rounded-lg text-[#6a6a7a] hover:text-white cursor-pointer transition-colors"><X size={14} /></button>
+                  <button onClick={() => setIsInfoOpen(false)} className="p-1 hover:bg-[#27272a] rounded-lg text-[#71717a] hover:text-white cursor-pointer transition-colors"><X size={14} /></button>
                 </div>
 
                 {/* Body Content */}
@@ -814,29 +814,29 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                   {/* Work Faster & Steps */}
                   <div className="space-y-4">
                     <div>
-                      <span className="text-[9px] font-black tracking-widest text-[#7C5CFC] uppercase">Work Faster. Think Bigger.</span>
+                      <span className="text-[9px] font-black tracking-widest text-[#2563eb] uppercase">Work Faster. Think Bigger.</span>
                       <h4 className="text-sm font-black text-white mt-1">The Modern Utility Hub</h4>
-                      <p className="text-[11.5px] text-[#6a6a7a] mt-1 leading-relaxed">
+                      <p className="text-[11.5px] text-[#71717a] mt-1 leading-relaxed">
                         We discarded the bloat and focused purely on performance, privacy, and speed. 50+ tools executing instantly in your browser.
                       </p>
                     </div>
 
                     <div className="space-y-3.5 pt-1">
                       <div>
-                        <p className="text-[10px] font-black text-[#A78BFA] uppercase tracking-wider">01 // Step: Locate instantly</p>
-                        <p className="text-[11px] text-[#8a8a9a] leading-relaxed mt-0.5">
-                          Hit <span className="bg-[#1a1a22] px-1.5 py-0.5 rounded text-white font-mono text-[10px] border border-[#222230]">CMD+K</span> anywhere to open the command palette.
+                        <p className="text-[10px] font-black text-[#60a5fa] uppercase tracking-wider">01 // Step: Locate instantly</p>
+                        <p className="text-[11px] text-[#a1a1aa] leading-relaxed mt-0.5">
+                          Hit <span className="bg-[#27272a] px-1.5 py-0.5 rounded text-white font-mono text-[10px] border border-[#3f3f46]">CMD+K</span> anywhere to open the command palette.
                         </p>
                       </div>
                       <div>
-                        <p className="text-[10px] font-black text-[#A78BFA] uppercase tracking-wider">02 // Step: Execute locally</p>
-                        <p className="text-[11px] text-[#8a8a9a] leading-relaxed mt-0.5">
+                        <p className="text-[10px] font-black text-[#60a5fa] uppercase tracking-wider">02 // Step: Execute locally</p>
+                        <p className="text-[11px] text-[#a1a1aa] leading-relaxed mt-0.5">
                           Paste your payload or drop files. Everything runs securely inside your local browser sandbox.
                         </p>
                       </div>
                       <div>
-                        <p className="text-[10px] font-black text-[#A78BFA] uppercase tracking-wider">03 // Step: Export effortlessly</p>
-                        <p className="text-[11px] text-[#8a8a9a] leading-relaxed mt-0.5">
+                        <p className="text-[10px] font-black text-[#60a5fa] uppercase tracking-wider">03 // Step: Export effortlessly</p>
+                        <p className="text-[11px] text-[#a1a1aa] leading-relaxed mt-0.5">
                           Copy your formatted code with one click, or instantly download your processed assets.
                         </p>
                       </div>
@@ -844,14 +844,14 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                   </div>
 
                   {/* Feature Comparison Table */}
-                  <div className="space-y-3.5 pt-2 border-t border-[#1a1a22]">
+                  <div className="space-y-3.5 pt-2 border-t border-[#27272a]">
                     <div>
-                      <span className="text-[9px] font-black tracking-widest text-[#7C5CFC] uppercase">Transparent Access</span>
+                      <span className="text-[9px] font-black tracking-widest text-[#2563eb] uppercase">Transparent Access</span>
                       <h4 className="text-sm font-black text-white mt-1">Account Features</h4>
                     </div>
 
-                    <div className="w-full text-[10.5px] text-[#8a8a9a]">
-                      <div className="grid grid-cols-3 border-b border-[#1d1d27] pb-2 font-bold text-white">
+                    <div className="w-full text-[10.5px] text-[#a1a1aa]">
+                      <div className="grid grid-cols-3 border-b border-[#27272a] pb-2 font-bold text-white">
                         <span>Utility Access</span>
                         <span className="text-center">Guest</span>
                         <span className="text-center">Member</span>
@@ -863,34 +863,34 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                         { name: "Pin favorite tools", guest: false, user: true },
                         { name: "Cloud sync configs", guest: false, user: true },
                       ].map((row, i) => (
-                        <div key={i} className="grid grid-cols-3 py-2 border-b border-[#141419] items-center">
-                          <span className="text-[#6a6a7a] truncate pr-1">{row.name}</span>
+                        <div key={i} className="grid grid-cols-3 py-2 border-b border-[#18181b] items-center">
+                          <span className="text-[#71717a] truncate pr-1">{row.name}</span>
                           <span className="text-center">{row.guest ? "✓" : "✕"}</span>
-                          <span className="text-center text-[#7C5CFC] font-black">{row.user ? "✓" : "✕"}</span>
+                          <span className="text-center text-[#2563eb] font-black">{row.user ? "✓" : "✕"}</span>
                         </div>
                       ))}
                     </div>
                   </div>
 
                   {/* FAQs */}
-                  <div className="space-y-4 pt-2 border-t border-[#1a1a22]">
+                  <div className="space-y-4 pt-2 border-t border-[#27272a]">
                     <div>
-                      <span className="text-[9px] font-black tracking-widest text-[#7C5CFC] uppercase">Questions?</span>
+                      <span className="text-[9px] font-black tracking-widest text-[#2563eb] uppercase">Questions?</span>
                       <h4 className="text-sm font-black text-white mt-1">Quick FAQ</h4>
                     </div>
 
                     <div className="space-y-3.5">
                       <div>
                         <p className="text-[10.5px] font-bold text-white">Is it 100% free?</p>
-                        <p className="text-[10px] text-[#6a6a7a] leading-relaxed mt-0.5">Yes. No paywalls, subscriptions, or hidden charges whatsoever.</p>
+                        <p className="text-[10px] text-[#71717a] leading-relaxed mt-0.5">Yes. No paywalls, subscriptions, or hidden charges whatsoever.</p>
                       </div>
                       <div>
                         <p className="text-[10.5px] font-bold text-white">Are files secure?</p>
-                        <p className="text-[10px] text-[#6a6a7a] leading-relaxed mt-0.5">Strict Privacy. Calculations are local. We never see your data.</p>
+                        <p className="text-[10px] text-[#71717a] leading-relaxed mt-0.5">Strict Privacy. Calculations are local. We never see your data.</p>
                       </div>
                       <div>
                         <p className="text-[10.5px] font-bold text-white">Why register?</p>
-                        <p className="text-[10px] text-[#6a6a7a] leading-relaxed mt-0.5">Enable Zero Latency cross-device sync of your configuration logs.</p>
+                        <p className="text-[10px] text-[#71717a] leading-relaxed mt-0.5">Enable Zero Latency cross-device sync of your configuration logs.</p>
                       </div>
                     </div>
                   </div>
