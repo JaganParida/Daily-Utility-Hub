@@ -240,10 +240,9 @@ const Dashboard = () => {
     <PageTransition>
       <style>{`
         @keyframes gradient-shift { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
-        @keyframes border-flow { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
+        @keyframes spin-comet { 0% { transform: translate(-50%, -50%) rotate(0deg); } 100% { transform: translate(-50%, -50%) rotate(360deg); } }
         .gradient-text { background: linear-gradient(135deg, #7C5CFC, #A78BFA, #7C5CFC); background-size: 200% 200%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: gradient-shift 4s ease infinite; }
-        .animated-border { background: linear-gradient(90deg, transparent 0%, transparent 40%, rgba(124,92,252,0.8) 50%, rgba(167,139,250,1) 50%, rgba(124,92,252,0.8) 50%, transparent 60%, transparent 100%); background-size: 200% 100%; animation: border-flow 3s linear infinite; padding: 1px; border-radius: 1rem; }
-        .animated-border-inner { background: #141419; border-radius: calc(1rem - 1px); height: 100%; width: 100%; display: flex; flex-direction: column; }
+        .border-comet { position: absolute; top: 50%; left: 50%; width: 250%; aspect-ratio: 1/1; background: conic-gradient(from 0deg, transparent 0deg, transparent 280deg, #7C5CFC 330deg, rgba(255,255,255,0.9) 360deg); animation: spin-comet 3.5s linear infinite; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
       `}</style>
@@ -311,7 +310,7 @@ const Dashboard = () => {
             >
               {/* Spinning Border Container (Behind content, clips gradient) */}
               <div className="absolute inset-0 rounded-2xl bg-[#222230] overflow-hidden pointer-events-none z-0">
-                <div className="absolute top-1/2 left-1/2 w-[200%] aspect-square -translate-x-1/2 -translate-y-1/2 bg-[conic-gradient(from_0deg,transparent_0_280deg,#7C5CFC_330deg,white_360deg)] animate-[spin_4s_linear_infinite]" />
+                <div className="border-comet" />
               </div>
 
               {/* Content Container (Sits on top, padded by 1.5px to show border, no overflow hidden!) */}
