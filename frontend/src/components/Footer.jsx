@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Globe, Mail, ArrowRight, Zap, Shield, Sparkles } from 'lucide-react';
+import { Globe, Mail, ArrowRight, Zap, Shield, Sparkles, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const Footer = () => {
   const { currentUser } = useAuth();
+  const [activeModal, setActiveModal] = useState(null);
 
   return (
     <footer className="w-full relative z-10 mt-auto bg-[#050507] border-t border-[#1e1e28] overflow-hidden">
@@ -74,33 +76,38 @@ const Footer = () => {
           <div className="col-span-1 md:col-span-8 grid grid-cols-2 sm:grid-cols-4 gap-8 text-center sm:text-left">
             <div className="flex flex-col gap-3">
               <h3 className="text-white text-xs font-bold tracking-widest uppercase mb-3">Product</h3>
-              <Link to="/dashboard" className="text-sm text-[#8a8a9a] hover:text-[#7C5CFC] transition-colors font-medium">All Features</Link>
-              <Link to="/tools/academic-format-checker" className="text-sm text-[#8a8a9a] hover:text-[#7C5CFC] transition-colors font-medium">Format Checker</Link>
-              <Link to="/tools/ai-pdf-to-markdown" className="text-sm text-[#8a8a9a] hover:text-[#7C5CFC] transition-colors font-medium">AI Document</Link>
-              <a href="#" className="text-sm text-[#8a8a9a] hover:text-[#7C5CFC] transition-colors font-medium">Updates</a>
+              <Link to="/" className="text-sm text-[#8a8a9a] hover:text-[#7C5CFC] transition-colors font-medium">All Tools</Link>
+              <Link to="/pinned" className="text-sm text-[#8a8a9a] hover:text-[#7C5CFC] transition-colors font-medium">Pinned Utilities</Link>
+              <Link to="/recent" className="text-sm text-[#8a8a9a] hover:text-[#7C5CFC] transition-colors font-medium">Recent History</Link>
+              <Link to="/tools/developer-profile" className="text-sm text-[#8a8a9a] hover:text-[#7C5CFC] transition-colors font-medium">Developer Profile</Link>
             </div>
             
             <div className="flex flex-col gap-3">
               <h3 className="text-white text-xs font-bold tracking-widest uppercase mb-3">Solutions</h3>
-              <a href="#" className="text-sm text-[#8a8a9a] hover:text-[#7C5CFC] transition-colors font-medium">For Developers</a>
-              <a href="#" className="text-sm text-[#8a8a9a] hover:text-[#7C5CFC] transition-colors font-medium">For Students</a>
-              <a href="#" className="text-sm text-[#8a8a9a] hover:text-[#7C5CFC] transition-colors font-medium">Offline Mode</a>
-              <a href="#" className="text-sm text-[#8a8a9a] hover:text-[#7C5CFC] transition-colors font-medium">Security</a>
+              <Link to="/tools/uuid-generator" className="text-sm text-[#8a8a9a] hover:text-[#7C5CFC] transition-colors font-medium">For Developers</Link>
+              <Link to="/tools/readme-generator" className="text-sm text-[#8a8a9a] hover:text-[#7C5CFC] transition-colors font-medium">For Students</Link>
+              <button onClick={() => setActiveModal('offline')} className="text-sm text-[#8a8a9a] hover:text-[#7C5CFC] transition-colors font-medium text-center sm:text-left cursor-pointer bg-transparent border-none">Offline-First Mode</button>
+              <Link to="/tools/file-vault" className="text-sm text-[#8a8a9a] hover:text-[#7C5CFC] transition-colors font-medium">Security Vault</Link>
             </div>
 
             <div className="flex flex-col gap-3">
               <h3 className="text-white text-xs font-bold tracking-widest uppercase mb-3">Resources</h3>
-              <a href="#" className="text-sm text-[#8a8a9a] hover:text-[#7C5CFC] transition-colors font-medium">Documentation</a>
-              <a href="#" className="text-sm text-[#8a8a9a] hover:text-[#7C5CFC] transition-colors font-medium">API Reference</a>
-              <a href="#" className="text-sm text-[#8a8a9a] hover:text-[#7C5CFC] transition-colors font-medium">Community</a>
-              <a href="#" className="text-sm text-[#8a8a9a] hover:text-[#7C5CFC] transition-colors font-medium">Help Desk</a>
+              <Link to="/profile" className="text-sm text-[#8a8a9a] hover:text-[#7C5CFC] transition-colors font-medium">User Profile</Link>
+              {!currentUser ? (
+                <>
+                  <Link to="/login" className="text-sm text-[#8a8a9a] hover:text-[#7C5CFC] transition-colors font-medium">Sign In</Link>
+                  <Link to="/register" className="text-sm text-[#8a8a9a] hover:text-[#7C5CFC] transition-colors font-medium">Register</Link>
+                </>
+              ) : (
+                <span className="text-[10px] text-[#5a5a6a] font-black uppercase tracking-wider">Session Active</span>
+              )}
             </div>
  
             <div className="flex flex-col gap-3">
               <h3 className="text-white text-xs font-bold tracking-widest uppercase mb-3">Legal</h3>
-              <a href="#" className="text-sm text-[#8a8a9a] hover:text-[#7C5CFC] transition-colors font-medium">Privacy Policy</a>
-              <a href="#" className="text-sm text-[#8a8a9a] hover:text-[#7C5CFC] transition-colors font-medium">Terms of Service</a>
-              <a href="#" className="text-sm text-[#8a8a9a] hover:text-[#7C5CFC] transition-colors font-medium">Cookie Settings</a>
+              <button onClick={() => setActiveModal('privacy')} className="text-sm text-[#8a8a9a] hover:text-[#7C5CFC] transition-colors font-medium text-center sm:text-left cursor-pointer bg-transparent border-none">Privacy Policy</button>
+              <button onClick={() => setActiveModal('terms')} className="text-sm text-[#8a8a9a] hover:text-[#7C5CFC] transition-colors font-medium text-center sm:text-left cursor-pointer bg-transparent border-none">Terms of Service</button>
+              <button onClick={() => setActiveModal('cookies')} className="text-sm text-[#8a8a9a] hover:text-[#7C5CFC] transition-colors font-medium text-center sm:text-left cursor-pointer bg-transparent border-none">Cookie Settings</button>
             </div>
           </div>
         </div>
@@ -119,6 +126,72 @@ const Footer = () => {
           </div>
         </div>
       </div>
+
+      {/* Legal Modals Overlay */}
+      {activeModal && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-[#0b0b0f]/80 backdrop-blur-md"
+            onClick={() => setActiveModal(null)}
+          />
+          
+          {/* Modal Container */}
+          <div className="relative z-10 w-full max-w-[500px] max-h-[80vh] bg-[#111116] border border-[#1e1e28] rounded-xl shadow-[0_20px_60px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col">
+            <div className="h-[2px] w-full bg-gradient-to-r from-[#7C5CFC] via-[#A78BFA] to-[#7C5CFC]" />
+            
+            <div className="p-6 flex flex-col overflow-hidden h-full">
+              {/* Header */}
+              <div className="flex items-center justify-between mb-4 border-b border-[#1a1a24] pb-3 shrink-0">
+                <h3 className="text-sm font-black text-white uppercase tracking-wider">
+                  {activeModal === 'privacy' && 'Privacy Policy'}
+                  {activeModal === 'terms' && 'Terms of Service'}
+                  {activeModal === 'cookies' && 'Cookie Settings'}
+                  {activeModal === 'offline' && 'Offline-First Technology'}
+                </h3>
+                <button 
+                  onClick={() => setActiveModal(null)}
+                  className="p-1 hover:bg-[#1a1a22] rounded-lg text-[#6a6a7a] hover:text-white cursor-pointer transition-colors"
+                >
+                  <X size={15} />
+                </button>
+              </div>
+
+              {/* Scrollable Body content */}
+              <div className="overflow-y-auto pr-1 text-xs text-[#8a8a9a] space-y-4 leading-relaxed custom-scrollbar flex-1 text-left">
+                {activeModal === 'privacy' && (
+                  <>
+                    <p className="font-bold text-white text-sm">Your privacy is guaranteed.</p>
+                    <p>At UtilityHub, we value your trust. Because all data calculations, file conversions, code compilation, and image editing are performed directly in your local browser sandbox, <strong>your files are never uploaded to any server.</strong></p>
+                    <p>We do not collect, monitor, track, or share your data payloads. The application functions completely offline once loaded. Any account registrations only save configuration parameters (e.g. pinned tools) which are secured under enterprise encryption.</p>
+                  </>
+                )}
+                {activeModal === 'terms' && (
+                  <>
+                    <p className="font-bold text-white text-sm">Agreement to Terms</p>
+                    <p>By using UtilityHub, you agree to access our suite of tools entirely for personal, educational, or professional purposes. You remain the sole owner of all content processed through the site.</p>
+                    <p>Since the application processes everything local to your computer hardware, we are not responsible for any file format conversions or data mutations that happen on your terminal. Use at your own discretion.</p>
+                  </>
+                )}
+                {activeModal === 'cookies' && (
+                  <>
+                    <p className="font-bold text-white text-sm">Zero Tracking Cookies.</p>
+                    <p>We do not use analytics cookies, marketing trackers, or third-party ad pixels. We only utilize local browser storage (localStorage & sessionStorage) to save your configuration preferences, recent history logs, and active session tokens securely.</p>
+                    <p>You can clear your local configuration data at any time by clicking "Clear Storage" in your profile dashboard.</p>
+                  </>
+                )}
+                {activeModal === 'offline' && (
+                  <>
+                    <p className="font-bold text-white text-sm">100% Client-Side Executed.</p>
+                    <p>UtilityHub is built as a Progressive Web Application (PWA). Every utility—from image compression to PDF merging—uses local WebAssembly or Javascript compilation to run exclusively on your CPU.</p>
+                    <p>You can completely turn off your internet, load this website, and everything will function perfectly. Confidential records and critical assets remain inside your local environment, making it the safest utility hub available.</p>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </footer>
   );
 };

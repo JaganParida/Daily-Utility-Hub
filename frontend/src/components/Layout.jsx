@@ -250,7 +250,7 @@ const Layout = () => {
           <div className={`w-full flex flex-col pb-20 md:pb-12 ${isDashboard ? 'pt-0' : 'pt-24 lg:pt-28'}`}>
             <Outlet context={{ isScrolled, setIsScrolled }} />
           </div>
-          {!isTool && <Footer />}
+          <Footer />
         </main>
       </div>
     </div>
