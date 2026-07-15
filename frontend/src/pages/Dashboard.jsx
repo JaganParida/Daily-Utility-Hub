@@ -643,7 +643,7 @@ const Dashboard = () => {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -8 }}
                     transition={{ duration: 0.25 }}
-                    className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2"
+                    className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2"
                   >
                     {tabOps.map((op, i) => (
                       <motion.div
