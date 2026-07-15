@@ -210,10 +210,14 @@ const CustomDropdown = ({ value, onChange, options, placeholder, disabled = fals
         type="button"
         onClick={() => !disabled && setOpen((p) => !p)}
         disabled={disabled}
-        className={`w-full h-11 flex items-center gap-2.5 px-3.5 sm:px-4 text-left rounded-xl border border-[#222230] bg-[#141419] transition-all cursor-pointer select-none ${
+        className={`w-full h-11 flex items-center gap-2.5 px-3.5 sm:px-4 text-left rounded-xl border transition-all cursor-pointer select-none ${
           isFlashing ? "animate-flash-glow" : ""
         } ${
           isPop ? "animate-scale-pop" : ""
+        } ${
+          open 
+            ? "border-[#7C5CFC] bg-[#1a1a25] shadow-[0_0_15px_rgba(124,92,252,0.15)] ring-1 ring-[#7C5CFC]/30" 
+            : "border-[#222230] bg-[#141419]"
         } ${
           disabled 
             ? "opacity-40 cursor-not-allowed border-[#1d1d28] bg-[#0e0e12]" 
@@ -272,12 +276,24 @@ const CustomDropdown = ({ value, onChange, options, placeholder, disabled = fals
               </div>
             )}
 
-            <div className="flex-1 overflow-y-auto custom-scrollbar py-1">
+            <motion.div 
+              variants={{
+                visible: { transition: { staggerChildren: 0.02 } },
+                hidden: {}
+              }}
+              initial="hidden"
+              animate="visible"
+              className="flex-1 overflow-y-auto custom-scrollbar py-1"
+            >
               {filteredOptions.length > 0 ? (
                 filteredOptions.map((opt) => {
                   const OptIcon = opt.icon;
                   return (
-                    <button
+                    <motion.button
+                      variants={{
+                        visible: { opacity: 1, x: 0, transition: { type: "spring", stiffness: 350, damping: 25 } },
+                        hidden: { opacity: 0, x: -8 }
+                      }}
                       key={opt.value}
                       onClick={() => { onChange(opt.value); setOpen(false); }}
                       className={`w-full flex items-center gap-2.5 px-3.5 py-2 text-left text-xs font-medium transition-colors cursor-pointer ${
@@ -293,7 +309,7 @@ const CustomDropdown = ({ value, onChange, options, placeholder, disabled = fals
                           <polyline points="20 6 9 17 4 12" />
                         </svg>
                       )}
-                    </button>
+                    </motion.button>
                   );
                 })
               ) : (
@@ -301,7 +317,7 @@ const CustomDropdown = ({ value, onChange, options, placeholder, disabled = fals
                   No results found
                 </div>
               )}
-            </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
