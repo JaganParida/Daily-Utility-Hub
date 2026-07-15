@@ -1,5 +1,5 @@
 import {
-  User, LogOut, Search, Menu, X, ChevronDown, Layers, Moon, Sun, HelpCircle, Shield
+  User, LogOut, Search, Menu, X, ChevronDown, Layers, Moon, Sun, HelpCircle, Shield, ArrowLeft
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -376,7 +376,17 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                 ref={searchRef}
               >
                 <div className="relative flex items-center h-8 rounded-full border border-[#7C5CFC]/50 bg-[#121216] px-3 shadow-lg w-full">
-                  <Search size={12} className="text-[#7C5CFC] shrink-0 mr-2" />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsSearchExpanded(false);
+                      setSearchQuery("");
+                    }}
+                    className="w-7 h-7 rounded-full flex items-center justify-center text-[#7C5CFC] hover:bg-[#7C5CFC]/10 transition-colors shrink-0 mr-1.5 cursor-pointer"
+                    title="Back"
+                  >
+                    <ArrowLeft size={13} />
+                  </button>
                   <input
                     ref={searchInputRef}
                     type="text"
@@ -485,10 +495,23 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                 }}
                 title={!isSearchExpanded ? "Search (⌘K)" : undefined}
               >
-                {/* Search Icon */}
-                <div className="w-7 h-7 flex items-center justify-center shrink-0 text-[#6a6a7a] hover:text-white transition-colors">
-                  <Search size={13} />
-                </div>
+                {/* Search / Back Icon */}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    if (isSearchExpanded) {
+                      e.stopPropagation();
+                      setIsSearchExpanded(false);
+                      setSearchQuery("");
+                    }
+                  }}
+                  className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-[#6a6a7a] hover:text-white transition-colors ${
+                    isSearchExpanded ? "cursor-pointer hover:bg-[#7C5CFC]/10 text-[#7C5CFC]" : "cursor-default pointer-events-none"
+                  }`}
+                  title={isSearchExpanded ? "Back" : undefined}
+                >
+                  {isSearchExpanded ? <ArrowLeft size={13} className="text-[#7C5CFC]" /> : <Search size={13} />}
+                </button>
 
                  {/* Input field (animated opacity/width) */}
                 <motion.input
