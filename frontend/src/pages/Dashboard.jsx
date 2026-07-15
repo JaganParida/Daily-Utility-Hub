@@ -156,8 +156,20 @@ const EXT_TO_SOURCE = {
 };
 
 // ─── Custom Dropdown Component ───
-const CustomDropdown = ({ value, onChange, options, placeholder, disabled = false, icon: Icon }) => {
-  const [open, setOpen] = useState(false);
+const CustomDropdown = ({ 
+  value, 
+  onChange, 
+  options, 
+  placeholder, 
+  disabled = false, 
+  icon: Icon,
+  open: controlledOpen,
+  setOpen: controlledSetOpen,
+  highlightedValue
+}) => {
+  const [localOpen, setLocalOpen] = useState(false);
+  const open = controlledOpen !== undefined ? controlledOpen : localOpen;
+  const setOpen = controlledSetOpen !== undefined ? controlledSetOpen : setLocalOpen;
   const [searchQuery, setSearchQuery] = useState("");
   const ref = useRef(null);
   
@@ -296,9 +308,9 @@ const CustomDropdown = ({ value, onChange, options, placeholder, disabled = fals
                       }}
                       key={opt.value}
                       onClick={() => { onChange(opt.value); setOpen(false); }}
-                      className={`w-full flex items-center gap-2.5 px-3.5 py-2 text-left text-xs font-medium transition-colors cursor-pointer ${
-                        opt.value === value
-                          ? "bg-[#7C5CFC]/10 text-[#7C5CFC]"
+                      className={`w-full flex items-center gap-2.5 px-3.5 py-2 text-left text-xs font-medium transition-all duration-200 cursor-pointer ${
+                        (opt.value === value || opt.value === highlightedValue || opt.label === highlightedValue)
+                          ? "bg-[#7C5CFC]/15 text-[#7C5CFC] font-extrabold border-l-2 border-[#7C5CFC]"
                           : "text-[#b0b0bc] hover:bg-[#ffffff08] hover:text-white"
                       }`}
                     >
@@ -402,6 +414,27 @@ const Dashboard = () => {
   const [isLaunchPop, setIsLaunchPop] = useState(false);
   const prevHasActiveOp = useRef(false);
 
+  const [isFormatOpen, setIsFormatOpen] = useState(false);
+  const [isOperationOpen, setIsOperationOpen] = useState(false);
+  const [simulatedFormatHighlight, setSimulatedFormatHighlight] = useState(null);
+  const [simulatedOpHighlight, setSimulatedOpHighlight] = useState(null);
+  const simulationTimeouts = useRef([]);
+  
+  const clearSimulation = useCallback(() => {
+    simulationTimeouts.current.forEach(clearTimeout);
+    simulationTimeouts.current = [];
+    setSimulatedFormatHighlight(null);
+    setSimulatedOpHighlight(null);
+    setIsFormatOpen(false);
+    setIsOperationOpen(false);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      simulationTimeouts.current.forEach(clearTimeout);
+    };
+  }, []);
+
   const tabsRef = useRef(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(false);
@@ -455,7 +488,11 @@ const Dashboard = () => {
     prevHasActiveOp.current = hasOp;
   }, [activeOp]);
 
-  const handleSourceChange = (val) => { setSource(val); setOperationIdx(0); };
+  const handleSourceChange = (val) => { 
+    clearSimulation();
+    setSource(val); 
+    setOperationIdx(0); 
+  };
   const handleLaunch = () => { 
     if (activeOp) {
       navigate(activeOp.to, { state: { initialFile: droppedFile?.rawFile } });
@@ -463,6 +500,9 @@ const Dashboard = () => {
   };
 
   const handleFileDrop = useCallback((file) => {
+    console.log("File drop event detected:", file.name);
+    clearSimulation();
+
     const ext = file.name.split(".").pop().toLowerCase();
     const mapped = EXT_TO_SOURCE[ext] || "";
     setDroppedFile({ 
@@ -476,16 +516,50 @@ const Dashboard = () => {
     setOperationIdx(0);
 
     if (mapped) {
-      setTimeout(() => {
-        setSource(mapped);
-        setTimeout(() => {
-          setOperationIdx(0);
-        }, 350);
-      }, 350);
+      const t1 = setTimeout(() => {
+        setIsFormatOpen(true);
+        
+        const t2 = setTimeout(() => {
+          setSimulatedFormatHighlight(mapped);
+          
+          const t3 = setTimeout(() => {
+            setSource(mapped);
+            setSimulatedFormatHighlight(null);
+            setIsFormatOpen(false);
+            
+            const t4 = setTimeout(() => {
+              setIsOperationOpen(true);
+              
+              const t5 = setTimeout(() => {
+                const ops = OPERATIONS_MAP[mapped] || [];
+                if (ops.length > 0) {
+                  setSimulatedOpHighlight(ops[0].label);
+                }
+                
+                const t6 = setTimeout(() => {
+                  setOperationIdx(0);
+                  setSimulatedOpHighlight(null);
+                  setIsOperationOpen(false);
+                }, 400);
+                simulationTimeouts.current.push(t6);
+              }, 400);
+              simulationTimeouts.current.push(t5);
+            }, 500);
+            simulationTimeouts.current.push(t4);
+          }, 450);
+          simulationTimeouts.current.push(t3);
+        }, 400);
+        simulationTimeouts.current.push(t2);
+      }, 450);
+      simulationTimeouts.current.push(t1);
     }
-  }, []);
+  }, [clearSimulation]);
 
-  const clearFile = () => { setDroppedFile(null); setSource(""); };
+  const clearFile = () => { 
+    clearSimulation();
+    setDroppedFile(null); 
+    setSource(""); 
+  };
 
   const sourceOptions = SOURCE_FORMATS.map((item) => ({
     value: item.id,
@@ -684,10 +758,30 @@ const Dashboard = () => {
                     {/* Target Selectors */}
                     <motion.div layout className="flex items-center gap-2 shrink-0">
                       <motion.div layout className="w-[140px] md:w-[155px]">
-                        <CustomDropdown value={source} onChange={handleSourceChange} options={sourceOptions} placeholder="Format" icon={Layers} disabled={false} />
+                        <CustomDropdown 
+                          value={source} 
+                          onChange={handleSourceChange} 
+                          options={sourceOptions} 
+                          placeholder="Format" 
+                          icon={Layers} 
+                          disabled={false}
+                          open={isFormatOpen}
+                          setOpen={setIsFormatOpen}
+                          highlightedValue={simulatedFormatHighlight}
+                        />
                       </motion.div>
                       <motion.div layout className="w-[150px] md:w-[170px]">
-                        <CustomDropdown value={operationIdx} onChange={(val) => setOperationIdx(val)} options={operationOptions} placeholder="Operation" disabled={!source} icon={Zap} />
+                        <CustomDropdown 
+                          value={operationIdx} 
+                          onChange={(val) => setOperationIdx(val)} 
+                          options={operationOptions} 
+                          placeholder="Operation" 
+                          disabled={!source} 
+                          icon={Zap} 
+                          open={isOperationOpen}
+                          setOpen={setIsOperationOpen}
+                          highlightedValue={simulatedOpHighlight}
+                        />
                       </motion.div>
                     </motion.div>
 
@@ -757,8 +851,28 @@ const Dashboard = () => {
                     </AnimatePresence>
 
                     <motion.div layout className="grid grid-cols-2 gap-2">
-                      <CustomDropdown value={source} onChange={handleSourceChange} options={sourceOptions} placeholder="Format" icon={Layers} disabled={false} />
-                      <CustomDropdown value={operationIdx} onChange={(val) => setOperationIdx(val)} options={operationOptions} placeholder="Operation" disabled={!source} icon={Zap} />
+                      <CustomDropdown 
+                        value={source} 
+                        onChange={handleSourceChange} 
+                        options={sourceOptions} 
+                        placeholder="Format" 
+                        icon={Layers} 
+                        disabled={false} 
+                        open={isFormatOpen}
+                        setOpen={setIsFormatOpen}
+                        highlightedValue={simulatedFormatHighlight}
+                      />
+                      <CustomDropdown 
+                        value={operationIdx} 
+                        onChange={(val) => setOperationIdx(val)} 
+                        options={operationOptions} 
+                        placeholder="Operation" 
+                        disabled={!source} 
+                        icon={Zap} 
+                        open={isOperationOpen}
+                        setOpen={setIsOperationOpen}
+                        highlightedValue={simulatedOpHighlight}
+                      />
                     </motion.div>
 
                     <motion.button
