@@ -444,64 +444,36 @@ const Dashboard = () => {
     });
   }, [clearSimulation]);
 
+  const [isIconDropping, setIsIconDropping] = useState(false);
+
   const runDemoLoop = useCallback(() => {
     if (hasUserInteracted.current) return;
     
-    setDroppedFile({
-      name: "demo-image.png",
-      size: "245.8 KB",
-      ext: "PNG",
-      isDemo: true
-    });
     setSource("");
     setOperationIdx(0);
+    setDroppedFile(null);
+
+    setIsIconDropping(true);
+    const tResetDrop = setTimeout(() => setIsIconDropping(false), 600);
+    simulationTimeouts.current.push(tResetDrop);
 
     const t1 = setTimeout(() => {
       if (hasUserInteracted.current) return;
-      setIsFormatOpen(true);
+      setSource("image");
 
       const t2 = setTimeout(() => {
         if (hasUserInteracted.current) return;
-        setSimulatedFormatHighlight("image");
+        setOperationIdx(7);
 
         const t3 = setTimeout(() => {
           if (hasUserInteracted.current) return;
-          setSource("image");
-          setSimulatedFormatHighlight(null);
-          setIsFormatOpen(false);
-
-          const t4 = setTimeout(() => {
-            if (hasUserInteracted.current) return;
-            setIsOperationOpen(true);
-
-            const t5 = setTimeout(() => {
-              if (hasUserInteracted.current) return;
-              setSimulatedOpHighlight("Convert to PDF");
-
-              const t6 = setTimeout(() => {
-                if (hasUserInteracted.current) return;
-                setOperationIdx(7);
-                setSimulatedOpHighlight(null);
-                setIsOperationOpen(false);
-
-                const t7 = setTimeout(() => {
-                  if (hasUserInteracted.current) return;
-                  setDroppedFile(null);
-                  setSource("");
-                  setOperationIdx(0);
-                }, 3000);
-                simulationTimeouts.current.push(t7);
-              }, 450);
-              simulationTimeouts.current.push(t6);
-            }, 450);
-            simulationTimeouts.current.push(t5);
-          }, 600);
-          simulationTimeouts.current.push(t4);
-        }, 500);
+          setSource("");
+          setOperationIdx(0);
+        }, 3500);
         simulationTimeouts.current.push(t3);
-      }, 450);
+      }, 700);
       simulationTimeouts.current.push(t2);
-    }, 600);
+    }, 700);
     simulationTimeouts.current.push(t1);
   }, []);
 
@@ -667,6 +639,11 @@ const Dashboard = () => {
       <style>{`
         @keyframes gradient-shift { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
         @keyframes flow-pulse { 0% { transform: translateX(-100%); } 100% { transform: translateX(200%); } }
+        @keyframes icon-drop {
+          0% { transform: translateY(-22px) scale(0.6); opacity: 0; }
+          60% { transform: translateY(4px) scale(1.1); opacity: 1; }
+          100% { transform: translateY(0) scale(1); }
+        }
         @keyframes flash-glow {
           0% { border-color: #222230; box-shadow: 0 0 0 rgba(124, 92, 252, 0); }
           30% { border-color: #7C5CFC; box-shadow: 0 0 15px rgba(124, 92, 252, 0.4); }
@@ -829,7 +806,12 @@ const Dashboard = () => {
                             onClick={() => fileInputRefDesktop.current?.click()}
                             className="flex items-center gap-2 px-3.5 py-2 bg-[#1a1a22]/50 hover:bg-[#1a1a22] border border-dashed border-[#222230] hover:border-[#7C5CFC]/30 text-[#b0b0bc] hover:text-white rounded-xl transition-all cursor-pointer min-w-[200px] max-w-[260px] h-[44px] group"
                           >
-                            <UploadCloud size={14} className="text-[#7C5CFC]/80 group-hover:text-[#7C5CFC] shrink-0" />
+                            <UploadCloud 
+                              size={14} 
+                              className={`text-[#7C5CFC]/80 group-hover:text-[#7C5CFC] shrink-0 ${
+                                isIconDropping ? "animate-[icon-drop_0.6s_cubic-bezier(0.34,1.56,0.64,1)] text-[#7C5CFC]" : ""
+                              }`} 
+                            />
                             <span className="text-xs font-bold truncate">Select or drop file</span>
                           </motion.div>
                           <input
@@ -941,7 +923,12 @@ const Dashboard = () => {
                             onClick={() => fileInputRefMobile.current?.click()}
                             className="flex items-center justify-center gap-2 py-3 bg-[#1a1a22]/50 border border-dashed border-[#222230] text-[#b0b0bc] rounded-xl transition-all cursor-pointer group"
                           >
-                            <UploadCloud size={14} className="text-[#7C5CFC] shrink-0" />
+                            <UploadCloud 
+                              size={14} 
+                              className={`text-[#7C5CFC] shrink-0 ${
+                                isIconDropping ? "animate-[icon-drop_0.6s_cubic-bezier(0.34,1.56,0.64,1)]" : ""
+                              }`} 
+                            />
                             <span className="text-xs font-bold">Select or drop file</span>
                           </motion.div>
                           <input
