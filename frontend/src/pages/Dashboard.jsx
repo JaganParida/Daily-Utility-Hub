@@ -4,7 +4,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import {
   ArrowRight, UploadCloud, X, FileCheck, ChevronDown, Zap, Shield, Cpu,
   FileText, ImageIcon, Code2, Type, Table2, FileSpreadsheet, MonitorPlay,
-  FolderArchive, Music, Layers
+  FolderArchive, Music, Layers, Search
 } from "lucide-react";
 import PageTransition from "../components/PageTransition";
 
@@ -158,6 +158,7 @@ const EXT_TO_SOURCE = {
 // ─── Custom Dropdown Component ───
 const CustomDropdown = ({ value, onChange, options, placeholder, disabled = false, icon: Icon }) => {
   const [open, setOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const ref = useRef(null);
 
   useEffect(() => {
@@ -166,7 +167,17 @@ const CustomDropdown = ({ value, onChange, options, placeholder, disabled = fals
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+  useEffect(() => {
+    if (!open) {
+      setSearchQuery("");
+    }
+  }, [open]);
+
   const selected = options.find((o) => o.value === value);
+
+  const filteredOptions = options.filter((opt) =>
+    opt.label.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div ref={ref} className="relative w-full h-full">
@@ -192,30 +203,63 @@ const CustomDropdown = ({ value, onChange, options, placeholder, disabled = fals
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 4, scale: 0.97 }}
             transition={{ duration: 0.15 }}
-            className="absolute top-full left-0 mt-2 w-full min-w-[180px] max-h-[240px] overflow-y-auto bg-[#111115] border border-[#24242e] rounded-xl shadow-[0_12px_40px_rgba(0,0,0,0.6)] z-[200] py-1.5 custom-scrollbar"
+            className="absolute top-full left-0 mt-2 w-full min-w-[180px] max-h-[260px] overflow-hidden bg-[#111115] border border-[#24242e] rounded-xl shadow-[0_12px_40px_rgba(0,0,0,0.6)] z-[200] flex flex-col"
           >
-            {options.map((opt) => {
-              const OptIcon = opt.icon;
-              return (
-                <button
-                  key={opt.value}
-                  onClick={() => { onChange(opt.value); setOpen(false); }}
-                  className={`w-full flex items-center gap-2.5 px-3.5 py-2 text-left text-xs font-medium transition-colors cursor-pointer ${
-                    opt.value === value
-                      ? "bg-[#7C5CFC]/10 text-[#7C5CFC]"
-                      : "text-[#b0b0bc] hover:bg-[#ffffff08] hover:text-white"
-                  }`}
-                >
-                  {OptIcon && <OptIcon size={13} className="shrink-0 opacity-60" />}
-                  <span className="truncate">{opt.label}</span>
-                  {opt.value === value && (
-                    <svg className="w-3 h-3 ml-auto text-[#7C5CFC] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
+            {options.length > 5 && (
+              <div className="px-2 py-1.5 border-b border-[#24242e] sticky top-0 bg-[#111115] z-10 shrink-0">
+                <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-[#181820] border border-[#24242e] focus-within:border-[#7C5CFC]/50 transition-colors">
+                  <Search size={11} className="text-[#5a5a6a]" />
+                  <input
+                    type="text"
+                    placeholder="Search..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full bg-transparent border-none text-[11px] text-white focus:outline-none placeholder:text-[#3e3e4e]"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); setSearchQuery(""); }}
+                      className="text-[#5a5a6a] hover:text-white"
+                    >
+                      <X size={10} />
+                    </button>
                   )}
-                </button>
-              );
-            })}
+                </div>
+              </div>
+            )}
+
+            <div className="flex-1 overflow-y-auto custom-scrollbar py-1">
+              {filteredOptions.length > 0 ? (
+                filteredOptions.map((opt) => {
+                  const OptIcon = opt.icon;
+                  return (
+                    <button
+                      key={opt.value}
+                      onClick={() => { onChange(opt.value); setOpen(false); }}
+                      className={`w-full flex items-center gap-2.5 px-3.5 py-2 text-left text-xs font-medium transition-colors cursor-pointer ${
+                        opt.value === value
+                          ? "bg-[#7C5CFC]/10 text-[#7C5CFC]"
+                          : "text-[#b0b0bc] hover:bg-[#ffffff08] hover:text-white"
+                      }`}
+                    >
+                      {OptIcon && <OptIcon size={13} className="shrink-0 opacity-60" />}
+                      <span className="truncate">{opt.label}</span>
+                      {opt.value === value && (
+                        <svg className="w-3 h-3 ml-auto text-[#7C5CFC] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                      )}
+                    </button>
+                  );
+                })
+              ) : (
+                <div className="px-3.5 py-3 text-center text-[10px] text-[#5a5a6a]">
+                  No results found
+                </div>
+              )}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -485,7 +529,7 @@ const Dashboard = () => {
                     {/* Target Selectors */}
                     <div className="flex items-center gap-2 shrink-0">
                       <div className="w-[140px] md:w-[155px]">
-                        <CustomDropdown value={source} onChange={handleSourceChange} options={sourceOptions} placeholder="Format" icon={Layers} />
+                        <CustomDropdown value={source} onChange={handleSourceChange} options={sourceOptions} placeholder="Format" icon={Layers} disabled={!!droppedFile} />
                       </div>
                       <div className="w-[150px] md:w-[170px]">
                         <CustomDropdown value={operationIdx} onChange={(val) => setOperationIdx(val)} options={operationOptions} placeholder="Operation" disabled={!source} icon={Zap} />
@@ -534,7 +578,7 @@ const Dashboard = () => {
                     )}
 
                     <div className="grid grid-cols-2 gap-2">
-                      <CustomDropdown value={source} onChange={handleSourceChange} options={sourceOptions} placeholder="Format" icon={Layers} />
+                      <CustomDropdown value={source} onChange={handleSourceChange} options={sourceOptions} placeholder="Format" icon={Layers} disabled={!!droppedFile} />
                       <CustomDropdown value={operationIdx} onChange={(val) => setOperationIdx(val)} options={operationOptions} placeholder="Operation" disabled={!source} icon={Zap} />
                     </div>
 
