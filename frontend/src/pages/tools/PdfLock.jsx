@@ -108,6 +108,7 @@ const PdfLock = () => {
         allowPrinting: !restrictPrinting,
         allowModifying: !restrictModifying,
         allowCopying: !restrictCopying,
+        useObjectStreams: false,
       });
       
       const url = window.URL.createObjectURL(new Blob([encryptedBytes], { type: 'application/pdf' }));

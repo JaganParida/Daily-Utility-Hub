@@ -109,7 +109,7 @@ const PdfWatermark = () => {
         });
       });
       
-      const watermarkedBytes = await pdfDoc.save();
+      const watermarkedBytes = await pdfDoc.save({ useObjectStreams: false });
       
       const url = window.URL.createObjectURL(new Blob([watermarkedBytes], { type: 'application/pdf' }));
       const link = document.createElement('a');

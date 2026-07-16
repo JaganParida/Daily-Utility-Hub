@@ -210,7 +210,7 @@ exports.watermarkPdf = async (req, res) => {
       });
     }
 
-    const watermarkedPdfBytes = await pdfDoc.save();
+    const watermarkedPdfBytes = await pdfDoc.save({ useObjectStreams: false });
     
     cleanupFiles([req.file]);
 
@@ -249,6 +249,7 @@ exports.lockPdf = async (req, res) => {
       allowPrinting: restrictPrinting !== 'true',
       allowModifying: restrictModifying !== 'true',
       allowCopying: restrictCopying !== 'true',
+      useObjectStreams: false,
     });
     
     cleanupFiles([req.file]);
@@ -338,7 +339,7 @@ exports.unlockPdf = async (req, res) => {
             });
 
             console.log(`Successfully stripped ${signatureCount} digital signatures from document.`);
-            finalBytes = await pdfDoc.save();
+            finalBytes = await pdfDoc.save({ useObjectStreams: false });
           }
         } catch (sigError) {
           console.error('Failed to strip signatures, returning raw decrypted bytes:', sigError);

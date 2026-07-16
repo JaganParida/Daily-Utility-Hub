@@ -194,7 +194,7 @@ const PdfUnlock = () => {
               }
             });
 
-            finalBytes = await pdfDoc.save();
+            finalBytes = await pdfDoc.save({ useObjectStreams: false });
           }
         } catch (sigError) {
           console.error('Failed to strip signatures, returning raw decrypted bytes:', sigError);
