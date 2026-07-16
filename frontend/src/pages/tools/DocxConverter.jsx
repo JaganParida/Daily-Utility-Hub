@@ -1,10 +1,13 @@
 import { useLocation } from 'react-router-dom';
 import { useState, useRef, useEffect } from 'react';
-import { FileText, Download, Upload, Copy, CheckCircle2, FileImage, Sparkles } from 'lucide-react';
+import { FileText, Download, Upload, CheckCircle2, FileImage, Sparkles } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { jsPDF } from 'jspdf';
 import JSZip from 'jszip';
+import mammoth from 'mammoth';
+import DOMPurify from 'dompurify';
+import * as htmlToImage from 'html-to-image';
 
 const DocxConverter = () => {
   const location = useLocation();
@@ -17,11 +20,13 @@ const DocxConverter = () => {
     }
   }, [location.state]);
   const [file, setFile] = useState(null);
-  const [content, setContent] = useState('');
+  const [htmlContent, setHtmlContent] = useState('');
+  const [rawText, setRawText] = useState('');
   const [isCopied, setIsCopied] = useState(false);
   const fileInputRef = useRef(null);
+  const documentRef = useRef(null);
 
-  const handleFileUpload = (e) => {
+  const handleFileUpload = async (e) => {
     const uploadedFile = e.target.files[0];
     if (!uploadedFile) return;
 
@@ -33,138 +38,110 @@ const DocxConverter = () => {
     setFile(uploadedFile);
     toast.success('Document uploaded successfully!');
 
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-      try {
-        const buffer = event.target.result;
-        const zip = await JSZip.loadAsync(buffer);
-        const docXmlFile = zip.file("word/document.xml");
-        if (!docXmlFile) {
-          toast.error("Invalid docx structure. Could not find word/document.xml");
-          return;
-        }
-        
-        const docXmlText = await docXmlFile.async("text");
-        const parser = new DOMParser();
-        const xmlDoc = parser.parseFromString(docXmlText, "text/xml");
-        
-        // Extract paragraphs to preserve layout spacing
-        const paragraphNodes = xmlDoc.getElementsByTagName("w:p");
-        const paragraphsText = Array.from(paragraphNodes).map(pNode => {
-          const tNodes = pNode.getElementsByTagName("w:t");
-          return Array.from(tNodes).map(t => t.textContent).join("");
-        }).filter(text => text.trim() !== "");
-
-        const cleaned = paragraphsText.join("\n\n");
-        setContent(cleaned || "Empty document content.");
-      } catch (err) {
-        console.error(err);
-        toast.error("Failed to parse Word document.");
-      }
-    };
-    reader.readAsArrayBuffer(uploadedFile);
+    try {
+      const arrayBuffer = await uploadedFile.arrayBuffer();
+      // Use Mammoth to extract rich HTML and Raw Text
+      const result = await mammoth.convertToHtml({ arrayBuffer });
+      const textResult = await mammoth.extractRawText({ arrayBuffer });
+      
+      const cleanHtml = DOMPurify.sanitize(result.value);
+      
+      setHtmlContent(cleanHtml || '<p>Empty document content.</p>');
+      setRawText(textResult.value || 'Empty document content.');
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to parse document. File might be corrupted.');
+    }
   };
 
-  const exportToPDF = () => {
-    if (!content) return;
-    const doc = new jsPDF();
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(12);
+  // Common function to slice the massive high-res image into A4 pages
+  const generatePaginatedImages = async () => {
+    if (!documentRef.current) return [];
+    toast.loading('Rendering high-fidelity document pages...', { id: 'render-doc' });
 
-    const splitText = doc.splitTextToSize(content, 180);
-    const pageHeight = doc.internal.pageSize.height;
-    
-    let cursorY = 25;
-    doc.text("Daily Utility Hub - Converted Document", 15, 15);
-    doc.line(15, 18, 195, 18);
+    try {
+      // Scale by 3 for crisp original quality
+      const scale = 3;
+      const docElement = documentRef.current;
+      
+      const dataUrl = await htmlToImage.toPng(docElement, {
+        quality: 1.0,
+        pixelRatio: scale,
+        backgroundColor: '#ffffff'
+      });
 
-    for (let i = 0; i < splitText.length; i++) {
-      if (cursorY > pageHeight - 20) {
-        doc.addPage();
-        cursorY = 20;
+      const img = new Image();
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+        img.src = dataUrl;
+      });
+
+      // A4 aspect ratio is 1:1.414 (210x297mm)
+      const pageHeight = Math.floor(img.width * 1.414);
+      const totalPages = Math.ceil(img.height / pageHeight);
+      
+      const pages = [];
+      
+      for (let i = 0; i < totalPages; i++) {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = pageHeight;
+        const ctx = canvas.getContext('2d');
+        
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Draw the specific slice of the image
+        ctx.drawImage(img, 0, -(i * pageHeight));
+        
+        const pageDataUrl = canvas.toDataURL('image/png', 1.0);
+        pages.push(pageDataUrl);
       }
-      doc.text(splitText[i], 15, cursorY);
-      cursorY += 7;
+      
+      toast.success('Document successfully rendered!', { id: 'render-doc' });
+      return pages;
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to render document.', { id: 'render-doc' });
+      return [];
     }
+  };
+
+  const exportToPDF = async () => {
+    if (!htmlContent) return;
+    const pages = await generatePaginatedImages();
+    if (pages.length === 0) return;
+
+    toast.loading('Generating PDF...', { id: 'pdf-export' });
+    const doc = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4',
+      compress: true
+    });
+
+    pages.forEach((pageDataUrl, index) => {
+      if (index > 0) doc.addPage();
+      doc.addImage(pageDataUrl, 'PNG', 0, 0, 210, 297, undefined, 'FAST');
+    });
 
     doc.save(`${file?.name.replace('.docx', '') || 'document'}_export.pdf`);
-    toast.success('Document exported to PDF successfully!');
+    toast.success('High-Quality PDF downloaded successfully!', { id: 'pdf-export' });
   };
 
   const exportToPNG = async () => {
-    if (!content) return;
-    toast.loading('Generating images...', { id: 'png-export' });
-    
-    const zip = new JSZip();
-    const tempCanvas = document.createElement('canvas');
-    const tempCtx = tempCanvas.getContext('2d');
-    tempCtx.font = '16px Courier';
-    
-    const allWrappedLines = [];
-    content.split('\n').forEach(line => {
-      if(line.trim() === '') {
-        allWrappedLines.push('');
-      } else {
-        let words = line.split(' ');
-        let currentLine = words[0] || '';
-        for (let i = 1; i < words.length; i++) {
-          let word = words[i];
-          if (tempCtx.measureText(currentLine + " " + word).width < 700) {
-            currentLine += " " + word;
-          } else {
-            allWrappedLines.push(currentLine);
-            currentLine = word;
-          }
-        }
-        allWrappedLines.push(currentLine);
-      }
-    });
+    if (!htmlContent) return;
+    const pages = await generatePaginatedImages();
+    if (pages.length === 0) return;
 
-    let pageNum = 1;
-    let currentLineIdx = 0;
-    
-    while (currentLineIdx < allWrappedLines.length) {
-      const scale = 3; // 3x scale for original best quality
-      const vWidth = 800;
-      const vHeight = 1131;
-      
-      const canvas = document.createElement('canvas');
-      canvas.width = vWidth * scale;
-      canvas.height = vHeight * scale;
-      const ctx = canvas.getContext('2d');
-      ctx.scale(scale, scale);
-      
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, vWidth, vHeight);
-      
-      let y = 60;
-      if (pageNum === 1) {
-        ctx.fillStyle = '#4f46e5';
-        ctx.font = 'bold 24px Helvetica';
-        ctx.fillText("Document Page Export", 50, 60);
-        ctx.strokeStyle = '#e2e8f0';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(50, 80);
-        ctx.lineTo(750, 80);
-        ctx.stroke();
-        y = 120;
-      }
-      
-      ctx.fillStyle = '#1e293b';
-      ctx.font = '16px Courier';
-      
-      while (y < vHeight - 40 && currentLineIdx < allWrappedLines.length) {
-        ctx.fillText(allWrappedLines[currentLineIdx], 50, y);
-        y += 24;
-        currentLineIdx++;
-      }
-      
-      const dataUrl = canvas.toDataURL('image/png', 1.0);
-      const base64Data = dataUrl.split(',')[1];
-      zip.file(`page_${pageNum}.png`, base64Data, { base64: true });
-      pageNum++;
-    }
+    toast.loading('Packaging PNG images...', { id: 'png-export' });
+    const zip = new JSZip();
+
+    pages.forEach((pageDataUrl, index) => {
+      const base64Data = pageDataUrl.split(',')[1];
+      zip.file(`page_${index + 1}.png`, base64Data, { base64: true });
+    });
 
     const contentZip = await zip.generateAsync({ type: 'blob' });
     const link = document.createElement('a');
@@ -175,7 +152,7 @@ const DocxConverter = () => {
   };
 
   const copyText = () => {
-    navigator.clipboard.writeText(content);
+    navigator.clipboard.writeText(rawText);
     setIsCopied(true);
     toast.success('Copied text content to clipboard!');
     setTimeout(() => setIsCopied(false), 2000);
@@ -188,8 +165,8 @@ const DocxConverter = () => {
           <FileText size={24} />
         </div>
         <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Word to PDF / Image Converter</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Convert Microsoft Word files into print-ready PDFs or download pages as high-resolution images.</p>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Word to PDF / Image</h1>
+          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Convert Microsoft Word files into original-quality PDFs or high-resolution images.</p>
         </div>
       </div>
 
@@ -222,7 +199,7 @@ const DocxConverter = () => {
             )}
           </div>
 
-          {content && (
+          {htmlContent && (
             <div className="bg-card border border-border p-5 rounded-2xl shadow-sm space-y-3">
               <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Conversion Actions</h3>
               <div className="grid grid-cols-2 gap-3">
@@ -241,10 +218,10 @@ const DocxConverter = () => {
               </div>
               <button
                 onClick={copyText}
-                className={`w-full py-3 px-4 font-bold rounded-xl border transition-all flex items-center justify-center gap-2 ${isCopied ? 'bg-primary/10 border-primary text-primary' : 'bg-background border-border text-foreground hover:bg-muted/50'}`}
+                className={\`w-full py-3 px-4 font-bold rounded-xl border transition-all flex items-center justify-center gap-2 \${isCopied ? 'bg-primary/10 border-primary text-primary' : 'bg-background border-border text-foreground hover:bg-muted/50'}\`}
               >
-                {isCopied ? <CheckCircle2 size={16} /> : <Copy size={16} />}
-                {isCopied ? 'Copied Text' : 'Copy Parsed Text'}
+                {isCopied ? <CheckCircle2 size={16} /> : <FileText size={16} />}
+                {isCopied ? 'Copied Raw Text' : 'Copy Raw Text'}
               </button>
             </div>
           )}
@@ -255,28 +232,52 @@ const DocxConverter = () => {
           <div className="p-4 border-b border-border bg-muted/30 flex justify-between items-center shrink-0">
             <h2 className="font-semibold text-foreground flex items-center gap-2 text-sm uppercase tracking-wider">
               <Sparkles size={16} className="text-primary" />
-              Document Print Preview
+              High-Fidelity Document Preview
             </h2>
           </div>
 
-          <div className="flex-1 p-6 md:p-12 bg-neutral-900 flex justify-center items-center overflow-auto custom-scrollbar">
-            {content ? (
+          <div className="flex-1 p-6 md:p-12 bg-neutral-900 flex justify-center items-start overflow-auto custom-scrollbar relative">
+            {htmlContent ? (
               <motion.div 
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="w-full max-w-2xl aspect-[1/1.4] bg-white text-slate-800 p-12 shadow-2xl rounded-sm border border-slate-200 overflow-y-auto custom-scrollbar flex flex-col font-serif"
+                className="relative bg-white shadow-2xl overflow-hidden"
               >
-                <div className="border-b-2 border-indigo-600 pb-3 mb-6 flex justify-between items-end">
-                  <span className="text-xs font-bold text-indigo-600 tracking-wider uppercase">Document Conversion View</span>
-                  <span className="text-xs text-slate-400 font-mono">{file?.name || 'document.docx'}</span>
+                {/* The rendering container is explicitly sized to standard A4 ratio width to preserve layout during html-to-image */}
+                <div 
+                  ref={documentRef}
+                  className="w-[794px] min-h-[1123px] bg-white text-black p-[72px]"
+                  style={{
+                    fontFamily: 'Arial, sans-serif',
+                    lineHeight: '1.6'
+                  }}
+                >
+                  <style>{`
+                    .doc-content h1 { font-size: 28px; font-weight: bold; margin-bottom: 24px; margin-top: 32px; }
+                    .doc-content h2 { font-size: 24px; font-weight: bold; margin-bottom: 20px; margin-top: 28px; }
+                    .doc-content h3 { font-size: 20px; font-weight: bold; margin-bottom: 16px; margin-top: 24px; }
+                    .doc-content p { font-size: 16px; margin-bottom: 16px; text-align: justify; }
+                    .doc-content ul, .doc-content ol { padding-left: 24px; margin-bottom: 16px; }
+                    .doc-content li { font-size: 16px; margin-bottom: 8px; }
+                    .doc-content strong { font-weight: bold; }
+                    .doc-content em { font-style: italic; }
+                    .doc-content table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
+                    .doc-content th, .doc-content td { border: 1px solid #cbd5e1; padding: 12px; }
+                    .doc-content img { max-width: 100%; height: auto; display: block; margin: 16px auto; }
+                  `}</style>
+                  <div 
+                    className="doc-content"
+                    dangerouslySetInnerHTML={{ __html: htmlContent }} 
+                  />
                 </div>
-                <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-700">{content}</p>
               </motion.div>
             ) : (
-              <div className="text-center text-muted-foreground p-12 flex flex-col items-center gap-2">
-                <FileText size={48} className="text-muted-foreground/35" />
-                <p className="text-sm font-bold">No Document Uploaded</p>
-                <p className="text-xs max-w-xs leading-normal">Upload a Word document in the side panel to generate page-rendering layouts and conversions.</p>
+              <div className="absolute inset-0 flex items-center justify-center text-muted-foreground p-12">
+                <div className="flex flex-col items-center gap-2">
+                  <FileText size={48} className="text-muted-foreground/35" />
+                  <p className="text-sm font-bold">No Document Uploaded</p>
+                  <p className="text-xs max-w-xs text-center leading-normal">Upload a Word document to generate a high-fidelity rendering for PDF or PNG export.</p>
+                </div>
               </div>
             )}
           </div>
