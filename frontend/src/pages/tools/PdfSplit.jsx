@@ -200,14 +200,14 @@ const PdfSplit = () => {
         const zeroIndexedPages = selectedPages.map(p => p - 1);
         const copiedPages = await newDoc.copyPages(originalDoc, zeroIndexedPages);
         copiedPages.forEach((page) => newDoc.addPage(page));
-        finalBytes = await newDoc.save();
+        finalBytes = await newDoc.save({ useObjectStreams: false });
       } else {
         const zip = new JSZip();
         for (const pageNum of selectedPages) {
           const singleDoc = await PDFDocument.create();
           const [copiedPage] = await singleDoc.copyPages(originalDoc, [pageNum - 1]);
           singleDoc.addPage(copiedPage);
-          const singleBytes = await singleDoc.save();
+          const singleBytes = await singleDoc.save({ useObjectStreams: false });
           zip.file(`${file.name.replace('.pdf', '')}_page_${pageNum}.pdf`, singleBytes);
         }
         finalBytes = await zip.generateAsync({ type: 'blob' });

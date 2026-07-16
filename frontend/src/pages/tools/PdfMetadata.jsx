@@ -136,7 +136,7 @@ const PdfMetadata = () => {
       if (metadata.producer) pdfDoc.setProducer(metadata.producer);
       if (metadata.keywords) pdfDoc.setKeywords(metadata.keywords.split(',').map(k => k.trim()));
       
-      const updatedBytes = await pdfDoc.save();
+      const updatedBytes = await pdfDoc.save({ useObjectStreams: false });
       
       const url = window.URL.createObjectURL(new Blob([updatedBytes], { type: 'application/pdf' }));
       const link = document.createElement('a');

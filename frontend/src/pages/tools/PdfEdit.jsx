@@ -597,7 +597,7 @@ const PdfEdit = () => {
       }
       
       // Save and compile final PDF bytes
-      const compiledBytes = await pdfDoc.save();
+      const compiledBytes = await pdfDoc.save({ useObjectStreams: false });
       const blob = new Blob([compiledBytes], { type: 'application/pdf' });
       const downloadUrl = URL.createObjectURL(blob);
       

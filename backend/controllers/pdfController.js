@@ -106,7 +106,7 @@ exports.splitPdf = async (req, res) => {
         const singlePagePdf = await PDFDocument.create();
         const [copiedPage] = await singlePagePdf.copyPages(pdf, [index]);
         singlePagePdf.addPage(copiedPage);
-        const singlePageBytes = await singlePagePdf.save();
+        const singlePageBytes = await singlePagePdf.save({ useObjectStreams: false });
 
         zip.addFile(`page_${index + 1}.pdf`, Buffer.from(singlePageBytes));
       }
@@ -122,7 +122,7 @@ exports.splitPdf = async (req, res) => {
       const copiedPages = await newPdf.copyPages(pdf, sortedIndices);
       copiedPages.forEach((page) => newPdf.addPage(page));
 
-      const newPdfBytes = await newPdf.save();
+      const newPdfBytes = await newPdf.save({ useObjectStreams: false });
       cleanupFiles([req.file]);
 
       res.setHeader('Content-Type', 'application/pdf');
@@ -378,7 +378,7 @@ exports.editMetadata = async (req, res) => {
     if (producer) pdfDoc.setProducer(producer);
     if (keywords) pdfDoc.setKeywords(keywords.split(',').map(k => k.trim()));
     
-    const modifiedBytes = await pdfDoc.save();
+    const modifiedBytes = await pdfDoc.save({ useObjectStreams: false });
     
     cleanupFiles([req.file]);
 

@@ -219,7 +219,7 @@ const PdfOrganizer = () => {
         newDoc.addPage(copiedPage);
       }
 
-      const pdfBytes = await newDoc.save();
+      const pdfBytes = await newDoc.save({ useObjectStreams: false });
       const blob = new Blob([pdfBytes], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
       
