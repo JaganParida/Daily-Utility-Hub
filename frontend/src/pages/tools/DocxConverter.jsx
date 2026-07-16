@@ -72,52 +72,100 @@ const DocxConverter = () => {
     doc.setFontSize(12);
 
     const splitText = doc.splitTextToSize(content, 180);
+    const pageHeight = doc.internal.pageSize.height;
+    
+    let cursorY = 25;
     doc.text("Daily Utility Hub - Converted Document", 15, 15);
     doc.line(15, 18, 195, 18);
-    doc.text(splitText, 15, 25);
+
+    for (let i = 0; i < splitText.length; i++) {
+      if (cursorY > pageHeight - 20) {
+        doc.addPage();
+        cursorY = 20;
+      }
+      doc.text(splitText[i], 15, cursorY);
+      cursorY += 7;
+    }
+
     doc.save(`${file?.name.replace('.docx', '') || 'document'}_export.pdf`);
     toast.success('Document exported to PDF successfully!');
   };
 
-  const exportToPNG = () => {
+  const exportToPNG = async () => {
     if (!content) return;
-    // Render the preview content directly onto an image canvas
-    const canvas = document.createElement('canvas');
-    canvas.width = 800;
-    canvas.height = 1000;
-    const ctx = canvas.getContext('2d');
+    toast.loading('Generating images...', { id: 'png-export' });
     
-    // Background
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    const zip = new JSZip();
+    const tempCanvas = document.createElement('canvas');
+    const tempCtx = tempCanvas.getContext('2d');
+    tempCtx.font = '16px Courier';
     
-    // Header
-    ctx.fillStyle = '#4f46e5';
-    ctx.font = 'bold 24px Helvetica';
-    ctx.fillText("Document Page Export", 50, 60);
-    ctx.strokeStyle = '#e2e8f0';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(50, 80);
-    ctx.lineTo(750, 80);
-    ctx.stroke();
-
-    // Body
-    ctx.fillStyle = '#1e293b';
-    ctx.font = '16px Courier';
-    const lines = content.split('\n');
-    let y = 120;
-    lines.forEach(line => {
-      ctx.fillText(line, 50, y);
-      y += 30;
+    const allWrappedLines = [];
+    content.split('\n').forEach(line => {
+      if(line.trim() === '') {
+        allWrappedLines.push('');
+      } else {
+        let words = line.split(' ');
+        let currentLine = words[0] || '';
+        for (let i = 1; i < words.length; i++) {
+          let word = words[i];
+          if (tempCtx.measureText(currentLine + " " + word).width < 700) {
+            currentLine += " " + word;
+          } else {
+            allWrappedLines.push(currentLine);
+            currentLine = word;
+          }
+        }
+        allWrappedLines.push(currentLine);
+      }
     });
 
-    const url = canvas.toDataURL('image/png');
+    let pageNum = 1;
+    let currentLineIdx = 0;
+    
+    while (currentLineIdx < allWrappedLines.length) {
+      const canvas = document.createElement('canvas');
+      canvas.width = 800;
+      canvas.height = 1131;
+      const ctx = canvas.getContext('2d');
+      
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      let y = 60;
+      if (pageNum === 1) {
+        ctx.fillStyle = '#4f46e5';
+        ctx.font = 'bold 24px Helvetica';
+        ctx.fillText("Document Page Export", 50, 60);
+        ctx.strokeStyle = '#e2e8f0';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(50, 80);
+        ctx.lineTo(750, 80);
+        ctx.stroke();
+        y = 120;
+      }
+      
+      ctx.fillStyle = '#1e293b';
+      ctx.font = '16px Courier';
+      
+      while (y < canvas.height - 40 && currentLineIdx < allWrappedLines.length) {
+        ctx.fillText(allWrappedLines[currentLineIdx], 50, y);
+        y += 24;
+        currentLineIdx++;
+      }
+      
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+      zip.file(`page_${pageNum}.png`, blob);
+      pageNum++;
+    }
+
+    const contentZip = await zip.generateAsync({ type: 'blob' });
     const link = document.createElement('a');
-    link.href = url;
-    link.download = `${file?.name.replace('.docx', '') || 'document'}_page.png`;
+    link.href = URL.createObjectURL(contentZip);
+    link.download = `${file?.name.replace('.docx', '') || 'document'}_images.zip`;
     link.click();
-    toast.success('Document page downloaded as PNG Image!');
+    toast.success('Document pages downloaded as a ZIP of PNGs!', { id: 'png-export' });
   };
 
   const copyText = () => {
