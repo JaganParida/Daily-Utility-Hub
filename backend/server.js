@@ -60,12 +60,7 @@ app.use((req, res, next) => {
 app.use(mongoSanitize());
 // We will handle XSS on the client-side and use DOMPurify when necessary.
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 10 * 60 * 1000, // 10 mins
-  max: 100 // 100 requests per windowMs
-});
-app.use(limiter);
+// Configurable rate limiting is applied at the route level to support auth, user, and public scopes.
 
 // Prevent http param pollution
 app.use(hpp());

@@ -53,12 +53,11 @@ exports.syncSession = async (req, res) => {
       return res.status(400).json({ message: 'Authentication token required.' });
     }
 
-    // 1. Verify token against Google's certificates
-    let decoded;
     try {
       decoded = await verifyFirebaseToken(idToken);
     } catch (err) {
       console.error('Firebase token verification failed:', err);
+      if (req.logAuthAttempt) await req.logAuthAttempt(false);
       return res.status(401).json({ message: 'Invalid or expired credentials.' });
     }
 
@@ -70,10 +69,12 @@ exports.syncSession = async (req, res) => {
     // Mode validation
     if (mode === 'login') {
       if (!user) {
+        if (req.logAuthAttempt) await req.logAuthAttempt(false);
         return res.status(404).json({ message: 'No account associated with this email. Please register first.' });
       }
     } else if (mode === 'register') {
       if (user) {
+        if (req.logAuthAttempt) await req.logAuthAttempt(false);
         return res.status(400).json({ message: 'Account already exists. Please log in instead.' });
       }
       
@@ -85,10 +86,12 @@ exports.syncSession = async (req, res) => {
       });
     } else if (mode === 'refresh') {
       if (!user) {
+        if (req.logAuthAttempt) await req.logAuthAttempt(false);
         return res.status(401).json({ message: 'Session expired or user deleted.' });
       }
     } else {
       if (!user) {
+        if (req.logAuthAttempt) await req.logAuthAttempt(false);
         return res.status(401).json({ message: 'Authentication required.' });
       }
     }
@@ -136,6 +139,8 @@ exports.syncSession = async (req, res) => {
       sameSite: isProd ? 'none' : 'lax' // Cross-domain cookie support in prod
     };
 
+    if (req.logAuthAttempt) await req.logAuthAttempt(true);
+
     res
       .cookie('token', sessionId, options)
       .json({
@@ -154,7 +159,8 @@ exports.syncSession = async (req, res) => {
       });
   } catch (error) {
     console.error('Session synchronization error:', error);
-    res.status(500).json({ message: `Internal server error during session sync: ${error.message}` });
+    if (req.logAuthAttempt) await req.logAuthAttempt(false);
+    res.status(500).json({ message: 'Internal server error during session synchronization.' });
   }
 };
 
@@ -181,7 +187,8 @@ exports.logoutUser = async (req, res) => {
 
     res.status(200).json({ success: true, message: 'User logged out' });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Logout error:', error);
+    res.status(500).json({ message: 'Internal server error during logout.' });
   }
 };
 
@@ -209,7 +216,8 @@ exports.getUserProfile = async (req, res) => {
       }))
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Get profile error:', error);
+    res.status(500).json({ message: 'Internal server error fetching user profile.' });
   }
 };
 
@@ -229,7 +237,8 @@ exports.updateUserProfile = async (req, res) => {
     await user.save();
     res.json({ success: true, name: user.name, email: user.email });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Update profile error:', error);
+    res.status(500).json({ message: 'Internal server error updating user profile.' });
   }
 };
 
@@ -250,7 +259,8 @@ exports.logoutSession = async (req, res) => {
 
     res.json({ success: true, message: 'Device logged out successfully.' });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Logout session error:', error);
+    res.status(500).json({ message: 'Internal server error revoking session.' });
   }
 };
 
@@ -281,7 +291,8 @@ exports.recordAnalyticsVisit = async (req, res) => {
     await user.save();
     res.json({ success: true, recentHistory: user.recentHistory });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Record visit error:', error);
+    res.status(500).json({ message: 'Internal server error recording analytics.' });
   }
 };
 
@@ -314,6 +325,7 @@ exports.updateAnalyticsPin = async (req, res) => {
     await user.save();
     res.json({ success: true, pinnedTools: user.pinnedTools });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Update pin error:', error);
+    res.status(500).json({ message: 'Internal server error updating pins.' });
   }
 };

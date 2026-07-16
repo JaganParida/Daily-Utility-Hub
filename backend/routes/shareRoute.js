@@ -8,6 +8,9 @@ const fs = require('fs');
 const shareController = require('../controllers/shareController');
 const { protect, softProtect } = require('../middleware/authMiddleware');
 const { validateFileType } = require('../middleware/uploadMiddleware');
+const { validate } = require('../middleware/validationMiddleware');
+const { shareUploadValidation, shareIdValidation } = require('../middleware/validationRules');
+const { publicRateLimiter, userRateLimiter } = require('../middleware/rateLimitMiddleware');
 
 const tempUploadDir = path.join(__dirname, '..', 'uploads', 'temp');
 
@@ -22,7 +25,9 @@ const storage = multer.diskStorage({
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = crypto.randomBytes(12).toString('hex');
-    cb(null, `share_${uniqueSuffix}${path.extname(file.originalname)}`);
+    // Sanitize extension to alphanumeric only to prevent injection/traversal
+    const ext = path.extname(file.originalname).replace(/[^.a-zA-Z0-9]/g, '');
+    cb(null, `share_${uniqueSuffix}${ext}`);
   }
 });
 
@@ -31,8 +36,8 @@ const upload = multer({
   limits: { fileSize: 50 * 1024 * 1024 } // 50MB max file size
 });
 
-router.post('/upload', softProtect, upload.single('file'), validateFileType, shareController.uploadFile);
-router.get('/metadata/:id', shareController.getFileMetadata);
-router.get('/download/:id', shareController.downloadFile);
+router.post('/upload', softProtect, userRateLimiter, upload.single('file'), validateFileType, shareUploadValidation, validate, shareController.uploadFile);
+router.get('/metadata/:id', publicRateLimiter, shareIdValidation, validate, shareController.getFileMetadata);
+router.get('/download/:id', publicRateLimiter, shareIdValidation, validate, shareController.downloadFile);
 
 module.exports = router;

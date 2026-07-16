@@ -15,7 +15,9 @@ const storage = multer.diskStorage({
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+    // Sanitize extension to alphanumeric only to prevent injection/traversal
+    const ext = path.extname(file.originalname).replace(/[^.a-zA-Z0-9]/g, '');
+    cb(null, file.fieldname + '-' + uniqueSuffix + ext);
   }
 });
 
@@ -39,12 +41,12 @@ const validateFileType = async (req, res, next) => {
   ];
 
   try {
-    const fileType = require('file-type');
+    const { fileTypeFromFile } = await import('file-type');
     
     for (const file of files) {
-      // For text files, file-type might return undefined as it only checks binary magic numbers.
-      // So we must handle text files differently if needed, but for now we'll allow standard text mimes.
-      const meta = await fileType.fromFile(file.path);
+      // For text files, file-type might return undefined as it only checks magic numbers.
+      // So we must handle text files differently, but for now we'll allow standard text mimes.
+      const meta = await fileTypeFromFile(file.path);
       
       let isValid = false;
       
@@ -81,7 +83,7 @@ const validateFileType = async (req, res, next) => {
     files.forEach(f => {
       if (fs.existsSync(f.path)) fs.unlinkSync(f.path);
     });
-    return res.status(500).json({ message: 'Error validating file format.', details: error.message });
+    return res.status(500).json({ message: 'Error validating file format.' });
   }
 };
 

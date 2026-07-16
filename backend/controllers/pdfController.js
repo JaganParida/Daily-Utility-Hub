@@ -46,7 +46,7 @@ exports.mergePdfs = async (req, res) => {
     cleanupFiles(req.files || []);
     console.error('🔥🔥🔥 Merge Error (pdfController.js):', error);
     console.error(error.stack);
-    res.status(500).json({ message: 'Failed to merge PDFs. The files may be corrupted or encrypted.', details: error.message });
+    res.status(500).json({ message: 'Failed to merge PDFs. The files may be corrupted or encrypted.' });
   }
 };
 
@@ -482,6 +482,6 @@ exports.inspectPdf = async (req, res) => {
   } catch (error) {
     cleanupFiles(req.file ? [req.file] : []);
     console.error('Inspect Error:', error);
-    res.status(500).json({ message: 'Failed to inspect PDF file.', details: error.message });
+    res.status(500).json({ message: 'Failed to inspect PDF file.' });
   }
 };
