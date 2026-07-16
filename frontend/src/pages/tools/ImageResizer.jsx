@@ -32,6 +32,8 @@ const ImageResizer = () => {
   // Track active selection for UI feedback
   const [activeScale, setActiveScale] = useState(null);
   const [activePreset, setActivePreset] = useState(null);
+  const [posX, setPosX] = useState(50);
+  const [posY, setPosY] = useState(50);
 
   const canvasRef = useRef(null);
 
@@ -54,6 +56,8 @@ const ImageResizer = () => {
       setOriginalRatio(img.width / img.height);
       setActiveScale(null);
       setActivePreset(null);
+      setPosX(50);
+      setPosY(50);
     };
     img.src = url;
   };
@@ -130,10 +134,10 @@ const ImageResizer = () => {
 
         if (imgRatio > canvasRatio) {
           drawHeight = width / imgRatio;
-          offsetY = (height - drawHeight) / 2;
+          offsetY = (height - drawHeight) * (posY / 100);
         } else {
           drawWidth = height * imgRatio;
-          offsetX = (width - drawWidth) / 2;
+          offsetX = (width - drawWidth) * (posX / 100);
         }
         
         if (type === 'image/jpeg') {
@@ -154,10 +158,10 @@ const ImageResizer = () => {
 
         if (imgRatio > canvasRatio) {
           sourceWidth = img.height * canvasRatio;
-          sourceX = (img.width - sourceWidth) / 2;
+          sourceX = (img.width - sourceWidth) * (posX / 100);
         } else {
           sourceHeight = img.width / canvasRatio;
-          sourceY = (img.height - sourceHeight) / 2;
+          sourceY = (img.height - sourceHeight) * (posY / 100);
         }
         
         if (type === 'image/jpeg') {
@@ -262,11 +266,18 @@ const ImageResizer = () => {
                     alt="spacer"
                     className="max-w-full max-h-full opacity-0 pointer-events-none block transition-all duration-500 ease-out"
                   />
-                  <motion.div layout className="absolute inset-0 bg-black/20 dark:bg-black/40 shadow-2xl transition-all duration-500 ease-out overflow-hidden">
+                  <motion.div layout className="absolute inset-0 bg-black/20 dark:bg-black/40 shadow-2xl transition-all duration-500 ease-out overflow-hidden touch-none">
                     <motion.img 
                       layout
                       src={image.url} 
                       alt="Preview" 
+                      onPan={(e, info) => {
+                        if (resizeMode === 'stretch') return;
+                        setPosX(prev => Math.min(100, Math.max(0, prev - (info.delta.x * 0.2))));
+                        setPosY(prev => Math.min(100, Math.max(0, prev - (info.delta.y * 0.2))));
+                      }}
+                      style={{ objectPosition: resizeMode === 'stretch' ? '50% 50%' : `${posX}% ${posY}%`, cursor: resizeMode === 'stretch' ? 'default' : 'grab' }}
+                      whileTap={{ cursor: resizeMode === 'stretch' ? 'default' : 'grabbing' }}
                       className={`w-full h-full drop-shadow-md ${resizeMode === 'stretch' ? 'object-fill' : resizeMode === 'contain' ? 'object-contain' : 'object-cover'}`}
                     />
                     {!maintainRatio && (
