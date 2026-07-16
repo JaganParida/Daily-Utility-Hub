@@ -25,16 +25,18 @@ exports.mergePdfs = async (req, res) => {
       return res.status(400).json({ message: 'Please upload at least two PDF files to merge.' });
     }
 
-    const mergedPdf = await PDFDocument.create();
+    const firstPdfBytes = fs.readFileSync(req.files[0].path);
+    const mergedPdf = await PDFDocument.load(firstPdfBytes);
 
-    for (const file of req.files) {
+    for (let i = 1; i < req.files.length; i++) {
+      const file = req.files[i];
       const pdfBytes = fs.readFileSync(file.path);
       const pdf = await PDFDocument.load(pdfBytes);
       const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
       copiedPages.forEach((page) => mergedPdf.addPage(page));
     }
 
-    const mergedPdfBytes = await mergedPdf.save();
+    const mergedPdfBytes = await mergedPdf.save({ useObjectStreams: false });
     
     // Clean up temp uploads
     cleanupFiles(req.files);

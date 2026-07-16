@@ -153,16 +153,17 @@ const PdfMerge = () => {
     try {
       setIsProcessing(true);
       
-      const mergedPdf = await PDFDocument.create();
+      const firstFileBytes = new Uint8Array(await files[0].file.arrayBuffer());
+      const mergedPdf = await PDFDocument.load(firstFileBytes);
       
-      for (const item of files) {
-        const fileBytes = new Uint8Array(await item.file.arrayBuffer());
+      for (let i = 1; i < files.length; i++) {
+        const fileBytes = new Uint8Array(await files[i].file.arrayBuffer());
         const srcPdf = await PDFDocument.load(fileBytes);
         const copiedPages = await mergedPdf.copyPages(srcPdf, srcPdf.getPageIndices());
         copiedPages.forEach((page) => mergedPdf.addPage(page));
       }
       
-      const mergedBytes = await mergedPdf.save();
+      const mergedBytes = await mergedPdf.save({ useObjectStreams: false });
       
       const url = window.URL.createObjectURL(new Blob([mergedBytes], { type: 'application/pdf' }));
       const link = document.createElement('a');
