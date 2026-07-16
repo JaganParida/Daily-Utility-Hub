@@ -116,6 +116,8 @@ const ImageResizer = () => {
       const ctx = canvas.getContext('2d');
       
       // Draw resized image
+      const type = image.type === 'image/png' ? 'image/png' : (image.type === 'image/webp' ? 'image/webp' : 'image/jpeg');
+      
       if (resizeMode === 'stretch') {
         ctx.drawImage(img, 0, 0, width, height);
       } else if (resizeMode === 'contain') {
@@ -167,9 +169,8 @@ const ImageResizer = () => {
       }
 
       // Download
-      const type = image.type === 'image/png' ? 'image/png' : 'image/jpeg';
-      const ext = type === 'image/png' ? 'png' : 'jpg';
-      const dataUrl = canvas.toDataURL(type, 0.95);
+      const ext = type === 'image/png' ? 'png' : (type === 'image/webp' ? 'webp' : 'jpg');
+      const dataUrl = canvas.toDataURL(type, 1.0);
       
       const link = document.createElement('a');
       link.href = dataUrl;
