@@ -114,8 +114,19 @@ const PptToPdf = () => {
       let y = 70;
       slide.bullets.forEach(bullet => {
         const splitBullet = doc.splitTextToSize(`- ${bullet}`, 250);
-        doc.text(splitBullet, 25, y);
-        y += (splitBullet.length * 7) + 8;
+        for (let i = 0; i < splitBullet.length; i++) {
+            if (y > 190) {
+              doc.addPage();
+              doc.setFillColor(15, 23, 42);
+              doc.rect(0, 0, 297, 210, 'F');
+              doc.setTextColor(255, 255, 255);
+              doc.setFontSize(14);
+              y = 30;
+            }
+            doc.text(splitBullet[i], 25, y);
+            y += 7;
+        }
+        y += 8;
       });
     });
 
@@ -123,46 +134,64 @@ const PptToPdf = () => {
     toast.success('Presentation converted and downloaded as PDF!');
   };
 
-  const downloadPNG = () => {
+  const downloadPNG = async () => {
     if (slides.length === 0) return;
+    toast.loading('Generating images...', { id: 'png-export' });
+    const zip = new JSZip();
+
+    for (let idx = 0; idx < slides.length; idx++) {
+      const canvas = document.createElement('canvas');
+      canvas.width = 800;
+      canvas.height = 600;
+      const ctx = canvas.getContext('2d');
+
+      // Background
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Title
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 26px Helvetica';
+      ctx.fillText(slides[idx].title, 50, 80);
+      
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(50, 100);
+      ctx.lineTo(750, 100);
+      ctx.stroke();
+
+      // Bullets
+      ctx.fillStyle = '#cbd5e1';
+      ctx.font = '18px Arial';
+      let y = 160;
+      slides[idx].bullets.forEach(bullet => {
+        const words = `• ${bullet}`.split(' ');
+        let currentLine = words[0] || '';
+        for (let i = 1; i < words.length; i++) {
+          let word = words[i];
+          if (ctx.measureText(currentLine + " " + word).width < 700) {
+            currentLine += " " + word;
+          } else {
+            ctx.fillText(currentLine, 60, y);
+            y += 30;
+            currentLine = "  " + word; // Indent wrapped line
+          }
+        }
+        ctx.fillText(currentLine, 60, y);
+        y += 40;
+      });
+
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+      zip.file(`slide_${idx + 1}.png`, blob);
+    }
     
-    // Draw current active slide to canvas and download
-    const canvas = document.createElement('canvas');
-    canvas.width = 800;
-    canvas.height = 600;
-    const ctx = canvas.getContext('2d');
-
-    // Background
-    ctx.fillStyle = '#0f172a';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Title
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 26px Helvetica';
-    ctx.fillText(slides[activeSlideIdx].title, 50, 80);
-    
-    ctx.strokeStyle = '#334155';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(50, 100);
-    ctx.lineTo(750, 100);
-    ctx.stroke();
-
-    // Bullets
-    ctx.fillStyle = '#cbd5e1';
-    ctx.font = '18px Arial';
-    let y = 160;
-    slides[activeSlideIdx].bullets.forEach(bullet => {
-      ctx.fillText(`• ${bullet}`, 60, y);
-      y += 40;
-    });
-
-    const url = canvas.toDataURL('image/png');
+    const contentZip = await zip.generateAsync({ type: 'blob' });
     const link = document.createElement('a');
-    link.href = url;
-    link.download = `slide_${activeSlideIdx + 1}.png`;
+    link.href = URL.createObjectURL(contentZip);
+    link.download = `${file?.name.replace('.pptx', '') || 'presentation'}_slides.zip`;
     link.click();
-    toast.success(`Slide ${activeSlideIdx + 1} downloaded as PNG!`);
+    toast.success('All slides downloaded as a ZIP of PNGs!', { id: 'png-export' });
   };
 
   return (
