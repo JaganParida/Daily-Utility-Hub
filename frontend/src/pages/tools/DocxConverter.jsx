@@ -124,13 +124,18 @@ const DocxConverter = () => {
     let currentLineIdx = 0;
     
     while (currentLineIdx < allWrappedLines.length) {
+      const scale = 3; // 3x scale for original best quality
+      const vWidth = 800;
+      const vHeight = 1131;
+      
       const canvas = document.createElement('canvas');
-      canvas.width = 800;
-      canvas.height = 1131;
+      canvas.width = vWidth * scale;
+      canvas.height = vHeight * scale;
       const ctx = canvas.getContext('2d');
+      ctx.scale(scale, scale);
       
       ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillRect(0, 0, vWidth, vHeight);
       
       let y = 60;
       if (pageNum === 1) {
@@ -149,14 +154,15 @@ const DocxConverter = () => {
       ctx.fillStyle = '#1e293b';
       ctx.font = '16px Courier';
       
-      while (y < canvas.height - 40 && currentLineIdx < allWrappedLines.length) {
+      while (y < vHeight - 40 && currentLineIdx < allWrappedLines.length) {
         ctx.fillText(allWrappedLines[currentLineIdx], 50, y);
         y += 24;
         currentLineIdx++;
       }
       
-      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-      zip.file(`page_${pageNum}.png`, blob);
+      const dataUrl = canvas.toDataURL('image/png', 1.0);
+      const base64Data = dataUrl.split(',')[1];
+      zip.file(`page_${pageNum}.png`, base64Data, { base64: true });
       pageNum++;
     }
 
