@@ -6,6 +6,7 @@ import { Toaster } from 'react-hot-toast';
 import { AnimatePresence } from 'framer-motion';
 import { useAuth } from './context/AuthContext';
 import { Loader2 } from 'lucide-react';
+import { Analytics } from '@vercel/analytics/react';
 
 // Core Pages (Lazy loaded)
 const Dashboard = lazy(() => import('./pages/Dashboard'));
@@ -292,6 +293,7 @@ function App() {
         <Toaster position="top-right" toastOptions={{ duration: 4000, style: { background: 'var(--card)', color: 'var(--foreground)', border: '1px solid var(--border)' } }} />
         <RouteTracker />
         <AnimatedRoutes />
+        <Analytics />
       </Router>
     </AuthProvider>
   );
