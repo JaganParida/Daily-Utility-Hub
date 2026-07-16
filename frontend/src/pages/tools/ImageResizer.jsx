@@ -25,6 +25,7 @@ const ImageResizer = () => {
   const [width, setWidth] = useState(0);
   const [height, setHeight] = useState(0);
   const [maintainRatio, setMaintainRatio] = useState(true);
+  const [resizeMode, setResizeMode] = useState('stretch');
   const [originalRatio, setOriginalRatio] = useState(1);
   const [originalSize, setOriginalSize] = useState({ w: 0, h: 0 });
   
@@ -115,7 +116,55 @@ const ImageResizer = () => {
       const ctx = canvas.getContext('2d');
       
       // Draw resized image
-      ctx.drawImage(img, 0, 0, width, height);
+      if (resizeMode === 'stretch') {
+        ctx.drawImage(img, 0, 0, width, height);
+      } else if (resizeMode === 'contain') {
+        const imgRatio = img.width / img.height;
+        const canvasRatio = width / height;
+        let drawWidth = width;
+        let drawHeight = height;
+        let offsetX = 0;
+        let offsetY = 0;
+
+        if (imgRatio > canvasRatio) {
+          drawHeight = width / imgRatio;
+          offsetY = (height - drawHeight) / 2;
+        } else {
+          drawWidth = height * imgRatio;
+          offsetX = (width - drawWidth) / 2;
+        }
+        
+        if (type === 'image/jpeg') {
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillRect(0, 0, width, height);
+        } else {
+          ctx.clearRect(0, 0, width, height);
+        }
+        
+        ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+      } else if (resizeMode === 'cover') {
+        const imgRatio = img.width / img.height;
+        const canvasRatio = width / height;
+        let sourceWidth = img.width;
+        let sourceHeight = img.height;
+        let sourceX = 0;
+        let sourceY = 0;
+
+        if (imgRatio > canvasRatio) {
+          sourceWidth = img.height * canvasRatio;
+          sourceX = (img.width - sourceWidth) / 2;
+        } else {
+          sourceHeight = img.width / canvasRatio;
+          sourceY = (img.height - sourceHeight) / 2;
+        }
+        
+        if (type === 'image/jpeg') {
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillRect(0, 0, width, height);
+        }
+        
+        ctx.drawImage(img, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, width, height);
+      }
 
       // Download
       const type = image.type === 'image/png' ? 'image/png' : 'image/jpeg';
@@ -217,7 +266,7 @@ const ImageResizer = () => {
                       layout
                       src={image.url} 
                       alt="Preview" 
-                      className="w-full h-full object-fill drop-shadow-md"
+                      className={`w-full h-full drop-shadow-md ${resizeMode === 'stretch' ? 'object-fill' : resizeMode === 'contain' ? 'object-contain' : 'object-cover'}`}
                     />
                     {!maintainRatio && (
                       <motion.div layout className="absolute inset-0 border-[3px] border-red-500 border-dashed pointer-events-none z-10 shadow-[inset_0_0_30px_rgba(239,68,68,0.4)]"></motion.div>
@@ -270,6 +319,29 @@ const ImageResizer = () => {
                     className="w-full p-3 bg-background border border-border rounded-xl text-base font-mono text-foreground focus:ring-2 focus:ring-primary/50 outline-none transition-all shadow-sm"
                   />
                 </div>
+              </div>
+            </div>
+
+                        {/* Resize Mode */}
+            <div className="pt-1">
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block mb-2.5">
+                Resize Behavior
+              </label>
+              <div className="flex bg-muted/30 p-1 rounded-xl border border-border">
+                {['stretch', 'contain', 'cover'].map(mode => (
+                  <button
+                    key={mode}
+                    onClick={() => setResizeMode(mode)}
+                    disabled={!image}
+                    className={`flex-1 py-2 px-1 text-[11px] sm:text-xs font-bold capitalize transition-all rounded-lg ${
+                      resizeMode === mode
+                        ? 'bg-background shadow-sm text-foreground border border-border/50'
+                        : 'text-muted-foreground hover:text-foreground transparent border border-transparent'
+                    }`}
+                  >
+                    {mode === 'stretch' ? 'Stretch (Default)' : mode === 'contain' ? 'Fit (Center)' : 'Fill (Crop)'}
+                  </button>
+                ))}
               </div>
             </div>
 
