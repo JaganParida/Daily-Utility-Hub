@@ -218,7 +218,7 @@ const DocxConverter = () => {
               </div>
               <button
                 onClick={copyText}
-                className={\`w-full py-3 px-4 font-bold rounded-xl border transition-all flex items-center justify-center gap-2 \${isCopied ? 'bg-primary/10 border-primary text-primary' : 'bg-background border-border text-foreground hover:bg-muted/50'}\`}
+                className={`w-full py-3 px-4 font-bold rounded-xl border transition-all flex items-center justify-center gap-2 ${isCopied ? 'bg-primary/10 border-primary text-primary' : 'bg-background border-border text-foreground hover:bg-muted/50'}`}
               >
                 {isCopied ? <CheckCircle2 size={16} /> : <FileText size={16} />}
                 {isCopied ? 'Copied Raw Text' : 'Copy Raw Text'}
