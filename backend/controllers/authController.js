@@ -75,19 +75,17 @@ exports.syncSession = async (req, res) => {
         return res.status(404).json({ message: 'No account associated with this email. Please register first.' });
       }
     } else if (mode === 'register') {
-      if (user) {
-        if (req.logAuthAttempt) await req.logAuthAttempt(false);
-        return res.status(400).json({ message: 'User already exists. Please log in instead.' });
+      if (!user) {
+        // Create user record in MongoDB
+        user = await User.create({
+          name: registerName || name || email.split('@')[0],
+          email,
+          password: crypto.randomBytes(16).toString('hex'), // secure placeholder; auth managed by Firebase
+          isEmailVerified: true // They verified OTP *before* this step!
+        });
+        isNewUser = true;
       }
-      
-      // Create user record in MongoDB
-      user = await User.create({
-        name: registerName || name || email.split('@')[0],
-        email,
-        password: crypto.randomBytes(16).toString('hex'), // secure placeholder; auth managed by Firebase
-        isEmailVerified: true // They verified OTP *before* this step!
-      });
-      isNewUser = true;
+      // If user already exists, we allow them to pass and log them in seamlessly.
     } else if (mode === 'google') {
       if (!user) {
         // If OTP token is not provided, this is the initial signup attempt.

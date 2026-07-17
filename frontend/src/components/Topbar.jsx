@@ -1,5 +1,17 @@
 import {
-  User, LogOut, Search, Menu, X, ChevronDown, Layers, Moon, Sun, HelpCircle, Shield, ArrowLeft, Heart
+  User,
+  LogOut,
+  Search,
+  Menu,
+  X,
+  ChevronDown,
+  Layers,
+  Moon,
+  Sun,
+  HelpCircle,
+  Shield,
+  ArrowLeft,
+  Heart,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -12,13 +24,15 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
   const [hoveredTab, setHoveredTab] = useState(null); // 'tools' | 'instructions' | null
-  const [activeCategory, setActiveCategory] = useState(Object.keys(toolCategories)[0]);
+  const [activeCategory, setActiveCategory] = useState(
+    Object.keys(toolCategories)[0],
+  );
   const [mobileExpandedCat, setMobileExpandedCat] = useState(null);
 
   const { currentUser: user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  
+
   const [isFavOpen, setIsFavOpen] = useState(false);
   const favDropdownRef = useRef(null);
 
@@ -28,8 +42,8 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
       setSearchWidth(window.innerWidth < 640 ? 190 : 280);
     };
     handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
   const currentPath = location.pathname;
   const megamenuRef = useRef(null);
@@ -44,7 +58,9 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
 
   const TABS = ["tools", "instructions"];
   const currentTabIndex = hoveredTab ? TABS.indexOf(hoveredTab) : -1;
-  const prevTabIndex = prevTabRef.current ? TABS.indexOf(prevTabRef.current) : -1;
+  const prevTabIndex = prevTabRef.current
+    ? TABS.indexOf(prevTabRef.current)
+    : -1;
   const slideDirection = currentTabIndex > prevTabIndex ? 1 : -1;
 
   const handleCategoryHover = (catName) => {
@@ -88,14 +104,16 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
     ? uniqueTools.filter(
         (tool) =>
           tool.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          tool.description.toLowerCase().includes(searchQuery.toLowerCase())
+          tool.description.toLowerCase().includes(searchQuery.toLowerCase()),
       )
     : [];
 
   useEffect(() => {
     const handler = (e) => {
-      if (megamenuRef.current && !megamenuRef.current.contains(e.target)) setHoveredTab(null);
-      if (favDropdownRef.current && !favDropdownRef.current.contains(e.target)) setIsFavOpen(false);
+      if (megamenuRef.current && !megamenuRef.current.contains(e.target))
+        setHoveredTab(null);
+      if (favDropdownRef.current && !favDropdownRef.current.contains(e.target))
+        setIsFavOpen(false);
       if (searchRef.current && !searchRef.current.contains(e.target)) {
         setIsSearchExpanded(false);
         setSearchQuery("");
@@ -107,19 +125,21 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
 
   const getToolByPath = (path) => {
     for (const catName of Object.keys(toolCategories)) {
-      const found = toolCategories[catName].find(t => t.to === path);
+      const found = toolCategories[catName].find((t) => t.to === path);
       if (found) return found;
     }
     return null;
   };
 
-  useHotkeys("ctrl+k, meta+k", (e) => {
-    e.preventDefault();
-    setIsSearchExpanded(true);
-    setTimeout(() => searchInputRef.current?.focus(), 50);
-  }, { enableOnFormTags: true });
-
-
+  useHotkeys(
+    "ctrl+k, meta+k",
+    (e) => {
+      e.preventDefault();
+      setIsSearchExpanded(true);
+      setTimeout(() => searchInputRef.current?.focus(), 50);
+    },
+    { enableOnFormTags: true },
+  );
 
   return (
     <motion.header
@@ -129,13 +149,22 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
       className="w-full fixed top-0 inset-x-0 z-50"
     >
       {/* Subtle border at bottom when scrolled */}
-      <div className={`w-full transition-all duration-300 ${isScrolled ? "bg-[#09090b]/80 backdrop-blur-xl border-b border-[#27272a]" : "bg-transparent"}`}>
-        <div ref={megamenuRef} className="max-w-[1200px] mx-auto flex items-center justify-between h-14 sm:h-16 px-4 sm:px-6 md:px-8">
-
+      <div
+        className={`w-full transition-all duration-300 ${isScrolled ? "bg-[#09090b]/80 backdrop-blur-xl border-b border-[#27272a]" : "bg-transparent"}`}
+      >
+        <div
+          ref={megamenuRef}
+          className="max-w-[1200px] mx-auto flex items-center justify-between h-14 sm:h-16 px-4 sm:px-6 md:px-8"
+        >
           {/* LEFT: Logo or Back Button */}
-          <div className={`transition-[opacity,transform] duration-300 ease-out ${isSearchExpanded ? "opacity-0 pointer-events-none scale-95 md:opacity-100 md:pointer-events-auto md:scale-100 flex" : "opacity-100 pointer-events-auto scale-100 flex"} items-center gap-2.5 shrink-0`}>
-            {currentPath.startsWith('/tools') ? (
-              <Link to="/" className="flex items-center gap-2 group shrink-0 text-[#a1a1aa] hover:text-white transition-colors bg-[#18181b] border border-[#27272a] hover:bg-[#27272a] px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs sm:text-[13px] font-bold shadow-sm">
+          <div
+            className={`transition-[opacity,transform] duration-300 ease-out ${isSearchExpanded ? "opacity-0 pointer-events-none scale-95 md:opacity-100 md:pointer-events-auto md:scale-100 flex" : "opacity-100 pointer-events-auto scale-100 flex"} items-center gap-2.5 shrink-0`}
+          >
+            {currentPath.startsWith("/tools") ? (
+              <Link
+                to="/"
+                className="flex items-center gap-2 group shrink-0 text-[#a1a1aa] hover:text-white transition-colors bg-[#18181b] border border-[#27272a] hover:bg-[#27272a] px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs sm:text-[13px] font-bold shadow-sm"
+              >
                 <ArrowLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform group-hover:-translate-x-0.5" />
                 <span className="hidden sm:inline-block">Back to Home</span>
                 <span className="sm:hidden">Back</span>
@@ -143,48 +172,79 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
             ) : (
               <Link to="/" className="flex items-center gap-2.5 group shrink-0">
                 <div className="w-9 h-9 sm:w-8 sm:h-8 shrink-0 rounded-xl bg-[#2563eb] flex items-center justify-center text-white shadow-lg shadow-[#2563eb]/20 group-hover:shadow-[#2563eb]/30 group-hover:scale-105 transition-all">
-                  <svg className="w-5 h-5 sm:w-4 sm:h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+                  <svg
+                    className="w-5 h-5 sm:w-4 sm:h-4"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2.5}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
                     <polygon points="12 2 2 7 12 12 22 7 12 2" />
                     <polyline points="2 17 12 22 22 17" />
                   </svg>
                 </div>
-                <span className="hidden sm:inline-block font-black text-[15px] tracking-tight text-white">UtilityHub</span>
+                <span className="hidden sm:inline-block font-black text-[15px] tracking-tight text-white">
+                  UtilityHub
+                </span>
               </Link>
             )}
           </div>
 
           {/* CENTER: Nav (Stripe/CloudConvert style morphing megamenu) */}
-          <nav className="hidden lg:flex items-center gap-1.5 mx-8 h-full" onMouseLeave={() => setHoveredTab(null)}>
+          <nav
+            className="hidden lg:flex items-center gap-1.5 mx-8 h-full"
+            onMouseLeave={() => setHoveredTab(null)}
+          >
             <Link
               to="/"
               className={`px-3 py-1.5 rounded-lg text-[13px] font-semibold transition-colors ${
-                currentPath === "/" ? "text-white" : "text-[#a1a1aa] hover:text-white"
+                currentPath === "/"
+                  ? "text-white"
+                  : "text-[#a1a1aa] hover:text-white"
               }`}
             >
               Home
             </Link>
 
             {/* Tools hover wrapper */}
-            <div className="relative py-4" onMouseEnter={() => setHoveredTab("tools")}>
+            <div
+              className="relative py-4"
+              onMouseEnter={() => setHoveredTab("tools")}
+            >
               <button
                 className={`px-3 py-1.5 rounded-lg text-[13px] font-semibold transition-colors flex items-center gap-1 cursor-pointer ${
-                  hoveredTab === "tools" || currentPath.startsWith("/tools") ? "text-white" : "text-[#a1a1aa] hover:text-white"
+                  hoveredTab === "tools" || currentPath.startsWith("/tools")
+                    ? "text-white"
+                    : "text-[#a1a1aa] hover:text-white"
                 }`}
               >
                 Tools
-                <ChevronDown size={12} className={`transition-transform duration-200 ${hoveredTab === "tools" ? "rotate-180" : ""}`} />
+                <ChevronDown
+                  size={12}
+                  className={`transition-transform duration-200 ${hoveredTab === "tools" ? "rotate-180" : ""}`}
+                />
               </button>
             </div>
 
             {/* Instructions hover wrapper */}
-            <div className="relative py-4" onMouseEnter={() => setHoveredTab("instructions")}>
+            <div
+              className="relative py-4"
+              onMouseEnter={() => setHoveredTab("instructions")}
+            >
               <button
                 className={`px-3 py-1.5 rounded-lg text-[13px] font-semibold transition-colors flex items-center gap-1 cursor-pointer ${
-                  hoveredTab === "instructions" ? "text-white" : "text-[#a1a1aa] hover:text-white"
+                  hoveredTab === "instructions"
+                    ? "text-white"
+                    : "text-[#a1a1aa] hover:text-white"
                 }`}
               >
                 Instructions
-                <ChevronDown size={12} className={`transition-transform duration-200 ${hoveredTab === "instructions" ? "rotate-180" : ""}`} />
+                <ChevronDown
+                  size={12}
+                  className={`transition-transform duration-200 ${hoveredTab === "instructions" ? "rotate-180" : ""}`}
+                />
               </button>
             </div>
 
@@ -194,7 +254,12 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                 <motion.div
                   initial={{ opacity: 0, y: 8, scale: 0.98 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 4, scale: 0.98, transition: { duration: 0.15 } }}
+                  exit={{
+                    opacity: 0,
+                    y: 4,
+                    scale: 0.98,
+                    transition: { duration: 0.15 },
+                  }}
                   transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                   className="absolute top-[85%] left-1/2 -translate-x-1/2 mt-1 bg-[#111116] border border-[#27272a] rounded-xl shadow-[0_20px_60px_rgba(0,0,0,0.8)] z-[200] overflow-hidden flex flex-col"
                   style={{ width: 850, height: 430 }}
@@ -203,47 +268,78 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                   <div className="h-[2px] w-full bg-gradient-to-r from-[#2563eb] via-[#60a5fa] to-[#2563eb] shrink-0" />
 
                   <div className="relative w-full flex-1 overflow-hidden">
-                    <AnimatePresence mode="popLayout" custom={slideDirection} initial={false}>
+                    <AnimatePresence
+                      mode="popLayout"
+                      custom={slideDirection}
+                      initial={false}
+                    >
                       {hoveredTab === "tools" && (
                         <motion.div
                           key="tools"
                           custom={slideDirection}
-                          initial={{ opacity: 0, x: slideDirection === 1 ? 30 : -30 }}
+                          initial={{
+                            opacity: 0,
+                            x: slideDirection === 1 ? 30 : -30,
+                          }}
                           animate={{ opacity: 1, x: 0 }}
-                          exit={{ opacity: 0, x: slideDirection === 1 ? -30 : 30 }}
-                          transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                          className="flex absolute inset-0" 
+                          exit={{
+                            opacity: 0,
+                            x: slideDirection === 1 ? -30 : 30,
+                          }}
+                          transition={{
+                            duration: 0.3,
+                            ease: [0.16, 1, 0.3, 1],
+                          }}
+                          className="flex absolute inset-0"
                         >
                           {/* Left: Categories */}
                           <div className="w-[195px] border-r border-[#27272a] flex flex-col py-2.5 shrink-0">
-                            <p className="text-[8px] font-black text-[#3f3f46] uppercase tracking-[0.2em] px-5 py-1.5">Browse</p>
+                            <p className="text-[8px] font-black text-[#3f3f46] uppercase tracking-[0.2em] px-5 py-1.5">
+                              Browse
+                            </p>
                             <div className="flex-1 overflow-y-auto custom-scrollbar px-3 space-y-1">
                               {Object.keys(toolCategories).map((catName) => {
                                 const isActive = catName === activeCategory;
                                 return (
                                   <button
                                     key={catName}
-                                    onMouseEnter={() => handleCategoryHover(catName)}
+                                    onMouseEnter={() =>
+                                      handleCategoryHover(catName)
+                                    }
                                     className={`w-full px-3 py-2 text-left text-[11px] font-bold flex items-center justify-between cursor-pointer rounded-lg relative ${
-                                      isActive ? "text-white" : "text-[#52525b] hover:text-[#e4e4e7]"
+                                      isActive
+                                        ? "text-white"
+                                        : "text-[#52525b] hover:text-[#e4e4e7]"
                                     }`}
                                   >
                                     {isActive && (
                                       <motion.div
                                         layoutId="activeCategoryBg"
                                         className="absolute inset-0 bg-[#ffffff05] border border-[#ffffff02] rounded-lg"
-                                        transition={{ type: "spring", damping: 25, stiffness: 250 }}
+                                        transition={{
+                                          type: "spring",
+                                          damping: 25,
+                                          stiffness: 250,
+                                        }}
                                       />
                                     )}
                                     {isActive && (
                                       <motion.div
                                         layoutId="catIndicator"
                                         className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-4 bg-[#2563eb] rounded-r-full"
-                                        transition={{ type: "spring", damping: 20, stiffness: 300 }}
+                                        transition={{
+                                          type: "spring",
+                                          damping: 20,
+                                          stiffness: 300,
+                                        }}
                                       />
                                     )}
-                                    <span className="truncate relative z-10">{catName}</span>
-                                    <span className={`text-[9px] tabular-nums font-bold shrink-0 ml-2 relative z-10 ${isActive ? "text-[#2563eb]" : "text-[#27272a]"}`}>
+                                    <span className="truncate relative z-10">
+                                      {catName}
+                                    </span>
+                                    <span
+                                      className={`text-[9px] tabular-nums font-bold shrink-0 ml-2 relative z-10 ${isActive ? "text-[#2563eb]" : "text-[#27272a]"}`}
+                                    >
                                       {toolCategories[catName].length}
                                     </span>
                                   </button>
@@ -256,11 +352,18 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                           <div className="flex-1 flex flex-col min-w-0">
                             <div className="px-4 py-2.5 border-b border-[#27272a] flex items-center justify-between shrink-0">
                               <div className="flex items-center gap-2">
-                                <h3 className="text-[13px] font-bold text-white">{activeCategory}</h3>
-                                <span className="text-[9px] text-[#27272a] bg-[#27272a] px-1.5 py-0.5 rounded font-mono">{toolCategories[activeCategory]?.length}</span>
+                                <h3 className="text-[13px] font-bold text-white">
+                                  {activeCategory}
+                                </h3>
+                                <span className="text-[9px] text-[#27272a] bg-[#27272a] px-1.5 py-0.5 rounded font-mono">
+                                  {toolCategories[activeCategory]?.length}
+                                </span>
                               </div>
                               <button
-                                onClick={() => { setHoveredTab(null); setIsPaletteOpen(true); }}
+                                onClick={() => {
+                                  setHoveredTab(null);
+                                  setIsPaletteOpen(true);
+                                }}
                                 className="flex items-center gap-1 text-[10px] text-[#3f3f46] hover:text-[#2563eb] transition-colors cursor-pointer"
                               >
                                 <Search size={10} />
@@ -284,20 +387,39 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                                           : "hover:bg-[#ffffff04] border-l-2 border-transparent hover:border-[#2563eb]/40"
                                       }`}
                                     >
-                                      <div className={`w-7 h-7 rounded-md shrink-0 flex items-center justify-center ${
-                                        isCurrent
-                                          ? "bg-[#2563eb]/20 text-[#2563eb]"
-                                          : (tool.color || "bg-[#27272a] text-[#71717a] group-hover:text-[#2563eb] group-hover:bg-[#2563eb]/8")
-                                      } transition-colors`}>
+                                      <div
+                                        className={`w-7 h-7 rounded-md shrink-0 flex items-center justify-center ${
+                                          isCurrent
+                                            ? "bg-[#2563eb]/20 text-[#2563eb]"
+                                            : tool.color ||
+                                              "bg-[#27272a] text-[#71717a] group-hover:text-[#2563eb] group-hover:bg-[#2563eb]/8"
+                                        } transition-colors`}
+                                      >
                                         <Icon size={13} />
                                       </div>
                                       <div className="min-w-0 flex-1">
-                                        <p className={`text-[11px] font-semibold truncate ${
-                                          isCurrent ? "text-[#2563eb]" : "text-[#d4d4d8] group-hover:text-white transition-colors"
-                                        }`}>{tool.name}</p>
-                                        <p className="text-[9px] leading-tight mt-0.5 text-[#27272a] truncate">{tool.description}</p>
+                                        <p
+                                          className={`text-[11px] font-semibold truncate ${
+                                            isCurrent
+                                              ? "text-[#2563eb]"
+                                              : "text-[#d4d4d8] group-hover:text-white transition-colors"
+                                          }`}
+                                        >
+                                          {tool.name}
+                                        </p>
+                                        <p className="text-[9px] leading-tight mt-0.5 text-[#27272a] truncate">
+                                          {tool.description}
+                                        </p>
                                       </div>
-                                      <svg className={`w-3 h-3 shrink-0 transition-all ${isCurrent ? "text-[#2563eb] opacity-100" : "text-[#27272a] opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5"}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+                                      <svg
+                                        className={`w-3 h-3 shrink-0 transition-all ${isCurrent ? "text-[#2563eb] opacity-100" : "text-[#27272a] opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5"}`}
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth={2.5}
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                      >
                                         <polyline points="9 18 15 12 9 6" />
                                       </svg>
                                     </Link>
@@ -308,11 +430,22 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
 
                             <div className="px-4 py-2 border-t border-[#27272a] shrink-0">
                               <button
-                                onClick={() => { setHoveredTab(null); setIsPaletteOpen(true); }}
+                                onClick={() => {
+                                  setHoveredTab(null);
+                                  setIsPaletteOpen(true);
+                                }}
                                 className="text-[10px] text-[#3f3f46] hover:text-[#2563eb] font-medium transition-colors cursor-pointer flex items-center gap-1"
                               >
                                 Browse all tools
-                                <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+                                <svg
+                                  className="w-2.5 h-2.5"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth={2.5}
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                >
                                   <polyline points="9 18 15 12 9 6" />
                                 </svg>
                               </button>
@@ -325,41 +458,69 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                         <motion.div
                           key="instructions"
                           custom={slideDirection}
-                          initial={{ opacity: 0, x: slideDirection === 1 ? 30 : -30 }}
+                          initial={{
+                            opacity: 0,
+                            x: slideDirection === 1 ? 30 : -30,
+                          }}
                           animate={{ opacity: 1, x: 0 }}
-                          exit={{ opacity: 0, x: slideDirection === 1 ? -30 : 30 }}
-                          transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                          exit={{
+                            opacity: 0,
+                            x: slideDirection === 1 ? -30 : 30,
+                          }}
+                          transition={{
+                            duration: 0.3,
+                            ease: [0.16, 1, 0.3, 1],
+                          }}
                           className="grid grid-cols-12 gap-6 p-6 text-left absolute inset-0"
                         >
                           {/* Left: Work Faster & Steps */}
                           <div className="col-span-5 border-r border-[#27272a] pr-6 space-y-4">
                             <div>
-                              <span className="text-[9px] font-black tracking-widest text-[#2563eb] uppercase">Work Faster. Think Bigger.</span>
-                              <h4 className="text-sm font-black text-white mt-1">The Modern Utility Hub</h4>
+                              <span className="text-[9px] font-black tracking-widest text-[#2563eb] uppercase">
+                                Work Faster. Think Bigger.
+                              </span>
+                              <h4 className="text-sm font-black text-white mt-1">
+                                The Modern Utility Hub
+                              </h4>
                               <p className="text-[11.5px] text-[#71717a] mt-1 leading-relaxed">
-                                We discarded the bloat and focused purely on performance, privacy, and speed. 50+ tools executing instantly in your browser.
+                                We discarded the bloat and focused purely on
+                                performance, privacy, and speed. 50+ tools
+                                executing instantly in your browser.
                               </p>
                             </div>
 
                             <div className="space-y-3.5 pt-1">
                               <div>
-                                <p className="text-[10px] font-black text-[#60a5fa] uppercase tracking-wider">01 // Step: Locate instantly</p>
+                                <p className="text-[10px] font-black text-[#60a5fa] uppercase tracking-wider">
+                                  01 // Step: Locate instantly
+                                </p>
                                 <p className="text-[11px] text-[#a1a1aa] leading-relaxed mt-0.5">
-                                  Hit <span className="bg-[#27272a] px-1.5 py-0.5 rounded text-white font-mono text-[10px] border border-[#3f3f46]">CMD+K</span> anywhere to open the command palette.
+                                  Hit{" "}
+                                  <span className="bg-[#27272a] px-1.5 py-0.5 rounded text-white font-mono text-[10px] border border-[#3f3f46]">
+                                    CMD/CTRL+K
+                                  </span>{" "}
+                                  anywhere to open the command palette.
                                 </p>
                               </div>
 
                               <div>
-                                <p className="text-[10px] font-black text-[#60a5fa] uppercase tracking-wider">02 // Step: Execute locally</p>
+                                <p className="text-[10px] font-black text-[#60a5fa] uppercase tracking-wider">
+                                  02 // Step: Execute locally
+                                </p>
                                 <p className="text-[11px] text-[#a1a1aa] leading-relaxed mt-0.5">
-                                  Paste your payload or drop files. Everything runs securely inside your local browser sandbox.
+                                  Paste your payload or drop files. Everything
+                                  runs securely inside your local browser
+                                  sandbox.
                                 </p>
                               </div>
 
                               <div>
-                                <p className="text-[10px] font-black text-[#60a5fa] uppercase tracking-wider">03 // Step: Export effortlessly</p>
+                                <p className="text-[10px] font-black text-[#60a5fa] uppercase tracking-wider">
+                                  03 // Step: Export effortlessly
+                                </p>
                                 <p className="text-[11px] text-[#a1a1aa] leading-relaxed mt-0.5">
-                                  Copy your formatted code with one click, or instantly download your processed assets.
+                                  Copy your formatted code with one click, or
+                                  instantly download your processed assets.
                                 </p>
                               </div>
                             </div>
@@ -368,8 +529,12 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                           {/* Middle: Feature Comparison Table */}
                           <div className="col-span-4 border-r border-[#27272a] pr-6 space-y-3.5">
                             <div>
-                              <span className="text-[9px] font-black tracking-widest text-[#2563eb] uppercase">Transparent Access</span>
-                              <h4 className="text-sm font-black text-white mt-1">Account Features</h4>
+                              <span className="text-[9px] font-black tracking-widest text-[#2563eb] uppercase">
+                                Transparent Access
+                              </span>
+                              <h4 className="text-sm font-black text-white mt-1">
+                                Account Features
+                              </h4>
                             </div>
 
                             <div className="w-full text-[10.5px] text-[#a1a1aa]">
@@ -379,16 +544,45 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                                 <span className="text-center">Member</span>
                               </div>
                               {[
-                                { name: "50+ Client-side tools", guest: true, user: true },
-                                { name: "Zero tracking & ads", guest: true, user: true },
-                                { name: "Recent history log", guest: true, user: true },
-                                { name: "Pin favorite tools", guest: false, user: true },
-                                { name: "Cloud sync configs", guest: false, user: true },
+                                {
+                                  name: "50+ Client-side tools",
+                                  guest: true,
+                                  user: true,
+                                },
+                                {
+                                  name: "Zero tracking & ads",
+                                  guest: true,
+                                  user: true,
+                                },
+                                {
+                                  name: "Recent history log",
+                                  guest: true,
+                                  user: true,
+                                },
+                                {
+                                  name: "Pin favorite tools",
+                                  guest: false,
+                                  user: true,
+                                },
+                                {
+                                  name: "Cloud sync configs",
+                                  guest: false,
+                                  user: true,
+                                },
                               ].map((row, i) => (
-                                <div key={i} className="grid grid-cols-3 py-2 border-b border-[#18181b] items-center">
-                                  <span className="text-[#71717a] truncate pr-1">{row.name}</span>
-                                  <span className="text-center">{row.guest ? "✓" : "✕"}</span>
-                                  <span className="text-center text-[#2563eb] font-black">{row.user ? "✓" : "✕"}</span>
+                                <div
+                                  key={i}
+                                  className="grid grid-cols-3 py-2 border-b border-[#18181b] items-center"
+                                >
+                                  <span className="text-[#71717a] truncate pr-1">
+                                    {row.name}
+                                  </span>
+                                  <span className="text-center">
+                                    {row.guest ? "✓" : "✕"}
+                                  </span>
+                                  <span className="text-center text-[#2563eb] font-black">
+                                    {row.user ? "✓" : "✕"}
+                                  </span>
                                 </div>
                               ))}
                             </div>
@@ -397,22 +591,41 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                           {/* Right: FAQs */}
                           <div className="col-span-3 space-y-4">
                             <div>
-                              <span className="text-[9px] font-black tracking-widest text-[#2563eb] uppercase">Questions?</span>
-                              <h4 className="text-sm font-black text-white mt-1">Quick FAQ</h4>
+                              <span className="text-[9px] font-black tracking-widest text-[#2563eb] uppercase">
+                                Questions?
+                              </span>
+                              <h4 className="text-sm font-black text-white mt-1">
+                                Quick FAQ
+                              </h4>
                             </div>
 
                             <div className="space-y-3.5">
                               <div>
-                                <p className="text-[10.5px] font-bold text-white">Is it 100% free?</p>
-                                <p className="text-[10px] text-[#71717a] leading-relaxed mt-0.5">Yes. No paywalls, subscriptions, or hidden charges whatsoever.</p>
+                                <p className="text-[10.5px] font-bold text-white">
+                                  Is it 100% free?
+                                </p>
+                                <p className="text-[10px] text-[#71717a] leading-relaxed mt-0.5">
+                                  Yes. No paywalls, subscriptions, or hidden
+                                  charges whatsoever.
+                                </p>
                               </div>
                               <div>
-                                <p className="text-[10.5px] font-bold text-white">Are files secure?</p>
-                                <p className="text-[10px] text-[#71717a] leading-relaxed mt-0.5">Strict Privacy. Calculations are local. We never see your data.</p>
+                                <p className="text-[10.5px] font-bold text-white">
+                                  Are files secure?
+                                </p>
+                                <p className="text-[10px] text-[#71717a] leading-relaxed mt-0.5">
+                                  Strict Privacy. Calculations are local. We
+                                  never see your data.
+                                </p>
                               </div>
                               <div>
-                                <p className="text-[10.5px] font-bold text-white">Why register?</p>
-                                <p className="text-[10px] text-[#71717a] leading-relaxed mt-0.5">Enable Zero Latency cross-device sync of your configuration logs.</p>
+                                <p className="text-[10.5px] font-bold text-white">
+                                  Why register?
+                                </p>
+                                <p className="text-[10px] text-[#71717a] leading-relaxed mt-0.5">
+                                  Enable Zero Latency cross-device sync of your
+                                  configuration logs.
+                                </p>
                               </div>
                             </div>
                           </div>
@@ -520,7 +733,9 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
           </AnimatePresence>
 
           {/* RIGHT: Actions */}
-          <div className={`flex items-center gap-2 sm:gap-2.5 shrink-0 transition-[opacity,transform] duration-300 ease-out ${isSearchExpanded ? "opacity-0 pointer-events-none scale-95 md:opacity-100 md:pointer-events-auto md:scale-100 flex" : "opacity-100 pointer-events-auto scale-100 flex"}`}>
+          <div
+            className={`flex items-center gap-2 sm:gap-2.5 shrink-0 transition-[opacity,transform] duration-300 ease-out ${isSearchExpanded ? "opacity-0 pointer-events-none scale-95 md:opacity-100 md:pointer-events-auto md:scale-100 flex" : "opacity-100 pointer-events-auto scale-100 flex"}`}
+          >
             {/* Search */}
             <div className="relative shrink-0">
               {/* Mobile-only collapsed search button */}
@@ -566,8 +781,12 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                   ref={searchRef}
                   animate={{
                     width: isSearchExpanded ? searchWidth : 32,
-                    borderColor: isSearchExpanded ? "rgba(124, 92, 252, 0.5)" : "rgba(34, 34, 48, 0.4)",
-                    backgroundColor: isSearchExpanded ? "#18181b" : "rgba(20, 20, 25, 0.9)"
+                    borderColor: isSearchExpanded
+                      ? "rgba(124, 92, 252, 0.5)"
+                      : "rgba(34, 34, 48, 0.4)",
+                    backgroundColor: isSearchExpanded
+                      ? "#18181b"
+                      : "rgba(20, 20, 25, 0.9)",
                   }}
                   transition={{ duration: 0.38, ease: [0.4, 0, 0.2, 1] }}
                   className="flex items-center h-8 rounded-full border overflow-hidden shrink-0 cursor-pointer relative px-0.5"
@@ -584,107 +803,112 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                     <Search size={13} />
                   </div>
 
-                 {/* Input field (animated opacity/width) */}
-                <motion.input
-                  ref={searchInputRef}
-                  type="text"
-                  placeholder="Search tools..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  animate={{
-                    width: isSearchExpanded ? (searchWidth - 80) : 0,
-                    opacity: isSearchExpanded ? 1 : 0,
-                    pointerEvents: isSearchExpanded ? "auto" : "none"
-                  }}
-                  transition={{ duration: 0.38, ease: [0.4, 0, 0.2, 1] }}
-                  className="bg-transparent border-none text-[11px] text-white focus:outline-none placeholder:text-[#52525b] ml-1 pr-6"
-                />
+                  {/* Input field (animated opacity/width) */}
+                  <motion.input
+                    ref={searchInputRef}
+                    type="text"
+                    placeholder="Search tools..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    animate={{
+                      width: isSearchExpanded ? searchWidth - 80 : 0,
+                      opacity: isSearchExpanded ? 1 : 0,
+                      pointerEvents: isSearchExpanded ? "auto" : "none",
+                    }}
+                    transition={{ duration: 0.38, ease: [0.4, 0, 0.2, 1] }}
+                    className="bg-transparent border-none text-[11px] text-white focus:outline-none placeholder:text-[#52525b] ml-1 pr-6"
+                  />
 
-                {/* Close Button */}
-                <motion.button
-                  animate={{
-                    opacity: isSearchExpanded ? 1 : 0,
-                    scale: isSearchExpanded ? 1 : 0,
-                    pointerEvents: isSearchExpanded ? "auto" : "none"
-                  }}
-                  transition={{ duration: 0.2, ease: "easeOut" }}
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsSearchExpanded(false);
-                    setSearchQuery("");
-                  }}
-                  className="absolute right-2 text-[#52525b] hover:text-white shrink-0 p-0.5"
-                >
-                  <X size={12} />
-                </motion.button>
-              </motion.div>
-
-              {/* Suggestions dropdown list */}
-              <AnimatePresence>
-                {isSearchExpanded && searchQuery && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10, scale: 0.98 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 8, scale: 0.98 }}
-                    transition={{ duration: 0.15 }}
-                    className="absolute right-0 top-full mt-2 w-[360px] max-h-[380px] overflow-hidden bg-[#18181b] border border-[#3f3f46] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.7)] z-[300] flex flex-col"
+                  {/* Close Button */}
+                  <motion.button
+                    animate={{
+                      opacity: isSearchExpanded ? 1 : 0,
+                      scale: isSearchExpanded ? 1 : 0,
+                      pointerEvents: isSearchExpanded ? "auto" : "none",
+                    }}
+                    transition={{ duration: 0.2, ease: "easeOut" }}
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsSearchExpanded(false);
+                      setSearchQuery("");
+                    }}
+                    className="absolute right-2 text-[#52525b] hover:text-white shrink-0 p-0.5"
                   >
-                    <div className="flex-1 overflow-y-auto custom-scrollbar py-2">
-                      {filteredTools.length > 0 ? (
-                        filteredTools.map((tool) => {
-                          const ToolIcon = tool.icon;
-                          return (
-                            <Link
-                              key={tool.to}
-                              to={tool.to}
-                              onClick={() => {
-                                setIsSearchExpanded(false);
-                                setSearchQuery("");
-                              }}
-                              className="w-full flex items-start gap-3 px-4 py-2.5 hover:bg-[#2563eb]/5 hover:text-white transition-colors border-b border-[#27272a]/40 last:border-b-0 group"
-                            >
-                              <div className="w-7 h-7 rounded-lg bg-[#27272a] group-hover:bg-[#2563eb]/10 flex items-center justify-center text-[#71717a] group-hover:text-[#2563eb] transition-colors shrink-0 mt-0.5">
-                                <ToolIcon size={13} />
-                              </div>
-                              <div className="min-w-0 flex-1">
-                                <div className="flex items-center justify-between gap-2">
-                                  <span className="text-[11px] font-bold text-[#e4e4e7] group-hover:text-white truncate">
-                                    {tool.name}
-                                  </span>
+                    <X size={12} />
+                  </motion.button>
+                </motion.div>
+
+                {/* Suggestions dropdown list */}
+                <AnimatePresence>
+                  {isSearchExpanded && searchQuery && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 8, scale: 0.98 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute right-0 top-full mt-2 w-[360px] max-h-[380px] overflow-hidden bg-[#18181b] border border-[#3f3f46] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.7)] z-[300] flex flex-col"
+                    >
+                      <div className="flex-1 overflow-y-auto custom-scrollbar py-2">
+                        {filteredTools.length > 0 ? (
+                          filteredTools.map((tool) => {
+                            const ToolIcon = tool.icon;
+                            return (
+                              <Link
+                                key={tool.to}
+                                to={tool.to}
+                                onClick={() => {
+                                  setIsSearchExpanded(false);
+                                  setSearchQuery("");
+                                }}
+                                className="w-full flex items-start gap-3 px-4 py-2.5 hover:bg-[#2563eb]/5 hover:text-white transition-colors border-b border-[#27272a]/40 last:border-b-0 group"
+                              >
+                                <div className="w-7 h-7 rounded-lg bg-[#27272a] group-hover:bg-[#2563eb]/10 flex items-center justify-center text-[#71717a] group-hover:text-[#2563eb] transition-colors shrink-0 mt-0.5">
+                                  <ToolIcon size={13} />
                                 </div>
-                                <p className="text-[9px] text-[#52525b] leading-normal line-clamp-2 mt-0.5">
-                                  {tool.description}
-                                </p>
-                              </div>
-                            </Link>
-                          );
-                        })
-                      ) : (
-                        <div className="px-4 py-6 text-center text-xs text-[#52525b]">
-                          No matching tools found
-                        </div>
-                      )}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div></div>
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex items-center justify-between gap-2">
+                                    <span className="text-[11px] font-bold text-[#e4e4e7] group-hover:text-white truncate">
+                                      {tool.name}
+                                    </span>
+                                  </div>
+                                  <p className="text-[9px] text-[#52525b] leading-normal line-clamp-2 mt-0.5">
+                                    {tool.description}
+                                  </p>
+                                </div>
+                              </Link>
+                            );
+                          })
+                        ) : (
+                          <div className="px-4 py-6 text-center text-xs text-[#52525b]">
+                            No matching tools found
+                          </div>
+                        )}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
 
             {/* User */}
             {user ? (
               <div className="flex items-center gap-1.5">
                 <Link
-                    to="/favorites"
-                    className={`flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1.5 rounded-lg transition-all shrink-0 ${
-                      currentPath === "/favorites"
-                        ? "text-[#2563eb]"
-                        : "text-[#a1a1aa] hover:text-white"
-                    }`}
-                  >
-                    <Heart size={12} className="text-rose-500 shrink-0" fill="currentColor" />
-                    <span className="hidden sm:inline">Favorites</span>
-                  </Link>
+                  to="/favorites"
+                  className={`flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1.5 rounded-lg transition-all shrink-0 ${
+                    currentPath === "/favorites"
+                      ? "text-[#2563eb]"
+                      : "text-[#a1a1aa] hover:text-white"
+                  }`}
+                >
+                  <Heart
+                    size={12}
+                    className="text-rose-500 shrink-0"
+                    fill="currentColor"
+                  />
+                  <span className="hidden sm:inline">Favorites</span>
+                </Link>
 
                 <Link
                   to="/profile"
@@ -695,9 +919,13 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                   }`}
                 >
                   <div className="w-6 h-6 rounded-lg bg-[#2563eb] text-white flex items-center justify-center font-black text-[10px]">
-                    {(user.name || user.displayName || user.email || 'U').charAt(0).toUpperCase()}
+                    {(user.name || user.displayName || user.email || "U")
+                      .charAt(0)
+                      .toUpperCase()}
                   </div>
-                  <span className="hidden lg:inline max-w-[70px] truncate">{user.name || user.displayName || 'Profile'}</span>
+                  <span className="hidden lg:inline max-w-[70px] truncate">
+                    {user.name || user.displayName || "Profile"}
+                  </span>
                 </Link>
                 <button
                   onClick={logout}
@@ -718,7 +946,7 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
 
             {/* Mobile hamburger */}
             <button
-              onClick={() => setIsMobileMenuOpen(p => !p)}
+              onClick={() => setIsMobileMenuOpen((p) => !p)}
               className="flex lg:hidden items-center justify-center w-9 h-9 text-[#a1a1aa] hover:text-white transition-colors cursor-pointer group"
               title="Menu"
             >
@@ -731,8 +959,6 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
           </div>
         </div>
       </div>
-
-
 
       {/* Mobile Drawer (Bottom Sheet) */}
       <AnimatePresence>
@@ -759,39 +985,77 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
 
               {/* Title bar */}
               <div className="flex items-center justify-between px-6 pb-3 border-b border-[#27272a]/50 shrink-0">
-                <span className="font-black text-xs tracking-wider text-white uppercase tracking-[0.1em]">Workspace Menu</span>
-                <button onClick={() => setIsMobileMenuOpen(false)} className="p-1.5 hover:bg-[#27272a] rounded-lg text-[#71717a] hover:text-white cursor-pointer"><X size={14} /></button>
+                <span className="font-black text-xs tracking-wider text-white uppercase tracking-[0.1em]">
+                  Workspace Menu
+                </span>
+                <button
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="p-1.5 hover:bg-[#27272a] rounded-lg text-[#71717a] hover:text-white cursor-pointer"
+                >
+                  <X size={14} />
+                </button>
               </div>
 
               {/* Content area */}
               <div className="flex-1 overflow-y-auto custom-scrollbar px-5 py-4 space-y-1.5 pb-8">
-                <Link to="/" onClick={() => setIsMobileMenuOpen(false)} className={`block px-4 py-3 rounded-xl text-xs font-bold transition-all ${currentPath === "/" ? "bg-[#2563eb]/10 text-[#2563eb]" : "text-[#a1a1aa] hover:text-white hover:bg-[#ffffff06]"}`}>
+                <Link
+                  to="/"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`block px-4 py-3 rounded-xl text-xs font-bold transition-all ${currentPath === "/" ? "bg-[#2563eb]/10 text-[#2563eb]" : "text-[#a1a1aa] hover:text-white hover:bg-[#ffffff06]"}`}
+                >
                   Home
                 </Link>
-                <Link to="/profile" onClick={() => setIsMobileMenuOpen(false)} className={`block px-4 py-3 rounded-xl text-xs font-bold transition-all ${currentPath === "/profile" ? "bg-[#2563eb]/10 text-[#2563eb]" : "text-[#a1a1aa] hover:text-white hover:bg-[#ffffff06]"}`}>
+                <Link
+                  to="/profile"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`block px-4 py-3 rounded-xl text-xs font-bold transition-all ${currentPath === "/profile" ? "bg-[#2563eb]/10 text-[#2563eb]" : "text-[#a1a1aa] hover:text-white hover:bg-[#ffffff06]"}`}
+                >
                   Profile
                 </Link>
-                <button onClick={() => { setIsMobileMenuOpen(false); setIsInfoOpen(true); }} className="w-full text-left block px-4 py-3 rounded-xl text-xs font-bold text-[#a1a1aa] hover:text-white hover:bg-[#ffffff06] transition-all cursor-pointer">
+                <button
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    setIsInfoOpen(true);
+                  }}
+                  className="w-full text-left block px-4 py-3 rounded-xl text-xs font-bold text-[#a1a1aa] hover:text-white hover:bg-[#ffffff06] transition-all cursor-pointer"
+                >
                   Instructions
                 </button>
 
                 <div className="pt-4 mt-2 border-t border-[#27272a]">
-                  <p className="text-[10px] font-black text-[#3f3f46] uppercase tracking-[0.15em] px-4 mb-2.5">Tools</p>
+                  <p className="text-[10px] font-black text-[#3f3f46] uppercase tracking-[0.15em] px-4 mb-2.5">
+                    Tools
+                  </p>
                   {Object.keys(toolCategories).map((catName) => (
                     <div key={catName}>
                       <button
-                        onClick={() => setMobileExpandedCat(mobileExpandedCat === catName ? null : catName)}
+                        onClick={() =>
+                          setMobileExpandedCat(
+                            mobileExpandedCat === catName ? null : catName,
+                          )
+                        }
                         className="w-full px-4 py-3 rounded-xl text-left text-xs font-semibold text-[#a1a1aa] hover:text-white flex items-center justify-between cursor-pointer hover:bg-[#ffffff04]"
                       >
                         <span>{catName}</span>
                         <div className="flex items-center gap-1.5">
-                          <span className="text-[10px] text-[#3f3f46] font-bold bg-[#18181b] px-2 py-0.5 rounded-full border border-[#27272a]">{toolCategories[catName].length}</span>
-                          <ChevronDown size={12} className={`transition-transform text-[#3f3f46] ${mobileExpandedCat === catName ? "rotate-180" : ""}`} />
+                          <span className="text-[10px] text-[#3f3f46] font-bold bg-[#18181b] px-2 py-0.5 rounded-full border border-[#27272a]">
+                            {toolCategories[catName].length}
+                          </span>
+                          <ChevronDown
+                            size={12}
+                            className={`transition-transform text-[#3f3f46] ${mobileExpandedCat === catName ? "rotate-180" : ""}`}
+                          />
                         </div>
                       </button>
                       <AnimatePresence>
                         {mobileExpandedCat === catName && (
-                          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden pl-4 space-y-0.5 border-l border-[#27272a]/80 ml-5 mt-1 mb-2">
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="overflow-hidden pl-4 space-y-0.5 border-l border-[#27272a]/80 ml-5 mt-1 mb-2"
+                          >
                             {toolCategories[catName].map((tool) => (
                               <Link
                                 key={tool.to}
@@ -812,7 +1076,13 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
 
               {user && (
                 <div className="border-t border-[#27272a] p-4 bg-[#09090b] shrink-0">
-                  <button onClick={() => { logout(); setIsMobileMenuOpen(false); }} className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-xs font-bold text-red-400 hover:bg-red-500/10 transition-all cursor-pointer">
+                  <button
+                    onClick={() => {
+                      logout();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-xs font-bold text-red-400 hover:bg-red-500/10 transition-all cursor-pointer"
+                  >
                     <LogOut size={14} /> Sign Out
                   </button>
                 </div>
@@ -849,40 +1119,64 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
               <div className="p-5 sm:p-6 flex flex-col h-full max-h-[85vh]">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-4 shrink-0">
-                  <h3 className="text-xs sm:text-sm font-black text-white uppercase tracking-wider">Instructions</h3>
-                  <button onClick={() => setIsInfoOpen(false)} className="p-1 hover:bg-[#27272a] rounded-lg text-[#71717a] hover:text-white cursor-pointer transition-colors"><X size={14} /></button>
+                  <h3 className="text-xs sm:text-sm font-black text-white uppercase tracking-wider">
+                    Instructions
+                  </h3>
+                  <button
+                    onClick={() => setIsInfoOpen(false)}
+                    className="p-1 hover:bg-[#27272a] rounded-lg text-[#71717a] hover:text-white cursor-pointer transition-colors"
+                  >
+                    <X size={14} />
+                  </button>
                 </div>
 
                 {/* Body Content */}
                 <div className="overflow-y-auto custom-scrollbar pr-2 space-y-8 pb-4">
-                  
                   {/* Work Faster & Steps */}
                   <div className="space-y-4">
                     <div>
-                      <span className="text-[9px] font-black tracking-widest text-[#2563eb] uppercase">Work Faster. Think Bigger.</span>
-                      <h4 className="text-sm font-black text-white mt-1">The Modern Utility Hub</h4>
+                      <span className="text-[9px] font-black tracking-widest text-[#2563eb] uppercase">
+                        Work Faster. Think Bigger.
+                      </span>
+                      <h4 className="text-sm font-black text-white mt-1">
+                        The Modern Utility Hub
+                      </h4>
                       <p className="text-[11.5px] text-[#71717a] mt-1 leading-relaxed">
-                        We discarded the bloat and focused purely on performance, privacy, and speed. 50+ tools executing instantly in your browser.
+                        We discarded the bloat and focused purely on
+                        performance, privacy, and speed. 50+ tools executing
+                        instantly in your browser.
                       </p>
                     </div>
 
                     <div className="space-y-3.5 pt-1">
                       <div>
-                        <p className="text-[10px] font-black text-[#60a5fa] uppercase tracking-wider">01 // Step: Locate instantly</p>
+                        <p className="text-[10px] font-black text-[#60a5fa] uppercase tracking-wider">
+                          01 // Step: Locate instantly
+                        </p>
                         <p className="text-[11px] text-[#a1a1aa] leading-relaxed mt-0.5">
-                          Hit <span className="bg-[#27272a] px-1.5 py-0.5 rounded text-white font-mono text-[10px] border border-[#3f3f46]">CMD+K</span> anywhere to open the command palette.
+                          Hit{" "}
+                          <span className="bg-[#27272a] px-1.5 py-0.5 rounded text-white font-mono text-[10px] border border-[#3f3f46]">
+                            CMD/CTRL+K
+                          </span>{" "}
+                          anywhere to open the command palette.
                         </p>
                       </div>
                       <div>
-                        <p className="text-[10px] font-black text-[#60a5fa] uppercase tracking-wider">02 // Step: Execute locally</p>
+                        <p className="text-[10px] font-black text-[#60a5fa] uppercase tracking-wider">
+                          02 // Step: Execute locally
+                        </p>
                         <p className="text-[11px] text-[#a1a1aa] leading-relaxed mt-0.5">
-                          Paste your payload or drop files. Everything runs securely inside your local browser sandbox.
+                          Paste your payload or drop files. Everything runs
+                          securely inside your local browser sandbox.
                         </p>
                       </div>
                       <div>
-                        <p className="text-[10px] font-black text-[#60a5fa] uppercase tracking-wider">03 // Step: Export effortlessly</p>
+                        <p className="text-[10px] font-black text-[#60a5fa] uppercase tracking-wider">
+                          03 // Step: Export effortlessly
+                        </p>
                         <p className="text-[11px] text-[#a1a1aa] leading-relaxed mt-0.5">
-                          Copy your formatted code with one click, or instantly download your processed assets.
+                          Copy your formatted code with one click, or instantly
+                          download your processed assets.
                         </p>
                       </div>
                     </div>
@@ -891,8 +1185,12 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                   {/* Feature Comparison Table */}
                   <div className="space-y-3.5 pt-2 border-t border-[#27272a]">
                     <div>
-                      <span className="text-[9px] font-black tracking-widest text-[#2563eb] uppercase">Transparent Access</span>
-                      <h4 className="text-sm font-black text-white mt-1">Account Features</h4>
+                      <span className="text-[9px] font-black tracking-widest text-[#2563eb] uppercase">
+                        Transparent Access
+                      </span>
+                      <h4 className="text-sm font-black text-white mt-1">
+                        Account Features
+                      </h4>
                     </div>
 
                     <div className="w-full text-[10.5px] text-[#a1a1aa]">
@@ -902,16 +1200,41 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                         <span className="text-center">Member</span>
                       </div>
                       {[
-                        { name: "50+ Client-side tools", guest: true, user: true },
-                        { name: "Zero tracking & ads", guest: true, user: true },
+                        {
+                          name: "50+ Client-side tools",
+                          guest: true,
+                          user: true,
+                        },
+                        {
+                          name: "Zero tracking & ads",
+                          guest: true,
+                          user: true,
+                        },
                         { name: "Recent history log", guest: true, user: true },
-                        { name: "Pin favorite tools", guest: false, user: true },
-                        { name: "Cloud sync configs", guest: false, user: true },
+                        {
+                          name: "Pin favorite tools",
+                          guest: false,
+                          user: true,
+                        },
+                        {
+                          name: "Cloud sync configs",
+                          guest: false,
+                          user: true,
+                        },
                       ].map((row, i) => (
-                        <div key={i} className="grid grid-cols-3 py-2 border-b border-[#18181b] items-center">
-                          <span className="text-[#71717a] truncate pr-1">{row.name}</span>
-                          <span className="text-center">{row.guest ? "✓" : "✕"}</span>
-                          <span className="text-center text-[#2563eb] font-black">{row.user ? "✓" : "✕"}</span>
+                        <div
+                          key={i}
+                          className="grid grid-cols-3 py-2 border-b border-[#18181b] items-center"
+                        >
+                          <span className="text-[#71717a] truncate pr-1">
+                            {row.name}
+                          </span>
+                          <span className="text-center">
+                            {row.guest ? "✓" : "✕"}
+                          </span>
+                          <span className="text-center text-[#2563eb] font-black">
+                            {row.user ? "✓" : "✕"}
+                          </span>
                         </div>
                       ))}
                     </div>
@@ -920,26 +1243,44 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                   {/* FAQs */}
                   <div className="space-y-4 pt-2 border-t border-[#27272a]">
                     <div>
-                      <span className="text-[9px] font-black tracking-widest text-[#2563eb] uppercase">Questions?</span>
-                      <h4 className="text-sm font-black text-white mt-1">Quick FAQ</h4>
+                      <span className="text-[9px] font-black tracking-widest text-[#2563eb] uppercase">
+                        Questions?
+                      </span>
+                      <h4 className="text-sm font-black text-white mt-1">
+                        Quick FAQ
+                      </h4>
                     </div>
 
                     <div className="space-y-3.5">
                       <div>
-                        <p className="text-[10.5px] font-bold text-white">Is it 100% free?</p>
-                        <p className="text-[10px] text-[#71717a] leading-relaxed mt-0.5">Yes. No paywalls, subscriptions, or hidden charges whatsoever.</p>
+                        <p className="text-[10.5px] font-bold text-white">
+                          Is it 100% free?
+                        </p>
+                        <p className="text-[10px] text-[#71717a] leading-relaxed mt-0.5">
+                          Yes. No paywalls, subscriptions, or hidden charges
+                          whatsoever.
+                        </p>
                       </div>
                       <div>
-                        <p className="text-[10.5px] font-bold text-white">Are files secure?</p>
-                        <p className="text-[10px] text-[#71717a] leading-relaxed mt-0.5">Strict Privacy. Calculations are local. We never see your data.</p>
+                        <p className="text-[10.5px] font-bold text-white">
+                          Are files secure?
+                        </p>
+                        <p className="text-[10px] text-[#71717a] leading-relaxed mt-0.5">
+                          Strict Privacy. Calculations are local. We never see
+                          your data.
+                        </p>
                       </div>
                       <div>
-                        <p className="text-[10.5px] font-bold text-white">Why register?</p>
-                        <p className="text-[10px] text-[#71717a] leading-relaxed mt-0.5">Enable Zero Latency cross-device sync of your configuration logs.</p>
+                        <p className="text-[10.5px] font-bold text-white">
+                          Why register?
+                        </p>
+                        <p className="text-[10px] text-[#71717a] leading-relaxed mt-0.5">
+                          Enable Zero Latency cross-device sync of your
+                          configuration logs.
+                        </p>
                       </div>
                     </div>
                   </div>
-
                 </div>
               </div>
             </motion.div>
