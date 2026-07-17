@@ -3,6 +3,8 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signInWithPopup, 
+  signInWithRedirect,
+  getRedirectResult,
   signOut as firebaseSignOut,
   sendPasswordResetEmail,
   onAuthStateChanged
@@ -38,6 +40,18 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const initializeAuth = async () => {
       try {
+        // Check if returning from a Google redirect sign-in flow
+        const redirectResult = await getRedirectResult(auth);
+        if (redirectResult?.user) {
+          const idToken = await redirectResult.user.getIdToken();
+          const response = await api.post('/auth/session', { idToken, mode: 'google' });
+          if (response.data) {
+            setCurrentUser(response.data);
+            toast.success('Signed in with Google!');
+          }
+          return;
+        }
+
         const response = await api.get('/auth/profile');
         if (response.data) {
           setCurrentUser(response.data);
@@ -99,17 +113,29 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Google Sign In & Sign Up (Hybrid verification with modes 'login' vs 'register')
-  const loginWithGoogle = async (mode = 'refresh') => {
-    let result = null;
+  // Google Authentication Sign In / Sign Up
+  const loginWithGoogle = async () => {
+    let result;
     try {
-      // 1. Trigger Google popup immediately
-      result = await signInWithPopup(auth, googleProvider);
+      // Race popup against a 4.5 second timeout to prevent COOP silent hangs on Vercel
+      const popupPromise = signInWithPopup(auth, googleProvider);
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Popup timeout')), 4500)
+      );
+
+      try {
+        result = await Promise.race([popupPromise, timeoutPromise]);
+      } catch (popupError) {
+        console.warn("Google popup failed or timed out, falling back to redirect:", popupError);
+        await signInWithRedirect(auth, googleProvider);
+        return; // Redirect shifts page view, following code is bypassed
+      }
+
       const idToken = await result.user.getIdToken();
 
-      // 2. Verify with Express backend, checking email exists/registers depending on mode
-      const response = await api.post('/auth/session', { idToken, mode });
-      toast.success(mode === 'register' ? 'Successfully registered!' : 'Signed in with Google!');
+      // Verify with Express backend using 'google' mode (auto registers if needed)
+      const response = await api.post('/auth/session', { idToken, mode: 'google' });
+      toast.success('Signed in with Google!');
 
       setCurrentUser({
         ...response.data,

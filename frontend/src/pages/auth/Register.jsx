@@ -89,8 +89,9 @@ const Register = () => {
   const handleGoogleSubmit = async () => {
     setIsGoogleLoading(true);
     try {
-      const data = await loginWithGoogle('register');
-      await sendRealOtp(data.email || 'Google Account');
+      await loginWithGoogle();
+      toast.success('Successfully registered!');
+      navigate('/dashboard');
     } catch (error) {
       const isAlreadyExists = 
         error.code === 'auth/email-already-in-use' || 

@@ -85,6 +85,14 @@ exports.syncSession = async (req, res) => {
         email,
         password: crypto.randomBytes(16).toString('hex') // secure placeholder; auth managed by Firebase
       });
+    } else if (mode === 'google') {
+      if (!user) {
+        user = await User.create({
+          name: registerName || name || email.split('@')[0],
+          email,
+          password: crypto.randomBytes(16).toString('hex')
+        });
+      }
     } else if (mode === 'refresh') {
       if (!user) {
         if (req.logAuthAttempt) await req.logAuthAttempt(false);
