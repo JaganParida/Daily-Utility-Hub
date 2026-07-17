@@ -64,8 +64,17 @@ const Register = () => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
+      // 1. Create account in Firebase + MongoDB
       await signupWithEmail(email, password);
-      await sendRealOtp(email);
+      
+      // 2. Only if signup succeeded, send OTP verification email
+      try {
+        await sendRealOtp(email);
+      } catch (otpErr) {
+        // OTP send failed but account was created — user can resend from OTP screen
+        toast.error('Account created but failed to send verification email. You can resend below.');
+        setOtpSent(true);
+      }
     } catch (error) {
       const isAlreadyExists = 
         error.code === 'auth/email-already-in-use' || 

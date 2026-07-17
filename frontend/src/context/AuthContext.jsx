@@ -41,9 +41,14 @@ export const AuthProvider = ({ children }) => {
         const response = await api.get('/auth/profile');
         if (response.data) {
           setCurrentUser(response.data);
+        } else {
+          setCurrentUser(null);
         }
       } catch (error) {
-        // Ignored on startup
+        // User deleted from DB, session expired, or cookie invalid
+        setCurrentUser(null);
+        try { await firebaseSignOut(auth); } catch (_) {}
+        try { await api.get('/auth/logout'); } catch (_) {}
       } finally {
         setLoading(false);
       }
@@ -64,8 +69,7 @@ export const AuthProvider = ({ children }) => {
 
       setCurrentUser({
         ...response.data,
-        uid: userCredential.user.uid,
-        emailVerified: userCredential.user.emailVerified
+        uid: userCredential.user.uid
       });
       return response.data;
     } catch (error) {

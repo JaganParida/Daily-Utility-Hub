@@ -59,7 +59,13 @@ const softProtect = async (req, res, next) => {
       req.user = user;
       req.token = token;
     } else {
+      // User was deleted from DB — clear the orphaned cookie
       req.user = null;
+      res.clearCookie('token', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+      });
     }
     next();
   } catch (error) {
