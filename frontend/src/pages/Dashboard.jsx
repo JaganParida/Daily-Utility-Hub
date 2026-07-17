@@ -231,7 +231,7 @@ const CustomDropdown = ({
             : "border-[#3f3f46] bg-[#18181b]"
         } ${
           disabled 
-            ? "opacity-35 cursor-not-allowed border-[#1d1d28] bg-[#0e0e12] pointer-events-none" 
+            ? "opacity-60 cursor-not-allowed border-[#3f3f46]/40 bg-[#18181b]/50 pointer-events-none" 
             : "cursor-pointer hover:border-[#2563eb]/50 hover:bg-[#27272a] active:scale-[0.98] focus:border-[#2563eb]/80 focus:ring-1 focus:ring-[#2563eb]/30"
         }`}
       >
@@ -861,7 +861,7 @@ const Dashboard = () => {
                           options={sourceOptions} 
                           placeholder={!droppedFile ? DEMO_FORMATS[demoStep] : "Format"} 
                           icon={Layers} 
-                          disabled={!droppedFile}
+                          disabled={true}
                           open={isFormatOpen}
                           setOpen={setIsFormatOpen}
                           highlightedValue={simulatedFormatHighlight}
@@ -970,7 +970,7 @@ const Dashboard = () => {
                         options={sourceOptions} 
                         placeholder={!droppedFile ? DEMO_FORMATS[demoStep] : "Format"} 
                         icon={Layers} 
-                        disabled={!droppedFile} 
+                        disabled={true} 
                         open={isFormatOpen}
                         setOpen={setIsFormatOpen}
                         highlightedValue={simulatedFormatHighlight}
