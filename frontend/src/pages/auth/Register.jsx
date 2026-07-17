@@ -19,6 +19,7 @@ const Register = () => {
   
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   // OTP Verification States
@@ -222,6 +223,7 @@ const Register = () => {
     }
 
     const typedCode = otpInput.join('');
+    setIsVerifying(true);
     try {
       // 1. Verify the OTP with backend (skipDbUpdate: true because user doesn't exist yet)
       await api.post('/auth/otp/verify', { 
@@ -249,6 +251,8 @@ const Register = () => {
       } else {
         toast.error(error.response?.data?.message || error.message || 'Invalid verification code. Please try again.');
       }
+    } finally {
+      setIsVerifying(false);
     }
   };
 
@@ -463,10 +467,17 @@ const Register = () => {
 
                 <button
                   type="submit"
-                  disabled={otpExpired || otpInput.some((d) => d === '')}
-                  className="w-full py-3 px-4 rounded-none text-white font-bold bg-[#2563eb] hover:bg-[#1d4ed8] focus:outline-none transition-colors disabled:opacity-40 cursor-pointer text-xs uppercase tracking-wider"
+                  disabled={otpExpired || otpInput.some((d) => d === '') || isVerifying}
+                  className="w-full py-3 px-4 flex items-center justify-center gap-2 rounded-none text-white font-bold bg-[#2563eb] hover:bg-[#1d4ed8] focus:outline-none transition-colors disabled:opacity-40 cursor-pointer text-xs uppercase tracking-wider"
                 >
-                  Verify & Proceed
+                  {isVerifying ? (
+                    <>
+                      <Loader2 className="animate-spin" size={16} />
+                      Verifying...
+                    </>
+                  ) : (
+                    'Verify & Proceed'
+                  )}
                 </button>
               </form>
 
