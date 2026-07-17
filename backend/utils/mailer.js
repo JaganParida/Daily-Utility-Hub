@@ -28,6 +28,10 @@ const getTransporter = async () => {
       console.log(`Using inferred SMTP service (${service}) for emails.`);
     }
   } else {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('SMTP configuration is missing. Please configure SMTP_USER and SMTP_PASS in your hosting environment variables.');
+    }
+
     // Ethereal fallback for zero-configuration testing
     const testAccount = await nodemailer.createTestAccount();
     transporter = nodemailer.createTransport({
