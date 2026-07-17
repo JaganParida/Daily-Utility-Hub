@@ -300,11 +300,8 @@ const CustomDropdown = ({
                 filteredOptions.map((opt) => {
                   const OptIcon = opt.icon;
                   return (
-                    <motion.button
-                      variants={{
-                        visible: { opacity: 1, x: 0, transition: { type: "spring", stiffness: 350, damping: 25 } },
-                        hidden: { opacity: 0, x: -8 }
-                      }}
+                    <button
+                      type="button"
                       key={opt.value}
                       onClick={() => { onChange(opt.value); setOpen(false); }}
                       className={`w-full flex items-center gap-2.5 px-3.5 py-2 text-left text-xs font-medium transition-all duration-200 cursor-pointer ${
@@ -320,7 +317,7 @@ const CustomDropdown = ({
                           <polyline points="20 6 9 17 4 12" />
                         </svg>
                       )}
-                    </motion.button>
+                    </button>
                   );
                 })
               ) : (
