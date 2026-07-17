@@ -115,7 +115,21 @@ const Login = () => {
       const data = await loginWithGoogle('login');
       sendOtpSimulated(data.email || 'Google Account');
     } catch (error) {
-      // Handled by AuthContext toast
+      const isNotFound = 
+        error.code === 'auth/user-not-found' || 
+        error.response?.status === 404 || 
+        error.response?.data?.message?.toLowerCase().includes('not associated') ||
+        error.message?.toLowerCase().includes('not associated') ||
+        error.response?.data?.message?.toLowerCase().includes('register first') ||
+        error.message?.toLowerCase().includes('register first');
+        
+      if (isNotFound) {
+        toast.error('No account associated with this email. Redirecting to register...');
+        const emailToPass = error.email || '';
+        setTimeout(() => {
+          navigate('/register', { state: { email: emailToPass } });
+        }, 1500);
+      }
     } finally {
       setIsGoogleLoading(false);
     }

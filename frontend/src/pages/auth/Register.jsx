@@ -115,7 +115,21 @@ const Register = () => {
       const data = await loginWithGoogle('register');
       sendOtpSimulated(data.email || 'Google Account');
     } catch (error) {
-      // Handled by AuthContext toast
+      const isAlreadyExists = 
+        error.code === 'auth/email-already-in-use' || 
+        error.response?.status === 400 || 
+        error.response?.data?.message?.toLowerCase().includes('already exists') ||
+        error.message?.toLowerCase().includes('already exists') ||
+        error.response?.data?.message?.toLowerCase().includes('log in instead') ||
+        error.message?.toLowerCase().includes('log in instead');
+        
+      if (isAlreadyExists) {
+        toast.error('An account already exists with this email. Redirecting to sign in...');
+        const emailToPass = error.email || '';
+        setTimeout(() => {
+          navigate('/login', { state: { email: emailToPass } });
+        }, 1500);
+      }
     } finally {
       setIsGoogleLoading(false);
     }

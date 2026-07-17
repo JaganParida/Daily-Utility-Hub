@@ -131,9 +131,10 @@ export const AuthProvider = ({ children }) => {
 
   // Google Sign In & Sign Up (Hybrid verification with modes 'login' vs 'register')
   const loginWithGoogle = async (mode = 'refresh') => {
+    let result = null;
     try {
       // 1. Trigger Google popup immediately
-      const result = await signInWithPopup(auth, googleProvider);
+      result = await signInWithPopup(auth, googleProvider);
       const idToken = await result.user.getIdToken();
 
       // 2. Verify with Express backend, checking email exists/registers depending on mode
@@ -151,6 +152,9 @@ export const AuthProvider = ({ children }) => {
       });
       return response.data;
     } catch (error) {
+      if (result?.user?.email) {
+        error.email = result.user.email;
+      }
       await firebaseSignOut(auth);
       localStorage.removeItem('token');
       handleAuthError(error);
