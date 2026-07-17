@@ -869,7 +869,7 @@ const Dashboard = () => {
                       </div>
                       <div className="w-[150px] md:w-[170px]">
                         <CustomDropdown 
-                          value={selectedOpTo || (operations[0]?.to || "")} 
+                          value={selectedOpTo} 
                           onChange={handleOperationChange} 
                           options={operationOptions} 
                           placeholder={!droppedFile ? DEMO_OPERATIONS[demoStep] : "Operation"} 
@@ -976,7 +976,7 @@ const Dashboard = () => {
                         highlightedValue={simulatedFormatHighlight}
                       />
                       <CustomDropdown 
-                        value={selectedOpTo || (operations[0]?.to || "")} 
+                        value={selectedOpTo} 
                         onChange={handleOperationChange} 
                         options={operationOptions} 
                         placeholder={!droppedFile ? DEMO_OPERATIONS[demoStep] : "Operation"} 
