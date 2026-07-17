@@ -49,20 +49,22 @@ const Register = () => {
   useEffect(() => {
     if (location.state?.triggerGoogleOtp && location.state?.email && !otpSent) {
       setEmail(location.state.email);
-      setOtpSent(true);
-      setOtpExpired(false);
-      setResendTimer(60);
-      setExpireTimer(180);
-      setOtpInput(['', '', '', '', '', '']);
 
       const sendGoogleOtp = async () => {
         try {
           const otpResponse = await api.post('/auth/otp/send', { email: location.state.email });
           setOtpValidationToken(otpResponse.data.token);
           toast.success('Verification code sent! Check your email inbox.');
+          
+          setOtpSent(true);
+          setOtpExpired(false);
+          setResendTimer(60);
+          setExpireTimer(180);
+          setOtpInput(['', '', '', '', '', '']);
         } catch (otpErr) {
           console.error('OTP send error:', otpErr);
-          toast.error('Could not send verification email. Tap "Resend" to try again.');
+          toast.error('Could not send verification email. Please contact support.');
+          if (currentUser) logout();
         }
       };
       sendGoogleOtp();
@@ -94,36 +96,37 @@ const Register = () => {
       // 1. Create account in Firebase + MongoDB
       await signupWithEmail(email, password);
       
-      // 2. Account created! Always show OTP screen so user can resend if needed
+      // 2. Send OTP email first
+      const otpResponse = await api.post('/auth/otp/send', { email });
+      setOtpValidationToken(otpResponse.data.token);
+      toast.success('Verification code sent! Check your email inbox.');
+
+      // 3. Account created and OTP sent! Now show OTP screen
       setOtpSent(true);
       setOtpExpired(false);
       setResendTimer(60);
       setExpireTimer(180);
       setOtpInput(['', '', '', '', '', '']);
-
-      // 3. Send OTP email (don't block the UI transition)
-      try {
-        const response = await api.post('/auth/otp/send', { email });
-        setOtpValidationToken(response.data.token);
-        toast.success('Verification code sent! Check your email inbox.');
-      } catch (otpErr) {
-        console.error('OTP send error:', otpErr);
-        toast.error('Could not send verification email. Tap "Resend" to try again.');
-      }
     } catch (error) {
-      const isAlreadyExists = 
-        error.code === 'auth/email-already-in-use' || 
-        error.response?.status === 400 || 
-        error.response?.data?.message?.toLowerCase().includes('already exists') ||
-        error.message?.toLowerCase().includes('already exists') ||
-        error.response?.data?.message?.toLowerCase().includes('log in instead') ||
-        error.message?.toLowerCase().includes('log in instead');
-        
-      if (isAlreadyExists) {
-        toast.error('An account already exists with this email. Redirecting to sign in...');
-        setTimeout(() => {
-          navigate('/login', { state: { email } });
-        }, 1500);
+      if (error.response && error.response.status === 500) {
+         toast.error('Server error sending OTP email. Please try again later.');
+      } else {
+        const isAlreadyExists = 
+          error.code === 'auth/email-already-in-use' || 
+          error.response?.status === 400 || 
+          error.response?.data?.message?.toLowerCase().includes('already exists') ||
+          error.message?.toLowerCase().includes('already exists') ||
+          error.response?.data?.message?.toLowerCase().includes('log in instead') ||
+          error.message?.toLowerCase().includes('log in instead');
+          
+        if (isAlreadyExists) {
+          toast.error('An account already exists with this email. Redirecting to sign in...');
+          setTimeout(() => {
+            navigate('/login', { state: { email } });
+          }, 1500);
+        } else {
+          toast.error('Failed to create account. Please try again.');
+        }
       }
     } finally {
       setIsSubmitting(false);
@@ -135,21 +138,24 @@ const Register = () => {
     try {
       const response = await loginWithGoogle();
       if (response && (response.isNewUser || response.emailVerified === false)) {
-        // Account created/logged in! Always show OTP screen so user can resend if needed
-        setOtpSent(true);
-        setOtpExpired(false);
-        setResendTimer(60);
-        setExpireTimer(180);
-        setOtpInput(['', '', '', '', '', '']);
-
-        // Send OTP email (don't block the UI transition)
+        // Send OTP email first
         try {
           const otpResponse = await api.post('/auth/otp/send', { email: response.email });
           setOtpValidationToken(otpResponse.data.token);
           toast.success('Verification code sent! Check your email inbox.');
+          
+          // Now show OTP screen
+          setOtpSent(true);
+          setOtpExpired(false);
+          setResendTimer(60);
+          setExpireTimer(180);
+          setOtpInput(['', '', '', '', '', '']);
         } catch (otpErr) {
           console.error('OTP send error:', otpErr);
-          toast.error('Could not send verification email. Tap "Resend" to try again.');
+          toast.error('Could not send verification email. Please try again later or contact support.');
+          // Do NOT show the OTP screen if the email wasn't sent!
+          // We will log the user out so they aren't trapped in a broken state
+          if (currentUser) await logout();
         }
       } else if (response) {
         toast.success('Successfully registered!');
