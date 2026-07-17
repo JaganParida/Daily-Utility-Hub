@@ -1,10 +1,23 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { Search as SearchIcon, X, ArrowRight, Zap, Shield, Sparkles } from 'lucide-react';
 import { allTools, toolCategories } from '../data/toolCategories';
 
+const LOCKED_GUEST_TOOLS = [
+  '/tools/ai-pdf-to-markdown',
+  '/tools/ai-image-to-markdown',
+  '/tools/google-search-builder',
+  '/tools/regex-tester',
+  '/tools/ai-code-playground',
+  '/tools/cron-parser',
+  '/tools/audio-video-transcriber'
+];
+
 const SearchPage = () => {
+  const { currentUser } = useAuth();
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
   const [filteredTools, setFilteredTools] = useState(allTools);
@@ -116,6 +129,12 @@ const SearchPage = () => {
             <Link
               key={idx}
               to={item.to}
+              onClick={(e) => {
+                if (LOCKED_GUEST_TOOLS.includes(item.to) && !currentUser) {
+                  e.preventDefault();
+                  navigate('/?authGate=true');
+                }
+              }}
               className="px-3 py-1.5 rounded-full bg-[#111116] border border-[#27272a] hover:border-[#2563eb] hover:bg-[#2563eb]/5 text-[#a1a1aa] hover:text-white transition-all duration-200"
             >
               {item.name}
@@ -183,6 +202,12 @@ const SearchPage = () => {
                     >
                       <Link
                         to={tool.to}
+                        onClick={(e) => {
+                          if (LOCKED_GUEST_TOOLS.includes(tool.to) && !currentUser) {
+                            e.preventDefault();
+                            navigate('/?authGate=true');
+                          }
+                        }}
                         className="block p-4.5 bg-[#09090b]/80 backdrop-blur-md border border-[#27272a] hover:border-[#2563eb]/40 rounded-2xl hover:bg-[#111118]/90 transition-all duration-300 relative overflow-hidden"
                       >
                         <div className="flex items-start gap-4">

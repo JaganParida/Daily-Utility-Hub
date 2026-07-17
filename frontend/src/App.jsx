@@ -155,6 +155,11 @@ const ProtectedRoute = ({ children }) => {
   return currentUser ? children : <Navigate to="/login" replace />;
 };
 
+const GuestLockRoute = ({ children }) => {
+  const { currentUser } = useAuth();
+  return currentUser ? children : <Navigate to="/?authGate=true" replace />;
+};
+
 // Premium loader spinner shown while lazy routes are streaming
 const PageLoader = () => (
   <div className="min-h-screen w-full flex flex-col items-center justify-center bg-background">
@@ -191,7 +196,7 @@ function AnimatedRoutes() {
             <Route path="/favorites" element={<ProtectedRoute><Favorites /></ProtectedRoute>} />
             <Route path="/tools/word-counter" element={<WordCounter />} />
             <Route path="/tools/voice-helper" element={<VoiceHelper />} />
-            <Route path="/tools/audio-video-transcriber" element={<AudioVideoTranscriber />} />
+            <Route path="/tools/audio-video-transcriber" element={<GuestLockRoute><AudioVideoTranscriber /></GuestLockRoute>} />
             <Route path="/tools/uuid-generator" element={<UuidGenerator />} />
             <Route path="/tools/password-generator" element={<PasswordGenerator />} />
             <Route path="/tools/case-converter" element={<CaseConverter />} />
@@ -201,7 +206,7 @@ function AnimatedRoutes() {
             <Route path="/tools/text-line-editor" element={<TextLineEditor />} />
             <Route path="/tools/find-replace" element={<FindAndReplace />} />
             <Route path="/tools/jwt-decoder" element={<JwtDecoder />} />
-            <Route path="/tools/regex-tester" element={<RegexTester />} />
+            <Route path="/tools/regex-tester" element={<GuestLockRoute><RegexTester /></GuestLockRoute>} />
             <Route path="/tools/color-picker" element={<ColorPicker />} />
             <Route path="/tools/gradient-generator" element={<GradientGenerator />} />
             <Route path="/tools/image-compressor" element={<ImageCompressor />} />
@@ -219,14 +224,14 @@ function AnimatedRoutes() {
             <Route path="/tools/base64-converter" element={<Base64Converter />} />
             <Route path="/tools/url-converter" element={<UrlConverter />} />
 
-            <Route path="/tools/cron-parser" element={<CronParser />} />
+            <Route path="/tools/cron-parser" element={<GuestLockRoute><CronParser /></GuestLockRoute>} />
             <Route path="/tools/html-previewer" element={<HtmlPreviewer />} />
             <Route path="/tools/markdown-previewer" element={<MarkdownPreviewer />} />
             <Route path="/tools/type-converter" element={<TypeConverter />} />
-            <Route path="/tools/google-search-builder" element={<GoogleSearchBuilder />} />
-            <Route path="/tools/ai-image-to-markdown" element={<AiImageToMarkdown />} />
-            <Route path="/tools/ai-pdf-to-markdown" element={<AiPdfToMarkdown />} />
-            <Route path="/tools/ai-code-playground" element={<AiCodePlayground />} />
+            <Route path="/tools/google-search-builder" element={<GuestLockRoute><GoogleSearchBuilder /></GuestLockRoute>} />
+            <Route path="/tools/ai-image-to-markdown" element={<GuestLockRoute><AiImageToMarkdown /></GuestLockRoute>} />
+            <Route path="/tools/ai-pdf-to-markdown" element={<GuestLockRoute><AiPdfToMarkdown /></GuestLockRoute>} />
+            <Route path="/tools/ai-code-playground" element={<GuestLockRoute><AiCodePlayground /></GuestLockRoute>} />
 
             {/* New PDF Tools Routes */}
             <Route path="/tools/pdf-merge" element={<PdfMerge />} />

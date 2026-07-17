@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useRef, useCallback, useEffect } from "react";
 import {
@@ -465,15 +465,35 @@ const getFilteredOperations = (source, ext) => {
   }
 };
 
+// ─── GUEST PROTECTED TOOLS ───
+const LOCKED_GUEST_TOOLS = [
+  '/tools/ai-pdf-to-markdown',
+  '/tools/ai-image-to-markdown',
+  '/tools/google-search-builder',
+  '/tools/regex-tester',
+  '/tools/ai-code-playground',
+  '/tools/cron-parser',
+  '/tools/audio-video-transcriber'
+];
+
 // ─── MAIN COMPONENT ───
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const fileInputRefDesktop = useRef(null);
   const fileInputRefMobile = useRef(null);
 
   const { currentUser, togglePin, toggleFavorite, loginWithGoogle } = useAuth();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get("authGate") === "true") {
+      setIsAuthModalOpen(true);
+      navigate("/", { replace: true });
+    }
+  }, [location.search, navigate]);
 
   const [source, setSource] = useState("");
   const [selectedOpTo, setSelectedOpTo] = useState("");
@@ -586,8 +606,8 @@ const Dashboard = () => {
   const activeOp = operations.find(op => op.to === (selectedOpTo || (operations[0]?.to || ""))) || null;
   const tabOps = OPERATIONS_MAP[activeTab] || [];
 
-  const handleToolClick = (e) => {
-    if (!currentUser) {
+  const handleToolClick = (e, path) => {
+    if (LOCKED_GUEST_TOOLS.includes(path) && !currentUser) {
       e.preventDefault();
       setIsAuthModalOpen(true);
     }
@@ -648,6 +668,10 @@ const Dashboard = () => {
 
   const handleLaunch = () => { 
     if (activeOp) {
+      if (LOCKED_GUEST_TOOLS.includes(activeOp.to) && !currentUser) {
+        setIsAuthModalOpen(true);
+        return;
+      }
       navigate(activeOp.to, { state: { initialFile: droppedFile?.rawFile } });
     }
   };
@@ -1079,6 +1103,12 @@ const Dashboard = () => {
                             <div key={tool.to} className="group relative flex items-center bg-[#18181b] border border-[#27272a] hover:border-[#2563eb]/30 hover:bg-[#2563eb]/5 transition-all rounded-xl overflow-hidden">
                               <Link
                                 to={tool.to}
+                                onClick={(e) => {
+                                  if (LOCKED_GUEST_TOOLS.includes(tool.to) && !currentUser) {
+                                    e.preventDefault();
+                                    setIsAuthModalOpen(true);
+                                  }
+                                }}
                                 className="flex-1 flex items-center gap-3 pl-3.5 pr-1 sm:pl-4 sm:pr-1.5 py-2.5 sm:py-3 min-w-0"
                               >
                                 <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#27272a] group-hover:bg-[#2563eb]/10 flex items-center justify-center transition-colors shrink-0">
@@ -1234,7 +1264,7 @@ const Dashboard = () => {
                       >
                         <Link
                           to={op.to}
-                          onClick={handleToolClick}
+                          onClick={(e) => handleToolClick(e, op.to)}
                           className="flex-1 flex items-center gap-3 pl-3.5 pr-1 sm:pl-4 sm:pr-1.5 py-2.5 sm:py-3 min-w-0"
                         >
                           <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#27272a] group-hover:bg-[#2563eb]/10 flex items-center justify-center transition-colors shrink-0">
