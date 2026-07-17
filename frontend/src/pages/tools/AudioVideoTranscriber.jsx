@@ -144,15 +144,33 @@ const AudioVideoTranscriber = () => {
       fileProgressMap.current = {};
       const transcriber = await pipeline('automatic-speech-recognition', modelType, {
         progress_callback: (progress) => {
-          if (progress.status === 'progress') {
-            fileProgressMap.current[progress.file] = progress.progress;
-            const values = Object.values(fileProgressMap.current);
-            const total = values.reduce((a, b) => a + b, 0);
-            const avg = total / Math.max(1, values.length);
-            setDownloadProgress(Math.round(avg));
+          if (progress.status === 'initiate') {
+            fileProgressMap.current[progress.file] = { loaded: 0, total: 0 };
+          } else if (progress.status === 'progress') {
+            fileProgressMap.current[progress.file] = {
+              loaded: progress.loaded || 0,
+              total: progress.total || 0
+            };
+          } else if (progress.status === 'done' || progress.status === 'ready') {
+            if (fileProgressMap.current[progress.file]) {
+              fileProgressMap.current[progress.file].loaded = fileProgressMap.current[progress.file].total;
+            }
+          }
+          
+          let totalBytes = 0;
+          let loadedBytes = 0;
+          Object.values(fileProgressMap.current).forEach(fileInfo => {
+            totalBytes += fileInfo.total || 0;
+            loadedBytes += fileInfo.loaded || 0;
+          });
+          
+          if (totalBytes > 0) {
+            const percent = Math.round((loadedBytes / totalBytes) * 100);
+            setDownloadProgress((prev) => Math.max(prev, percent));
           }
         }
       });
+      setDownloadProgress(100);
 
       // 3. Transcribe
       setProcessStep('transcribing');
