@@ -59,18 +59,14 @@ const AudioVideoTranscriber = () => {
     toast.success(`Loaded ${selectedFile.name}`);
   };
 
-  // Decode audio file to 16kHz mono Float32Array for Whisper
-  const getAudioBuffer = async () => {
-    setProcessStep('decoding');
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
-    const arrayBuffer = await file.arrayBuffer();
-    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-    
-    // Convert and Mixdown all channels to mono
+  const resampleTo16kMono = (audioBuffer) => {
     const numberOfChannels = audioBuffer.numberOfChannels;
-    let channelData;
+    const sampleRate = audioBuffer.sampleRate;
+    
+    // 1. Mixdown channels to mono
+    let monoData;
     if (numberOfChannels > 1) {
-      channelData = new Float32Array(audioBuffer.length);
+      monoData = new Float32Array(audioBuffer.length);
       const channels = [];
       for (let c = 0; c < numberOfChannels; c++) {
         channels.push(audioBuffer.getChannelData(c));
@@ -80,11 +76,35 @@ const AudioVideoTranscriber = () => {
         for (let c = 0; c < numberOfChannels; c++) {
           sum += channels[c][i];
         }
-        channelData[i] = sum / numberOfChannels;
+        monoData[i] = sum / numberOfChannels;
       }
     } else {
-      channelData = audioBuffer.getChannelData(0);
+      monoData = audioBuffer.getChannelData(0);
     }
+    
+    // 2. Resample to 16000Hz
+    if (sampleRate === 16000) {
+      return monoData;
+    }
+    
+    const ratio = sampleRate / 16000;
+    const newLength = Math.round(monoData.length / ratio);
+    const result = new Float32Array(newLength);
+    for (let i = 0; i < newLength; i++) {
+      result[i] = monoData[Math.round(i * ratio)];
+    }
+    return result;
+  };
+
+  // Decode audio file to 16kHz mono Float32Array for Whisper
+  const getAudioBuffer = async () => {
+    setProcessStep('decoding');
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const arrayBuffer = await file.arrayBuffer();
+    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+    
+    // Resample and downmix to 16kHz Mono
+    const channelData = resampleTo16kMono(audioBuffer);
     
     // Normalize volume (gain) to ensure clear signal for Whisper
     let maxVal = 0;
@@ -149,17 +169,32 @@ const AudioVideoTranscriber = () => {
       const output = await transcriber(audioData, options);
 
       // 4. Map output to structured timeline segments
-      if (output && output.chunks) {
-        const mappedSegments = output.chunks.map((chunk, idx) => ({
-          id: idx,
-          start: chunk.timestamp[0] ?? 0,
-          end: chunk.timestamp[1] ?? (chunk.timestamp[0] ?? 0) + 3,
-          text: chunk.text
-        }));
-        setSegments(mappedSegments);
-        toast.success('Transcription completed!');
+      if (output) {
+        let mappedSegments = [];
+        if (output.chunks && output.chunks.length > 0) {
+          mappedSegments = output.chunks.map((chunk, idx) => ({
+            id: idx,
+            start: chunk.timestamp[0] ?? 0,
+            end: chunk.timestamp[1] ?? (chunk.timestamp[0] ?? 0) + 3,
+            text: chunk.text
+          }));
+        } else if (output.text && output.text.trim()) {
+          mappedSegments = [{
+            id: 0,
+            start: 0,
+            end: mediaRef.current?.duration || 10,
+            text: output.text
+          }];
+        }
+
+        if (mappedSegments.length > 0) {
+          setSegments(mappedSegments);
+          toast.success('Transcription completed!');
+        } else {
+          throw new Error('No speech detected or empty response.');
+        }
       } else {
-        throw new Error('No speech detected or empty response.');
+        throw new Error('No response from transcriber.');
       }
     } catch (error) {
       console.error(error);
