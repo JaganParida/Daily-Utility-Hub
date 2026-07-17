@@ -179,6 +179,9 @@ const AudioVideoTranscriber = () => {
         chunk_length_s: 30,
         stride_length_s: 5,
         return_timestamps: true,
+        repetition_penalty: 1.25,
+        no_repeat_ngram_size: 4,
+        task: 'transcribe',
       };
 
       if (modelType === 'Xenova/whisper-tiny' && language !== 'auto') {
@@ -684,6 +687,16 @@ const AudioVideoTranscriber = () => {
                   </div>
                 </div>
               )}
+            </div>
+
+            {/* Quick Tip */}
+            <div className="bg-yellow-500/5 border border-yellow-500/20 rounded-xl p-3.5 space-y-1 shrink-0">
+              <span className="text-[10px] font-bold text-yellow-500 flex items-center gap-1 uppercase tracking-wider">
+                <Sliders size={12} /> Optimization Tip
+              </span>
+              <p className="text-[10px] text-muted-foreground leading-relaxed">
+                If the model gets stuck repeating a phrase, select your specific <strong>Speech Language</strong> from the dropdown, or use the <strong>English Only</strong> model for English files to prevent repetition loops.
+              </p>
             </div>
 
             {/* Offline AI notice */}
