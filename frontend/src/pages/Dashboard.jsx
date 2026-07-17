@@ -398,6 +398,73 @@ const InteractiveHubGraphic = () => {
   );
 };
 
+// ─── Filter Operations by Uploaded File Type ───
+const getFilteredOperations = (source, ext) => {
+  const allOps = OPERATIONS_MAP[source] || [];
+  if (!ext) return allOps;
+  const lowercaseExt = ext.toLowerCase();
+
+  switch (source) {
+    case "pdf":
+      return allOps;
+      
+    case "image":
+      return allOps.filter(op => 
+        ["/tools/image-compressor", "/tools/image-resizer", "/tools/image-cropper", 
+         "/tools/image-converter", "/tools/image-watermark", "/tools/image-to-pdf", 
+         "/tools/image-to-text", "/tools/ai-image-to-markdown"].includes(op.to)
+      );
+
+    case "spreadsheet":
+      return allOps.filter(op => 
+        ["/tools/excel-merge-split", "/tools/data-cleaner", "/tools/csv-sql-runner"].includes(op.to)
+      );
+
+    case "document": // Word Docs
+      return allOps.filter(op => 
+        ["/tools/docx-converter", "/tools/doc-metadata-cleaner", "/tools/grammar-checker", 
+         "/tools/similarity-checker", "/tools/batch-find-replace", "/tools/academic-format-checker"].includes(op.to)
+      );
+
+    case "presentation": // Slides
+      return allOps.filter(op => 
+        ["/tools/ppt-to-pdf", "/tools/pptx-metadata-editor"].includes(op.to)
+      );
+
+    case "code":
+      if (lowercaseExt === "json") {
+        return allOps.filter(op => ["/tools/json-formatter", "/tools/ai-code-playground"].includes(op.to));
+      }
+      if (lowercaseExt === "html") {
+        return allOps.filter(op => ["/tools/html-previewer", "/tools/ai-code-playground"].includes(op.to));
+      }
+      if (lowercaseExt === "md") {
+        return allOps.filter(op => ["/tools/markdown-previewer", "/tools/ai-code-playground"].includes(op.to));
+      }
+      return allOps.filter(op => ["/tools/ai-code-playground"].includes(op.to));
+
+    case "text":
+      return allOps.filter(op => 
+        ["/tools/text-diff", "/tools/word-counter", "/tools/find-replace", 
+         "/tools/case-converter", "/tools/text-line-editor", "/tools/text-analyzer", 
+         "/tools/markdown-editor"].includes(op.to)
+      );
+
+    case "archive":
+      return allOps.filter(op => 
+        ["/tools/file-vault", "/tools/temp-share", "/tools/batch-renamer"].includes(op.to)
+      );
+
+    case "media":
+      return allOps.filter(op => 
+        ["/tools/audio-video-transcriber", "/tools/voice-helper"].includes(op.to)
+      );
+
+    default:
+      return allOps;
+  }
+};
+
 // ─── MAIN COMPONENT ───
 
 const Dashboard = () => {
@@ -512,7 +579,7 @@ const Dashboard = () => {
     }
   };
 
-  const operations = source ? (OPERATIONS_MAP[source] || []) : [];
+  const operations = source ? getFilteredOperations(source, droppedFile?.ext) : [];
   const activeOp = operations[operationIdx] || null;
   const tabOps = OPERATIONS_MAP[activeTab] || [];
 
@@ -531,6 +598,15 @@ const Dashboard = () => {
     setSource(val); 
     setOperationIdx(0); 
   };
+  
+  const handleOperationChange = (val) => {
+    setOperationIdx(val);
+    const selectedOp = operations[val];
+    if (selectedOp && droppedFile) {
+      navigate(selectedOp.to, { state: { initialFile: droppedFile.rawFile } });
+    }
+  };
+
   const handleLaunch = () => { 
     if (activeOp) {
       navigate(activeOp.to, { state: { initialFile: droppedFile?.rawFile } });
@@ -555,42 +631,8 @@ const Dashboard = () => {
     setOperationIdx(0);
 
     if (mapped) {
-      const t1 = setTimeout(() => {
-        setIsFormatOpen(true);
-        
-        const t2 = setTimeout(() => {
-          setSimulatedFormatHighlight(mapped);
-          
-          const t3 = setTimeout(() => {
-            setSource(mapped);
-            setSimulatedFormatHighlight(null);
-            setIsFormatOpen(false);
-            
-            const t4 = setTimeout(() => {
-              setIsOperationOpen(true);
-              
-              const t5 = setTimeout(() => {
-                const ops = OPERATIONS_MAP[mapped] || [];
-                if (ops.length > 0) {
-                  setSimulatedOpHighlight(ops[0].label);
-                }
-                
-                const t6 = setTimeout(() => {
-                  setOperationIdx(0);
-                  setSimulatedOpHighlight(null);
-                  setIsOperationOpen(false);
-                }, 400);
-                simulationTimeouts.current.push(t6);
-              }, 400);
-              simulationTimeouts.current.push(t5);
-            }, 500);
-            simulationTimeouts.current.push(t4);
-          }, 450);
-          simulationTimeouts.current.push(t3);
-        }, 400);
-        simulationTimeouts.current.push(t2);
-      }, 450);
-      simulationTimeouts.current.push(t1);
+      setSource(mapped);
+      setOperationIdx(0);
     }
   }, [clearSimulation]);
 
@@ -830,7 +872,7 @@ const Dashboard = () => {
                       <motion.div layout className="w-[150px] md:w-[170px]">
                         <CustomDropdown 
                           value={operationIdx} 
-                          onChange={(val) => setOperationIdx(val)} 
+                          onChange={handleOperationChange} 
                           options={operationOptions} 
                           placeholder={!droppedFile ? DEMO_OPERATIONS[demoStep] : "Operation"} 
                           disabled={!droppedFile || !source} 
@@ -937,7 +979,7 @@ const Dashboard = () => {
                       />
                       <CustomDropdown 
                         value={operationIdx} 
-                        onChange={(val) => setOperationIdx(val)} 
+                        onChange={handleOperationChange} 
                         options={operationOptions} 
                         placeholder={!droppedFile ? DEMO_OPERATIONS[demoStep] : "Operation"} 
                         disabled={!droppedFile || !source} 
