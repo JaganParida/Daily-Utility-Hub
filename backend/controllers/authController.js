@@ -90,8 +90,12 @@ exports.syncSession = async (req, res) => {
         user = await User.create({
           name: registerName || name || email.split('@')[0],
           email,
-          password: crypto.randomBytes(16).toString('hex')
+          password: crypto.randomBytes(16).toString('hex'),
+          isEmailVerified: true
         });
+      } else if (!user.isEmailVerified) {
+        user.isEmailVerified = true;
+        await user.save();
       }
     } else if (mode === 'refresh') {
       if (!user) {
@@ -156,6 +160,7 @@ exports.syncSession = async (req, res) => {
         _id: user._id,
         name: user.name,
         email: user.email,
+        emailVerified: !!user.isEmailVerified,
         token: sessionId,
         pinnedTools: user.pinnedTools || [],
         favoriteTools: user.favoriteTools || [],
@@ -216,6 +221,7 @@ exports.getUserProfile = async (req, res) => {
       _id: req.user._id,
       name: req.user.name,
       email: req.user.email,
+      emailVerified: !!req.user.isEmailVerified,
       pinnedTools: req.user.pinnedTools || [],
       favoriteTools: req.user.favoriteTools || [],
       recentHistory: req.user.recentHistory || [],
@@ -422,6 +428,8 @@ exports.verifyOtp = async (req, res) => {
     if (decoded.otp !== code) {
       return res.status(400).json({ message: 'Invalid verification code.' });
     }
+
+    await User.updateOne({ email: decoded.email }, { $set: { isEmailVerified: true } });
 
     res.json({ success: true });
   } catch (error) {
