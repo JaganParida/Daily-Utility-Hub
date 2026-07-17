@@ -13,7 +13,8 @@ const AudioVideoTranscriber = () => {
   
   // Transcription configuration
   const [modelType, setModelType] = useState('Xenova/whisper-tiny.en'); // 'Xenova/whisper-tiny.en' | 'Xenova/whisper-tiny'
-  const [language, setLanguage] = useState('en');
+  const [language, setLanguage] = useState('auto');
+  const fileProgressMap = useRef({});
   
   // Results
   const [segments, setSegments] = useState([]);
@@ -65,8 +66,39 @@ const AudioVideoTranscriber = () => {
     const arrayBuffer = await file.arrayBuffer();
     const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
     
-    // Convert to Mono channel
-    const channelData = audioBuffer.getChannelData(0);
+    // Convert and Mixdown all channels to mono
+    const numberOfChannels = audioBuffer.numberOfChannels;
+    let channelData;
+    if (numberOfChannels > 1) {
+      channelData = new Float32Array(audioBuffer.length);
+      const channels = [];
+      for (let c = 0; c < numberOfChannels; c++) {
+        channels.push(audioBuffer.getChannelData(c));
+      }
+      for (let i = 0; i < audioBuffer.length; i++) {
+        let sum = 0;
+        for (let c = 0; c < numberOfChannels; c++) {
+          sum += channels[c][i];
+        }
+        channelData[i] = sum / numberOfChannels;
+      }
+    } else {
+      channelData = audioBuffer.getChannelData(0);
+    }
+    
+    // Normalize volume (gain) to ensure clear signal for Whisper
+    let maxVal = 0;
+    for (let i = 0; i < channelData.length; i++) {
+      const absVal = Math.abs(channelData[i]);
+      if (absVal > maxVal) maxVal = absVal;
+    }
+    if (maxVal > 0 && maxVal < 0.9) {
+      const gain = 0.85 / maxVal;
+      for (let i = 0; i < channelData.length; i++) {
+        channelData[i] *= gain;
+      }
+    }
+
     return channelData;
   };
 
@@ -89,10 +121,15 @@ const AudioVideoTranscriber = () => {
       const env = module.env;
       env.allowLocalModels = false;
 
+      fileProgressMap.current = {};
       const transcriber = await pipeline('automatic-speech-recognition', modelType, {
         progress_callback: (progress) => {
           if (progress.status === 'progress') {
-            setDownloadProgress(Math.round(progress.progress));
+            fileProgressMap.current[progress.file] = progress.progress;
+            const values = Object.values(fileProgressMap.current);
+            const total = values.reduce((a, b) => a + b, 0);
+            const avg = total / Math.max(1, values.length);
+            setDownloadProgress(Math.round(avg));
           }
         }
       });
@@ -105,7 +142,7 @@ const AudioVideoTranscriber = () => {
         return_timestamps: true,
       };
 
-      if (modelType === 'Xenova/whisper-tiny') {
+      if (modelType === 'Xenova/whisper-tiny' && language !== 'auto') {
         options.language = language;
       }
 
@@ -570,6 +607,7 @@ const AudioVideoTranscriber = () => {
                       onChange={(e) => setLanguage(e.target.value)}
                       className="w-full appearance-none bg-muted/20 border border-border/50 group-hover:border-border p-3 pl-4 pr-10 rounded-xl text-sm font-semibold text-foreground focus:ring-2 focus:ring-primary/50 outline-none transition-all cursor-pointer shadow-sm disabled:opacity-50"
                     >
+                      <option value="auto" className="bg-background text-foreground">Auto-Detect Language</option>
                       <option value="en" className="bg-background text-foreground">English</option>
                       <option value="es" className="bg-background text-foreground">Spanish (Español)</option>
                       <option value="fr" className="bg-background text-foreground">French (Français)</option>
