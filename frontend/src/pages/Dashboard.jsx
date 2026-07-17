@@ -579,7 +579,7 @@ const Dashboard = () => {
   };
 
   const operations = source ? getFilteredOperations(source, droppedFile?.ext) : [];
-  const activeOp = operations.find(op => op.to === selectedOpTo) || operations[0] || null;
+  const activeOp = operations.find(op => op.to === (selectedOpTo || (operations[0]?.to || ""))) || null;
   const tabOps = OPERATIONS_MAP[activeTab] || [];
 
   useEffect(() => {
@@ -869,7 +869,7 @@ const Dashboard = () => {
                       </div>
                       <div className="w-[150px] md:w-[170px]">
                         <CustomDropdown 
-                          value={selectedOpTo} 
+                          value={selectedOpTo || (operations[0]?.to || "")} 
                           onChange={handleOperationChange} 
                           options={operationOptions} 
                           placeholder={!droppedFile ? DEMO_OPERATIONS[demoStep] : "Operation"} 
@@ -976,7 +976,7 @@ const Dashboard = () => {
                         highlightedValue={simulatedFormatHighlight}
                       />
                       <CustomDropdown 
-                        value={selectedOpTo} 
+                        value={selectedOpTo || (operations[0]?.to || "")} 
                         onChange={handleOperationChange} 
                         options={operationOptions} 
                         placeholder={!droppedFile ? DEMO_OPERATIONS[demoStep] : "Operation"} 
