@@ -65,7 +65,8 @@ const Login = () => {
     setIsSubmitting(true);
     try {
       await loginWithEmail(email, password);
-      await sendRealOtp(email);
+      toast.success('Welcome back!');
+      navigate('/dashboard');
     } catch (error) {
       const isNotFound = 
         error.code === 'auth/user-not-found' || 
@@ -89,8 +90,9 @@ const Login = () => {
   const handleGoogleSubmit = async () => {
     setIsGoogleLoading(true);
     try {
-      const data = await loginWithGoogle('login');
-      await sendRealOtp(data.email || 'Google Account');
+      await loginWithGoogle('login');
+      toast.success('Signed in successfully!');
+      navigate('/dashboard');
     } catch (error) {
       const isNotFound = 
         error.code === 'auth/user-not-found' || 
