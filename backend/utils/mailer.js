@@ -1,4 +1,10 @@
 const nodemailer = require('nodemailer');
+const dns = require('dns');
+// Force Node to use IPv4 for DNS resolution.
+// This fixes 'ENETUNREACH' for IPv6 connections on cloud hosts like Render.
+if (dns.setDefaultResultOrder) {
+  dns.setDefaultResultOrder('ipv4first');
+}
 
 let transporter;
 
@@ -33,7 +39,10 @@ const getTransporter = async () => {
           auth: { user, pass },
           connectionTimeout: 10000,
           greetingTimeout: 10000,
-          socketTimeout: 15000
+          socketTimeout: 15000,
+          tls: {
+            rejectUnauthorized: false
+          }
         });
       } else {
         transporter = nodemailer.createTransport({
@@ -41,7 +50,10 @@ const getTransporter = async () => {
           auth: { user, pass },
           connectionTimeout: 10000,
           greetingTimeout: 10000,
-          socketTimeout: 15000
+          socketTimeout: 15000,
+          tls: {
+            rejectUnauthorized: false
+          }
         });
       }
       console.log(`Using inferred SMTP service (${service}) for emails.`);
