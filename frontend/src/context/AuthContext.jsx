@@ -212,6 +212,20 @@ export const AuthProvider = ({ children }) => {
   };
 
   const handleAuthError = (error) => {
+    const msgLower = (error.response?.data?.message || error.message || '').toLowerCase();
+    const isConflict = 
+      error.code === 'auth/user-not-found' || 
+      error.code === 'auth/email-already-in-use' ||
+      error.response?.status === 404 || 
+      error.response?.status === 400 || 
+      msgLower.includes('register first') ||
+      msgLower.includes('already exists') ||
+      msgLower.includes('log in instead');
+      
+    if (isConflict) {
+      return; // Page component will show a custom redirection toast
+    }
+
     let msg = error.response?.data?.message || error.message || 'Authentication failed. Please try again.';
     
     // Clean Firebase code error messages
