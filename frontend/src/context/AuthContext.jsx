@@ -71,7 +71,7 @@ export const AuthProvider = ({ children }) => {
           // Sign in with existing Firebase credentials instead
           try {
             userCredential = await signInWithEmailAndPassword(auth, email, password);
-            mode = 'google'; // 'google' mode auto-creates MongoDB user if missing
+            mode = 'register'; // 'register' mode auto-creates MongoDB user if missing
           } catch (signInError) {
             // Wrong password for existing Firebase account
             await firebaseSignOut(auth);
