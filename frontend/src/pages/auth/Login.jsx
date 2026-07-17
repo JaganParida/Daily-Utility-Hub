@@ -46,7 +46,7 @@ const Login = () => {
     setIsGoogleLoading(true);
     try {
       await loginWithGoogle();
-      // Redirect happens via signInWithRedirect, page will reload
+      navigate('/');
     } catch (error) {
       // Errors handled by AuthContext
     } finally {

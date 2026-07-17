@@ -90,7 +90,8 @@ const Register = () => {
     setIsGoogleLoading(true);
     try {
       await loginWithGoogle();
-      // Redirect happens via signInWithRedirect
+      toast.success('Successfully registered!');
+      navigate('/');
     } catch (error) {
       // Errors handled by AuthContext
     } finally {

@@ -2,8 +2,7 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import { 
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  signInWithRedirect,
-  getRedirectResult,
+  signInWithPopup,
   signOut as firebaseSignOut,
   sendPasswordResetEmail,
   onAuthStateChanged
@@ -39,18 +38,6 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const initializeAuth = async () => {
       try {
-        // Check if returning from a Google redirect sign-in flow
-        const redirectResult = await getRedirectResult(auth);
-        if (redirectResult?.user) {
-          const idToken = await redirectResult.user.getIdToken();
-          const response = await api.post('/auth/session', { idToken, mode: 'google' });
-          if (response.data) {
-            setCurrentUser(response.data);
-            toast.success('Signed in with Google!');
-          }
-          return;
-        }
-
         const response = await api.get('/auth/profile');
         if (response.data) {
           setCurrentUser(response.data);
@@ -115,8 +102,22 @@ export const AuthProvider = ({ children }) => {
   // Google Authentication Sign In / Sign Up
   const loginWithGoogle = async () => {
     try {
-      await signInWithRedirect(auth, googleProvider);
+      const result = await signInWithPopup(auth, googleProvider);
+      const idToken = await result.user.getIdToken();
+
+      const response = await api.post('/auth/session', { idToken, mode: 'google' });
+      toast.success('Signed in with Google!');
+
+      setCurrentUser({
+        ...response.data,
+        uid: result.user.uid,
+        emailVerified: result.user.emailVerified
+      });
+      return response.data;
     } catch (error) {
+      if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
+        return; // User cancelled, no error needed
+      }
       handleAuthError(error);
       throw error;
     }
