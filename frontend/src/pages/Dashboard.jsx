@@ -1089,30 +1089,36 @@ const Dashboard = () => {
                                   <p className="text-[9px] text-[#3f3f46] group-hover:text-[#71717a] transition-colors truncate">{tool.result}</p>
                                 </div>
                               </Link>
-                              <div className="flex items-center gap-1.5 pr-2 w-[70px] opacity-100 md:w-0 md:opacity-0 md:group-hover:w-[70px] md:group-hover:opacity-100 transition-all duration-300 ease-out shrink-0 overflow-hidden">
+                              <div className="flex items-center gap-1 pr-2 w-[76px] opacity-100 md:w-0 md:opacity-0 md:group-hover:w-[76px] md:group-hover:opacity-100 transition-all duration-300 ease-out shrink-0 overflow-hidden">
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
+                                    e.preventDefault();
                                     toggleFavorite(tool.to);
                                   }}
-                                  className={`w-6 h-6 rounded flex items-center justify-center transition-colors cursor-pointer shrink-0 ${
+                                  className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all active:scale-90 cursor-pointer shrink-0 ${
                                     currentUser?.favoriteTools?.includes(tool.to)
-                                      ? 'text-rose-500 hover:text-rose-400'
+                                      ? 'text-rose-500 hover:text-rose-400 bg-rose-500/10'
                                       : 'text-[#3f3f46] hover:text-rose-400 hover:bg-[#ffffff04]'
                                   }`}
                                   title="Favorite"
                                 >
-                                  <Heart size={11} fill={currentUser?.favoriteTools?.includes(tool.to) ? "currentColor" : "none"} />
+                                  <Heart size={13} fill={currentUser?.favoriteTools?.includes(tool.to) ? "currentColor" : "none"} />
                                 </button>
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
+                                    e.preventDefault();
                                     togglePin(tool.to);
                                   }}
-                                  className="w-6 h-6 rounded flex items-center justify-center text-[#2563eb] hover:text-[#1d4ed8] cursor-pointer shrink-0"
+                                  className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all active:scale-90 cursor-pointer shrink-0 ${
+                                    currentUser?.pinnedTools?.includes(tool.to)
+                                      ? 'text-[#2563eb] hover:text-[#1d4ed8] bg-[#2563eb]/10'
+                                      : 'text-[#3f3f46] hover:text-[#2563eb] hover:bg-[#ffffff04]'
+                                  }`}
                                   title="Unpin"
                                 >
-                                  <Pin size={11} fill="currentColor" />
+                                  <Pin size={13} fill={currentUser?.pinnedTools?.includes(tool.to) ? "currentColor" : "none"} />
                                 </button>
                               </div>
                             </div>
@@ -1239,43 +1245,45 @@ const Dashboard = () => {
                             <p className="text-[9px] text-[#3f3f46] group-hover:text-[#71717a] transition-colors truncate">{op.result}</p>
                           </div>
                         </Link>
-                        <div className="flex items-center gap-1.5 pr-2 w-[70px] opacity-100 md:w-0 md:opacity-0 md:group-hover:w-[70px] md:group-hover:opacity-100 transition-all duration-300 ease-out shrink-0 overflow-hidden">
+                        <div className="flex items-center gap-1 pr-2 w-[76px] opacity-100 md:w-0 md:opacity-0 md:group-hover:w-[76px] md:group-hover:opacity-100 transition-all duration-300 ease-out shrink-0 overflow-hidden">
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
+                              e.preventDefault();
                               if (!currentUser) {
                                 setIsAuthModalOpen(true);
                               } else {
                                 toggleFavorite(op.to);
                               }
                             }}
-                            className={`w-6 h-6 rounded flex items-center justify-center transition-colors cursor-pointer shrink-0 ${
+                            className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all active:scale-90 cursor-pointer shrink-0 ${
                               currentUser?.favoriteTools?.includes(op.to)
-                                ? 'text-rose-500 hover:text-rose-400'
+                                ? 'text-rose-500 hover:text-rose-400 bg-rose-500/10'
                                 : 'text-[#3f3f46] hover:text-rose-400 hover:bg-[#ffffff04]'
                             }`}
                             title={currentUser?.favoriteTools?.includes(op.to) ? "Remove from Favorites" : "Add to Favorites"}
                           >
-                            <Heart size={11} fill={currentUser?.favoriteTools?.includes(op.to) ? "currentColor" : "none"} />
+                            <Heart size={13} fill={currentUser?.favoriteTools?.includes(op.to) ? "currentColor" : "none"} />
                           </button>
                           
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
+                              e.preventDefault();
                               if (!currentUser) {
                                 setIsAuthModalOpen(true);
                               } else {
                                 togglePin(op.to);
                               }
                             }}
-                            className={`w-6 h-6 rounded flex items-center justify-center transition-colors cursor-pointer shrink-0 ${
+                            className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all active:scale-90 cursor-pointer shrink-0 ${
                               currentUser?.pinnedTools?.includes(op.to)
-                                ? 'text-[#2563eb] hover:text-[#1d4ed8]'
+                                ? 'text-[#2563eb] hover:text-[#1d4ed8] bg-[#2563eb]/10'
                                 : 'text-[#3f3f46] hover:text-[#2563eb] hover:bg-[#ffffff04]'
                             }`}
                             title={currentUser?.pinnedTools?.includes(op.to) ? "Unpin Tool" : "Pin Tool"}
                           >
-                            <Pin size={11} fill={currentUser?.pinnedTools?.includes(op.to) ? "currentColor" : "none"} />
+                            <Pin size={13} fill={currentUser?.pinnedTools?.includes(op.to) ? "currentColor" : "none"} />
                           </button>
                         </div>
                       </motion.div>
