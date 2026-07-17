@@ -57,8 +57,9 @@ const sendOtpEmail = async (email, otp) => {
   try {
     const activeTransporter = await getTransporter();
     
+    const fromEmail = process.env.SMTP_USER || 'no-reply@dailyutilityhub.com';
     const info = await activeTransporter.sendMail({
-      from: `"Daily Utility Hub" <no-reply@dailyutilityhub.com>`,
+      from: `"Daily Utility Hub" <${fromEmail}>`,
       to: email,
       subject: 'Your Verification Code - Daily Utility Hub',
       text: `Your 6-digit verification OTP code is: ${otp}. It will expire in 3 minutes.`,
