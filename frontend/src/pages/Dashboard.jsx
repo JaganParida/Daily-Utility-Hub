@@ -1079,17 +1079,17 @@ const Dashboard = () => {
                             <div key={tool.to} className="group relative flex items-center bg-[#18181b] border border-[#27272a] hover:border-[#2563eb]/30 hover:bg-[#2563eb]/5 transition-all rounded-xl overflow-hidden">
                               <Link
                                 to={tool.to}
-                                className="flex-1 flex items-center gap-3 pl-3.5 pr-3.5 sm:pl-4 sm:pr-4 py-2.5 sm:py-3 relative z-10"
+                                className="flex-1 flex items-center gap-3 pl-3.5 pr-1 sm:pl-4 sm:pr-1.5 py-2.5 sm:py-3 min-w-0"
                               >
                                 <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#27272a] group-hover:bg-[#2563eb]/10 flex items-center justify-center transition-colors shrink-0">
                                   <ArrowRight size={11} className="text-[#52525b] group-hover:text-[#2563eb] transition-colors" />
                                 </div>
-                                <div className="min-w-0 flex-1 mr-0 transition-all duration-300 ease-out group-hover:mr-[72px] sm:group-hover:mr-[76px]">
+                                <div className="min-w-0 flex-1">
                                   <p className="text-[11px] sm:text-xs font-bold text-[#e4e4e7] group-hover:text-white transition-colors truncate">{tool.label}</p>
                                   <p className="text-[9px] text-[#3f3f46] group-hover:text-[#71717a] transition-colors truncate">{tool.result}</p>
                                 </div>
                               </Link>
-                              <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5 opacity-0 translate-x-3 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 ease-out z-30 pointer-events-none group-hover:pointer-events-auto">
+                              <div className="flex items-center gap-1.5 pr-3 w-0 opacity-0 group-hover:w-[70px] group-hover:opacity-100 transition-all duration-300 ease-out shrink-0 overflow-hidden">
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
@@ -1229,19 +1229,17 @@ const Dashboard = () => {
                         <Link
                           to={op.to}
                           onClick={handleToolClick}
-                          className="flex-1 flex items-center gap-3 pl-3.5 pr-3.5 sm:pl-4 sm:pr-4 py-2.5 sm:py-3 relative z-10"
+                          className="flex-1 flex items-center gap-3 pl-3.5 pr-1 sm:pl-4 sm:pr-1.5 py-2.5 sm:py-3 min-w-0"
                         >
                           <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#27272a] group-hover:bg-[#2563eb]/10 flex items-center justify-center transition-colors shrink-0">
                             <ArrowRight size={11} className="text-[#52525b] group-hover:text-[#2563eb] transition-colors" />
                           </div>
-                          <div className="min-w-0 flex-1 mr-0 transition-all duration-300 ease-out group-hover:mr-[72px] sm:group-hover:mr-[76px]">
+                          <div className="min-w-0 flex-1">
                             <p className="text-[11px] sm:text-xs font-bold text-[#e4e4e7] group-hover:text-white transition-colors truncate">{op.label}</p>
                             <p className="text-[9px] text-[#3f3f46] group-hover:text-[#71717a] transition-colors truncate">{op.result}</p>
                           </div>
                         </Link>
-
-                        {/* Favorite & Pin buttons */}
-                        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5 opacity-0 translate-x-3 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 ease-out z-30 pointer-events-none group-hover:pointer-events-auto">
+                        <div className="flex items-center gap-1.5 pr-3 w-0 opacity-0 group-hover:w-[70px] group-hover:opacity-100 transition-all duration-300 ease-out shrink-0 overflow-hidden">
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
