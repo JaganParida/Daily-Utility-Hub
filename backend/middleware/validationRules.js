@@ -11,8 +11,8 @@ const sessionValidation = [
   body('mode')
     .isString()
     .trim()
-    .isIn(['login', 'register', 'refresh'])
-    .withMessage('Authentication mode must be one of: login, register, refresh.'),
+    .isIn(['login', 'register', 'refresh', 'google'])
+    .withMessage('Authentication mode must be one of: login, register, refresh, google.'),
   body('name')
     .optional()
     .isString()
