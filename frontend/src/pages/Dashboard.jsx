@@ -216,9 +216,8 @@ const CustomDropdown = ({
   );
 
   return (
-    <motion.div layout ref={ref} className="relative w-full h-full">
-      <motion.button
-        layout
+    <div ref={ref} className="relative w-full h-full">
+      <button
         type="button"
         onClick={() => !disabled && setOpen((p) => !p)}
         disabled={disabled}
@@ -252,7 +251,7 @@ const CustomDropdown = ({
           </AnimatePresence>
         </span>
         <ChevronDown size={11} className={`ml-auto text-[#71717a] shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
-      </motion.button>
+      </button>
 
       <AnimatePresence>
         {open && (
@@ -333,7 +332,7 @@ const CustomDropdown = ({
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.div>
+    </div>
   );
 };
 
@@ -602,10 +601,6 @@ const Dashboard = () => {
   
   const handleOperationChange = (val) => {
     setSelectedOpTo(val);
-    const selectedOp = operations.find(op => op.to === val);
-    if (selectedOp && droppedFile) {
-      navigate(selectedOp.to, { state: { initialFile: droppedFile.rawFile } });
-    }
   };
 
   const handleLaunch = () => { 
@@ -858,8 +853,8 @@ const Dashboard = () => {
                     </motion.div>
 
                     {/* Target Selectors */}
-                    <motion.div layout className="flex items-center gap-2 shrink-0">
-                      <motion.div layout className="w-[140px] md:w-[155px]">
+                    <div className="flex items-center gap-2 shrink-0">
+                      <div className="w-[140px] md:w-[155px]">
                         <CustomDropdown 
                           value={source} 
                           onChange={handleSourceChange} 
@@ -871,8 +866,8 @@ const Dashboard = () => {
                           setOpen={setIsFormatOpen}
                           highlightedValue={simulatedFormatHighlight}
                         />
-                      </motion.div>
-                      <motion.div layout className="w-[150px] md:w-[170px]">
+                      </div>
+                      <div className="w-[150px] md:w-[170px]">
                         <CustomDropdown 
                           value={selectedOpTo || (operations[0]?.to || "")} 
                           onChange={handleOperationChange} 
@@ -884,8 +879,8 @@ const Dashboard = () => {
                           setOpen={setIsOperationOpen}
                           highlightedValue={simulatedOpHighlight}
                         />
-                      </motion.div>
-                    </motion.div>
+                      </div>
+                    </div>
 
                     {/* Launch Button */}
                     <motion.button
