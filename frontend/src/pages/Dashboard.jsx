@@ -1089,7 +1089,7 @@ const Dashboard = () => {
                                   <p className="text-[9px] text-[#3f3f46] group-hover:text-[#71717a] transition-colors truncate">{tool.result}</p>
                                 </div>
                               </Link>
-                              <div className="flex items-center gap-1.5 pr-3 w-0 opacity-0 group-hover:w-[70px] group-hover:opacity-100 transition-all duration-300 ease-out shrink-0 overflow-hidden">
+                              <div className="flex items-center gap-1.5 pr-2 w-[70px] opacity-100 md:w-0 md:opacity-0 md:group-hover:w-[70px] md:group-hover:opacity-100 transition-all duration-300 ease-out shrink-0 overflow-hidden">
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
@@ -1239,7 +1239,7 @@ const Dashboard = () => {
                             <p className="text-[9px] text-[#3f3f46] group-hover:text-[#71717a] transition-colors truncate">{op.result}</p>
                           </div>
                         </Link>
-                        <div className="flex items-center gap-1.5 pr-3 w-0 opacity-0 group-hover:w-[70px] group-hover:opacity-100 transition-all duration-300 ease-out shrink-0 overflow-hidden">
+                        <div className="flex items-center gap-1.5 pr-2 w-[70px] opacity-100 md:w-0 md:opacity-0 md:group-hover:w-[70px] md:group-hover:opacity-100 transition-all duration-300 ease-out shrink-0 overflow-hidden">
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
