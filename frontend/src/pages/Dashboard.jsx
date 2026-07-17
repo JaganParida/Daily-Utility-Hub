@@ -473,7 +473,7 @@ const Dashboard = () => {
   const fileInputRefMobile = useRef(null);
 
   const [source, setSource] = useState("");
-  const [operationIdx, setOperationIdx] = useState(0);
+  const [selectedOpTo, setSelectedOpTo] = useState("");
   const [droppedFile, setDroppedFile] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const [activeTab, setActiveTab] = useState("pdf");
@@ -507,7 +507,7 @@ const Dashboard = () => {
     setDroppedFile((prev) => {
       if (prev?.isDemo) {
         setSource("");
-        setOperationIdx(0);
+        setSelectedOpTo("");
         return null;
       }
       return prev;
@@ -580,7 +580,7 @@ const Dashboard = () => {
   };
 
   const operations = source ? getFilteredOperations(source, droppedFile?.ext) : [];
-  const activeOp = operations[operationIdx] || null;
+  const activeOp = operations.find(op => op.to === selectedOpTo) || operations[0] || null;
   const tabOps = OPERATIONS_MAP[activeTab] || [];
 
   useEffect(() => {
@@ -596,12 +596,13 @@ const Dashboard = () => {
   const handleSourceChange = (val) => { 
     clearSimulation();
     setSource(val); 
-    setOperationIdx(0); 
+    const ops = getFilteredOperations(val, droppedFile?.ext);
+    setSelectedOpTo(ops[0]?.to || "");
   };
   
   const handleOperationChange = (val) => {
-    setOperationIdx(val);
-    const selectedOp = operations[val];
+    setSelectedOpTo(val);
+    const selectedOp = operations.find(op => op.to === val);
     if (selectedOp && droppedFile) {
       navigate(selectedOp.to, { state: { initialFile: droppedFile.rawFile } });
     }
@@ -628,11 +629,12 @@ const Dashboard = () => {
     });
 
     setSource("");
-    setOperationIdx(0);
+    setSelectedOpTo("");
 
     if (mapped) {
       setSource(mapped);
-      setOperationIdx(0);
+      const ops = getFilteredOperations(mapped, ext);
+      setSelectedOpTo(ops[0]?.to || "");
     }
   }, [clearSimulation]);
 
@@ -640,6 +642,7 @@ const Dashboard = () => {
     clearSimulation();
     setDroppedFile(null); 
     setSource(""); 
+    setSelectedOpTo("");
   };
 
   const sourceOptions = SOURCE_FORMATS.map((item) => ({
@@ -648,8 +651,8 @@ const Dashboard = () => {
     icon: item.icon,
   }));
 
-  const operationOptions = operations.map((item, idx) => ({
-    value: idx,
+  const operationOptions = operations.map((item) => ({
+    value: item.to,
     label: item.label,
     icon: Zap,
   }));
@@ -871,7 +874,7 @@ const Dashboard = () => {
                       </motion.div>
                       <motion.div layout className="w-[150px] md:w-[170px]">
                         <CustomDropdown 
-                          value={operationIdx} 
+                          value={selectedOpTo || (operations[0]?.to || "")} 
                           onChange={handleOperationChange} 
                           options={operationOptions} 
                           placeholder={!droppedFile ? DEMO_OPERATIONS[demoStep] : "Operation"} 
@@ -978,7 +981,7 @@ const Dashboard = () => {
                         highlightedValue={simulatedFormatHighlight}
                       />
                       <CustomDropdown 
-                        value={operationIdx} 
+                        value={selectedOpTo || (operations[0]?.to || "")} 
                         onChange={handleOperationChange} 
                         options={operationOptions} 
                         placeholder={!droppedFile ? DEMO_OPERATIONS[demoStep] : "Operation"} 
