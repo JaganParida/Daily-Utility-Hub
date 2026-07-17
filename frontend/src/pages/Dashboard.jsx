@@ -1260,22 +1260,65 @@ const Dashboard = () => {
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.2, delay: i * 0.03 }}
-                        className="group relative flex items-center bg-[#18181b] border border-[#27272a] hover:border-[#2563eb]/30 hover:bg-[#2563eb]/5 transition-all rounded-xl overflow-hidden"
+                        className="group relative flex flex-col md:flex-row items-start md:items-center bg-[#18181b] border border-[#27272a] hover:border-[#2563eb]/30 hover:bg-[#2563eb]/5 transition-all rounded-xl overflow-hidden"
                       >
                         <Link
                           to={op.to}
                           onClick={(e) => handleToolClick(e, op.to)}
-                          className="flex-1 flex items-center gap-3 pl-3.5 pr-1 sm:pl-4 sm:pr-1.5 py-2.5 sm:py-3 min-w-0"
+                          className="flex-1 flex flex-col md:flex-row md:items-center gap-2 md:gap-3 p-2.5 sm:p-3 min-w-0 w-full"
                         >
                           <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#27272a] group-hover:bg-[#2563eb]/10 flex items-center justify-center transition-colors shrink-0">
                             <ArrowRight size={11} className="text-[#52525b] group-hover:text-[#2563eb] transition-colors" />
                           </div>
-                          <div className="min-w-0 flex-1">
+                          <div className="min-w-0 flex-1 w-full mt-0.5 md:mt-0 text-left">
                             <p className="text-[11px] sm:text-xs font-bold text-[#e4e4e7] group-hover:text-white transition-colors truncate">{op.label}</p>
                             <p className="text-[9px] text-[#3f3f46] group-hover:text-[#71717a] transition-colors truncate">{op.result}</p>
                           </div>
                         </Link>
-                        <div className="flex items-center gap-1 pr-2 w-[76px] opacity-100 md:w-0 md:opacity-0 md:group-hover:w-[76px] md:group-hover:opacity-100 transition-all duration-300 ease-out shrink-0 overflow-hidden">
+                        
+                        {/* MOBILE ACTIONS - Absolute Top Right */}
+                        <div className="absolute top-2 right-2 flex md:hidden items-center gap-1">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                              if (!currentUser) {
+                                setIsAuthModalOpen(true);
+                              } else {
+                                toggleFavorite(op.to);
+                              }
+                            }}
+                            className={`p-1.5 rounded-lg flex items-center justify-center transition-all active:scale-90 cursor-pointer ${
+                              currentUser?.favoriteTools?.includes(op.to)
+                                ? 'text-rose-500 hover:text-rose-400 bg-rose-500/10'
+                                : 'text-[#3f3f46] hover:text-rose-400 hover:bg-[#ffffff04]'
+                            }`}
+                          >
+                            <Heart size={12} fill={currentUser?.favoriteTools?.includes(op.to) ? "currentColor" : "none"} />
+                          </button>
+                          
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                              if (!currentUser) {
+                                setIsAuthModalOpen(true);
+                              } else {
+                                togglePin(op.to);
+                              }
+                            }}
+                            className={`p-1.5 rounded-lg flex items-center justify-center transition-all active:scale-90 cursor-pointer ${
+                              currentUser?.pinnedTools?.includes(op.to)
+                                ? 'text-[#2563eb] hover:text-[#1d4ed8] bg-[#2563eb]/10'
+                                : 'text-[#3f3f46] hover:text-[#2563eb] hover:bg-[#ffffff04]'
+                            }`}
+                          >
+                            <Pin size={12} fill={currentUser?.pinnedTools?.includes(op.to) ? "currentColor" : "none"} />
+                          </button>
+                        </div>
+
+                        {/* DESKTOP ACTIONS - Hover Reveal */}
+                        <div className="hidden md:flex items-center gap-1 pr-2 w-0 opacity-0 group-hover:w-[76px] group-hover:opacity-100 transition-all duration-300 ease-out shrink-0 overflow-hidden">
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
