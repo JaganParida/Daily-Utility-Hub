@@ -1,5 +1,5 @@
 import {
-  User, LogOut, Search, Menu, X, ChevronDown, Layers, Moon, Sun, HelpCircle, Shield, ArrowLeft
+  User, LogOut, Search, Menu, X, ChevronDown, Layers, Moon, Sun, HelpCircle, Shield, ArrowLeft, Heart
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -18,6 +18,9 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
   const { currentUser: user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  
+  const [isFavOpen, setIsFavOpen] = useState(false);
+  const favDropdownRef = useRef(null);
 
   const [searchWidth, setSearchWidth] = useState(280);
   useEffect(() => {
@@ -92,6 +95,7 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
   useEffect(() => {
     const handler = (e) => {
       if (megamenuRef.current && !megamenuRef.current.contains(e.target)) setHoveredTab(null);
+      if (favDropdownRef.current && !favDropdownRef.current.contains(e.target)) setIsFavOpen(false);
       if (searchRef.current && !searchRef.current.contains(e.target)) {
         setIsSearchExpanded(false);
         setSearchQuery("");
@@ -100,6 +104,14 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
+
+  const getToolByPath = (path) => {
+    for (const catName of Object.keys(toolCategories)) {
+      const found = toolCategories[catName].find(t => t.to === path);
+      if (found) return found;
+    }
+    return null;
+  };
 
   useHotkeys("ctrl+k, meta+k", (e) => {
     e.preventDefault();
@@ -662,6 +674,52 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
             {/* User */}
             {user ? (
               <div className="flex items-center gap-1.5">
+                {user.favoriteTools && user.favoriteTools.length > 0 && (
+                  <div className="relative" ref={favDropdownRef}>
+                    <button
+                      onClick={() => setIsFavOpen(!isFavOpen)}
+                      className="w-8 h-8 flex items-center justify-center rounded-lg text-rose-500 hover:bg-rose-500/10 hover:text-rose-400 transition-all cursor-pointer shrink-0"
+                      title="Favorite Tools"
+                    >
+                      <Heart size={14} fill="currentColor" />
+                    </button>
+                    <AnimatePresence>
+                      {isFavOpen && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                          className="absolute right-0 mt-2 w-64 bg-[#111116] border border-[#27272a] rounded-xl shadow-[0_15px_40px_rgba(0,0,0,0.6)] z-[250] py-2 overflow-hidden text-left"
+                        >
+                          <p className="text-[9px] font-black text-[#52525b] uppercase tracking-wider px-3.5 py-1.5 border-b border-[#27272a]/55 mb-1">
+                            Favorite Tools
+                          </p>
+                          <div className="max-h-64 overflow-y-auto custom-scrollbar px-1.5 space-y-0.5">
+                            {user.favoriteTools.map(path => {
+                              const tool = getToolByPath(path);
+                              if (!tool) return null;
+                              const ToolIcon = tool.icon;
+                              return (
+                                <Link
+                                  key={path}
+                                  to={path}
+                                  onClick={() => setIsFavOpen(false)}
+                                  className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs text-[#a1a1aa] hover:text-white hover:bg-zinc-800/40 transition-colors"
+                                >
+                                  <div className="w-6 h-6 rounded-md bg-zinc-800 text-rose-500 flex items-center justify-center shrink-0">
+                                    <ToolIcon size={12} />
+                                  </div>
+                                  <span className="truncate">{tool.name}</span>
+                                </Link>
+                              );
+                            })}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                )}
+
                 <Link
                   to="/profile"
                   className={`flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1.5 rounded-lg transition-all ${

@@ -149,6 +149,7 @@ exports.syncSession = async (req, res) => {
         email: user.email,
         token: sessionId,
         pinnedTools: user.pinnedTools || [],
+        favoriteTools: user.favoriteTools || [],
         recentHistory: user.recentHistory || [],
         activeSessions: user.activeSessions.map(s => ({
           _id: s._id,
@@ -207,6 +208,7 @@ exports.getUserProfile = async (req, res) => {
       name: req.user.name,
       email: req.user.email,
       pinnedTools: req.user.pinnedTools || [],
+      favoriteTools: req.user.favoriteTools || [],
       recentHistory: req.user.recentHistory || [],
       activeSessions: (req.user.activeSessions || []).map(s => ({
         _id: s._id,
@@ -327,5 +329,38 @@ exports.updateAnalyticsPin = async (req, res) => {
   } catch (error) {
     console.error('Update pin error:', error);
     res.status(500).json({ message: 'Internal server error updating pins.' });
+  }
+};
+
+// @desc    Toggle a favorite tool in database bookmarks (max 24 items)
+// @route   POST /api/auth/analytics/favorite
+// @access  Private
+exports.updateAnalyticsFavorite = async (req, res) => {
+  try {
+    const { toolPath } = req.body;
+    if (!toolPath) {
+      return res.status(400).json({ message: 'Tool path required' });
+    }
+
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const isFav = (user.favoriteTools || []).includes(toolPath);
+    if (isFav) {
+      user.favoriteTools = user.favoriteTools.filter(p => p !== toolPath);
+    } else {
+      if (user.favoriteTools.length >= 24) {
+        return res.status(400).json({ message: 'Favorite limit reached (maximum 24).' });
+      }
+      user.favoriteTools.push(toolPath);
+    }
+
+    await user.save();
+    res.json({ success: true, favoriteTools: user.favoriteTools });
+  } catch (error) {
+    console.error('Update favorite error:', error);
+    res.status(500).json({ message: 'Internal server error updating favorites.' });
   }
 };

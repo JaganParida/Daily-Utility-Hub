@@ -4,9 +4,11 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import {
   ArrowRight, UploadCloud, X, FileCheck, ChevronDown, Zap, Shield, Cpu,
   FileText, ImageIcon, Code2, Type, Table2, FileSpreadsheet, MonitorPlay,
-  FolderArchive, Music, Layers, Search, ChevronLeft, ChevronRight
+  FolderArchive, Music, Layers, Search, ChevronLeft, ChevronRight, Heart, Pin
 } from "lucide-react";
 import PageTransition from "../components/PageTransition";
+import { useAuth } from "../context/AuthContext";
+import { toast } from "react-hot-toast";
 
 // ─── DATA ───
 
@@ -470,6 +472,9 @@ const Dashboard = () => {
   const fileInputRefDesktop = useRef(null);
   const fileInputRefMobile = useRef(null);
 
+  const { currentUser, togglePin, toggleFavorite, loginWithGoogle } = useAuth();
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
   const [source, setSource] = useState("");
   const [selectedOpTo, setSelectedOpTo] = useState("");
   const [droppedFile, setDroppedFile] = useState(null);
@@ -581,6 +586,45 @@ const Dashboard = () => {
   const activeOp = operations.find(op => op.to === (selectedOpTo || (operations[0]?.to || ""))) || null;
   const tabOps = OPERATIONS_MAP[activeTab] || [];
 
+  const handleToolClick = (e) => {
+    if (!currentUser) {
+      e.preventDefault();
+      setIsAuthModalOpen(true);
+    }
+  };
+
+  const getToolCategoryAndDetails = (toPath) => {
+    for (const catKey of Object.keys(OPERATIONS_MAP)) {
+      const found = OPERATIONS_MAP[catKey].find(op => op.to === toPath);
+      if (found) {
+        const catTab = CATEGORY_TABS.find(tab => tab.id === catKey);
+        return {
+          ...found,
+          categoryKey: catKey,
+          categoryLabel: catTab?.label || catKey,
+          icon: catTab?.icon || ArrowRight
+        };
+      }
+    }
+    return null;
+  };
+
+  const pinnedResolved = (currentUser?.pinnedTools || [])
+    .map(path => getToolCategoryAndDetails(path))
+    .filter(Boolean);
+
+  const pinnedGroups = pinnedResolved.reduce((groups, tool) => {
+    if (!groups[tool.categoryKey]) {
+      groups[tool.categoryKey] = {
+        label: tool.categoryLabel,
+        icon: tool.icon,
+        tools: []
+      };
+    }
+    groups[tool.categoryKey].tools.push(tool);
+    return groups;
+  }, {});
+
   useEffect(() => {
     const hasOp = !!activeOp;
     if (!prevHasActiveOp.current && hasOp) {
@@ -652,7 +696,8 @@ const Dashboard = () => {
   }));
 
   return (
-    <PageTransition>
+    <>
+      <PageTransition>
       <style>{`
         @keyframes gradient-shift { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
         @keyframes flow-pulse { 0% { transform: translateX(-100%); } 100% { transform: translateX(200%); } }
@@ -1006,6 +1051,80 @@ const Dashboard = () => {
               </div>
             </motion.div>
 
+            {/* ═══ PINNED TOOLS SECTION ═══ */}
+            {currentUser && pinnedResolved.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-8 p-5 bg-[#111116] border border-[#27272a] rounded-xl text-left"
+              >
+                <div className="flex items-center gap-2 mb-4">
+                  <Pin className="text-[#2563eb] w-3.5 h-3.5" />
+                  <h2 className="text-[10px] sm:text-xs font-black text-white uppercase tracking-widest">
+                    Pinned Workspaces
+                  </h2>
+                </div>
+                <div className="space-y-5">
+                  {Object.keys(pinnedGroups).map((catKey) => {
+                    const group = pinnedGroups[catKey];
+                    const GroupIcon = group.icon;
+                    return (
+                      <div key={catKey} className="space-y-2">
+                        <div className="flex items-center gap-2 border-b border-[#27272a]/55 pb-1">
+                          <GroupIcon size={11} className="text-[#52525b]" />
+                          <span className="text-[9px] font-bold text-[#71717a] uppercase tracking-wider">{group.label}</span>
+                        </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                          {group.tools.map((tool) => (
+                            <div key={tool.to} className="group relative flex items-center bg-[#18181b] border border-[#27272a] hover:border-[#2563eb]/30 hover:bg-[#2563eb]/5 transition-all rounded-xl overflow-hidden">
+                              <Link
+                                to={tool.to}
+                                className="flex-1 flex items-center gap-3 px-3.5 py-2.5 sm:px-4 sm:py-3"
+                              >
+                                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#27272a] group-hover:bg-[#2563eb]/10 flex items-center justify-center transition-colors shrink-0">
+                                  <ArrowRight size={11} className="text-[#52525b] group-hover:text-[#2563eb] transition-colors" />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <p className="text-[11px] sm:text-xs font-bold text-[#e4e4e7] group-hover:text-white transition-colors truncate">{tool.label}</p>
+                                  <p className="text-[9px] text-[#3f3f46] group-hover:text-[#71717a] transition-colors truncate">{tool.result}</p>
+                                </div>
+                              </Link>
+                              <div className="flex items-center gap-1.5 pr-3">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleFavorite(tool.to);
+                                  }}
+                                  className={`w-6 h-6 rounded flex items-center justify-center transition-colors cursor-pointer shrink-0 ${
+                                    currentUser?.favoriteTools?.includes(tool.to)
+                                      ? 'text-rose-500 hover:text-rose-400'
+                                      : 'text-[#3f3f46] hover:text-rose-400 hover:bg-[#ffffff04]'
+                                  }`}
+                                  title="Favorite"
+                                >
+                                  <Heart size={11} fill={currentUser?.favoriteTools?.includes(tool.to) ? "currentColor" : "none"} />
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    togglePin(tool.to);
+                                  }}
+                                  className="w-6 h-6 rounded flex items-center justify-center text-[#2563eb] hover:text-[#1d4ed8] cursor-pointer shrink-0"
+                                  title="Unpin"
+                                >
+                                  <Pin size={11} fill="currentColor" />
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </motion.div>
+            )}
+
             {/* ═══ CATEGORY TABS ═══ */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -1105,19 +1224,62 @@ const Dashboard = () => {
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.2, delay: i * 0.03 }}
+                        className="group relative flex items-center bg-[#18181b] border border-[#27272a] hover:border-[#2563eb]/30 hover:bg-[#2563eb]/5 transition-all rounded-xl overflow-hidden"
                       >
                         <Link
                           to={op.to}
-                          className="group flex items-center gap-3 px-3.5 py-2.5 sm:px-4 sm:py-3 rounded-xl bg-[#18181b] border border-[#27272a] hover:border-[#2563eb]/30 hover:bg-[#2563eb]/5 transition-all"
+                          onClick={handleToolClick}
+                          className="flex-1 flex items-center gap-3 px-3.5 py-2.5 sm:px-4 sm:py-3"
                         >
                           <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#27272a] group-hover:bg-[#2563eb]/10 flex items-center justify-center transition-colors shrink-0">
                             <ArrowRight size={11} className="text-[#52525b] group-hover:text-[#2563eb] transition-colors" />
                           </div>
-                          <div className="min-w-0">
+                          <div className="min-w-0 flex-1">
                             <p className="text-[11px] sm:text-xs font-bold text-[#e4e4e7] group-hover:text-white transition-colors truncate">{op.label}</p>
                             <p className="text-[9px] text-[#3f3f46] group-hover:text-[#71717a] transition-colors truncate">{op.result}</p>
                           </div>
                         </Link>
+
+                        {/* Favorite & Pin buttons */}
+                        <div className="flex items-center gap-1 pr-3">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (!currentUser) {
+                                setIsAuthModalOpen(true);
+                              } else {
+                                toggleFavorite(op.to);
+                              }
+                            }}
+                            className={`w-6 h-6 rounded flex items-center justify-center transition-colors cursor-pointer shrink-0 ${
+                              currentUser?.favoriteTools?.includes(op.to)
+                                ? 'text-rose-500 hover:text-rose-400'
+                                : 'text-[#3f3f46] hover:text-rose-400 hover:bg-[#ffffff04]'
+                            }`}
+                            title={currentUser?.favoriteTools?.includes(op.to) ? "Remove from Favorites" : "Add to Favorites"}
+                          >
+                            <Heart size={11} fill={currentUser?.favoriteTools?.includes(op.to) ? "currentColor" : "none"} />
+                          </button>
+                          
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (!currentUser) {
+                                setIsAuthModalOpen(true);
+                              } else {
+                                togglePin(op.to);
+                              }
+                            }}
+                            className={`w-6 h-6 rounded flex items-center justify-center transition-colors cursor-pointer shrink-0 ${
+                              currentUser?.pinnedTools?.includes(op.to)
+                                ? 'text-[#2563eb] hover:text-[#1d4ed8]'
+                                : 'text-[#3f3f46] hover:text-[#2563eb] hover:bg-[#ffffff04]'
+                            }`}
+                            title={currentUser?.pinnedTools?.includes(op.to) ? "Unpin Tool" : "Pin Tool"}
+                          >
+                            <Pin size={11} fill={currentUser?.pinnedTools?.includes(op.to) ? "currentColor" : "none"} />
+                          </button>
+                        </div>
                       </motion.div>
                     ))}
                   </motion.div>
@@ -1128,6 +1290,92 @@ const Dashboard = () => {
         </section>
       </div>
     </PageTransition>
+
+    {/* Professional Auth Gate Modal with Sharp Corners */}
+    <AnimatePresence>
+      {isAuthModalOpen && (
+        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsAuthModalOpen(false)}
+            className="fixed inset-0 bg-black/90 backdrop-blur-xs"
+          />
+          
+          <motion.div
+            initial={{ scale: 0.96, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.96, opacity: 0 }}
+            className="relative w-full max-w-sm bg-[#09090b] border border-zinc-800 p-8 shadow-[0_20px_50px_rgba(0,0,0,0.8)] rounded-none z-10 flex flex-col text-left"
+          >
+            <button
+              onClick={() => setIsAuthModalOpen(false)}
+              className="absolute top-4 right-4 text-zinc-500 hover:text-white transition-colors cursor-pointer"
+            >
+              <X size={15} />
+            </button>
+            
+            <div className="flex flex-col items-center text-center mb-6">
+              <div className="w-12 h-12 rounded-none bg-[#2563eb]/10 border border-[#2563eb]/20 flex items-center justify-center mb-4 text-[#2563eb]">
+                <Shield size={20} />
+              </div>
+              <h3 className="text-lg font-black text-white tracking-tight">Authentication Required</h3>
+              <p className="text-[11px] text-zinc-500 mt-1.5 max-w-xs leading-normal font-medium">
+                Create an account or log in to use this workspace, save your favorite tools, and keep them pinned.
+              </p>
+            </div>
+            
+            <div className="space-y-3.5">
+              <button
+                onClick={async () => {
+                  try {
+                    await loginWithGoogle('login');
+                    setIsAuthModalOpen(false);
+                  } catch (e) {}
+                }}
+                className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-zinc-800 rounded-none bg-zinc-900 hover:bg-zinc-800 text-white font-bold transition-all text-[11px] uppercase tracking-wider cursor-pointer"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                  <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                  <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                  <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                </svg>
+                Continue with Google
+              </button>
+              
+              <div className="relative my-3">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-zinc-800"></div>
+                </div>
+                <div className="relative flex justify-center text-xs">
+                  <span className="px-3 bg-[#09090b] text-zinc-500 text-[9px] uppercase tracking-widest font-bold">Or use email</span>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-2">
+                <Link
+                  to="/login"
+                  onClick={() => setIsAuthModalOpen(false)}
+                  className="flex items-center justify-center py-2.5 border border-zinc-800 rounded-none bg-zinc-900/40 hover:bg-zinc-800 text-white font-bold text-[10px] uppercase tracking-wider transition-colors"
+                >
+                  Sign In
+                </Link>
+                <Link
+                  to="/register"
+                  onClick={() => setIsAuthModalOpen(false)}
+                  className="flex items-center justify-center py-2.5 bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-bold text-[10px] uppercase tracking-wider transition-colors"
+                >
+                  Register
+                </Link>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
+    </>
   );
 };
 

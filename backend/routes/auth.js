@@ -7,7 +7,8 @@ const {
   updateUserProfile,
   logoutSession,
   recordAnalyticsVisit,
-  updateAnalyticsPin
+  updateAnalyticsPin,
+  updateAnalyticsFavorite
 } = require('../controllers/authController');
 const { protect } = require('../middleware/authMiddleware');
 const { validate } = require('../middleware/validationMiddleware');
@@ -37,5 +38,7 @@ router.delete('/sessions/:sessionId', protect, userRateLimiter, deleteSessionVal
 router.post('/analytics/visit', protect, userRateLimiter, analyticsValidation, validate, recordAnalyticsVisit);
 
 router.post('/analytics/pin', protect, userRateLimiter, analyticsValidation, validate, updateAnalyticsPin);
+
+router.post('/analytics/favorite', protect, userRateLimiter, analyticsValidation, validate, updateAnalyticsFavorite);
 
 module.exports = router;

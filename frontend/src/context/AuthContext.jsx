@@ -211,6 +211,26 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const togglePin = async (toolPath) => {
+    try {
+      const response = await api.post('/auth/analytics/pin', { toolPath });
+      setCurrentUser(prev => prev ? { ...prev, pinnedTools: response.data.pinnedTools } : null);
+      toast.success('Pins updated successfully');
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to update pin');
+    }
+  };
+
+  const toggleFavorite = async (toolPath) => {
+    try {
+      const response = await api.post('/auth/analytics/favorite', { toolPath });
+      setCurrentUser(prev => prev ? { ...prev, favoriteTools: response.data.favoriteTools } : null);
+      toast.success('Favorites updated successfully');
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to update favorite');
+    }
+  };
+
   const handleAuthError = (error) => {
     const msgLower = (error.response?.data?.message || error.message || '').toLowerCase();
     const isConflict = 
@@ -266,7 +286,9 @@ export const AuthProvider = ({ children }) => {
     updateProfile,
     resetPassword,
     terminateSession,
-    refreshUser
+    refreshUser,
+    togglePin,
+    toggleFavorite
   };
 
   return (

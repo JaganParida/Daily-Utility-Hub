@@ -42,6 +42,10 @@ const userSchema = new mongoose.Schema(
       type: [String],
       default: []
     },
+    favoriteTools: {
+      type: [String],
+      default: []
+    },
     recentHistory: [
       {
         toolPath: {
