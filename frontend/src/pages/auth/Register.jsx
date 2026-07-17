@@ -90,24 +90,9 @@ const Register = () => {
     setIsGoogleLoading(true);
     try {
       await loginWithGoogle();
-      toast.success('Successfully registered!');
-      navigate('/dashboard');
+      // Redirect happens via signInWithRedirect
     } catch (error) {
-      const isAlreadyExists = 
-        error.code === 'auth/email-already-in-use' || 
-        error.response?.status === 400 || 
-        error.response?.data?.message?.toLowerCase().includes('already exists') ||
-        error.message?.toLowerCase().includes('already exists') ||
-        error.response?.data?.message?.toLowerCase().includes('log in instead') ||
-        error.message?.toLowerCase().includes('log in instead');
-        
-      if (isAlreadyExists) {
-        toast.error('An account already exists with this email. Redirecting to sign in...');
-        const emailToPass = error.email || '';
-        setTimeout(() => {
-          navigate('/login', { state: { email: emailToPass } });
-        }, 1500);
-      }
+      // Errors handled by AuthContext
     } finally {
       setIsGoogleLoading(false);
     }
@@ -151,7 +136,7 @@ const Register = () => {
     try {
       await api.post('/auth/otp/verify', { token: otpValidationToken, code: typedCode });
       toast.success('Email verified successfully!');
-      navigate('/dashboard');
+      navigate('/');
     } catch (error) {
       toast.error(error.response?.data?.message || 'Invalid verification code. Please try again.');
     }

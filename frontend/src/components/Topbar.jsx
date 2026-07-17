@@ -674,8 +674,7 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
             {/* User */}
             {user ? (
               <div className="flex items-center gap-1.5">
-                {user.favoriteTools && user.favoriteTools.length > 0 && (
-                  <Link
+                <Link
                     to="/favorites"
                     className={`flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1.5 rounded-lg transition-all shrink-0 ${
                       currentPath === "/favorites"
@@ -684,9 +683,8 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                     }`}
                   >
                     <Heart size={12} className="text-rose-500 shrink-0" fill="currentColor" />
-                    <span>Favorites</span>
+                    <span className="hidden sm:inline">Favorites</span>
                   </Link>
-                )}
 
                 <Link
                   to="/profile"

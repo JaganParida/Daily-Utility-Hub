@@ -2,7 +2,6 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import { 
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  signInWithPopup, 
   signInWithRedirect,
   getRedirectResult,
   signOut as firebaseSignOut,
@@ -115,39 +114,9 @@ export const AuthProvider = ({ children }) => {
 
   // Google Authentication Sign In / Sign Up
   const loginWithGoogle = async () => {
-    let result;
     try {
-      // Race popup against a 4.5 second timeout to prevent COOP silent hangs on Vercel
-      const popupPromise = signInWithPopup(auth, googleProvider);
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Popup timeout')), 4500)
-      );
-
-      try {
-        result = await Promise.race([popupPromise, timeoutPromise]);
-      } catch (popupError) {
-        console.warn("Google popup failed or timed out, falling back to redirect:", popupError);
-        await signInWithRedirect(auth, googleProvider);
-        return; // Redirect shifts page view, following code is bypassed
-      }
-
-      const idToken = await result.user.getIdToken();
-
-      // Verify with Express backend using 'google' mode (auto registers if needed)
-      const response = await api.post('/auth/session', { idToken, mode: 'google' });
-      toast.success('Signed in with Google!');
-
-      setCurrentUser({
-        ...response.data,
-        uid: result.user.uid,
-        emailVerified: result.user.emailVerified
-      });
-      return response.data;
+      await signInWithRedirect(auth, googleProvider);
     } catch (error) {
-      if (result?.user?.email) {
-        error.email = result.user.email;
-      }
-      await firebaseSignOut(auth);
       handleAuthError(error);
       throw error;
     }

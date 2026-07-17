@@ -1330,7 +1330,7 @@ const Dashboard = () => {
               <button
                 onClick={async () => {
                   try {
-                    await loginWithGoogle('login');
+                    await loginWithGoogle();
                     setIsAuthModalOpen(false);
                   } catch (e) {}
                 }}
