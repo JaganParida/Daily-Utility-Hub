@@ -135,9 +135,11 @@ const Register = () => {
   };
 
   const handleGoogleSubmit = async () => {
+    // Start popup immediately to prevent browser popup blockers from intercepting it
+    const authPromise = loginWithGoogle();
     setIsGoogleLoading(true);
     try {
-      const response = await loginWithGoogle();
+      const response = await authPromise;
       if (response && (response.isNewUser || response.emailVerified === false)) {
         // Send OTP email first
         try {

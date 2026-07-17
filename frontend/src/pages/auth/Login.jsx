@@ -48,9 +48,11 @@ const Login = () => {
   };
 
   const handleGoogleSubmit = async () => {
+    // Start popup immediately to prevent browser popup blockers from intercepting it
+    const authPromise = loginWithGoogle();
     setIsGoogleLoading(true);
     try {
-      const response = await loginWithGoogle();
+      const response = await authPromise;
       if (response && (response.isNewUser || response.emailVerified === false)) {
         toast.success('Please verify your email to continue.');
         navigate('/register', { state: { email: response.email, triggerGoogleOtp: true } });
