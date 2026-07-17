@@ -519,10 +519,10 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                     setIsSearchExpanded(true);
                     setTimeout(() => searchInputRef.current?.focus(), 50);
                   }}
-                  className="block md:hidden w-9 h-9 rounded-full border border-[#3f3f46]/40 hover:border-[#2563eb]/40 hover:bg-[#2563eb]/5 flex items-center justify-center text-[#71717a] hover:text-white cursor-pointer bg-[#18181b]/90 transition-all shadow-md shrink-0"
+                  className="block md:hidden w-8 h-8 rounded-full border border-[#3f3f46]/40 hover:border-[#2563eb]/40 hover:bg-[#2563eb]/5 flex items-center justify-center text-[#71717a] hover:text-white cursor-pointer bg-[#18181b]/90 transition-all shadow-md shrink-0"
                   title="Search"
                 >
-                  <Search size={16} />
+                  <Search size={14} />
                 </button>
               )}
 
@@ -686,7 +686,7 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
             ) : (
               <Link
                 to="/login"
-                className="flex items-center justify-center px-6 py-2.5 sm:px-5 sm:py-2 rounded-none bg-[#2563eb] hover:bg-[#1d4ed8] hover:shadow-[0_4px_12px_rgba(37,99,235,0.25)] text-white font-bold text-sm sm:text-xs transition-all duration-200 active:scale-[0.98] cursor-pointer"
+                className="flex items-center justify-center px-4 py-1.5 sm:px-6 sm:py-2.5 rounded-none bg-[#2563eb] hover:bg-[#1d4ed8] hover:shadow-[0_4px_12px_rgba(37,99,235,0.25)] text-white font-bold text-xs sm:text-sm transition-all duration-200 active:scale-[0.98] cursor-pointer"
               >
                 Sign up
               </Link>
