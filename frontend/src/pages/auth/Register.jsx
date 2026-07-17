@@ -112,6 +112,26 @@ const Register = () => {
 
   const handleInitialSubmit = async (e) => {
     e.preventDefault();
+
+    // Basic Validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return toast.error('Please enter a valid email address.');
+    }
+    
+    if (password.length < 6) {
+      return toast.error('Password must be at least 6 characters long.');
+    }
+    if (!/(?=.*[A-Z])/.test(password)) {
+      return toast.error('Password must contain at least one uppercase letter.');
+    }
+    if (!/(?=.*\d)/.test(password)) {
+      return toast.error('Password must contain at least one number.');
+    }
+    if (!/(?=.*[!@#$%^&*])/.test(password)) {
+      return toast.error('Password must contain at least one special character (!@#$%^&*).');
+    }
+
     setIsSubmitting(true);
     try {
       // 1. We ONLY send the OTP email here. We DO NOT create the Firebase/MongoDB user yet!

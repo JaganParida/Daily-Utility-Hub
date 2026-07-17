@@ -17,6 +17,16 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Basic Validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return toast.error('Please enter a valid email address.');
+    }
+    if (!password || password.trim() === '') {
+      return toast.error('Please enter your password.');
+    }
+
     setIsSubmitting(true);
     try {
       const response = await loginWithEmail(email, password);

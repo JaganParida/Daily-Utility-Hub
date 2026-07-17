@@ -38,6 +38,12 @@ const ForgotPassword = () => {
   }, [isSent]);
 
   const triggerResetFlow = async () => {
+    // Basic Validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return toast.error('Please enter a valid email address.');
+    }
+
     setIsSubmitting(true);
     try {
       // Check if user exists in the database
