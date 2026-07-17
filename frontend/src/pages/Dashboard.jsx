@@ -271,13 +271,15 @@ const CustomDropdown = ({
                     placeholder="Search..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-transparent border-none text-[11px] text-white focus:outline-none placeholder:text-[#27272a]"
+                    className="w-full bg-transparent border-none text-[11px] text-white focus:outline-none placeholder:text-[#71717a]"
                     onClick={(e) => e.stopPropagation()}
+                    onMouseDown={(e) => e.stopPropagation()}
                   />
                   {searchQuery && (
                     <button
                       type="button"
                       onClick={(e) => { e.stopPropagation(); setSearchQuery(""); }}
+                      onMouseDown={(e) => e.stopPropagation()}
                       className="text-[#52525b] hover:text-white"
                     >
                       <X size={10} />
@@ -303,7 +305,7 @@ const CustomDropdown = ({
                     <button
                       type="button"
                       key={opt.value}
-                      onClick={() => { onChange(opt.value); setOpen(false); }}
+                      onMouseDown={(e) => { e.preventDefault(); onChange(opt.value); setOpen(false); }}
                       className={`w-full flex items-center gap-2.5 px-3.5 py-2 text-left text-xs font-medium transition-all duration-200 cursor-pointer ${
                         (opt.value === value || opt.value === highlightedValue || opt.label === highlightedValue)
                           ? "bg-[#2563eb]/15 text-[#2563eb] font-extrabold border-l-2 border-[#2563eb]"
