@@ -53,6 +53,7 @@ exports.syncSession = async (req, res) => {
       return res.status(400).json({ message: 'Authentication token required.' });
     }
 
+    let decoded;
     try {
       decoded = await verifyFirebaseToken(idToken);
     } catch (err) {
