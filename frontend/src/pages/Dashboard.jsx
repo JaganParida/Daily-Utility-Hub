@@ -1089,7 +1089,7 @@ const Dashboard = () => {
                                   <p className="text-[9px] text-[#3f3f46] group-hover:text-[#71717a] transition-colors truncate">{tool.result}</p>
                                 </div>
                               </Link>
-                              <div className="flex items-center gap-1.5 pr-3">
+                              <div className="flex items-center gap-1.5 pr-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
@@ -1241,7 +1241,7 @@ const Dashboard = () => {
                         </Link>
 
                         {/* Favorite & Pin buttons */}
-                        <div className="flex items-center gap-1 pr-3">
+                        <div className="flex items-center gap-1 pr-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                           <button
                             onClick={(e) => {
                               e.stopPropagation();

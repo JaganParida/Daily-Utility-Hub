@@ -33,6 +33,7 @@ const PinnedTools = lazyWithRetry(() => import('./pages/PinnedTools'));
 const RecentTools = lazyWithRetry(() => import('./pages/RecentTools'));
 const Profile = lazyWithRetry(() => import('./pages/Profile'));
 const SearchPage = lazyWithRetry(() => import('./pages/Search'));
+const Favorites = lazyWithRetry(() => import('./pages/Favorites'));
 
 // Auth Pages (Lazy loaded)
 const Login = lazyWithRetry(() => import('./pages/auth/Login'));
@@ -187,6 +188,7 @@ function AnimatedRoutes() {
             <Route path="/pinned" element={<PinnedTools />} />
             <Route path="/recent" element={<RecentTools />} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+            <Route path="/favorites" element={<ProtectedRoute><Favorites /></ProtectedRoute>} />
             <Route path="/tools/word-counter" element={<WordCounter />} />
             <Route path="/tools/voice-helper" element={<VoiceHelper />} />
             <Route path="/tools/audio-video-transcriber" element={<AudioVideoTranscriber />} />
