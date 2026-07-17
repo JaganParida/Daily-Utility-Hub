@@ -365,7 +365,6 @@ exports.updateAnalyticsFavorite = async (req, res) => {
   }
 };
 
-const jwt = require('jsonwebtoken');
 const { sendOtpEmail } = require('../utils/mailer');
 
 // @desc    Generate and send OTP email, return signed verification token
