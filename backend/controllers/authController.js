@@ -412,7 +412,10 @@ exports.sendOtp = async (req, res) => {
     res.json({ success: true, token: otpToken });
   } catch (error) {
     console.error('[OTP] Send OTP FAILED:', error.message || error);
-    res.status(500).json({ message: 'Failed to send OTP verification email.' });
+    res.status(500).json({ 
+      message: 'Failed to send OTP verification email.', 
+      error: error.message || String(error)
+    });
   }
 };
 

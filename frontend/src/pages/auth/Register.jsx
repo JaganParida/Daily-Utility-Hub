@@ -85,6 +85,7 @@ const Register = () => {
       setOtpInput(['', '', '', '', '', '']);
       toast.success('Verification OTP code sent! Please check your email inbox.');
     } catch (err) {
+      console.error('Resend OTP error details:', err.response?.data?.error || err.message);
       toast.error(err.response?.data?.message || 'Failed to send OTP verification email.');
     }
   };
@@ -140,6 +141,7 @@ const Register = () => {
       if (response && (response.isNewUser || response.emailVerified === false)) {
         // Send OTP email first
         try {
+          setEmail(response.email);
           const otpResponse = await api.post('/auth/otp/send', { email: response.email });
           setOtpValidationToken(otpResponse.data.token);
           toast.success('Verification code sent! Check your email inbox.');
@@ -151,7 +153,7 @@ const Register = () => {
           setExpireTimer(180);
           setOtpInput(['', '', '', '', '', '']);
         } catch (otpErr) {
-          console.error('OTP send error:', otpErr);
+          console.error('OTP send error details:', otpErr.response?.data?.error || otpErr.message);
           toast.error('Could not send verification email. Please try again later or contact support.');
           // Do NOT show the OTP screen if the email wasn't sent!
           // We will log the user out so they aren't trapped in a broken state
