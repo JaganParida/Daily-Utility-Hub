@@ -10,14 +10,23 @@ const getTransporter = async () => {
   const user = process.env.SMTP_USER;
   const pass = process.env.SMTP_PASS;
 
-  if (host && user && pass) {
-    transporter = nodemailer.createTransport({
-      host,
-      port: parseInt(port),
-      secure: port == 465,
-      auth: { user, pass }
-    });
-    console.log('Using configured SMTP transporter for emails.');
+  if (user && pass) {
+    if (host) {
+      transporter = nodemailer.createTransport({
+        host,
+        port: parseInt(port),
+        secure: port == 465,
+        auth: { user, pass }
+      });
+      console.log('Using configured SMTP transporter for emails.');
+    } else {
+      const service = process.env.SMTP_SERVICE || 'gmail';
+      transporter = nodemailer.createTransport({
+        service,
+        auth: { user, pass }
+      });
+      console.log(`Using inferred SMTP service (${service}) for emails.`);
+    }
   } else {
     // Ethereal fallback for zero-configuration testing
     const testAccount = await nodemailer.createTestAccount();
