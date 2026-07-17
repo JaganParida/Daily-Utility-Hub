@@ -91,7 +91,8 @@ const AudioVideoTranscriber = () => {
     const newLength = Math.round(monoData.length / ratio);
     const result = new Float32Array(newLength);
     for (let i = 0; i < newLength; i++) {
-      result[i] = monoData[Math.round(i * ratio)];
+      const index = Math.min(monoData.length - 1, Math.floor(i * ratio));
+      result[i] = monoData[index];
     }
     return result;
   };
