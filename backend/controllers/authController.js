@@ -76,7 +76,7 @@ exports.syncSession = async (req, res) => {
     } else if (mode === 'register') {
       if (user) {
         if (req.logAuthAttempt) await req.logAuthAttempt(false);
-        return res.status(400).json({ message: 'Account already exists. Please log in instead.' });
+        return res.status(400).json({ message: 'User already exists. Please log in instead.' });
       }
       
       // Create user record in MongoDB
@@ -85,14 +85,16 @@ exports.syncSession = async (req, res) => {
         email,
         password: crypto.randomBytes(16).toString('hex') // secure placeholder; auth managed by Firebase
       });
+      isNewUser = true;
     } else if (mode === 'google') {
       if (!user) {
         user = await User.create({
           name: registerName || name || email.split('@')[0],
           email,
           password: crypto.randomBytes(16).toString('hex'),
-          isEmailVerified: true
+          isEmailVerified: false // Set to false to trigger OTP flow
         });
+        isNewUser = true;
       } else if (!user.isEmailVerified) {
         user.isEmailVerified = true;
         await user.save();
@@ -161,6 +163,7 @@ exports.syncSession = async (req, res) => {
         name: user.name,
         email: user.email,
         emailVerified: !!user.isEmailVerified,
+        isNewUser,
         token: sessionId,
         pinnedTools: user.pinnedTools || [],
         favoriteTools: user.favoriteTools || [],

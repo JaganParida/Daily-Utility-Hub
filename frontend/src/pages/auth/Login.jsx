@@ -45,8 +45,13 @@ const Login = () => {
   const handleGoogleSubmit = async () => {
     setIsGoogleLoading(true);
     try {
-      await loginWithGoogle();
-      navigate('/');
+      const response = await loginWithGoogle();
+      if (response && response.isNewUser) {
+        toast.success('Account created! Please verify your email.');
+        navigate('/register', { state: { email: response.email, triggerGoogleOtp: true } });
+      } else if (response) {
+        navigate('/');
+      }
     } catch (error) {
       // Errors handled by AuthContext
     } finally {

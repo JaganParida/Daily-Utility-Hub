@@ -45,6 +45,33 @@ const Register = () => {
     return () => clearInterval(interval);
   }, [otpSent]);
 
+  // Handle Google Login redirect with OTP trigger
+  useEffect(() => {
+    if (location.state?.triggerGoogleOtp && location.state?.email && !otpSent) {
+      setEmail(location.state.email);
+      setOtpSent(true);
+      setOtpExpired(false);
+      setResendTimer(60);
+      setExpireTimer(180);
+      setOtpInput(['', '', '', '', '', '']);
+
+      const sendGoogleOtp = async () => {
+        try {
+          const otpResponse = await api.post('/auth/otp/send', { email: location.state.email });
+          setOtpValidationToken(otpResponse.data.token);
+          toast.success('Verification code sent! Check your email inbox.');
+        } catch (otpErr) {
+          console.error('OTP send error:', otpErr);
+          toast.error('Could not send verification email. Tap "Resend" to try again.');
+        }
+      };
+      sendGoogleOtp();
+
+      // Clear the trigger state to prevent loops on refresh
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state, otpSent]);
+
   const sendRealOtp = async (targetEmail) => {
     try {
       const response = await api.post('/auth/otp/send', { email: targetEmail });
@@ -106,9 +133,28 @@ const Register = () => {
   const handleGoogleSubmit = async () => {
     setIsGoogleLoading(true);
     try {
-      await loginWithGoogle();
-      toast.success('Successfully registered!');
-      navigate('/');
+      const response = await loginWithGoogle();
+      if (response && response.isNewUser) {
+        // Account created! Always show OTP screen so user can resend if needed
+        setOtpSent(true);
+        setOtpExpired(false);
+        setResendTimer(60);
+        setExpireTimer(180);
+        setOtpInput(['', '', '', '', '', '']);
+
+        // Send OTP email (don't block the UI transition)
+        try {
+          const otpResponse = await api.post('/auth/otp/send', { email: response.email });
+          setOtpValidationToken(otpResponse.data.token);
+          toast.success('Verification code sent! Check your email inbox.');
+        } catch (otpErr) {
+          console.error('OTP send error:', otpErr);
+          toast.error('Could not send verification email. Tap "Resend" to try again.');
+        }
+      } else if (response) {
+        toast.success('Successfully registered!');
+        navigate('/');
+      }
     } catch (error) {
       // Errors handled by AuthContext
     } finally {
