@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { LogIn, Loader2, ArrowLeft, Eye, EyeOff, ShieldCheck, RefreshCw, AlertCircle } from 'lucide-react';
 import PageTransition from '../../components/PageTransition';
 import { toast } from 'react-hot-toast';
+import api from '../../lib/api';
 
 const Login = () => {
   const location = useLocation();
@@ -15,7 +16,7 @@ const Login = () => {
 
   // OTP Verification States
   const [otpSent, setOtpSent] = useState(false);
-  const [otpCode, setOtpCode] = useState('');
+  const [otpValidationToken, setOtpValidationToken] = useState('');
   const [otpInput, setOtpInput] = useState(['', '', '', '', '', '']);
   const [resendTimer, setResendTimer] = useState(60);
   const [expireTimer, setExpireTimer] = useState(180);
@@ -44,43 +45,19 @@ const Login = () => {
     return () => clearInterval(interval);
   }, [otpSent]);
 
-  const sendOtpSimulated = (targetEmail) => {
-    const generated = Math.floor(100000 + Math.random() * 900000).toString();
-    setOtpCode(generated);
-    setOtpSent(true);
-    setOtpExpired(false);
-    setResendTimer(60);
-    setExpireTimer(180);
-    setOtpInput(['', '', '', '', '', '']);
-    
-    toast.custom((t) => (
-      <div className={`${t.visible ? 'animate-enter' : 'animate-leave'} max-w-md w-full bg-[#18181b] border border-[#2563eb]/30 shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-none pointer-events-auto flex ring-1 ring-black ring-opacity-5 overflow-hidden`}>
-        <div className="flex-1 w-0 p-4">
-          <div className="flex items-start">
-            <div className="flex-shrink-0 pt-0.5">
-              <ShieldCheck className="h-10 w-10 text-[#2563eb]" />
-            </div>
-            <div className="ml-3 flex-1">
-              <p className="text-xs font-bold uppercase tracking-widest text-[#2563eb]">Verification OTP Sent</p>
-              <p className="text-sm font-medium text-white mt-0.5">
-                Use verification code below for <span className="font-bold text-zinc-300">{targetEmail}</span>:
-              </p>
-              <div className="mt-2.5 bg-zinc-900 border border-zinc-800 rounded-none py-2 px-3.5 text-center font-mono text-xl font-bold tracking-widest text-white selection:bg-[#2563eb]">
-                {generated}
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="flex border-l border-zinc-800">
-          <button
-            onClick={() => toast.dismiss(t.id)}
-            className="w-full border border-transparent rounded-none p-4 flex items-center justify-center text-sm font-bold text-zinc-400 hover:text-white focus:outline-none"
-          >
-            Close
-          </button>
-        </div>
-      </div>
-    ), { duration: 15000 });
+  const sendRealOtp = async (targetEmail) => {
+    try {
+      const response = await api.post('/auth/otp/send', { email: targetEmail });
+      setOtpValidationToken(response.data.token);
+      setOtpSent(true);
+      setOtpExpired(false);
+      setResendTimer(60);
+      setExpireTimer(180);
+      setOtpInput(['', '', '', '', '', '']);
+      toast.success('Verification OTP code sent! Please check your email inbox.');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to send OTP verification email.');
+    }
   };
 
   const handleInitialSubmit = async (e) => {
@@ -88,7 +65,7 @@ const Login = () => {
     setIsSubmitting(true);
     try {
       await loginWithEmail(email, password);
-      sendOtpSimulated(email);
+      await sendRealOtp(email);
     } catch (error) {
       const isNotFound = 
         error.code === 'auth/user-not-found' || 
@@ -113,7 +90,7 @@ const Login = () => {
     setIsGoogleLoading(true);
     try {
       const data = await loginWithGoogle('login');
-      sendOtpSimulated(data.email || 'Google Account');
+      await sendRealOtp(data.email || 'Google Account');
     } catch (error) {
       const isNotFound = 
         error.code === 'auth/user-not-found' || 
@@ -162,7 +139,7 @@ const Login = () => {
     }
   };
 
-  const handleVerifyOtp = (e) => {
+  const handleVerifyOtp = async (e) => {
     e.preventDefault();
     if (otpExpired) {
       toast.error('Verification code has expired. Please request a new code.');
@@ -170,17 +147,18 @@ const Login = () => {
     }
 
     const typedCode = otpInput.join('');
-    if (typedCode === otpCode) {
+    try {
+      await api.post('/auth/otp/verify', { token: otpValidationToken, code: typedCode });
       toast.success('Sign in verified successfully!');
       navigate('/dashboard');
-    } else {
-      toast.error('Invalid verification code. Please try again.');
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Invalid verification code. Please try again.');
     }
   };
 
-  const handleResendOtp = () => {
+  const handleResendOtp = async () => {
     if (resendTimer > 0) return;
-    sendOtpSimulated(email || 'your account');
+    await sendRealOtp(email || 'your account');
   };
 
   return (

@@ -364,3 +364,60 @@ exports.updateAnalyticsFavorite = async (req, res) => {
     res.status(500).json({ message: 'Internal server error updating favorites.' });
   }
 };
+
+const jwt = require('jsonwebtoken');
+const { sendOtpEmail } = require('../utils/mailer');
+
+// @desc    Generate and send OTP email, return signed verification token
+// @route   POST /api/auth/otp/send
+// @access  Public
+exports.sendOtp = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ message: 'Email address is required.' });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    await sendOtpEmail(email, otp);
+
+    const otpToken = jwt.sign(
+      { email, otp }, 
+      process.env.JWT_SECRET || 'fallback-secret', 
+      { expiresIn: '3m' }
+    );
+
+    res.json({ success: true, token: otpToken });
+  } catch (error) {
+    console.error('Send OTP error:', error);
+    res.status(500).json({ message: 'Failed to send OTP verification email.' });
+  }
+};
+
+// @desc    Verify OTP code matches the signed token
+// @route   POST /api/auth/otp/verify
+// @access  Public
+exports.verifyOtp = async (req, res) => {
+  try {
+    const { token, code } = req.body;
+    if (!token || !code) {
+      return res.status(400).json({ message: 'Verification token and code are required.' });
+    }
+
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret');
+    } catch (err) {
+      return res.status(400).json({ message: 'Verification code has expired or is invalid.' });
+    }
+
+    if (decoded.otp !== code) {
+      return res.status(400).json({ message: 'Invalid verification code.' });
+    }
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Verify OTP error:', error);
+    res.status(500).json({ message: 'Internal server error verifying OTP.' });
+  }
+};
