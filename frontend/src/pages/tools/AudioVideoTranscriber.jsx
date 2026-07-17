@@ -206,12 +206,17 @@ const AudioVideoTranscriber = () => {
           }];
         }
 
-        if (mappedSegments.length > 0) {
-          setSegments(mappedSegments);
-          toast.success('Transcription completed!');
-        } else {
-          throw new Error('No speech detected or empty response.');
+        if (mappedSegments.length === 0) {
+          mappedSegments = [{
+            id: 0,
+            start: 0,
+            end: mediaRef.current?.duration || 10,
+            text: "[No speech detected in this file]"
+          }];
         }
+        
+        setSegments(mappedSegments);
+        toast.success('Transcription completed!');
       } else {
         throw new Error('No response from transcriber.');
       }
