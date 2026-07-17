@@ -29,46 +29,26 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       if (error.response?.status === 401) {
         await firebaseSignOut(auth);
-        localStorage.removeItem('token');
         setCurrentUser(null);
       }
     }
   };
 
-  // Listen to Firebase Auth state change for automatic page-load session recovery
+  // Load user profile on startup using HTTP-only cookies
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        try {
-          const idToken = await firebaseUser.getIdToken();
-          // Sync with MongoDB backend using 'refresh' mode (sets session cookie & retrieves profile)
-          const response = await api.post('/auth/session', { idToken, mode: 'refresh' });
-          if (response.data.token) {
-            localStorage.setItem('token', response.data.token);
-          }
-          setCurrentUser({
-            ...response.data,
-            uid: firebaseUser.uid,
-            emailVerified: firebaseUser.emailVerified
-          });
-        } catch (error) {
-          console.error('Auto session sync failed:', error);
-          await firebaseSignOut(auth);
-          localStorage.removeItem('token');
-          setCurrentUser(null);
+    const initializeAuth = async () => {
+      try {
+        const response = await api.get('/auth/profile');
+        if (response.data) {
+          setCurrentUser(response.data);
         }
-      } else {
-        // Log out on backend when Firebase session terminates
-        try {
-          await api.get('/auth/logout');
-        } catch (err) {}
-        localStorage.removeItem('token');
-        setCurrentUser(null);
+      } catch (error) {
+        // Ignored on startup
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
-    });
-
-    return unsubscribe;
+    };
+    initializeAuth();
   }, []);
 
   // Sign Up with Email & Password
@@ -81,10 +61,6 @@ export const AuthProvider = ({ children }) => {
       // 2. Sync and register account in MongoDB
       const response = await api.post('/auth/session', { idToken, mode: 'register', name });
       toast.success('Successfully registered!');
-      
-      if (response.data.token) {
-        localStorage.setItem('token', response.data.token);
-      }
 
       setCurrentUser({
         ...response.data,
@@ -94,7 +70,6 @@ export const AuthProvider = ({ children }) => {
       return response.data;
     } catch (error) {
       await firebaseSignOut(auth);
-      localStorage.removeItem('token');
       handleAuthError(error);
       throw error;
     }
@@ -110,10 +85,6 @@ export const AuthProvider = ({ children }) => {
       // 2. Sync session with backend (mode 'login' verifies email exists in database)
       const response = await api.post('/auth/session', { idToken, mode: 'login' });
       toast.success('Welcome back!');
-      
-      if (response.data.token) {
-        localStorage.setItem('token', response.data.token);
-      }
 
       setCurrentUser({
         ...response.data,
@@ -123,7 +94,6 @@ export const AuthProvider = ({ children }) => {
       return response.data;
     } catch (error) {
       await firebaseSignOut(auth);
-      localStorage.removeItem('token');
       handleAuthError(error);
       throw error;
     }
@@ -140,10 +110,6 @@ export const AuthProvider = ({ children }) => {
       // 2. Verify with Express backend, checking email exists/registers depending on mode
       const response = await api.post('/auth/session', { idToken, mode });
       toast.success(mode === 'register' ? 'Successfully registered!' : 'Signed in with Google!');
-      
-      if (response.data.token) {
-        localStorage.setItem('token', response.data.token);
-      }
 
       setCurrentUser({
         ...response.data,
@@ -156,7 +122,6 @@ export const AuthProvider = ({ children }) => {
         error.email = result.user.email;
       }
       await firebaseSignOut(auth);
-      localStorage.removeItem('token');
       handleAuthError(error);
       throw error;
     }
@@ -167,7 +132,6 @@ export const AuthProvider = ({ children }) => {
     try {
       await firebaseSignOut(auth);
       await api.get('/auth/logout');
-      localStorage.removeItem('token');
       setCurrentUser(null);
       toast.success('Logged out successfully');
     } catch (error) {
