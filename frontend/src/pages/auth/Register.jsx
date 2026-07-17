@@ -245,8 +245,13 @@ const Register = () => {
 
       navigate('/');
     } catch (error) {
-      if (error.code === 'auth/email-already-in-use') {
-        toast.error('An account already exists with this email. Redirecting to sign in...');
+      const isAlreadyExists = 
+        error.code === 'auth/email-already-in-use' || 
+        error.response?.data?.message?.toLowerCase().includes('log in instead') ||
+        error.response?.data?.message?.toLowerCase().includes('already exists');
+
+      if (isAlreadyExists) {
+        toast('You already have an account! Redirecting to login...', { icon: '👋' });
         setTimeout(() => navigate('/login', { state: { email } }), 1500);
       } else {
         toast.error(error.response?.data?.message || error.message || 'Invalid verification code. Please try again.');
