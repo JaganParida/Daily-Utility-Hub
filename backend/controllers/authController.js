@@ -66,6 +66,7 @@ exports.syncSession = async (req, res) => {
 
     // 2. Query MongoDB by email
     let user = await User.findOne({ email });
+    let isNewUser = false;
 
     // Mode validation
     if (mode === 'login') {
