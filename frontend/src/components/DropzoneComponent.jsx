@@ -24,7 +24,8 @@ const DropzoneComponent = ({
       onFilesAccepted([initialFile]);
       window.history.replaceState({}, document.title);
     }
-  }, [location.state, onFilesAccepted]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const onDrop = useCallback((acceptedFiles, fileRejections) => {
     if (fileRejections.length > 0) {
