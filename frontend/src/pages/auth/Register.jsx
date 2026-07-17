@@ -7,9 +7,16 @@ import { toast } from 'react-hot-toast';
 import api from '../../lib/api';
 
 const Register = () => {
+  const { signupWithEmail, loginWithGoogle, currentUser, logout, finalizeGoogleSignup } = useAuth();
+  const navigate = useNavigate();
   const location = useLocation();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
+  
+  const [googleUser, setGoogleUser] = useState(null);
+  
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
@@ -22,8 +29,6 @@ const Register = () => {
   const [expireTimer, setExpireTimer] = useState(180);
   const [otpExpired, setOtpExpired] = useState(false);
 
-  const { signupWithEmail, loginWithGoogle, currentUser, logout } = useAuth();
-  const navigate = useNavigate();
   const otpRefs = useRef([]);
 
   // Handle Relaxation and Expiration Timers
@@ -108,10 +113,7 @@ const Register = () => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      // 1. Create account in Firebase + MongoDB
-      await signupWithEmail(email, password);
-      
-      // 2. Send OTP email first
+      // 1. We ONLY send the OTP email here. We DO NOT create the Firebase/MongoDB user yet!
       const otpResponse = await fetch('/api/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -123,7 +125,7 @@ const Register = () => {
       setOtpValidationToken(otpData.token);
       toast.success('Verification code sent! Check your email inbox.');
       
-      // 3. Show OTP screen
+      // 2. Show OTP screen
       setOtpSent(true);
       setOtpExpired(false);
       setResendTimer(60);
@@ -131,29 +133,7 @@ const Register = () => {
       setOtpInput(['', '', '', '', '', '']);
     } catch (error) {
       console.error('Registration/OTP error:', error);
-      
-      // If OTP fails but user was created, log them out to prevent bypass
-      if (error.message?.includes('OTP') || error.message?.includes('Could not send') || !error.code) {
-        toast.error('Failed to send verification email. Please try again.');
-        if (currentUser) logout();
-      } else {
-        const isAlreadyExists = 
-          error.code === 'auth/email-already-in-use' || 
-          error.response?.status === 400 || 
-          error.response?.data?.message?.toLowerCase().includes('already exists') ||
-          error.message?.toLowerCase().includes('already exists') ||
-          error.response?.data?.message?.toLowerCase().includes('log in instead') ||
-          error.message?.toLowerCase().includes('log in instead');
-          
-        if (isAlreadyExists) {
-          toast.error('An account already exists with this email. Redirecting to sign in...');
-          setTimeout(() => {
-            navigate('/login', { state: { email } });
-          }, 1500);
-        } else {
-          toast.error('Failed to create account. Please try again.');
-        }
-      }
+      toast.error(error.message || 'Failed to send verification email. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -165,7 +145,10 @@ const Register = () => {
     setIsGoogleLoading(true);
     try {
       const response = await authPromise;
-      if (response && (response.isNewUser || response.emailVerified === false)) {
+      // If it's a new user, AuthContext deferred the creation and returned requiresOtp: true
+      if (response && response.requiresOtp) {
+        setGoogleUser(response.firebaseUser);
+        
         // Send OTP email first
         try {
           setEmail(response.email);
@@ -190,8 +173,8 @@ const Register = () => {
           console.error('OTP send error details:', otpErr);
           toast.error(otpErr.message || 'Could not send verification email. Please try again later.');
           // Do NOT show the OTP screen if the email wasn't sent!
-          // We will log the user out so they aren't trapped in a broken state
-          if (currentUser) await logout();
+          // We will log the user out of the pending Firebase session
+          await logout();
         }
       } else if (response) {
         toast.success('Successfully registered!');
@@ -240,11 +223,32 @@ const Register = () => {
 
     const typedCode = otpInput.join('');
     try {
-      await api.post('/auth/otp/verify', { token: otpValidationToken, code: typedCode });
-      toast.success('Email verified successfully!');
+      // 1. Verify the OTP with backend (skipDbUpdate: true because user doesn't exist yet)
+      await api.post('/auth/otp/verify', { 
+        token: otpValidationToken, 
+        code: typedCode,
+        skipDbUpdate: true 
+      });
+      
+      // 2. Finalize creation!
+      if (googleUser) {
+        // For Google: Firebase user exists, we just need to save them in MongoDB
+        await finalizeGoogleSignup(googleUser, otpValidationToken);
+        toast.success('Successfully registered with Google!');
+      } else {
+        // For Email/Password: We now create both Firebase AND MongoDB accounts
+        await signupWithEmail(email, password);
+        toast.success('Account created successfully!');
+      }
+
       navigate('/');
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Invalid verification code. Please try again.');
+      if (error.code === 'auth/email-already-in-use') {
+        toast.error('An account already exists with this email. Redirecting to sign in...');
+        setTimeout(() => navigate('/login', { state: { email } }), 1500);
+      } else {
+        toast.error(error.response?.data?.message || error.message || 'Invalid verification code. Please try again.');
+      }
     }
   };
 

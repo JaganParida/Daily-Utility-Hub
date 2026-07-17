@@ -131,6 +131,15 @@ export const AuthProvider = ({ children }) => {
       const idToken = await result.user.getIdToken();
 
       const response = await api.post('/auth/session', { idToken, mode: 'google' });
+      
+      if (response.data.requiresOtp) {
+        // Deferred login: Do not set current user yet, let frontend handle OTP
+        return {
+           ...response.data,
+           firebaseUser: result.user
+        };
+      }
+
       toast.success('Signed in with Google!');
 
       setCurrentUser({
@@ -143,6 +152,30 @@ export const AuthProvider = ({ children }) => {
       if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
         return; // User cancelled, no error needed
       }
+      handleAuthError(error);
+      throw error;
+    }
+  };
+
+  // Finalize Google Signup after OTP
+  const finalizeGoogleSignup = async (firebaseUser, otpVerifiedToken) => {
+    try {
+      const idToken = await firebaseUser.getIdToken();
+      const response = await api.post('/auth/session', { 
+        idToken, 
+        mode: 'google',
+        otpVerifiedToken 
+      });
+      
+      toast.success('Signed in with Google!');
+      setCurrentUser({
+        ...response.data,
+        uid: firebaseUser.uid,
+        emailVerified: true
+      });
+      return response.data;
+    } catch (error) {
+      await firebaseSignOut(auth);
       handleAuthError(error);
       throw error;
     }
@@ -273,7 +306,8 @@ export const AuthProvider = ({ children }) => {
     terminateSession,
     refreshUser,
     togglePin,
-    toggleFavorite
+    toggleFavorite,
+    finalizeGoogleSignup
   };
 
   return (

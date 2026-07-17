@@ -83,21 +83,43 @@ exports.syncSession = async (req, res) => {
       user = await User.create({
         name: registerName || name || email.split('@')[0],
         email,
-        password: crypto.randomBytes(16).toString('hex') // secure placeholder; auth managed by Firebase
+        password: crypto.randomBytes(16).toString('hex'), // secure placeholder; auth managed by Firebase
+        isEmailVerified: true // They verified OTP *before* this step!
       });
       isNewUser = true;
     } else if (mode === 'google') {
       if (!user) {
+        // If OTP token is not provided, this is the initial signup attempt.
+        // DO NOT create the user in MongoDB yet. Ask frontend to do OTP first.
+        if (!req.body.otpVerifiedToken) {
+          return res.json({ 
+            success: true,
+            isNewUser: true, 
+            email, 
+            emailVerified: false, 
+            requiresOtp: true 
+          });
+        }
+        
+        // OTP token provided, verify it before creating user
+        try {
+          const decoded = jwt.verify(req.body.otpVerifiedToken, process.env.JWT_SECRET || 'fallback-secret');
+          if (decoded.email !== email) {
+            return res.status(400).json({ message: 'OTP token email mismatch' });
+          }
+        } catch (err) {
+          return res.status(400).json({ message: 'Invalid or expired OTP token' });
+        }
+
+        // OTP verified successfully, now create the user in MongoDB
         user = await User.create({
           name: registerName || name || email.split('@')[0],
           email,
           password: crypto.randomBytes(16).toString('hex'),
-          isEmailVerified: false // Set to false to trigger OTP flow
+          isEmailVerified: true // They just verified it!
         });
         isNewUser = true;
       }
-      // If user exists but is not verified, we don't automatically verify them.
-      // The frontend will check `!user.isEmailVerified` and trigger OTP.
     } else if (mode === 'refresh') {
       if (!user) {
         if (req.logAuthAttempt) await req.logAuthAttempt(false);
@@ -440,7 +462,10 @@ exports.verifyOtp = async (req, res) => {
       return res.status(400).json({ message: 'Invalid verification code.' });
     }
 
-    await User.updateOne({ email: decoded.email }, { $set: { isEmailVerified: true } });
+    if (!req.body.skipDbUpdate) {
+      // For existing unverified accounts, update them to verified.
+      await User.updateOne({ email: decoded.email }, { $set: { isEmailVerified: true } });
+    }
 
     res.json({ success: true });
   } catch (error) {
