@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { FileAudio, Video, FileText, Download, Copy, Play, Pause, Trash2, Globe, Sliders, RefreshCw, Upload, CheckCircle, Edit, List, AlertCircle } from 'lucide-react';
+import { FileAudio, Video, FileText, Download, Copy, Play, Pause, Trash2, Globe, Sliders, RefreshCw, Upload, CheckCircle, Edit, List, AlertCircle, ChevronDown } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 
@@ -20,6 +20,8 @@ const AudioVideoTranscriber = () => {
   const [editingIndex, setEditingIndex] = useState(-1);
   const [editText, setEditText] = useState('');
   const [copiedState, setCopiedState] = useState(false);
+  const [isRecordingSubtitledVideo, setIsRecordingSubtitledVideo] = useState(false);
+  const [recordingProgress, setRecordingProgress] = useState(0);
 
   // Player Sync
   const mediaRef = useRef(null);
@@ -216,6 +218,115 @@ const AudioVideoTranscriber = () => {
     toast.success('Fields reset');
     // Scroll viewport to top on mobile when reset
     document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleDownloadSubtitledVideo = () => {
+    if (!mediaRef.current || fileType !== 'video') return;
+    setIsRecordingSubtitledVideo(true);
+    setRecordingProgress(0);
+    
+    const video = mediaRef.current;
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 360;
+    const ctx = canvas.getContext('2d');
+    
+    let combinedStream;
+    let audioContext;
+    try {
+      audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const dest = audioContext.createMediaStreamDestination();
+      const sourceNode = audioContext.createMediaElementSource(video);
+      sourceNode.connect(dest);
+      sourceNode.connect(audioContext.destination);
+      
+      const videoStream = canvas.captureStream(30); // 30 FPS
+      const audioStream = dest.stream;
+      
+      combinedStream = new MediaStream([
+        ...videoStream.getVideoTracks(),
+        ...audioStream.getAudioTracks()
+      ]);
+    } catch (e) {
+      console.warn("Audio capture failed, downloading video track only:", e);
+      const videoStream = canvas.captureStream(30);
+      combinedStream = videoStream;
+    }
+    
+    const recorder = new MediaRecorder(combinedStream, { mimeType: 'video/webm;codecs=vp9,opus' });
+    const chunks = [];
+    
+    recorder.ondataavailable = (e) => {
+      if (e.data && e.data.size > 0) chunks.push(e.data);
+    };
+    
+    const originalTime = video.currentTime;
+    
+    recorder.onstop = () => {
+      const blob = new Blob(chunks, { type: 'video/webm' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${file.name.split('.')[0]}_with_captions.webm`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      setIsRecordingSubtitledVideo(false);
+      
+      if (audioContext) {
+        audioContext.close();
+      }
+      
+      toast.success('Downloaded video with captions burned in!');
+    };
+    
+    // Play & Draw loop
+    video.currentTime = 0;
+    video.play();
+    recorder.start();
+    
+    const drawFrame = () => {
+      if (video.paused || video.ended) {
+        if (recorder.state !== 'inactive') {
+          recorder.stop();
+        }
+        video.currentTime = originalTime; // restore original position
+        return;
+      }
+      
+      // Draw video frame
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      
+      // Find current subtitle
+      const time = video.currentTime;
+      setRecordingProgress(Math.round((time / video.duration) * 100));
+      const active = segments.find(seg => time >= seg.start && time <= seg.end);
+      
+      if (active) {
+        // Draw subtitle text background
+        ctx.font = 'bold 24px sans-serif';
+        const text = active.text.trim();
+        const textWidth = ctx.measureText(text).width;
+        
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+        ctx.fillRect(
+          (canvas.width - textWidth) / 2 - 15,
+          canvas.height - 70,
+          textWidth + 30,
+          40
+        );
+        
+        // Draw white text
+        ctx.fillStyle = '#FFFFFF';
+        ctx.textAlign = 'center';
+        ctx.fillText(text, canvas.width / 2, canvas.height - 42);
+      }
+      
+      requestAnimationFrame(drawFrame);
+    };
+    
+    requestAnimationFrame(drawFrame);
   };
 
   const hasFile = file !== null;
@@ -518,6 +629,22 @@ const AudioVideoTranscriber = () => {
                 >
                   <Download size={13} /> Download TXT Timeline
                 </motion.button>
+                {fileType === 'video' && (
+                  <motion.button 
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    disabled={isRecordingSubtitledVideo}
+                    onClick={handleDownloadSubtitledVideo}
+                    className="w-full py-3 bg-primary/10 hover:bg-primary/20 border border-primary/30 text-primary font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 active:scale-[0.98]"
+                  >
+                    {isRecordingSubtitledVideo ? (
+                      <RefreshCw size={13} className="animate-spin" />
+                    ) : (
+                      <Download size={13} />
+                    )}
+                    {isRecordingSubtitledVideo ? `Generating Video (${recordingProgress}%)` : 'Download Video with Captions'}
+                  </motion.button>
+                )}
                 <motion.button 
                   whileHover={{ scale: 1.01 }}
                   whileTap={{ scale: 0.99 }}
@@ -533,6 +660,21 @@ const AudioVideoTranscriber = () => {
         </motion.div>
 
       </div>
+      
+      {/* Overlay Modal for Burn-in Video Generation Progress */}
+      {isRecordingSubtitledVideo && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[999] flex flex-col items-center justify-center p-6 text-center">
+          <div className="bg-card border border-border p-8 rounded-2xl max-w-sm w-full space-y-4">
+            <RefreshCw size={36} className="animate-spin text-primary mx-auto" />
+            <h3 className="text-lg font-bold text-foreground">Burning Captions into Video</h3>
+            <p className="text-xs text-muted-foreground">The video is playing and being re-recorded with subtitle captions drawn over the video frames. Please keep this tab open.</p>
+            <div className="w-full bg-muted h-2.5 rounded-full overflow-hidden">
+              <div className="bg-primary h-full transition-all duration-300" style={{ width: `${recordingProgress}%` }} />
+            </div>
+            <span className="text-xs font-mono font-bold text-primary">{recordingProgress}% Completed</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
