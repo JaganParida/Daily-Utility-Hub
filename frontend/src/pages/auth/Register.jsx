@@ -67,13 +67,21 @@ const Register = () => {
       // 1. Create account in Firebase + MongoDB
       await signupWithEmail(email, password);
       
-      // 2. Only if signup succeeded, send OTP verification email
+      // 2. Account created! Always show OTP screen so user can resend if needed
+      setOtpSent(true);
+      setOtpExpired(false);
+      setResendTimer(60);
+      setExpireTimer(180);
+      setOtpInput(['', '', '', '', '', '']);
+
+      // 3. Send OTP email (don't block the UI transition)
       try {
-        await sendRealOtp(email);
+        const response = await api.post('/auth/otp/send', { email });
+        setOtpValidationToken(response.data.token);
+        toast.success('Verification code sent! Check your email inbox.');
       } catch (otpErr) {
-        // OTP send failed but account was created — user can resend from OTP screen
-        toast.error('Account created but failed to send verification email. You can resend below.');
-        setOtpSent(true);
+        console.error('OTP send error:', otpErr);
+        toast.error('Could not send verification email. Tap "Resend" to try again.');
       }
     } catch (error) {
       const isAlreadyExists = 

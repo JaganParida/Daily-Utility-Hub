@@ -59,12 +59,33 @@ export const AuthProvider = ({ children }) => {
   // Sign Up with Email & Password
   const signupWithEmail = async (email, password, name) => {
     try {
-      // 1. Create account on Firebase Auth
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      let userCredential;
+      let mode = 'register';
+
+      try {
+        // 1. Try creating new Firebase Auth account
+        userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      } catch (firebaseError) {
+        if (firebaseError.code === 'auth/email-already-in-use') {
+          // Firebase user exists (possibly orphaned after DB deletion)
+          // Sign in with existing Firebase credentials instead
+          try {
+            userCredential = await signInWithEmailAndPassword(auth, email, password);
+            mode = 'google'; // 'google' mode auto-creates MongoDB user if missing
+          } catch (signInError) {
+            // Wrong password for existing Firebase account
+            await firebaseSignOut(auth);
+            throw firebaseError; // Throw original "already in use" error
+          }
+        } else {
+          throw firebaseError;
+        }
+      }
+
       const idToken = await userCredential.user.getIdToken();
 
-      // 2. Sync and register account in MongoDB
-      const response = await api.post('/auth/session', { idToken, mode: 'register', name });
+      // 2. Sync and register/create account in MongoDB
+      const response = await api.post('/auth/session', { idToken, mode, name });
       toast.success('Successfully registered!');
 
       setCurrentUser({
@@ -73,7 +94,7 @@ export const AuthProvider = ({ children }) => {
       });
       return response.data;
     } catch (error) {
-      await firebaseSignOut(auth);
+      try { await firebaseSignOut(auth); } catch (_) {}
       handleAuthError(error);
       throw error;
     }

@@ -392,8 +392,14 @@ exports.sendOtp = async (req, res) => {
       return res.status(400).json({ message: 'Email address is required.' });
     }
 
+    console.log(`[OTP] Generating OTP for: ${email}`);
+    console.log(`[OTP] SMTP_USER configured: ${!!process.env.SMTP_USER}, SMTP_PASS configured: ${!!process.env.SMTP_PASS}`);
+    
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    
+    console.log(`[OTP] Sending email via nodemailer...`);
     await sendOtpEmail(email, otp);
+    console.log(`[OTP] Email sent successfully to ${email}`);
 
     const otpToken = jwt.sign(
       { email, otp }, 
@@ -403,7 +409,7 @@ exports.sendOtp = async (req, res) => {
 
     res.json({ success: true, token: otpToken });
   } catch (error) {
-    console.error('Send OTP error:', error);
+    console.error('[OTP] Send OTP FAILED:', error.message || error);
     res.status(500).json({ message: 'Failed to send OTP verification email.' });
   }
 };
