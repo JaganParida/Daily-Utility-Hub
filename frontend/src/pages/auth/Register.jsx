@@ -7,7 +7,7 @@ import { toast } from 'react-hot-toast';
 import api from '../../lib/api';
 
 const Register = () => {
-  const { signupWithEmail, loginWithGoogle, currentUser, logout, finalizeGoogleSignup } = useAuth();
+  const { signupWithEmail, loginWithGoogle, loginWithEmail, currentUser, logout, finalizeGoogleSignup } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -134,6 +134,30 @@ const Register = () => {
 
     setIsSubmitting(true);
     try {
+      // 0. Pre-emptively check if account already exists
+      try {
+        await api.post('/auth/check-email', { email });
+        
+        // If it reaches here, the email EXISTS! 
+        // We will attempt to 'pass' the user seamlessly if they typed the correct password
+        try {
+          await loginWithEmail(email, password);
+          toast.success('Welcome back!');
+          navigate('/');
+          return;
+        } catch (loginError) {
+          // If login fails (wrong password or google user), gracefully redirect to login
+          toast('You already have an account! Redirecting to login...', { icon: '👋' });
+          setTimeout(() => navigate('/login', { state: { email } }), 1500);
+          return;
+        }
+      } catch (checkError) {
+        if (checkError.response?.status !== 404) {
+          throw checkError; // Re-throw if it's a real server error
+        }
+        // 404 means user does not exist, which is expected for Registration! Proceed.
+      }
+
       // 1. We ONLY send the OTP email here. We DO NOT create the Firebase/MongoDB user yet!
       const otpResponse = await fetch('/api/send-otp', {
         method: 'POST',
