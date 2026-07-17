@@ -95,10 +95,9 @@ exports.syncSession = async (req, res) => {
           isEmailVerified: false // Set to false to trigger OTP flow
         });
         isNewUser = true;
-      } else if (!user.isEmailVerified) {
-        user.isEmailVerified = true;
-        await user.save();
       }
+      // If user exists but is not verified, we don't automatically verify them.
+      // The frontend will check `!user.isEmailVerified` and trigger OTP.
     } else if (mode === 'refresh') {
       if (!user) {
         if (req.logAuthAttempt) await req.logAuthAttempt(false);

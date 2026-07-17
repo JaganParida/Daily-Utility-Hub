@@ -19,9 +19,14 @@ const Login = () => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      await loginWithEmail(email, password);
-      toast.success('Welcome back!');
-      navigate('/');
+      const response = await loginWithEmail(email, password);
+      if (response && response.emailVerified === false) {
+        toast.success('Please verify your email to continue.');
+        navigate('/register', { state: { email, triggerGoogleOtp: true } });
+      } else {
+        toast.success('Welcome back!');
+        navigate('/');
+      }
     } catch (error) {
       const isNotFound = 
         error.code === 'auth/user-not-found' || 
@@ -46,8 +51,8 @@ const Login = () => {
     setIsGoogleLoading(true);
     try {
       const response = await loginWithGoogle();
-      if (response && response.isNewUser) {
-        toast.success('Account created! Please verify your email.');
+      if (response && (response.isNewUser || response.emailVerified === false)) {
+        toast.success('Please verify your email to continue.');
         navigate('/register', { state: { email: response.email, triggerGoogleOtp: true } });
       } else if (response) {
         navigate('/');

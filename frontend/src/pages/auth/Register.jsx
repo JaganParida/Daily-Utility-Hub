@@ -134,8 +134,8 @@ const Register = () => {
     setIsGoogleLoading(true);
     try {
       const response = await loginWithGoogle();
-      if (response && response.isNewUser) {
-        // Account created! Always show OTP screen so user can resend if needed
+      if (response && (response.isNewUser || response.emailVerified === false)) {
+        // Account created/logged in! Always show OTP screen so user can resend if needed
         setOtpSent(true);
         setOtpExpired(false);
         setResendTimer(60);

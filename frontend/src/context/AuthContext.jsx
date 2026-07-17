@@ -114,7 +114,7 @@ export const AuthProvider = ({ children }) => {
       setCurrentUser({
         ...response.data,
         uid: userCredential.user.uid,
-        emailVerified: userCredential.user.emailVerified
+        emailVerified: response.data.emailVerified
       });
       return response.data;
     } catch (error) {
@@ -136,7 +136,7 @@ export const AuthProvider = ({ children }) => {
       setCurrentUser({
         ...response.data,
         uid: result.user.uid,
-        emailVerified: result.user.emailVerified
+        emailVerified: response.data.emailVerified
       });
       return response.data;
     } catch (error) {
