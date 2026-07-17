@@ -8,7 +8,7 @@ import api from '../../lib/api';
 
 const Register = () => {
   const location = useLocation();
-  const [email, setEmail] = useState(location.state?.email || '');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
