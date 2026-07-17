@@ -526,7 +526,7 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                 </button>
               )}
 
-              <div className="hidden md:flex items-center gap-1.5">
+              <div className="hidden md:flex items-center gap-2">
                 {/* Desktop-only separate Back Button */}
                 <AnimatePresence>
                   {isSearchExpanded && (
@@ -541,10 +541,10 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                         setIsSearchExpanded(false);
                         setSearchQuery("");
                       }}
-                      className="w-9 h-9 rounded-full border border-[#3f3f46]/40 hover:border-[#2563eb]/40 hover:bg-[#2563eb]/5 flex items-center justify-center text-[#2563eb] bg-[#18181b] transition-colors shrink-0 cursor-pointer shadow-md"
+                      className="w-8 h-8 rounded-full border border-[#3f3f46]/40 hover:border-[#2563eb]/40 hover:bg-[#2563eb]/5 flex items-center justify-center text-[#2563eb] bg-[#18181b] transition-colors shrink-0 cursor-pointer shadow-md"
                       title="Back"
                     >
-                      <ArrowLeft size={15} />
+                      <ArrowLeft size={13} />
                     </motion.button>
                   )}
                 </AnimatePresence>
@@ -553,12 +553,12 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                 <motion.div
                   ref={searchRef}
                   animate={{
-                    width: isSearchExpanded ? searchWidth : 36,
+                    width: isSearchExpanded ? searchWidth : 32,
                     borderColor: isSearchExpanded ? "rgba(124, 92, 252, 0.5)" : "rgba(34, 34, 48, 0.4)",
                     backgroundColor: isSearchExpanded ? "#18181b" : "rgba(20, 20, 25, 0.9)"
                   }}
                   transition={{ duration: 0.38, ease: [0.4, 0, 0.2, 1] }}
-                  className="flex items-center h-9 rounded-full border overflow-hidden shrink-0 cursor-pointer relative px-0.5"
+                  className="flex items-center h-8 rounded-full border overflow-hidden shrink-0 cursor-pointer relative px-0.5"
                   onClick={() => {
                     if (!isSearchExpanded) {
                       setIsSearchExpanded(true);
@@ -568,8 +568,8 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                   title={!isSearchExpanded ? "Search (⌘K)" : undefined}
                 >
                   {/* Static Search Icon inside */}
-                  <div className="w-8 h-8 flex items-center justify-center shrink-0 text-[#71717a] pointer-events-none">
-                    <Search size={15} />
+                  <div className="w-7 h-7 flex items-center justify-center shrink-0 text-[#71717a] pointer-events-none">
+                    <Search size={13} />
                   </div>
 
                  {/* Input field (animated opacity/width) */}
@@ -580,12 +580,12 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   animate={{
-                    width: isSearchExpanded ? (searchWidth - 90) : 0,
+                    width: isSearchExpanded ? (searchWidth - 80) : 0,
                     opacity: isSearchExpanded ? 1 : 0,
                     pointerEvents: isSearchExpanded ? "auto" : "none"
                   }}
                   transition={{ duration: 0.38, ease: [0.4, 0, 0.2, 1] }}
-                  className="bg-transparent border-none text-xs text-white focus:outline-none placeholder:text-[#52525b] ml-1 pr-6"
+                  className="bg-transparent border-none text-[11px] text-white focus:outline-none placeholder:text-[#52525b] ml-1 pr-6"
                 />
 
                 {/* Close Button */}
@@ -686,7 +686,7 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
             ) : (
               <Link
                 to="/login"
-                className="flex items-center justify-center px-4 py-1.5 sm:px-6 sm:py-2.5 rounded-none bg-[#2563eb] hover:bg-[#1d4ed8] hover:shadow-[0_4px_12px_rgba(37,99,235,0.25)] text-white font-bold text-xs sm:text-sm transition-all duration-200 active:scale-[0.98] cursor-pointer"
+                className="flex items-center justify-center px-4 py-1.5 rounded-none bg-[#2563eb] hover:bg-[#1d4ed8] hover:shadow-[0_4px_12px_rgba(37,99,235,0.25)] text-white font-bold text-[11px] transition-all duration-200 active:scale-[0.98] cursor-pointer"
               >
                 Sign up
               </Link>
