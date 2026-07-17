@@ -15,6 +15,16 @@ const AudioVideoTranscriber = () => {
   const [modelType, setModelType] = useState('Xenova/whisper-tiny.en'); // 'Xenova/whisper-tiny.en' | 'Xenova/whisper-tiny'
   const [language, setLanguage] = useState('auto');
   const fileProgressMap = useRef({});
+  const [engine, setEngine] = useState(() => localStorage.getItem('transcription_engine') || 'local');
+  const [apiKey, setApiKey] = useState(() => localStorage.getItem('gemini_api_key') || '');
+
+  useEffect(() => {
+    localStorage.setItem('transcription_engine', engine);
+  }, [engine]);
+
+  useEffect(() => {
+    localStorage.setItem('gemini_api_key', apiKey);
+  }, [apiKey]);
   
   // Results
   const [segments, setSegments] = useState([]);
@@ -129,6 +139,83 @@ const AudioVideoTranscriber = () => {
     setIsProcessing(true);
     setProcessStep('loading-model');
     setDownloadProgress(0);
+
+    if (engine === 'gemini') {
+      if (!apiKey) {
+        toast.error('Please enter your Gemini API Key in settings');
+        setIsProcessing(false);
+        setProcessStep('');
+        return;
+      }
+      setProcessStep('transcribing');
+      try {
+        const reader = new FileReader();
+        const base64Promise = new Promise((resolve, reject) => {
+          reader.onload = () => resolve(reader.result.split(',')[1]);
+          reader.onerror = reject;
+        });
+        reader.readAsDataURL(file);
+        const base64Data = await base64Promise;
+        
+        const response = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [
+                {
+                  parts: [
+                    {
+                      inlineData: {
+                        mimeType: file.type,
+                        data: base64Data,
+                      },
+                    },
+                    {
+                      text: "Transcribe this media file. Output MUST be a valid JSON array of objects representing chronological subtitle segments. Each object in the array MUST have exactly three keys: 'start' (number in seconds), 'end' (number in seconds), and 'text' (string representing the spoken words during that interval). Ensure intervals are small (between 2 to 6 seconds per segment). Do not wrap the JSON in markdown code blocks or add any other text. Return ONLY the raw JSON array string.",
+                    },
+                  ],
+                },
+              ],
+              generationConfig: {
+                responseMimeType: "application/json"
+              }
+            }),
+          }
+        );
+        
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          throw new Error(errData?.error?.message || `HTTP error ${response.status}`);
+        }
+        
+        const data = await response.json();
+        const textResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        
+        let parsedSegments = JSON.parse(textResponse.trim());
+        if (!Array.isArray(parsedSegments)) {
+          throw new Error('Invalid JSON format returned from Gemini');
+        }
+        
+        const mappedSegments = parsedSegments.map((seg, idx) => ({
+          id: idx,
+          start: Number(seg.start) || 0,
+          end: Number(seg.end) || (Number(seg.start) || 0) + 3,
+          text: String(seg.text || '')
+        }));
+        
+        setSegments(mappedSegments);
+        toast.success('Transcription completed!');
+      } catch (error) {
+        console.error(error);
+        toast.error(error.message || 'Gemini transcription failed');
+      } finally {
+        setIsProcessing(false);
+        setProcessStep('');
+      }
+      return;
+    }
 
     try {
       // 1. Resample & Decode audio
@@ -631,60 +718,117 @@ const AudioVideoTranscriber = () => {
                 <Sliders size={15} /> Settings
               </h3>
 
-              <div className="space-y-3">
-                <label className="text-sm font-semibold text-foreground">AI Model Size</label>
-                <div className="grid grid-cols-1 gap-2">
-                  {[
-                    { id: 'Xenova/whisper-tiny.en', label: 'Whisper-Tiny (English Only)', desc: 'Fastest transcription, ultra accurate for English.' },
-                    { id: 'Xenova/whisper-tiny',    label: 'Whisper-Tiny (Multilingual)', desc: 'Auto-detects & translates 100+ languages.' }
-                  ].map(model => (
-                    <motion.button
-                      key={model.id}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      disabled={hasTranscribed || isProcessing}
-                      onClick={() => setModelType(model.id)}
-                      className={`text-left p-4 rounded-xl border transition-all active:scale-[0.98] ${
-                        modelType === model.id
-                          ? 'border-primary bg-primary/5 text-primary'
-                          : 'border-border bg-muted/10 hover:bg-muted text-foreground'
-                      }`}
-                    >
-                      <span className="text-xs font-bold block">{model.label}</span>
-                      <span className="text-[10px] text-muted-foreground mt-0.5 block leading-normal">{model.desc}</span>
-                    </motion.button>
-                  ))}
+              {/* Engine Toggle */}
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-foreground">AI Engine</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    disabled={hasTranscribed || isProcessing}
+                    onClick={() => setEngine('local')}
+                    className={`py-2 rounded-xl border text-xs font-bold transition-all ${
+                      engine === 'local'
+                        ? 'border-primary bg-primary/5 text-primary'
+                        : 'border-border bg-muted/10 hover:bg-muted text-foreground'
+                    }`}
+                  >
+                    Local Whisper
+                  </button>
+                  <button
+                    type="button"
+                    disabled={hasTranscribed || isProcessing}
+                    onClick={() => setEngine('gemini')}
+                    className={`py-2 rounded-xl border text-xs font-bold transition-all ${
+                      engine === 'gemini'
+                        ? 'border-primary bg-primary/5 text-primary'
+                        : 'border-border bg-muted/10 hover:bg-muted text-foreground'
+                    }`}
+                  >
+                    Gemini Cloud (AI)
+                  </button>
                 </div>
               </div>
 
-              {modelType === 'Xenova/whisper-tiny' && (
-                <div className="space-y-3 pt-2">
-                  <label className="text-sm font-semibold text-foreground flex items-center gap-1.5">
-                    <Globe size={14} className="text-primary" /> Speech Language
-                  </label>
-                  <div className="relative group">
-                    <select
-                      value={language}
-                      disabled={hasTranscribed || isProcessing}
-                      onChange={(e) => setLanguage(e.target.value)}
-                      className="w-full appearance-none bg-muted/20 border border-border/50 group-hover:border-border p-3 pl-4 pr-10 rounded-xl text-sm font-semibold text-foreground focus:ring-2 focus:ring-primary/50 outline-none transition-all cursor-pointer shadow-sm disabled:opacity-50"
-                    >
-                      <option value="auto" className="bg-background text-foreground">Auto-Detect Language</option>
-                      <option value="en" className="bg-background text-foreground">English</option>
-                      <option value="es" className="bg-background text-foreground">Spanish (Español)</option>
-                      <option value="fr" className="bg-background text-foreground">French (Français)</option>
-                      <option value="de" className="bg-background text-foreground">German (Deutsch)</option>
-                      <option value="it" className="bg-background text-foreground">Italian (Italiano)</option>
-                      <option value="pt" className="bg-background text-foreground">Portuguese (Português)</option>
-                      <option value="hi" className="bg-background text-foreground">Hindi (हिन्दी)</option>
-                      <option value="zh" className="bg-background text-foreground">Chinese (中文)</option>
-                      <option value="ja" className="bg-background text-foreground">Japanese (日本語)</option>
-                      <option value="ko" className="bg-background text-foreground">Korean (한국어)</option>
-                      <option value="ru" className="bg-background text-foreground">Russian (Русский)</option>
-                      <option value="ar" className="bg-background text-foreground">Arabic (العربية)</option>
-                    </select>
-                    <ChevronDown size={18} className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground group-hover:text-foreground transition-colors" />
+              {engine === 'local' ? (
+                <>
+                  <div className="space-y-3">
+                    <label className="text-sm font-semibold text-foreground">AI Model Size</label>
+                    <div className="grid grid-cols-1 gap-2">
+                      {[
+                        { id: 'Xenova/whisper-tiny.en', label: 'Whisper-Tiny (English Only)', desc: 'Fastest transcription, ultra accurate for English.' },
+                        { id: 'Xenova/whisper-tiny',    label: 'Whisper-Tiny (Multilingual)', desc: 'Auto-detects & translates 100+ languages.' }
+                      ].map(model => (
+                        <motion.button
+                          key={model.id}
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          disabled={hasTranscribed || isProcessing}
+                          onClick={() => setModelType(model.id)}
+                          className={`text-left p-4 rounded-xl border transition-all active:scale-[0.98] ${
+                            modelType === model.id
+                              ? 'border-primary bg-primary/5 text-primary'
+                              : 'border-border bg-muted/10 hover:bg-muted text-foreground'
+                          }`}
+                        >
+                          <span className="text-xs font-bold block">{model.label}</span>
+                          <span className="text-[10px] text-muted-foreground mt-0.5 block leading-normal">{model.desc}</span>
+                        </motion.button>
+                      ))}
+                    </div>
                   </div>
+
+                  {modelType === 'Xenova/whisper-tiny' && (
+                    <div className="space-y-3 pt-2">
+                      <label className="text-sm font-semibold text-foreground flex items-center gap-1.5">
+                        <Globe size={14} className="text-primary" /> Speech Language
+                      </label>
+                      <div className="relative group">
+                        <select
+                          value={language}
+                          disabled={hasTranscribed || isProcessing}
+                          onChange={(e) => setLanguage(e.target.value)}
+                          className="w-full appearance-none bg-muted/20 border border-border/50 group-hover:border-border p-3 pl-4 pr-10 rounded-xl text-sm font-semibold text-foreground focus:ring-2 focus:ring-primary/50 outline-none transition-all cursor-pointer shadow-sm disabled:opacity-50"
+                        >
+                          <option value="auto" className="bg-background text-foreground">Auto-Detect Language</option>
+                          <option value="en" className="bg-background text-foreground">English</option>
+                          <option value="es" className="bg-background text-foreground">Spanish (Español)</option>
+                          <option value="fr" className="bg-background text-foreground">French (Français)</option>
+                          <option value="de" className="bg-background text-foreground">German (Deutsch)</option>
+                          <option value="it" className="bg-background text-foreground">Italian (Italiano)</option>
+                          <option value="pt" className="bg-background text-foreground">Portuguese (Português)</option>
+                          <option value="hi" className="bg-background text-foreground">Hindi (हिन्दी)</option>
+                          <option value="zh" className="bg-background text-foreground">Chinese (中文)</option>
+                          <option value="ja" className="bg-background text-foreground">Japanese (日本語)</option>
+                          <option value="ko" className="bg-background text-foreground">Korean (한국어)</option>
+                          <option value="ru" className="bg-background text-foreground">Russian (Русский)</option>
+                          <option value="ar" className="bg-background text-foreground">Arabic (العربية)</option>
+                        </select>
+                        <ChevronDown size={18} className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground group-hover:text-foreground transition-colors" />
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="space-y-3 pt-2">
+                  <div className="flex justify-between items-center">
+                    <label className="text-sm font-semibold text-foreground">Gemini API Key</label>
+                    <a
+                      href="https://aistudio.google.com/app/apikey"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-xs text-primary hover:underline"
+                    >
+                      Get Free Key
+                    </a>
+                  </div>
+                  <input
+                    type="password"
+                    placeholder="Enter your Gemini API Key..."
+                    value={apiKey}
+                    disabled={hasTranscribed || isProcessing}
+                    onChange={(e) => setApiKey(e.target.value)}
+                    className="w-full bg-muted/20 border border-border/50 p-3 rounded-xl text-sm text-foreground focus:ring-2 focus:ring-primary/50 outline-none transition-all"
+                  />
                 </div>
               )}
             </div>
