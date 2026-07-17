@@ -1084,7 +1084,7 @@ const Dashboard = () => {
                                 <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#27272a] group-hover:bg-[#2563eb]/10 flex items-center justify-center transition-colors shrink-0">
                                   <ArrowRight size={11} className="text-[#52525b] group-hover:text-[#2563eb] transition-colors" />
                                 </div>
-                                <div className="min-w-0 flex-1 transition-all duration-300 ease-out group-hover:pr-[72px] sm:group-hover:pr-[76px]">
+                                <div className="min-w-0 flex-1 mr-0 transition-all duration-300 ease-out group-hover:mr-[72px] sm:group-hover:mr-[76px]">
                                   <p className="text-[11px] sm:text-xs font-bold text-[#e4e4e7] group-hover:text-white transition-colors truncate">{tool.label}</p>
                                   <p className="text-[9px] text-[#3f3f46] group-hover:text-[#71717a] transition-colors truncate">{tool.result}</p>
                                 </div>
@@ -1234,7 +1234,7 @@ const Dashboard = () => {
                           <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#27272a] group-hover:bg-[#2563eb]/10 flex items-center justify-center transition-colors shrink-0">
                             <ArrowRight size={11} className="text-[#52525b] group-hover:text-[#2563eb] transition-colors" />
                           </div>
-                          <div className="min-w-0 flex-1 transition-all duration-300 ease-out group-hover:pr-[72px] sm:group-hover:pr-[76px]">
+                          <div className="min-w-0 flex-1 mr-0 transition-all duration-300 ease-out group-hover:mr-[72px] sm:group-hover:mr-[76px]">
                             <p className="text-[11px] sm:text-xs font-bold text-[#e4e4e7] group-hover:text-white transition-colors truncate">{op.label}</p>
                             <p className="text-[9px] text-[#3f3f46] group-hover:text-[#71717a] transition-colors truncate">{op.result}</p>
                           </div>
