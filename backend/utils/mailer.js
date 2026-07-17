@@ -16,15 +16,34 @@ const getTransporter = async () => {
         host,
         port: parseInt(port),
         secure: port == 465,
-        auth: { user, pass }
+        auth: { user, pass },
+        connectionTimeout: 10000,
+        greetingTimeout: 10000,
+        socketTimeout: 15000
       });
       console.log('Using configured SMTP transporter for emails.');
     } else {
       const service = process.env.SMTP_SERVICE || 'gmail';
-      transporter = nodemailer.createTransport({
-        service,
-        auth: { user, pass }
-      });
+      // Explicitly configure Gmail for better reliability on cloud hosts (e.g. Render)
+      if (service.toLowerCase() === 'gmail') {
+        transporter = nodemailer.createTransport({
+          host: 'smtp.gmail.com',
+          port: 465,
+          secure: true,
+          auth: { user, pass },
+          connectionTimeout: 10000,
+          greetingTimeout: 10000,
+          socketTimeout: 15000
+        });
+      } else {
+        transporter = nodemailer.createTransport({
+          service,
+          auth: { user, pass },
+          connectionTimeout: 10000,
+          greetingTimeout: 10000,
+          socketTimeout: 15000
+        });
+      }
       console.log(`Using inferred SMTP service (${service}) for emails.`);
     }
   } else {
