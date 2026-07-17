@@ -18,6 +18,16 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
   const { currentUser: user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+
+  const [searchWidth, setSearchWidth] = useState(260);
+  useEffect(() => {
+    const handleResize = () => {
+      setSearchWidth(window.innerWidth < 640 ? 180 : 260);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   const currentPath = location.pathname;
   const megamenuRef = useRef(null);
   const hoverTimeoutRef = useRef(null);
@@ -543,7 +553,7 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                 <motion.div
                   ref={searchRef}
                   animate={{
-                    width: isSearchExpanded ? 260 : 32,
+                    width: isSearchExpanded ? searchWidth : 32,
                     borderColor: isSearchExpanded ? "rgba(124, 92, 252, 0.5)" : "rgba(34, 34, 48, 0.4)",
                     backgroundColor: isSearchExpanded ? "#18181b" : "rgba(20, 20, 25, 0.9)"
                   }}
@@ -570,7 +580,7 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   animate={{
-                    width: isSearchExpanded ? 180 : 0,
+                    width: isSearchExpanded ? (searchWidth - 80) : 0,
                     opacity: isSearchExpanded ? 1 : 0,
                     pointerEvents: isSearchExpanded ? "auto" : "none"
                   }}
@@ -674,7 +684,10 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                 </button>
               </div>
             ) : (
-              <Link to="/login" className="flex items-center gap-1.5 px-5 py-2 sm:px-4 sm:py-1.5 rounded-none bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-bold transition-all text-xs sm:text-[11px]">
+              <Link
+                to="/login"
+                className="flex items-center justify-center px-4 py-1.5 rounded-lg bg-[#2563eb] hover:bg-[#2563eb]/90 hover:shadow-[0_4px_12px_rgba(37,99,235,0.25)] text-white font-bold text-xs sm:text-[11px] transition-all duration-200 active:scale-[0.98] cursor-pointer"
+              >
                 Sign up
               </Link>
             )}
