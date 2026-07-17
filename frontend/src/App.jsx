@@ -152,12 +152,20 @@ const PptxMetadataEditor = lazyWithRetry(() => import('./pages/tools/PptxMetadat
 
 const ProtectedRoute = ({ children }) => {
   const { currentUser } = useAuth();
-  return currentUser ? children : <Navigate to="/login" replace />;
+  if (!currentUser) return <Navigate to="/login" replace />;
+  if (currentUser && !currentUser.emailVerified) {
+    return <Navigate to="/register" replace state={{ email: currentUser.email, triggerGoogleOtp: true }} />;
+  }
+  return children;
 };
 
 const GuestLockRoute = ({ children }) => {
   const { currentUser } = useAuth();
-  return currentUser ? children : <Navigate to="/?authGate=true" replace />;
+  if (!currentUser) return <Navigate to="/?authGate=true" replace />;
+  if (currentUser && !currentUser.emailVerified) {
+    return <Navigate to="/register" replace state={{ email: currentUser.email, triggerGoogleOtp: true }} />;
+  }
+  return children;
 };
 
 // Premium loader spinner shown while lazy routes are streaming

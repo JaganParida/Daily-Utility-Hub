@@ -22,7 +22,7 @@ const Register = () => {
   const [expireTimer, setExpireTimer] = useState(180);
   const [otpExpired, setOtpExpired] = useState(false);
 
-  const { signupWithEmail, loginWithGoogle } = useAuth();
+  const { signupWithEmail, loginWithGoogle, currentUser, logout } = useAuth();
   const navigate = useNavigate();
   const otpRefs = useRef([]);
 
@@ -245,11 +245,24 @@ const Register = () => {
       {/* Right Column: Form panel (unified dark theme for all screen sizes) */}
       <PageTransition className="flex-1 flex flex-col justify-center items-center py-12 px-6 sm:px-12 lg:px-20 relative bg-[#09090b]">
         {/* Floating Back to Home button */}
-        {!otpSent && (
+        {!otpSent ? (
           <Link to="/" className="absolute top-6 left-6 flex items-center gap-2 text-zinc-400 hover:text-white transition-colors font-bold text-xs bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 px-3.5 py-1.5 rounded-none">
             <ArrowLeft size={13} />
             Back to Home
           </Link>
+        ) : (
+          <button 
+            onClick={async () => {
+              if (currentUser) {
+                await logout();
+              }
+              navigate('/');
+            }}
+            className="absolute top-6 left-6 flex items-center gap-2 text-zinc-400 hover:text-white transition-colors font-bold text-xs bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 px-3.5 py-1.5 rounded-none"
+          >
+            <ArrowLeft size={13} />
+            Logout & Cancel
+          </button>
         )}
 
         <div className="w-full max-w-sm">
