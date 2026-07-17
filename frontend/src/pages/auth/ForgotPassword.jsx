@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Mail, ArrowLeft, KeyRound, Loader2, RefreshCw, AlertCircle } from 'lucide-react';
 import PageTransition from '../../components/PageTransition';
+import { toast } from 'react-hot-toast';
+import api from '../../lib/api';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
@@ -38,13 +40,20 @@ const ForgotPassword = () => {
   const triggerResetFlow = async () => {
     setIsSubmitting(true);
     try {
+      // Check if user exists in the database
+      await api.post('/auth/check-email', { email });
+
+      // If successful, proceed to send the reset email
       await resetPassword(email);
       setIsSent(true);
       setLinkExpired(false);
       setResendTimer(60);
       setExpireTimer(180);
     } catch (error) {
-      // Handled by AuthContext toast
+      if (error.response && error.response.status === 404) {
+        toast.error('No account found with this email address.');
+      }
+      // If it's a Firebase error, AuthContext handles the toast.
     } finally {
       setIsSubmitting(false);
     }

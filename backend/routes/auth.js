@@ -10,7 +10,8 @@ const {
   updateAnalyticsPin,
   updateAnalyticsFavorite,
   sendOtp,
-  verifyOtp
+  verifyOtp,
+  checkEmail
 } = require('../controllers/authController');
 const { protect } = require('../middleware/authMiddleware');
 const { validate } = require('../middleware/validationMiddleware');
@@ -45,5 +46,6 @@ router.post('/analytics/favorite', protect, userRateLimiter, analyticsValidation
 
 router.post('/otp/send', userRateLimiter, sendOtp);
 router.post('/otp/verify', userRateLimiter, verifyOtp);
+router.post('/check-email', userRateLimiter, checkEmail);
 
 module.exports = router;

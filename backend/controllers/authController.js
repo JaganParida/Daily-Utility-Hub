@@ -473,3 +473,25 @@ exports.verifyOtp = async (req, res) => {
     res.status(500).json({ message: 'Internal server error verifying OTP.' });
   }
 };
+
+// @desc    Check if an email exists in the database
+// @route   POST /api/auth/check-email
+// @access  Public
+exports.checkEmail = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ message: 'Email address is required.' });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'No account found with this email address.' });
+    }
+
+    res.json({ success: true, message: 'Account exists.' });
+  } catch (error) {
+    console.error('Check email error:', error);
+    res.status(500).json({ message: 'Internal server error checking email.' });
+  }
+};
