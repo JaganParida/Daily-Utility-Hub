@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { UserPlus, Loader2, ArrowLeft, Eye, EyeOff, ShieldCheck, RefreshCw, AlertCircle } from 'lucide-react';
 import PageTransition from '../../components/PageTransition';
 import { toast } from 'react-hot-toast';
 
 const Register = () => {
-  const [email, setEmail] = useState('');
+  const location = useLocation();
+  const [email, setEmail] = useState(location.state?.email || '');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -89,7 +90,20 @@ const Register = () => {
       await signupWithEmail(email, password);
       sendOtpSimulated(email);
     } catch (error) {
-      // Handled by AuthContext toast
+      const isAlreadyExists = 
+        error.code === 'auth/email-already-in-use' || 
+        error.response?.status === 400 || 
+        error.response?.data?.message?.toLowerCase().includes('already exists') ||
+        error.message?.toLowerCase().includes('already exists') ||
+        error.response?.data?.message?.toLowerCase().includes('log in instead') ||
+        error.message?.toLowerCase().includes('log in instead');
+        
+      if (isAlreadyExists) {
+        toast.error('An account already exists with this email. Redirecting to sign in...');
+        setTimeout(() => {
+          navigate('/login', { state: { email } });
+        }, 1500);
+      }
     } finally {
       setIsSubmitting(false);
     }

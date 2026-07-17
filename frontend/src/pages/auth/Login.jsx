@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { LogIn, Loader2, ArrowLeft, Eye, EyeOff, ShieldCheck, RefreshCw, AlertCircle } from 'lucide-react';
 import PageTransition from '../../components/PageTransition';
 import { toast } from 'react-hot-toast';
 
 const Login = () => {
-  const [email, setEmail] = useState('');
+  const location = useLocation();
+  const [email, setEmail] = useState(location.state?.email || '');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -89,7 +90,20 @@ const Login = () => {
       await loginWithEmail(email, password);
       sendOtpSimulated(email);
     } catch (error) {
-      // Handled by AuthContext toast
+      const isNotFound = 
+        error.code === 'auth/user-not-found' || 
+        error.response?.status === 404 || 
+        error.response?.data?.message?.toLowerCase().includes('not associated') ||
+        error.message?.toLowerCase().includes('not associated') ||
+        error.response?.data?.message?.toLowerCase().includes('register first') ||
+        error.message?.toLowerCase().includes('register first');
+        
+      if (isNotFound) {
+        toast.error('No account associated with this email. Redirecting to register...');
+        setTimeout(() => {
+          navigate('/register', { state: { email } });
+        }, 1500);
+      }
     } finally {
       setIsSubmitting(false);
     }
