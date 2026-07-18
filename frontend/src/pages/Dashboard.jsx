@@ -1107,7 +1107,7 @@ const Dashboard = () => {
                       transition={{ duration: 0.3, ease: 'easeInOut' }}
                       className="overflow-hidden"
                     >
-                        <div className="flex overflow-x-auto hide-scrollbar gap-4 snap-x pb-3 px-1 -mx-1">
+                        <div className="flex overflow-x-auto hide-scrollbar gap-4 snap-x pb-3 pt-3 px-1 -mx-1">
                           {pinnedResolved.map((tool, i) => (
                             <motion.div 
                               key={tool.to} 
