@@ -1088,76 +1088,41 @@ const Dashboard = () => {
                     Pinned Workspaces
                   </h2>
                 </div>
-                <div className="space-y-5">
-                  {Object.keys(pinnedGroups).map((catKey) => {
-                    const group = pinnedGroups[catKey];
-                    const GroupIcon = group.icon;
-                    return (
-                      <div key={catKey} className="space-y-2">
-                        <div className="flex items-center gap-2 border-b border-[#27272a]/55 pb-1">
-                          <GroupIcon size={11} className="text-[#52525b]" />
-                          <span className="text-[9px] font-bold text-[#71717a] uppercase tracking-wider">{group.label}</span>
+                <div className="flex overflow-x-auto hide-scrollbar gap-4 snap-x pb-3 pt-2 px-1 -mx-1">
+                  {pinnedResolved.map((tool) => (
+                    <div key={tool.to} className="group relative flex flex-col flex-shrink-0 w-[72px] sm:w-[84px] snap-start">
+                      <Link
+                        to={tool.to}
+                        onClick={(e) => {
+                          if (LOCKED_GUEST_TOOLS.includes(tool.to) && !currentUser) {
+                            e.preventDefault();
+                            setIsAuthModalOpen(true);
+                          }
+                        }}
+                        className="w-full flex flex-col items-center gap-2"
+                      >
+                        <div className="w-[60px] h-[60px] sm:w-[72px] sm:h-[72px] rounded-2xl bg-[#18181b] border border-[#27272a] group-hover:border-[#2563eb]/50 group-hover:bg-[#2563eb]/10 flex items-center justify-center transition-all shadow-sm group-hover:shadow-[0_0_20px_rgba(37,99,235,0.15)] relative">
+                          <tool.icon size={22} className="text-[#52525b] group-hover:text-[#2563eb] transition-colors" />
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5">
-                          {group.tools.map((tool) => (
-                            <div key={tool.to} className="group relative flex items-center bg-[#18181b] border border-[#27272a] hover:border-[#2563eb]/30 hover:bg-[#2563eb]/5 transition-all rounded-xl overflow-hidden">
-                              <Link
-                                to={tool.to}
-                                onClick={(e) => {
-                                  if (LOCKED_GUEST_TOOLS.includes(tool.to) && !currentUser) {
-                                    e.preventDefault();
-                                    setIsAuthModalOpen(true);
-                                  }
-                                }}
-                                className="flex-1 flex items-center gap-3 pl-3.5 pr-1 sm:pl-4 sm:pr-1.5 py-2.5 sm:py-3 min-w-0"
-                              >
-                                <div className="w-8 h-8 rounded-lg bg-[#27272a] group-hover:bg-[#2563eb]/10 flex items-center justify-center transition-colors shrink-0">
-                                  <ArrowRight size={11} className="text-[#52525b] group-hover:text-[#2563eb] transition-colors" />
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                  <p className="text-xs font-bold text-[#e4e4e7] group-hover:text-white transition-colors truncate">{tool.label}</p>
-                                  <p className="text-[10px] text-[#3f3f46] group-hover:text-[#71717a] transition-colors truncate">{tool.result}</p>
-                                </div>
-                              </Link>
-                              
-                              {/* ACTIONS - Horizontal on the right */}
-                              <div className="flex items-center gap-1 pr-2 w-[76px] opacity-100 md:w-0 md:opacity-0 md:group-hover:w-[76px] md:group-hover:opacity-100 transition-all duration-300 ease-out shrink-0 overflow-hidden">
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    e.preventDefault();
-                                    toggleFavorite(tool.to);
-                                  }}
-                                  className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all active:scale-90 cursor-pointer shrink-0 ${
-                                    currentUser?.favoriteTools?.includes(tool.to)
-                                      ? 'text-rose-500 hover:text-rose-400 bg-rose-500/10'
-                                      : 'text-[#3f3f46] hover:text-rose-400 hover:bg-[#ffffff04]'
-                                  }`}
-                                >
-                                  <Heart size={13} fill={currentUser?.favoriteTools?.includes(tool.to) ? "currentColor" : "none"} />
-                                </button>
-                                
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    e.preventDefault();
-                                    togglePin(tool.to);
-                                  }}
-                                  className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all active:scale-90 cursor-pointer shrink-0 ${
-                                    currentUser?.pinnedTools?.includes(tool.to)
-                                      ? 'text-[#2563eb] hover:text-[#1d4ed8] bg-[#2563eb]/10'
-                                      : 'text-[#3f3f46] hover:text-[#2563eb] hover:bg-[#ffffff04]'
-                                  }`}
-                                >
-                                  <Pin size={13} fill={currentUser?.pinnedTools?.includes(tool.to) ? "currentColor" : "none"} />
-                                </button>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    );
-                  })}
+                        <span className="text-[10px] sm:text-xs font-bold text-[#a1a1aa] group-hover:text-white transition-colors text-center w-full truncate leading-tight px-0.5">
+                          {tool.label}
+                        </span>
+                      </Link>
+                      
+                      {/* Unpin button */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          togglePin(tool.to);
+                        }}
+                        className="absolute top-0 right-0 sm:-top-1 sm:-right-1 w-6 h-6 bg-[#27272a] hover:bg-rose-500/20 border border-[#3f3f46] hover:border-rose-500/50 rounded-full flex items-center justify-center text-[#a1a1aa] hover:text-rose-500 transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100 shadow-lg z-10 scale-90 sm:scale-100"
+                        title="Unpin Workspace"
+                      >
+                        <X size={12} strokeWidth={2.5} />
+                      </button>
+                    </div>
+                  ))}
                 </div>
               </motion.div>
             )}
