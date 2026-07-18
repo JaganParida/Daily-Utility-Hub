@@ -34,26 +34,37 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Load user profile on startup using HTTP-only cookies
+  // Listen to Firebase Auth state to maintain session
   useEffect(() => {
-    const initializeAuth = async () => {
-      try {
-        const response = await api.get('/auth/profile');
-        if (response.data) {
-          setCurrentUser(response.data);
-        } else {
-          setCurrentUser(null);
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        try {
+          const response = await api.get('/auth/profile');
+          setCurrentUser({ ...response.data, uid: firebaseUser.uid });
+        } catch (error) {
+          // Backend session might have expired, try to silently restore it
+          try {
+            const idToken = await firebaseUser.getIdToken(true);
+            const res = await api.post('/auth/session', { idToken, mode: 'login' });
+            setCurrentUser({
+              ...res.data,
+              uid: firebaseUser.uid,
+              emailVerified: res.data.isEmailVerified !== undefined ? res.data.isEmailVerified : res.data.emailVerified
+            });
+          } catch (reauthError) {
+            setCurrentUser(null);
+            try { await firebaseSignOut(auth); } catch (_) {}
+            try { await api.get('/auth/logout'); } catch (_) {}
+          }
         }
-      } catch (error) {
-        // User deleted from DB, session expired, or cookie invalid
+      } else {
         setCurrentUser(null);
-        try { await firebaseSignOut(auth); } catch (_) {}
         try { await api.get('/auth/logout'); } catch (_) {}
-      } finally {
-        setLoading(false);
       }
-    };
-    initializeAuth();
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
 
   // Sign Up with Email & Password
