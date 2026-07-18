@@ -500,6 +500,7 @@ const Dashboard = () => {
   const [droppedFile, setDroppedFile] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const [activeTab, setActiveTab] = useState("pdf");
+  const [isPinnedOpen, setIsPinnedOpen] = useState(false);
   
   const [isLaunchPop, setIsLaunchPop] = useState(false);
   const prevHasActiveOp = useRef(false);
@@ -1077,54 +1078,82 @@ const Dashboard = () => {
 
             {/* ═══ PINNED TOOLS SECTION ═══ */}
             {currentUser && pinnedResolved.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mb-8 p-5 bg-[#111116] border border-[#27272a] rounded-xl text-left"
-              >
-                <div className="flex items-center gap-2 mb-4">
-                  <Pin className="text-[#2563eb] w-3.5 h-3.5" />
-                  <h2 className="text-[10px] sm:text-xs font-black text-white uppercase tracking-widest">
-                    Pinned Workspaces
-                  </h2>
-                </div>
-                <div className="flex overflow-x-auto hide-scrollbar gap-4 snap-x pb-3 pt-2 px-1 -mx-1">
-                  {pinnedResolved.map((tool) => (
-                    <div key={tool.to} className="group relative flex flex-col flex-shrink-0 w-[72px] sm:w-[84px] snap-start">
-                      <Link
-                        to={tool.to}
-                        onClick={(e) => {
-                          if (LOCKED_GUEST_TOOLS.includes(tool.to) && !currentUser) {
-                            e.preventDefault();
-                            setIsAuthModalOpen(true);
-                          }
-                        }}
-                        className="w-full flex flex-col items-center gap-2"
-                      >
-                        <div className="w-[60px] h-[60px] sm:w-[72px] sm:h-[72px] rounded-2xl bg-[#18181b] border border-[#27272a] group-hover:border-[#2563eb]/50 group-hover:bg-[#2563eb]/10 flex items-center justify-center transition-all shadow-sm group-hover:shadow-[0_0_20px_rgba(37,99,235,0.15)] relative">
-                          <tool.icon size={22} className="text-[#52525b] group-hover:text-[#2563eb] transition-colors" />
-                        </div>
-                        <span className="text-[10px] sm:text-xs font-bold text-[#a1a1aa] group-hover:text-white transition-colors text-center w-full truncate leading-tight px-0.5">
-                          {tool.label}
-                        </span>
-                      </Link>
-                      
-                      {/* Unpin button */}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          e.preventDefault();
-                          togglePin(tool.to);
-                        }}
-                        className="absolute top-0 right-0 sm:-top-1 sm:-right-1 w-6 h-6 bg-[#27272a] hover:bg-rose-500/20 border border-[#3f3f46] hover:border-rose-500/50 rounded-full flex items-center justify-center text-[#a1a1aa] hover:text-rose-500 transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100 shadow-lg z-10 scale-90 sm:scale-100"
-                        title="Unpin Workspace"
-                      >
-                        <X size={12} strokeWidth={2.5} />
-                      </button>
+              <div className="mb-8 text-center sm:text-left">
+                <button
+                  onClick={() => setIsPinnedOpen(!isPinnedOpen)}
+                  className="w-full sm:w-auto px-5 py-3 bg-[#111116] border border-[#27272a] hover:border-[#2563eb]/40 rounded-xl flex items-center justify-between sm:justify-start gap-4 transition-all mx-auto sm:mx-0 group shadow-sm hover:shadow-[0_0_15px_rgba(37,99,235,0.1)] active:scale-[0.98]"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-7 h-7 rounded-lg bg-[#2563eb]/10 flex items-center justify-center">
+                      <Pin size={12} className="text-[#2563eb]" />
                     </div>
-                  ))}
-                </div>
-              </motion.div>
+                    <span className="text-xs sm:text-sm font-bold text-white group-hover:text-zinc-300 transition-colors">
+                      {isPinnedOpen ? 'Hide Pinned Workspaces' : 'Show Pinned Workspaces'} 
+                      <span className="ml-1.5 text-zinc-500 font-medium">({pinnedResolved.length})</span>
+                    </span>
+                  </div>
+                  <ChevronDown 
+                    size={16} 
+                    className={`text-zinc-500 transition-transform duration-300 ${isPinnedOpen ? 'rotate-180' : 'rotate-0'}`} 
+                  />
+                </button>
+
+                <AnimatePresence>
+                  {isPinnedOpen && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0, marginTop: 0 }}
+                      animate={{ height: 'auto', opacity: 1, marginTop: 16 }}
+                      exit={{ height: 0, opacity: 0, marginTop: 0 }}
+                      transition={{ duration: 0.3, ease: 'easeInOut' }}
+                      className="overflow-hidden"
+                    >
+                      <div className="p-4 sm:p-5 bg-[#111116] border border-[#27272a] rounded-xl text-left shadow-lg">
+                        <div className="flex items-center justify-between mb-4">
+                          <h2 className="text-[10px] sm:text-xs font-black text-[#52525b] uppercase tracking-widest">
+                            Quick Access
+                          </h2>
+                        </div>
+                        <div className="flex overflow-x-auto hide-scrollbar gap-4 snap-x pb-3 px-1 -mx-1">
+                          {pinnedResolved.map((tool) => (
+                            <div key={tool.to} className="group relative flex flex-col flex-shrink-0 w-[72px] sm:w-[84px] snap-start">
+                              <Link
+                                to={tool.to}
+                                onClick={(e) => {
+                                  if (LOCKED_GUEST_TOOLS.includes(tool.to) && !currentUser) {
+                                    e.preventDefault();
+                                    setIsAuthModalOpen(true);
+                                  }
+                                }}
+                                className="w-full flex flex-col items-center gap-2"
+                              >
+                                <div className="w-[60px] h-[60px] sm:w-[72px] sm:h-[72px] rounded-2xl bg-[#18181b] border border-[#27272a] group-hover:border-[#2563eb]/50 group-hover:bg-[#2563eb]/10 flex items-center justify-center transition-all shadow-sm group-hover:shadow-[0_0_20px_rgba(37,99,235,0.15)] relative">
+                                  <tool.icon size={22} className="text-[#52525b] group-hover:text-[#2563eb] transition-colors" />
+                                </div>
+                                <span className="text-[10px] sm:text-xs font-bold text-[#a1a1aa] group-hover:text-white transition-colors text-center w-full truncate leading-tight px-0.5">
+                                  {tool.label}
+                                </span>
+                              </Link>
+                              
+                              {/* Unpin button */}
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  e.preventDefault();
+                                  togglePin(tool.to);
+                                }}
+                                className="absolute top-0 right-0 sm:-top-1 sm:-right-1 w-6 h-6 bg-[#27272a] hover:bg-rose-500/20 border border-[#3f3f46] hover:border-rose-500/50 rounded-full flex items-center justify-center text-[#a1a1aa] hover:text-rose-500 transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100 shadow-lg z-10 scale-90 sm:scale-100"
+                                title="Unpin Workspace"
+                              >
+                                <X size={12} strokeWidth={2.5} />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             )}
 
             {/* ═══ CATEGORY TABS ═══ */}
