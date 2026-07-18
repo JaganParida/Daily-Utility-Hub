@@ -66,7 +66,7 @@ const HtmlToDocx = () => {
 
   return (
     <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
-      <div className="mb-6 flex items-center gap-3 shrink-0">
+      <div className="mb-6 flex items-start gap-4 shrink-0">
         <div className="p-2 bg-primary/10 text-primary rounded-md shadow-sm">
           <Code2 size={24} />
         </div>
@@ -118,10 +118,12 @@ const HtmlToDocx = () => {
             </div>
             
             <div className="flex-1 p-6 bg-neutral-900 overflow-y-auto custom-scrollbar flex justify-center items-center">
-              <div 
-                className="w-full max-w-md aspect-[1/1.4] bg-white text-slate-800 p-8 shadow-xl rounded-sm border border-slate-200 overflow-y-auto custom-scrollbar prose prose-slate max-w-none text-xs"
-                dangerouslySetInnerHTML={{ __html: sourceCode }}
-              />
+              <div className="w-full max-w-md aspect-[1/1.4] bg-white text-slate-800 shadow-xl rounded-sm border border-slate-200 relative shrink-0">
+                <div 
+                  className="absolute inset-0 p-8 overflow-y-auto custom-scrollbar prose prose-slate max-w-none text-xs"
+                  dangerouslySetInnerHTML={{ __html: sourceCode }}
+                />
+              </div>
             </div>
           </div>
         </div>

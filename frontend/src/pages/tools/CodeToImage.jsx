@@ -62,7 +62,7 @@ const CodeToImage = () => {
 
   return (
     <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
-      <div className="mb-6 flex items-center gap-3 shrink-0">
+      <div className="mb-6 flex items-start gap-4 shrink-0">
         <div className="p-2 bg-indigo-500/10 text-indigo-500 rounded-md shadow-sm">
           <Code2 size={24} />
         </div>

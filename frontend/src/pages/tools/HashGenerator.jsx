@@ -292,7 +292,7 @@ const HashGenerator = () => {
       className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8"
     >
       {/* Header */}
-      <div className="mb-6 flex items-center gap-3 shrink-0">
+      <div className="mb-6 flex items-start gap-4 shrink-0">
         <div className="p-2.5 bg-primary/10 text-primary rounded-xl shadow-sm shrink-0">
           <Hash size={24} />
         </div>

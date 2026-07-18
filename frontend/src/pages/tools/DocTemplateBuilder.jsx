@@ -93,7 +93,7 @@ const DocTemplateBuilder = () => {
 
   return (
     <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
-      <div className="mb-6 flex items-center gap-3 shrink-0">
+      <div className="mb-6 flex items-start gap-4 shrink-0">
         <div className="p-2 bg-primary/10 text-primary rounded-md shadow-sm">
           <Layers size={24} />
         </div>
@@ -270,7 +270,8 @@ const DocTemplateBuilder = () => {
           </div>
 
           <div className="flex-1 p-6 md:p-12 bg-neutral-900 flex justify-center items-center overflow-auto custom-scrollbar">
-            <div className="w-full max-w-2xl aspect-[1/1.4] bg-white text-slate-800 p-12 shadow-2xl rounded-sm border border-slate-200 overflow-y-auto custom-scrollbar flex flex-col font-serif">
+            <div className="w-full max-w-2xl aspect-[1/1.4] bg-white text-slate-800 shadow-2xl rounded-sm border border-slate-200 relative shrink-0">
+              <div className="absolute inset-0 p-6 md:p-12 overflow-y-auto custom-scrollbar flex flex-col font-serif">
               {selectedTemplate === 'resume' && (
                 <div>
                   <h1 className="text-3xl font-bold tracking-tight text-slate-900">{resumeData.name}</h1>
@@ -321,6 +322,7 @@ const DocTemplateBuilder = () => {
                   <p className="text-xl font-bold text-indigo-600">{proposalData.budget}</p>
                 </div>
               )}
+              </div>
             </div>
           </div>
         </div>
