@@ -1218,7 +1218,7 @@ const Dashboard = () => {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -8 }}
                     transition={{ duration: 0.25 }}
-                    className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5"
+                    className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2"
                   >
                     {tabOps.map((op, i) => (
                       <motion.div
@@ -1231,19 +1231,19 @@ const Dashboard = () => {
                         <Link
                           to={op.to}
                           onClick={(e) => handleToolClick(e, op.to)}
-                          className="flex-1 flex items-center gap-3 pl-3.5 pr-1 sm:pl-4 sm:pr-1.5 py-2.5 sm:py-3 min-w-0"
+                          className="flex-1 flex items-center gap-2 sm:gap-3 pl-2.5 sm:pl-4 pr-1 sm:pr-1.5 py-2 sm:py-3 min-w-0"
                         >
-                          <div className="w-8 h-8 rounded-lg bg-[#27272a] group-hover:bg-[#2563eb]/10 flex items-center justify-center transition-colors shrink-0">
-                            <ArrowRight size={11} className="text-[#52525b] group-hover:text-[#2563eb] transition-colors" />
+                          <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-[#27272a] group-hover:bg-[#2563eb]/10 flex items-center justify-center transition-colors shrink-0">
+                            <ArrowRight className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-[#52525b] group-hover:text-[#2563eb] transition-colors" />
                           </div>
-                          <div className="min-w-0 flex-1">
-                            <p className="text-xs font-bold text-[#e4e4e7] group-hover:text-white transition-colors truncate">{op.label}</p>
-                            <p className="text-[10px] text-[#3f3f46] group-hover:text-[#71717a] transition-colors truncate">{op.result}</p>
+                          <div className="min-w-0 flex-1 py-0.5">
+                            <p className="text-[10px] sm:text-xs font-bold text-[#e4e4e7] group-hover:text-white transition-colors line-clamp-2 sm:truncate leading-[1.2]">{op.label}</p>
+                            <p className="hidden sm:block text-[10px] text-[#3f3f46] group-hover:text-[#71717a] transition-colors truncate mt-0.5">{op.result}</p>
                           </div>
                         </Link>
                         
                         {/* ACTIONS - Horizontal on the right */}
-                        <div className="flex items-center gap-1 pr-2 w-[76px] opacity-100 md:w-0 md:opacity-0 md:group-hover:w-[76px] md:group-hover:opacity-100 transition-all duration-300 ease-out shrink-0 overflow-hidden">
+                        <div className="flex items-center gap-0.5 sm:gap-1 pr-1.5 sm:pr-2 w-[52px] sm:w-[76px] opacity-100 md:w-0 md:opacity-0 md:group-hover:w-[76px] md:group-hover:opacity-100 transition-all duration-300 ease-out shrink-0 overflow-hidden">
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -1254,13 +1254,13 @@ const Dashboard = () => {
                                 toggleFavorite(op.to);
                               }
                             }}
-                            className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all active:scale-90 cursor-pointer shrink-0 ${
+                            className={`w-6 h-6 sm:w-8 sm:h-8 rounded-md sm:rounded-lg flex items-center justify-center transition-all active:scale-90 cursor-pointer shrink-0 ${
                               currentUser?.favoriteTools?.includes(op.to)
                                 ? 'text-rose-500 hover:text-rose-400 bg-rose-500/10'
                                 : 'text-[#3f3f46] hover:text-rose-400 hover:bg-[#ffffff04]'
                             }`}
                           >
-                            <Heart size={13} fill={currentUser?.favoriteTools?.includes(op.to) ? "currentColor" : "none"} />
+                            <Heart className="w-3 h-3 sm:w-3.5 sm:h-3.5" fill={currentUser?.favoriteTools?.includes(op.to) ? "currentColor" : "none"} />
                           </button>
                           
                           <button
@@ -1273,13 +1273,13 @@ const Dashboard = () => {
                                 togglePin(op.to);
                               }
                             }}
-                            className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all active:scale-90 cursor-pointer shrink-0 ${
+                            className={`w-6 h-6 sm:w-8 sm:h-8 rounded-md sm:rounded-lg flex items-center justify-center transition-all active:scale-90 cursor-pointer shrink-0 ${
                               currentUser?.pinnedTools?.includes(op.to)
                                 ? 'text-[#2563eb] hover:text-[#1d4ed8] bg-[#2563eb]/10'
                                 : 'text-[#3f3f46] hover:text-[#2563eb] hover:bg-[#ffffff04]'
                             }`}
                           >
-                            <Pin size={13} fill={currentUser?.pinnedTools?.includes(op.to) ? "currentColor" : "none"} />
+                            <Pin className="w-3 h-3 sm:w-3.5 sm:h-3.5" fill={currentUser?.pinnedTools?.includes(op.to) ? "currentColor" : "none"} />
                           </button>
                         </div>
                       </motion.div>
