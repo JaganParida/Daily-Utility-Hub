@@ -1098,9 +1098,9 @@ const Dashboard = () => {
                           <GroupIcon size={11} className="text-[#52525b]" />
                           <span className="text-[9px] font-bold text-[#71717a] uppercase tracking-wider">{group.label}</span>
                         </div>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5">
                           {group.tools.map((tool) => (
-                            <div key={tool.to} className="group relative flex flex-col md:flex-row items-start md:items-center bg-[#18181b] border border-[#27272a] hover:border-[#2563eb]/30 hover:bg-[#2563eb]/5 transition-all rounded-xl overflow-hidden">
+                            <div key={tool.to} className="group relative flex items-center bg-[#18181b] border border-[#27272a] hover:border-[#2563eb]/30 hover:bg-[#2563eb]/5 transition-all rounded-xl overflow-hidden">
                               <Link
                                 to={tool.to}
                                 onClick={(e) => {
@@ -1109,32 +1109,32 @@ const Dashboard = () => {
                                     setIsAuthModalOpen(true);
                                   }
                                 }}
-                                className="flex-1 flex flex-col md:flex-row md:items-center gap-2 md:gap-3 p-2.5 sm:p-3 min-w-0 w-full"
+                                className="flex-1 flex items-center gap-3 pl-3.5 pr-1 sm:pl-4 sm:pr-1.5 py-2.5 sm:py-3 min-w-0"
                               >
-                                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#27272a] group-hover:bg-[#2563eb]/10 flex items-center justify-center transition-colors shrink-0">
+                                <div className="w-8 h-8 rounded-lg bg-[#27272a] group-hover:bg-[#2563eb]/10 flex items-center justify-center transition-colors shrink-0">
                                   <ArrowRight size={11} className="text-[#52525b] group-hover:text-[#2563eb] transition-colors" />
                                 </div>
-                                <div className="min-w-0 flex-1 w-full mt-0.5 md:mt-0 text-left">
-                                  <p className="text-[11px] sm:text-xs font-bold text-[#e4e4e7] group-hover:text-white transition-colors truncate">{tool.label}</p>
-                                  <p className="text-[9px] text-[#3f3f46] group-hover:text-[#71717a] transition-colors truncate">{tool.result}</p>
+                                <div className="min-w-0 flex-1">
+                                  <p className="text-xs font-bold text-[#e4e4e7] group-hover:text-white transition-colors truncate">{tool.label}</p>
+                                  <p className="text-[10px] text-[#3f3f46] group-hover:text-[#71717a] transition-colors truncate">{tool.result}</p>
                                 </div>
                               </Link>
-
-                              {/* MOBILE ACTIONS - Absolute Top Right */}
-                              <div className="absolute top-2 right-2 flex md:hidden items-center gap-1">
+                              
+                              {/* ACTIONS - Horizontal on the right */}
+                              <div className="flex items-center gap-1 pr-2 w-[76px] opacity-100 md:w-0 md:opacity-0 md:group-hover:w-[76px] md:group-hover:opacity-100 transition-all duration-300 ease-out shrink-0 overflow-hidden">
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     e.preventDefault();
                                     toggleFavorite(tool.to);
                                   }}
-                                  className={`p-1.5 rounded-lg flex items-center justify-center transition-all active:scale-90 cursor-pointer ${
+                                  className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all active:scale-90 cursor-pointer shrink-0 ${
                                     currentUser?.favoriteTools?.includes(tool.to)
                                       ? 'text-rose-500 hover:text-rose-400 bg-rose-500/10'
                                       : 'text-[#3f3f46] hover:text-rose-400 hover:bg-[#ffffff04]'
                                   }`}
                                 >
-                                  <Heart size={12} fill={currentUser?.favoriteTools?.includes(tool.to) ? "currentColor" : "none"} />
+                                  <Heart size={13} fill={currentUser?.favoriteTools?.includes(tool.to) ? "currentColor" : "none"} />
                                 </button>
                                 
                                 <button
@@ -1143,45 +1143,11 @@ const Dashboard = () => {
                                     e.preventDefault();
                                     togglePin(tool.to);
                                   }}
-                                  className={`p-1.5 rounded-lg flex items-center justify-center transition-all active:scale-90 cursor-pointer ${
-                                    currentUser?.pinnedTools?.includes(tool.to)
-                                      ? 'text-[#2563eb] hover:text-[#1d4ed8] bg-[#2563eb]/10'
-                                      : 'text-[#3f3f46] hover:text-[#2563eb] hover:bg-[#ffffff04]'
-                                  }`}
-                                >
-                                  <Pin size={12} fill={currentUser?.pinnedTools?.includes(tool.to) ? "currentColor" : "none"} />
-                                </button>
-                              </div>
-
-                              {/* DESKTOP ACTIONS - Hover Reveal */}
-                              <div className="hidden md:flex items-center gap-1 pr-2 w-0 opacity-0 group-hover:w-[76px] group-hover:opacity-100 transition-all duration-300 ease-out shrink-0 overflow-hidden">
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    e.preventDefault();
-                                    toggleFavorite(tool.to);
-                                  }}
-                                  className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all active:scale-90 cursor-pointer shrink-0 ${
-                                    currentUser?.favoriteTools?.includes(tool.to)
-                                      ? 'text-rose-500 hover:text-rose-400 bg-rose-500/10'
-                                      : 'text-[#3f3f46] hover:text-rose-400 hover:bg-[#ffffff04]'
-                                  }`}
-                                  title="Favorite"
-                                >
-                                  <Heart size={13} fill={currentUser?.favoriteTools?.includes(tool.to) ? "currentColor" : "none"} />
-                                </button>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    e.preventDefault();
-                                    togglePin(tool.to);
-                                  }}
                                   className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all active:scale-90 cursor-pointer shrink-0 ${
                                     currentUser?.pinnedTools?.includes(tool.to)
                                       ? 'text-[#2563eb] hover:text-[#1d4ed8] bg-[#2563eb]/10'
                                       : 'text-[#3f3f46] hover:text-[#2563eb] hover:bg-[#ffffff04]'
                                   }`}
-                                  title="Unpin"
                                 >
                                   <Pin size={13} fill={currentUser?.pinnedTools?.includes(tool.to) ? "currentColor" : "none"} />
                                 </button>
@@ -1287,7 +1253,7 @@ const Dashboard = () => {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -8 }}
                     transition={{ duration: 0.25 }}
-                    className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2"
+                    className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5"
                   >
                     {tabOps.map((op, i) => (
                       <motion.div
@@ -1295,65 +1261,24 @@ const Dashboard = () => {
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.2, delay: i * 0.03 }}
-                        className="group relative flex flex-col md:flex-row items-start md:items-center bg-[#18181b] border border-[#27272a] hover:border-[#2563eb]/30 hover:bg-[#2563eb]/5 transition-all rounded-xl overflow-hidden"
+                        className="group relative flex items-center bg-[#18181b] border border-[#27272a] hover:border-[#2563eb]/30 hover:bg-[#2563eb]/5 transition-all rounded-xl overflow-hidden"
                       >
                         <Link
                           to={op.to}
                           onClick={(e) => handleToolClick(e, op.to)}
-                          className="flex-1 flex flex-col md:flex-row md:items-center gap-2 md:gap-3 p-2.5 sm:p-3 min-w-0 w-full"
+                          className="flex-1 flex items-center gap-3 pl-3.5 pr-1 sm:pl-4 sm:pr-1.5 py-2.5 sm:py-3 min-w-0"
                         >
-                          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#27272a] group-hover:bg-[#2563eb]/10 flex items-center justify-center transition-colors shrink-0">
+                          <div className="w-8 h-8 rounded-lg bg-[#27272a] group-hover:bg-[#2563eb]/10 flex items-center justify-center transition-colors shrink-0">
                             <ArrowRight size={11} className="text-[#52525b] group-hover:text-[#2563eb] transition-colors" />
                           </div>
-                          <div className="min-w-0 flex-1 w-full mt-0.5 md:mt-0 text-left">
-                            <p className="text-[11px] sm:text-xs font-bold text-[#e4e4e7] group-hover:text-white transition-colors truncate">{op.label}</p>
-                            <p className="text-[9px] text-[#3f3f46] group-hover:text-[#71717a] transition-colors truncate">{op.result}</p>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs font-bold text-[#e4e4e7] group-hover:text-white transition-colors truncate">{op.label}</p>
+                            <p className="text-[10px] text-[#3f3f46] group-hover:text-[#71717a] transition-colors truncate">{op.result}</p>
                           </div>
                         </Link>
                         
-                        {/* MOBILE ACTIONS - Absolute Top Right */}
-                        <div className="absolute top-2 right-2 flex md:hidden items-center gap-1">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              e.preventDefault();
-                              if (!currentUser) {
-                                setIsAuthModalOpen(true);
-                              } else {
-                                toggleFavorite(op.to);
-                              }
-                            }}
-                            className={`p-1.5 rounded-lg flex items-center justify-center transition-all active:scale-90 cursor-pointer ${
-                              currentUser?.favoriteTools?.includes(op.to)
-                                ? 'text-rose-500 hover:text-rose-400 bg-rose-500/10'
-                                : 'text-[#3f3f46] hover:text-rose-400 hover:bg-[#ffffff04]'
-                            }`}
-                          >
-                            <Heart size={12} fill={currentUser?.favoriteTools?.includes(op.to) ? "currentColor" : "none"} />
-                          </button>
-                          
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              e.preventDefault();
-                              if (!currentUser) {
-                                setIsAuthModalOpen(true);
-                              } else {
-                                togglePin(op.to);
-                              }
-                            }}
-                            className={`p-1.5 rounded-lg flex items-center justify-center transition-all active:scale-90 cursor-pointer ${
-                              currentUser?.pinnedTools?.includes(op.to)
-                                ? 'text-[#2563eb] hover:text-[#1d4ed8] bg-[#2563eb]/10'
-                                : 'text-[#3f3f46] hover:text-[#2563eb] hover:bg-[#ffffff04]'
-                            }`}
-                          >
-                            <Pin size={12} fill={currentUser?.pinnedTools?.includes(op.to) ? "currentColor" : "none"} />
-                          </button>
-                        </div>
-
-                        {/* DESKTOP ACTIONS - Hover Reveal */}
-                        <div className="hidden md:flex items-center gap-1 pr-2 w-0 opacity-0 group-hover:w-[76px] group-hover:opacity-100 transition-all duration-300 ease-out shrink-0 overflow-hidden">
+                        {/* ACTIONS - Horizontal on the right */}
+                        <div className="flex items-center gap-1 pr-2 w-[76px] opacity-100 md:w-0 md:opacity-0 md:group-hover:w-[76px] md:group-hover:opacity-100 transition-all duration-300 ease-out shrink-0 overflow-hidden">
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -1369,7 +1294,6 @@ const Dashboard = () => {
                                 ? 'text-rose-500 hover:text-rose-400 bg-rose-500/10'
                                 : 'text-[#3f3f46] hover:text-rose-400 hover:bg-[#ffffff04]'
                             }`}
-                            title={currentUser?.favoriteTools?.includes(op.to) ? "Remove from Favorites" : "Add to Favorites"}
                           >
                             <Heart size={13} fill={currentUser?.favoriteTools?.includes(op.to) ? "currentColor" : "none"} />
                           </button>
@@ -1389,7 +1313,6 @@ const Dashboard = () => {
                                 ? 'text-[#2563eb] hover:text-[#1d4ed8] bg-[#2563eb]/10'
                                 : 'text-[#3f3f46] hover:text-[#2563eb] hover:bg-[#ffffff04]'
                             }`}
-                            title={currentUser?.pinnedTools?.includes(op.to) ? "Unpin Tool" : "Pin Tool"}
                           >
                             <Pin size={13} fill={currentUser?.pinnedTools?.includes(op.to) ? "currentColor" : "none"} />
                           </button>
