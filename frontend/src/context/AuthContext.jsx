@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { 
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -20,43 +20,82 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const isMountedRef = useRef(true);
+
+  // Cleanup ref on unmount
+  useEffect(() => {
+    return () => { isMountedRef.current = false; };
+  }, []);
 
   // Sync profile data from backend on request
   const refreshUser = async () => {
     try {
       const response = await api.get('/auth/profile');
-      setCurrentUser(prev => prev ? { ...prev, ...response.data } : response.data);
+      if (isMountedRef.current && response.data) {
+        setCurrentUser(prev => prev ? { ...prev, ...response.data } : response.data);
+      }
     } catch (error) {
-      if (error.response?.status === 401) {
-        await firebaseSignOut(auth);
+      // Only clear user on explicit 401 - never on network errors
+      if (error.response?.status === 401 && isMountedRef.current) {
         setCurrentUser(null);
       }
+      // Do NOT call firebaseSignOut or api.get('/auth/logout') here
+      // This prevents cascading logouts from refreshUser failures
     }
   };
 
   // Load user profile on startup using HTTP-only cookies
+  // Uses retry logic to handle race conditions during hard refresh (Ctrl+Shift+R)
   useEffect(() => {
-    const initializeAuth = async () => {
+    let cancelled = false;
+    let retryTimeout = null;
+
+    const fetchProfile = async (attempt = 0) => {
       try {
         const response = await api.get('/auth/profile');
+        if (cancelled) return;
+
         if (response.data) {
           setCurrentUser(response.data);
         } else {
           setCurrentUser(null);
         }
+        setLoading(false);
       } catch (error) {
-        // Only proactively destroy the session if the backend explicitly says it's invalid (401)
-        // This prevents network errors or cancelled requests during hard refreshes from logging you out.
-        setCurrentUser(null);
+        if (cancelled) return;
+
+        // If it's a network error (no response object), the request was likely
+        // aborted by the browser during hard refresh. Retry once after a short delay.
+        const isNetworkError = !error.response && error.code !== 'ERR_CANCELED';
+        const isAborted = error.code === 'ERR_CANCELED' || error.code === 'ECONNABORTED';
+
+        if ((isNetworkError || isAborted) && attempt < 2) {
+          retryTimeout = setTimeout(() => {
+            if (!cancelled) fetchProfile(attempt + 1);
+          }, 800);
+          return;
+        }
+
+        // Only destroy the session if the backend explicitly says it's invalid (401)
         if (error.response?.status === 401) {
+          setCurrentUser(null);
           try { await firebaseSignOut(auth); } catch (_) {}
           try { await api.get('/auth/logout'); } catch (_) {}
+        } else {
+          // For all other errors (network issues, 500s, timeouts), just show no user
+          // but do NOT destroy the session cookie - it's still valid
+          setCurrentUser(null);
         }
-      } finally {
         setLoading(false);
       }
     };
-    initializeAuth();
+
+    fetchProfile();
+
+    return () => {
+      cancelled = true;
+      if (retryTimeout) clearTimeout(retryTimeout);
+    };
   }, []);
 
   // Sign Up with Email & Password
@@ -222,13 +261,22 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Logout Session Helper (terminates another device session)
+  // Updates state LOCALLY instead of calling refreshUser to prevent cascading logout
   const terminateSession = async (sessionId) => {
     try {
       await api.delete(`/auth/sessions/${sessionId}`);
+      // Update state locally - remove the terminated session from the list
+      setCurrentUser(prev => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          activeSessions: (prev.activeSessions || []).filter(s => s._id !== sessionId)
+        };
+      });
       toast.success('Session terminated.');
-      await refreshUser();
     } catch (error) {
-      toast.error('Failed to terminate session.');
+      const msg = error.response?.data?.message || 'Failed to terminate session.';
+      toast.error(msg);
     }
   };
 

@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { 
   User, Shield, Laptop, Smartphone, LogOut, CheckCircle2, 
-  Settings2, Activity, Bookmark, Clock, ArrowRight, Loader2, Key
+  Settings2, Activity, Clock, ArrowRight, Loader2, Key,
+  BarChart3, Zap, Calendar, TrendingUp, Heart
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
@@ -38,24 +39,13 @@ const ProfileSkeleton = () => {
                   <div className="h-12 w-full bg-muted/40 rounded-xl" />
                 </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <div className="space-y-2">
-                  <div className="h-3 w-20 bg-muted rounded" />
-                  <div className="h-12 w-full bg-muted/40 rounded-xl" />
-                </div>
-                <div className="space-y-2">
-                  <div className="h-3 w-28 bg-muted rounded" />
-                  <div className="h-12 w-full bg-muted/40 rounded-xl" />
-                </div>
-              </div>
               <div className="h-12 w-32 bg-muted rounded-xl mt-2" />
             </div>
           </div>
         </div>
 
-        {/* Right Column: Sessions & Stats Skeletons */}
+        {/* Right Column */}
         <div className="space-y-8">
-          {/* Active Devices Card Skeleton */}
           <div className="bg-card border border-border p-6 rounded-3xl flex flex-col gap-6">
             <div className="h-6 w-32 bg-muted rounded-lg" />
             <div className="space-y-4">
@@ -73,23 +63,6 @@ const ProfileSkeleton = () => {
               ))}
             </div>
           </div>
-
-          {/* Analytics Summary Skeleton */}
-          <div className="bg-card border border-border p-6 rounded-3xl flex flex-col gap-6">
-            <div className="h-6 w-36 bg-muted rounded-lg" />
-            <div className="grid grid-cols-2 gap-4">
-              <div className="p-4 border border-border rounded-2xl bg-muted/10 space-y-2">
-                <div className="w-8 h-8 bg-muted rounded-xl" />
-                <div className="h-3 w-16 bg-muted rounded" />
-                <div className="h-6 w-8 bg-muted rounded-lg" />
-              </div>
-              <div className="p-4 border border-border rounded-2xl bg-muted/10 space-y-2">
-                <div className="w-8 h-8 bg-muted rounded-xl" />
-                <div className="h-3 w-16 bg-muted rounded" />
-                <div className="h-6 w-8 bg-muted rounded-lg" />
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -100,6 +73,7 @@ const Profile = () => {
   const { currentUser: user, loading, updateProfile, terminateSession } = useAuth();
   const [name, setName] = useState(user?.name || '');
   const [isUpdating, setIsUpdating] = useState(false);
+  const [terminatingId, setTerminatingId] = useState(null);
 
   // Sync profile form input values on page refresh auth load
   useEffect(() => {
@@ -107,6 +81,34 @@ const Profile = () => {
       setName(user.name);
     }
   }, [user]);
+
+  // Compute usage insights from recent history
+  const usageInsights = useMemo(() => {
+    if (!user?.recentHistory?.length) return null;
+
+    const toolCounts = {};
+    user.recentHistory.forEach(item => {
+      toolCounts[item.toolPath] = (toolCounts[item.toolPath] || 0) + 1;
+    });
+
+    // Most used tool
+    const sortedTools = Object.entries(toolCounts).sort((a, b) => b[1] - a[1]);
+    const topToolPath = sortedTools[0]?.[0];
+    const topTool = allTools.find(t => t.to === topToolPath);
+
+    // Most active day
+    const dayCounts = {};
+    user.recentHistory.forEach(item => {
+      const day = new Date(item.visitedAt).toLocaleDateString('en-US', { weekday: 'long' });
+      dayCounts[day] = (dayCounts[day] || 0) + 1;
+    });
+    const topDay = Object.entries(dayCounts).sort((a, b) => b[1] - a[1])[0]?.[0];
+
+    // Unique tools used
+    const uniqueTools = new Set(user.recentHistory.map(h => h.toolPath)).size;
+
+    return { topTool, topDay, uniqueTools, totalVisits: user.recentHistory.length };
+  }, [user?.recentHistory]);
 
   if (loading) {
     return <ProfileSkeleton />;
@@ -122,7 +124,6 @@ const Profile = () => {
 
   const handleUpdate = async (e) => {
     e.preventDefault();
-
     setIsUpdating(true);
     try {
       await updateProfile(name);
@@ -133,10 +134,24 @@ const Profile = () => {
     }
   };
 
+  const handleTerminate = async (sessionId) => {
+    setTerminatingId(sessionId);
+    try {
+      await terminateSession(sessionId);
+    } finally {
+      setTerminatingId(null);
+    }
+  };
+
   // Helper to map tool paths to tool details
   const getToolDetails = (path) => {
     return allTools.find(tool => tool.to === path);
   };
+
+  // Account age
+  const memberSince = user.createdAt 
+    ? new Date(user.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+    : null;
 
   return (
     <PageTransition className="max-w-[1400px] mx-auto w-full px-4 md:px-8 py-12">
@@ -151,14 +166,14 @@ const Profile = () => {
             Profile Settings
           </h1>
           <p className="text-muted-foreground mt-1 text-xs md:text-sm">
-            Manage your account, active device sessions, and user history.
+            Manage your account, active device sessions, and usage analytics.
           </p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
-        {/* Left Column: Account Details & Password */}
+        {/* Left Column: Account Details & Sessions */}
         <div className="lg:col-span-2 space-y-8">
           
           <div className="bg-card border border-border p-6 sm:p-8 rounded-3xl shadow-sm relative overflow-hidden flex flex-col gap-6">
@@ -195,6 +210,27 @@ const Profile = () => {
                 </div>
               </div>
 
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div>
+                  <label className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground ml-1 mb-1.5 block">
+                    Email Status
+                  </label>
+                  <div className="flex items-center gap-2 px-4 py-3 border border-border/50 rounded-xl bg-muted/20 text-sm">
+                    <CheckCircle2 size={16} className="text-emerald-500 shrink-0" />
+                    <span className="text-emerald-500 font-bold text-xs">Verified</span>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground ml-1 mb-1.5 block">
+                    Active Devices
+                  </label>
+                  <div className="flex items-center gap-2 px-4 py-3 border border-border/50 rounded-xl bg-muted/20 text-sm">
+                    <Shield size={16} className="text-primary shrink-0" />
+                    <span className="text-foreground font-bold text-xs">{user.activeSessions?.length || 0} of 2 sessions</span>
+                  </div>
+                </div>
+              </div>
+
               <div className="flex justify-end mt-8">
                 <button
                   type="submit"
@@ -215,15 +251,16 @@ const Profile = () => {
                 Active Device Sessions
               </h2>
               <p className="text-xs text-muted-foreground mt-1">
-                You are allowed up to **2 active sessions** simultaneously. Signing in on a 3rd device will automatically log out your oldest session.
+                You are allowed up to <strong>2 active sessions</strong> simultaneously. Signing in on a 3rd device will automatically log out your oldest session.
               </p>
             </div>
 
             <div className="divide-y divide-border/60">
               <AnimatePresence mode="popLayout">
-                {user.activeSessions.map((session) => {
+                {(user.activeSessions || []).map((session) => {
                   const isCurrent = session.isCurrent;
                   const isMobile = /Mobile|Phone|Android|iOS/.test(session.deviceName);
+                  const isTerminating = terminatingId === session._id;
 
                   return (
                     <motion.div
@@ -256,12 +293,17 @@ const Profile = () => {
 
                       {!isCurrent && (
                         <button
-                          onClick={() => terminateSession(session._id)}
-                          className="px-4 py-2 border border-border hover:border-red-500/30 hover:bg-red-500/10 text-muted-foreground hover:text-red-500 font-bold rounded-xl text-xs flex items-center gap-2 cursor-pointer transition-all active:scale-95 whitespace-nowrap"
+                          onClick={() => handleTerminate(session._id)}
+                          disabled={isTerminating}
+                          className="px-4 py-2 border border-border hover:border-red-500/30 hover:bg-red-500/10 text-muted-foreground hover:text-red-500 font-bold rounded-xl text-xs flex items-center gap-2 cursor-pointer transition-all active:scale-95 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
                           title="Revoke session and log out device"
                         >
-                          <LogOut size={13} />
-                          Log Out Device
+                          {isTerminating ? (
+                            <Loader2 className="animate-spin" size={13} />
+                          ) : (
+                            <LogOut size={13} />
+                          )}
+                          {isTerminating ? 'Terminating...' : 'Log Out Device'}
                         </button>
                       )}
                     </motion.div>
@@ -272,79 +314,92 @@ const Profile = () => {
           </div>
         </div>
 
-        {/* Right Column: Phase 7 Analytics (History, Bookmarks) */}
+        {/* Right Column: Usage Analytics & Recent Activity */}
         <div className="space-y-8">
           
-          {/* Quick Stats */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-card border border-border p-5 rounded-2xl shadow-sm text-center">
-              <div className="w-10 h-10 mx-auto rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-3">
-                <Bookmark size={20} />
-              </div>
-              <span className="text-2xl font-black text-foreground block">
-                {user.pinnedTools.length}
-              </span>
-              <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground mt-1 block">
-                Bookmarks
-              </span>
-            </div>
-
-            <div className="bg-card border border-border p-5 rounded-2xl shadow-sm text-center">
-              <div className="w-10 h-10 mx-auto rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-3">
-                <Activity size={20} />
-              </div>
-              <span className="text-2xl font-black text-foreground block">
-                {user.recentHistory.length}
-              </span>
-              <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground mt-1 block">
-                Recent Visited
-              </span>
-            </div>
-          </div>
-
-          {/* Bookmarked / Pinned Tools */}
-          <div className="bg-card border border-border p-6 rounded-3xl shadow-sm flex flex-col gap-4">
+          {/* Usage Analytics Dashboard */}
+          <div className="bg-card border border-border p-6 rounded-3xl shadow-sm flex flex-col gap-5">
             <h3 className="font-bold text-foreground flex items-center gap-2 text-sm uppercase tracking-wider">
-              <Bookmark size={16} className="text-primary" /> Bookmarked Utilities
+              <BarChart3 size={16} className="text-primary" /> Usage Analytics
             </h3>
 
-            {user.pinnedTools.length === 0 ? (
-              <p className="text-xs text-muted-foreground py-4 text-center">
-                No bookmarked tools yet. Pin your favorite tools to see them here!
-              </p>
-            ) : (
-              <div className="flex flex-col gap-2 max-h-64 overflow-y-auto no-scrollbar">
-                {user.pinnedTools.map(path => {
-                  const details = getToolDetails(path);
-                  if (!details) return null;
-                  const Icon = details.icon;
-                  return (
-                    <Link
-                      key={path}
-                      to={path}
-                      className="flex items-center justify-between p-3 bg-muted/20 hover:bg-muted/40 border border-border rounded-xl transition-all group min-w-0"
-                    >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-foreground ${details.color}`}>
-                          <Icon size={16} />
-                        </div>
-                        <span className="font-bold text-xs text-foreground truncate">{details.name}</span>
-                      </div>
-                      <ArrowRight size={14} className="opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 text-primary transition-all shrink-0" />
-                    </Link>
-                  );
-                })}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-muted/20 border border-border rounded-2xl p-4 text-center">
+                <div className="w-9 h-9 mx-auto rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-2">
+                  <Zap size={18} />
+                </div>
+                <span className="text-2xl font-black text-foreground block">{usageInsights?.uniqueTools || 0}</span>
+                <span className="text-[9px] uppercase tracking-wider font-bold text-muted-foreground mt-0.5 block">Tools Used</span>
+              </div>
+
+              <div className="bg-muted/20 border border-border rounded-2xl p-4 text-center">
+                <div className="w-9 h-9 mx-auto rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-2">
+                  <Activity size={18} />
+                </div>
+                <span className="text-2xl font-black text-foreground block">{usageInsights?.totalVisits || 0}</span>
+                <span className="text-[9px] uppercase tracking-wider font-bold text-muted-foreground mt-0.5 block">Total Visits</span>
+              </div>
+
+              <div className="bg-muted/20 border border-border rounded-2xl p-4 text-center">
+                <div className="w-9 h-9 mx-auto rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-2">
+                  <Heart size={18} />
+                </div>
+                <span className="text-2xl font-black text-foreground block">{user.favoriteTools?.length || 0}</span>
+                <span className="text-[9px] uppercase tracking-wider font-bold text-muted-foreground mt-0.5 block">Favorites</span>
+              </div>
+
+              <div className="bg-muted/20 border border-border rounded-2xl p-4 text-center">
+                <div className="w-9 h-9 mx-auto rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-2">
+                  <Calendar size={18} />
+                </div>
+                <span className="text-2xl font-black text-foreground block">{user.activeSessions?.length || 0}</span>
+                <span className="text-[9px] uppercase tracking-wider font-bold text-muted-foreground mt-0.5 block">Active Devices</span>
+              </div>
+            </div>
+
+            {/* Most Used Tool Highlight */}
+            {usageInsights?.topTool && (
+              <div className="mt-1 p-4 bg-primary/5 border border-primary/15 rounded-2xl">
+                <div className="flex items-center gap-2 mb-2">
+                  <TrendingUp size={13} className="text-primary" />
+                  <span className="text-[10px] font-black uppercase tracking-widest text-primary">Most Used Tool</span>
+                </div>
+                <Link
+                  to={usageInsights.topTool.to}
+                  className="flex items-center gap-3 group"
+                >
+                  <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-foreground shrink-0 ${usageInsights.topTool.color}`}>
+                    {usageInsights.topTool.icon && <usageInsights.topTool.icon size={16} />}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <span className="font-bold text-xs text-foreground block truncate group-hover:text-primary transition-colors">
+                      {usageInsights.topTool.name}
+                    </span>
+                  </div>
+                  <ArrowRight size={14} className="text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all shrink-0" />
+                </Link>
+              </div>
+            )}
+
+            {/* Most Active Day */}
+            {usageInsights?.topDay && (
+              <div className="flex items-center justify-between px-4 py-3 bg-muted/20 border border-border rounded-xl">
+                <div className="flex items-center gap-2">
+                  <Calendar size={13} className="text-muted-foreground" />
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Peak Day</span>
+                </div>
+                <span className="text-xs font-black text-foreground">{usageInsights.topDay}</span>
               </div>
             )}
           </div>
 
-          {/* Recent History */}
+          {/* Recent Activity */}
           <div className="bg-card border border-border p-6 rounded-3xl shadow-sm flex flex-col gap-4">
             <h3 className="font-bold text-foreground flex items-center gap-2 text-sm uppercase tracking-wider">
               <Clock size={16} className="text-primary" /> Recent Activity
             </h3>
 
-            {user.recentHistory.length === 0 ? (
+            {(user.recentHistory || []).length === 0 ? (
               <p className="text-xs text-muted-foreground py-4 text-center">
                 No activity history yet. Start exploring the hub utilities!
               </p>
