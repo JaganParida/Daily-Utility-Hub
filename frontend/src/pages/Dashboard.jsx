@@ -499,7 +499,11 @@ const Dashboard = () => {
   const [selectedOpTo, setSelectedOpTo] = useState("");
   const [droppedFile, setDroppedFile] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [activeTab, setActiveTab] = useState("pdf");
+  const [activeTab, setActiveTab] = useState(() => sessionStorage.getItem('dashboardActiveTab') || "pdf");
+  
+  useEffect(() => {
+    sessionStorage.setItem('dashboardActiveTab', activeTab);
+  }, [activeTab]);
   const [isPinnedOpen, setIsPinnedOpen] = useState(false);
   
   const [isLaunchPop, setIsLaunchPop] = useState(false);
