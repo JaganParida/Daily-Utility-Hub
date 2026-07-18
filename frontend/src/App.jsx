@@ -143,11 +143,8 @@ const AmortizationScheduler = lazyWithRetry(() => import('./pages/tools/Amortiza
 // PowerPoint & Slides Tools (Lazy loaded)
 const MdToSlides = lazyWithRetry(() => import('./pages/tools/MdToSlides'));
 const HtmlPresentation = lazyWithRetry(() => import('./pages/tools/HtmlPresentation'));
-const PrompterTimer = lazyWithRetry(() => import('./pages/tools/PrompterTimer'));
 const PptToPdf = lazyWithRetry(() => import('./pages/tools/PptToPdf'));
-const PptPaletteGenerator = lazyWithRetry(() => import('./pages/tools/PptPaletteGenerator'));
-const PresentationRemote = lazyWithRetry(() => import('./pages/tools/PresentationRemote'));
-const SlideMockup = lazyWithRetry(() => import('./pages/tools/SlideMockup'));
+const PptxStudio = lazyWithRetry(() => import('./pages/tools/PptxStudio'));
 const PptxMetadataEditor = lazyWithRetry(() => import('./pages/tools/PptxMetadataEditor'));
 
 const ProtectedRoute = ({ children }) => {
@@ -305,11 +302,8 @@ function AnimatedRoutes() {
             {/* PowerPoint & Slides Tools Routes */}
             <Route path="/tools/md-to-slides" element={<MdToSlides />} />
             <Route path="/tools/html-presentation" element={<HtmlPresentation />} />
-            <Route path="/tools/prompter-timer" element={<PrompterTimer />} />
             <Route path="/tools/ppt-to-pdf" element={<PptToPdf />} />
-            <Route path="/tools/ppt-palette-generator" element={<PptPaletteGenerator />} />
-            <Route path="/tools/presentation-remote" element={<PresentationRemote />} />
-            <Route path="/tools/slide-mockup" element={<SlideMockup />} />
+            <Route path="/tools/pptx-studio" element={<PptxStudio />} />
             <Route path="/tools/pptx-metadata-editor" element={<PptxMetadataEditor />} />
           </Route>
         </Routes>

@@ -102,11 +102,11 @@ export const toolCategories = {
   'PowerPoint & Slides Tools': [
     { name: 'Markdown to Slides', description: 'Convert Markdown headings and bullets to slideshows.', icon: Layers, to: '/tools/md-to-slides', color: 'text-rose-500 bg-rose-500/10' },
     { name: 'HTML Slides Sandbox', description: 'Code and preview rich HTML animated presentation slides.', icon: Code2, to: '/tools/html-presentation', color: 'text-indigo-500 bg-indigo-500/10' },
-    { name: 'Speaker Notes Prompter', description: 'Read scrolling prompter notes with pacing timers.', icon: Clock, to: '/tools/prompter-timer', color: 'text-amber-500 bg-amber-500/10' },
+    { name: 'Speaker Notes Prompter', description: 'Read scrolling prompter notes from PPTX with pacing timers.', icon: Clock, to: '/tools/pptx-studio', color: 'text-amber-500 bg-amber-500/10' },
     { name: 'PowerPoint to PDF/Image', description: 'Convert PowerPoint files to clean PDF pages and PNGs.', icon: FileText, to: '/tools/ppt-to-pdf', color: 'text-orange-500 bg-orange-500/10' },
-    { name: 'Projector Theme Swatches', description: 'Design high-contrast presentation palettes for projectors.', icon: Palette, to: '/tools/ppt-palette-generator', color: 'text-emerald-500 bg-emerald-500/10' },
-    { name: 'Voice Slides Remote', description: 'Navigate slides hands-free using voice command triggers.', icon: Volume2, to: '/tools/presentation-remote', color: 'text-blue-500 bg-blue-500/10' },
-    { name: 'Slide Canvas Whiteboard', description: 'Sketch visual presentation drafts and slide mockups.', icon: Palette, to: '/tools/slide-mockup', color: 'text-pink-500 bg-pink-500/10' },
+    { name: 'Projector Theme Swatches', description: 'Extract high-contrast presentation palettes from PPTX files.', icon: Palette, to: '/tools/pptx-studio', color: 'text-emerald-500 bg-emerald-500/10' },
+    { name: 'Voice Slides Remote', description: 'Navigate PPTX slides hands-free using voice command triggers.', icon: Volume2, to: '/tools/pptx-studio', color: 'text-blue-500 bg-blue-500/10' },
+    { name: 'Slide Canvas Whiteboard', description: 'Sketch visual presentation drafts and mockups directly over PPTX.', icon: Palette, to: '/tools/pptx-studio', color: 'text-pink-500 bg-pink-500/10' },
     { name: 'PPTX Metadata Stripper', description: 'Strip hidden author properties and modification logs.', icon: FileText, to: '/tools/pptx-metadata-editor', color: 'text-teal-500 bg-teal-500/10' },
   ]
 };
