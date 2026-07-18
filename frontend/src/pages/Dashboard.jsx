@@ -843,8 +843,7 @@ const Dashboard = () => {
               <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none z-0">
                 <div className="absolute top-1/2 left-1/2 w-[200%] aspect-square -translate-x-1/2 -translate-y-1/2 bg-[conic-gradient(from_0deg,#2563eb,#60a5fa,#3b82f6,#2563eb)] animate-[spin_4s_linear_infinite]" />
               </div>
-
-              <div className="relative z-10 rounded-[calc(1rem-1px)] bg-[#18181b]/95 backdrop-blur-xl p-4 sm:p-5 flex flex-col">
+              <div className="relative z-10 rounded-[calc(1rem-1px)] bg-[#111116] p-4 sm:p-5 flex flex-col">
                 <div className="w-full">
                   {/* Desktop/Tablet Flow (visible format & operation at all times) */}
                   <motion.div layout className="hidden sm:flex items-center justify-between gap-4">
