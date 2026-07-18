@@ -34,37 +34,29 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Listen to Firebase Auth state to maintain session
+  // Load user profile on startup using HTTP-only cookies
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        try {
-          const response = await api.get('/auth/profile');
-          setCurrentUser({ ...response.data, uid: firebaseUser.uid });
-        } catch (error) {
-          // Backend session might have expired, try to silently restore it
-          try {
-            const idToken = await firebaseUser.getIdToken(true);
-            const res = await api.post('/auth/session', { idToken, mode: 'login' });
-            setCurrentUser({
-              ...res.data,
-              uid: firebaseUser.uid,
-              emailVerified: res.data.isEmailVerified !== undefined ? res.data.isEmailVerified : res.data.emailVerified
-            });
-          } catch (reauthError) {
-            setCurrentUser(null);
-            try { await firebaseSignOut(auth); } catch (_) {}
-            try { await api.get('/auth/logout'); } catch (_) {}
-          }
+    const initializeAuth = async () => {
+      try {
+        const response = await api.get('/auth/profile');
+        if (response.data) {
+          setCurrentUser(response.data);
+        } else {
+          setCurrentUser(null);
         }
-      } else {
+      } catch (error) {
+        // Only proactively destroy the session if the backend explicitly says it's invalid (401)
+        // This prevents network errors or cancelled requests during hard refreshes from logging you out.
         setCurrentUser(null);
-        try { await api.get('/auth/logout'); } catch (_) {}
+        if (error.response?.status === 401) {
+          try { await firebaseSignOut(auth); } catch (_) {}
+          try { await api.get('/auth/logout'); } catch (_) {}
+        }
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
+    };
+    initializeAuth();
   }, []);
 
   // Sign Up with Email & Password
