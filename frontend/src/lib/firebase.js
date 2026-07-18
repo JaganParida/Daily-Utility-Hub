@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, setPersistence, inMemoryPersistence } from 'firebase/auth';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -13,6 +13,13 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+
+// Force Firebase Auth to keep session ONLY in memory. 
+// The actual persistent session is securely handled by our backend HTTP-only cookies!
+setPersistence(auth, inMemoryPersistence).catch((error) => {
+  console.error("Firebase persistence error:", error);
+});
+
 const googleProvider = new GoogleAuthProvider();
 
 export { auth, googleProvider };
