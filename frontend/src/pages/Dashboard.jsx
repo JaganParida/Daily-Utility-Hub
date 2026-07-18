@@ -1107,15 +1107,16 @@ const Dashboard = () => {
                       transition={{ duration: 0.3, ease: 'easeInOut' }}
                       className="overflow-hidden"
                     >
-                      <div className="p-4 sm:p-5 bg-[#111116] border border-[#27272a] rounded-xl text-left shadow-lg">
-                        <div className="flex items-center justify-between mb-4">
-                          <h2 className="text-[10px] sm:text-xs font-black text-[#52525b] uppercase tracking-widest">
-                            Quick Access
-                          </h2>
-                        </div>
                         <div className="flex overflow-x-auto hide-scrollbar gap-4 snap-x pb-3 px-1 -mx-1">
-                          {pinnedResolved.map((tool) => (
-                            <div key={tool.to} className="group relative flex flex-col flex-shrink-0 w-[72px] sm:w-[84px] snap-start">
+                          {pinnedResolved.map((tool, i) => (
+                            <motion.div 
+                              key={tool.to} 
+                              initial={{ opacity: 0, y: -20 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -10 }}
+                              transition={{ duration: 0.3, delay: i * 0.05, ease: 'easeOut' }}
+                              className="group relative flex flex-col flex-shrink-0 w-[72px] sm:w-[84px] snap-start"
+                            >
                               <Link
                                 to={tool.to}
                                 onClick={(e) => {
@@ -1146,10 +1147,9 @@ const Dashboard = () => {
                               >
                                 <X size={12} strokeWidth={2.5} />
                               </button>
-                            </div>
+                            </motion.div>
                           ))}
                         </div>
-                      </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
