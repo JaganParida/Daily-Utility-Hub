@@ -1,5 +1,5 @@
 import LegalLayout from "../../components/LegalLayout";
-import { ShieldCheck, Cpu, CloudOff, Lock, Database, Globe, Key, EyeOff, Server, Terminal, UserCheck, AlertTriangle } from "lucide-react";
+import { ShieldCheck, Cpu, CloudOff, Lock, Database, Globe, Key, EyeOff, Server, Terminal, UserCheck, AlertTriangle, CheckCircle2 } from "lucide-react";
 
 const PrivacyPolicy = () => {
   const lastUpdated = "July 20, 2026";
