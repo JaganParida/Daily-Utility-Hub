@@ -13,14 +13,17 @@ const LegalLayout = ({ title, subtitle, lastUpdated, readTime, children, section
       const targetId = location.hash.replace("#", "");
       setTimeout(() => {
         const el = document.getElementById(targetId);
-        if (el) {
-          const y = el.getBoundingClientRect().top + window.scrollY - 110;
-          window.scrollTo({ top: y, behavior: "smooth" });
+        const mainContainer = document.querySelector("main");
+        
+        if (el && mainContainer) {
+          const y = el.getBoundingClientRect().top + mainContainer.scrollTop - mainContainer.getBoundingClientRect().top - 110;
+          mainContainer.scrollTo({ top: y, behavior: "smooth" });
           setActiveSection(targetId);
         }
-      }, 150);
+      }, 300); // slightly longer delay to ensure DOM is fully painted
     } else {
-      window.scrollTo(0, 0);
+      const mainContainer = document.querySelector("main");
+      if (mainContainer) mainContainer.scrollTo(0, 0);
     }
   }, [location.pathname, location.hash]);
 
@@ -55,9 +58,14 @@ const LegalLayout = ({ title, subtitle, lastUpdated, readTime, children, section
   const scrollToSection = (id) => {
     setActiveSection(id);
     const el = document.getElementById(id);
-    if (el) {
-      const y = el.getBoundingClientRect().top + window.scrollY - 110;
-      window.scrollTo({ top: y, behavior: "smooth" });
+    const mainContainer = document.querySelector("main");
+    
+    if (el && mainContainer) {
+      const y = el.getBoundingClientRect().top + mainContainer.scrollTop - mainContainer.getBoundingClientRect().top - 110;
+      mainContainer.scrollTo({ top: y, behavior: "smooth" });
+      
+      // Update URL hash without causing page jump
+      window.history.pushState(null, "", `#${id}`);
     }
   };
 
