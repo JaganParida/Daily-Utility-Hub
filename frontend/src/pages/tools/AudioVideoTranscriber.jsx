@@ -268,7 +268,7 @@ Output MUST be a valid JSON array of objects. Each object MUST have exactly thre
 - "text": string (the spoken words during that interval)
 Keep segments between 2-6 seconds each. Include ALL spoken words - do not skip anything.
 If there is music or silence with no speech, skip those intervals.
-Return ONLY the raw JSON array. No markdown, no explanation.
+Return ONLY the raw JSON array. No markdown, no explanation, no extra text.
 Example: [{"start":0,"end":3.5,"text":"Hello everyone"},{"start":3.5,"end":7,"text":"Welcome to the video"}]`;
         
         const requestBody = {
@@ -286,12 +286,11 @@ Example: [{"start":0,"end":3.5,"text":"Hello everyone"},{"start":3.5,"end":7,"te
             },
           ],
           generationConfig: {
-            temperature: 0.1,
-            responseMimeType: "application/json"
+            temperature: 0.1
           }
         };
 
-        // Try with gemini-2.0-flash first, fallback to gemini-1.5-flash
+        // Try gemini-2.0-flash first, then gemini-1.5-flash as fallback
         const modelsToTry = ['gemini-2.0-flash', 'gemini-1.5-flash'];
         let lastError = null;
         let parsedSegments = null;
@@ -299,7 +298,6 @@ Example: [{"start":0,"end":3.5,"text":"Hello everyone"},{"start":3.5,"end":7,"te
         for (const model of modelsToTry) {
           if (parsedSegments) break;
           
-          // Attempt 1: with responseMimeType
           try {
             const resp = await fetch(
               `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
@@ -313,37 +311,18 @@ Example: [{"start":0,"end":3.5,"text":"Hello everyone"},{"start":3.5,"end":7,"te
             if (!resp.ok) {
               const errData = await resp.json().catch(() => ({}));
               const errMsg = errData?.error?.message || `HTTP ${resp.status}`;
-              
-              // If responseMimeType is not supported, retry without it
-              if (errMsg.includes('responseMimeType') || errMsg.includes('generation_config') || resp.status === 400) {
-                const fallbackBody = { ...requestBody, generationConfig: { temperature: 0.1 } };
-                const resp2 = await fetch(
-                  `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
-                  {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(fallbackBody),
-                  }
-                );
-                if (!resp2.ok) {
-                  const err2 = await resp2.json().catch(() => ({}));
-                  lastError = new Error(err2?.error?.message || `HTTP ${resp2.status}`);
-                  continue;
-                }
-                const data2 = await resp2.json();
-                const text2 = data2.candidates?.[0]?.content?.parts?.[0]?.text || '';
-                parsedSegments = parseGeminiResponse(text2);
-                if (parsedSegments) break;
-                lastError = new Error('Could not parse transcription response');
-                continue;
-              }
-              
               lastError = new Error(errMsg);
-              continue;
+              continue; // Try next model
             }
             
             const data = await resp.json();
             const textResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+            
+            if (!textResponse.trim()) {
+              lastError = new Error('Gemini returned an empty response. The audio may have no detectable speech.');
+              continue;
+            }
+            
             parsedSegments = parseGeminiResponse(textResponse);
             if (parsedSegments) break;
             lastError = new Error('Could not parse transcription response');
