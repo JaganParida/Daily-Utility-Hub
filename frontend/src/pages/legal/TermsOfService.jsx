@@ -1,76 +1,185 @@
 import LegalLayout from "../../components/LegalLayout";
+import { FileText, CheckCircle, ShieldAlert, Scale, RefreshCcw, AlertTriangle, HelpCircle } from "lucide-react";
 
 const TermsOfService = () => {
-  const lastUpdated = "October 24, 2026";
+  const lastUpdated = "July 20, 2026";
+  const readTime = "5 min read";
+  const subtitle = "Please read these Terms of Service carefully before using the developer utilities, converters, and processing features on UtilityHub.";
+
   const sections = [
-    { id: "acceptance", label: "Acceptance of Terms" },
-    { id: "use-license", label: "Use License" },
-    { id: "user-responsibilities", label: "User Responsibilities" },
-    { id: "ai-tools", label: "AI & Cloud Tools" },
-    { id: "disclaimer", label: "Disclaimer of Warranties" },
-    { id: "limitation", label: "Limitation of Liability" }
+    { id: "acceptance", label: "1. Acceptance of Terms" },
+    { id: "license-scope", label: "2. Permitted Use & Scope" },
+    { id: "user-responsibilities", label: "3. User Responsibilities & Conduct" },
+    { id: "ai-terms", label: "4. AI & External Cloud Services" },
+    { id: "disclaimers", label: "5. Disclaimers & Data Mutations" },
+    { id: "liability", label: "6. Limitation of Liability" },
+    { id: "updates", label: "7. Term Modifications & Contact" }
   ];
 
   return (
-    <LegalLayout title="Terms of Service" lastUpdated={lastUpdated} sections={sections}>
-      <h2 id="acceptance">1. Acceptance of Terms</h2>
-      <p>
-        By accessing and using <strong>UtilityHub</strong>, you accept and agree to be bound by the terms and provision of this agreement. 
-        In addition, when using these particular services, you shall be subject to any posted guidelines or rules applicable to such services. 
-        Any participation in this service will constitute acceptance of this agreement. If you do not agree to abide by the above, please do not use this service.
-      </p>
+    <LegalLayout 
+      title="Terms of Service & User Agreement" 
+      subtitle={subtitle} 
+      lastUpdated={lastUpdated} 
+      readTime={readTime}
+      sections={sections}
+    >
+      <div className="space-y-12 text-[#d4d4d8]">
 
-      <h2 id="use-license">2. Use License</h2>
-      <p>
-        Permission is granted to temporarily download one copy of the materials (information or software) on UtilityHub for personal, non-commercial transitory viewing only. 
-        This is the grant of a license, not a transfer of title, and under this license you may not:
-      </p>
-      <ul>
-        <li>Modify or copy the materials beyond standard browser caching;</li>
-        <li>Use the materials for any commercial purpose, or for any public display (commercial or non-commercial) without attributing the source;</li>
-        <li>Attempt to decompile or reverse engineer any software contained on UtilityHub;</li>
-        <li>Remove any copyright or other proprietary notations from the materials; or</li>
-        <li>Transfer the materials to another person or "mirror" the materials on any other server.</li>
-      </ul>
-      <p>
-        This license shall automatically terminate if you violate any of these restrictions and may be terminated by UtilityHub at any time.
-      </p>
+        {/* Section 1: Acceptance */}
+        <section id="acceptance" className="bg-[#141417] border border-[#27272a] rounded-2xl p-6 sm:p-8 shadow-xl">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2.5 rounded-xl bg-primary/10 border border-primary/20 text-primary">
+              <FileText size={22} />
+            </div>
+            <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight m-0">
+              1. Acceptance of Terms
+            </h2>
+          </div>
+          <p className="text-sm leading-relaxed text-[#a1a1aa] mb-4">
+            By accessing or using <strong className="text-white">UtilityHub</strong> (available at utilityhub.app or affiliated domains), you enter into a binding agreement to comply with these Terms of Service and our Privacy Policy.
+          </p>
+          <p className="text-sm leading-relaxed text-[#a1a1aa]">
+            If you do not agree to these terms, you must discontinue using our platform immediately. These terms apply to all visitors, registered account holders, developers, and guests.
+          </p>
+        </section>
 
-      <h2 id="user-responsibilities">3. User Responsibilities</h2>
-      <p>
-        Because UtilityHub primarily operates as an offline, client-side application, <strong>you are solely responsible for the data you process.</strong> 
-        We do not store backups of the files you convert, the text you generate, or the code you write.
-      </p>
-      <p>
-        You agree not to use the tools provided to:
-      </p>
-      <ul>
-        <li>Process illegal, explicit, or highly sensitive confidential material where strict compliance (like HIPAA) is legally required.</li>
-        <li>Generate malicious code, malware, or destructive payloads.</li>
-        <li>Attempt to overload the service through automated scraping or abuse of our APIs.</li>
-      </ul>
+        {/* Section 2: Permitted Use */}
+        <section id="license-scope" className="bg-[#141417] border border-[#27272a] rounded-2xl p-6 sm:p-8 shadow-xl">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+              <CheckCircle size={22} />
+            </div>
+            <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight m-0">
+              2. Permitted Use & Software License
+            </h2>
+          </div>
+          <p className="text-sm leading-relaxed text-[#a1a1aa] mb-6">
+            UtilityHub grants you a non-exclusive, royalty-free, revocable worldwide license to access and use our suite of web utilities for personal, commercial, educational, and developer workflows.
+          </p>
 
-      <h2 id="ai-tools">4. AI & Cloud Tools</h2>
-      <p>
-        Certain features within UtilityHub utilize third-party APIs (such as the Google Gemini API). 
-        By using these specific AI features, you agree that your input prompts and files will be processed by these third-party services in accordance with their respective Terms of Service.
-        UtilityHub is not responsible for the accuracy, reliability, or appropriateness of the output generated by these AI models.
-      </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-[#18181b] border border-[#27272a] rounded-xl p-5">
+              <h3 className="text-xs font-bold text-emerald-400 uppercase tracking-wider mb-2">Allowed Activities</h3>
+              <ul className="text-xs text-[#a1a1aa] space-y-2 pl-4 list-disc">
+                <li>Processing proprietary or open-source files locally in your browser.</li>
+                <li>Generating code snippets, UUIDs, hashes, and document templates.</li>
+                <li>Integrating outputs into personal or commercial client projects.</li>
+                <li>Running offline file operations without restriction.</li>
+              </ul>
+            </div>
+            <div className="bg-[#18181b] border border-[#27272a] rounded-xl p-5">
+              <h3 className="text-xs font-bold text-red-400 uppercase tracking-wider mb-2">Prohibited Actions</h3>
+              <ul className="text-xs text-[#a1a1aa] space-y-2 pl-4 list-disc">
+                <li>Attempting to reverse-engineer server endpoints to bypass rate limits.</li>
+                <li>Automated bot scraping that degrades platform performance.</li>
+                <li>Using AI tools to generate illegal, malicious, or abusive payloads.</li>
+                <li>Reselling raw application code as a competing standalone service.</li>
+              </ul>
+            </div>
+          </div>
+        </section>
 
-      <h2 id="disclaimer">5. Disclaimer of Warranties</h2>
-      <p>
-        The materials on UtilityHub's website are provided on an 'as is' basis. 
-        UtilityHub makes no warranties, expressed or implied, and hereby disclaims and negates all other warranties including, without limitation, implied warranties or conditions of merchantability, fitness for a particular purpose, or non-infringement of intellectual property or other violation of rights.
-      </p>
-      <p>
-        Furthermore, UtilityHub does not warrant or make any representations concerning the accuracy, likely results, or reliability of the use of the materials on its website or otherwise relating to such materials or on any sites linked to this site.
-      </p>
+        {/* Section 3: User Responsibilities */}
+        <section id="user-responsibilities" className="bg-[#141417] border border-[#27272a] rounded-2xl p-6 sm:p-8 shadow-xl">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400">
+              <ShieldAlert size={22} />
+            </div>
+            <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight m-0">
+              3. User Data Ownership & Client Responsibilities
+            </h2>
+          </div>
+          <p className="text-sm leading-relaxed text-[#a1a1aa] mb-4">
+            Because UtilityHub operates as a client-side platform:
+          </p>
+          <ul className="text-xs text-[#a1a1aa] space-y-3 pl-5 list-disc mb-6">
+            <li><strong className="text-white">You maintain 100% ownership</strong> of all files, text inputs, images, and converted outputs processed through our tools.</li>
+            <li><strong className="text-white">You are responsible for backing up your files.</strong> Because we do not store your uploaded files on cloud servers, we cannot recover lost or modified data once your browser session closes.</li>
+            <li><strong className="text-white">Account Credential Security:</strong> You are responsible for keeping your login credentials secure.</li>
+          </ul>
+        </section>
 
-      <h2 id="limitation">6. Limitation of Liability</h2>
-      <p>
-        In no event shall UtilityHub or its suppliers be liable for any damages (including, without limitation, damages for loss of data or profit, or due to business interruption) arising out of the use or inability to use the materials on UtilityHub, even if UtilityHub or an authorized representative has been notified orally or in writing of the possibility of such damage. 
-        Because some jurisdictions do not allow limitations on implied warranties, or limitations of liability for consequential or incidental damages, these limitations may not apply to you.
-      </p>
+        {/* Section 4: AI & External Cloud Services */}
+        <section id="ai-terms" className="bg-[#141417] border border-[#27272a] rounded-2xl p-6 sm:p-8 shadow-xl">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2.5 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400">
+              <RefreshCcw size={22} />
+            </div>
+            <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight m-0">
+              4. AI Models & External Cloud Integration
+            </h2>
+          </div>
+          <p className="text-sm leading-relaxed text-[#a1a1aa] mb-4">
+            Certain features utilize cloud APIs (such as Google Gemini). When using these AI tools:
+          </p>
+          <div className="bg-[#18181b] border border-[#27272a] rounded-xl p-5 space-y-3 text-xs text-[#a1a1aa]">
+            <p className="m-0">
+              <strong className="text-white">Output Accuracy:</strong> Generative AI models may occasionally produce inaccurate, incomplete, or unexpected outputs. UtilityHub does not guarantee the correctness of AI-generated transcriptions or code suggestions.
+            </p>
+            <p className="m-0 border-t border-[#27272a] pt-3">
+              <strong className="text-white">Third-Party Terms:</strong> AI requests are subject to Google's Generative AI Additional Terms of Service.
+            </p>
+          </div>
+        </section>
+
+        {/* Section 5: Disclaimers */}
+        <section id="disclaimers" className="bg-[#141417] border border-[#27272a] rounded-2xl p-6 sm:p-8 shadow-xl">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400">
+              <AlertTriangle size={22} />
+            </div>
+            <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight m-0">
+              5. Warranties Disclaimer ("As Is" Provision)
+            </h2>
+          </div>
+          <p className="text-sm leading-relaxed text-[#a1a1aa] mb-4">
+            UTILITYHUB AND ALL OF ITS TOOLS, CONVERTERS, RUNTIMES, AND UTILITIES ARE PROVIDED ON AN <strong className="text-white">"AS IS" AND "AS AVAILABLE" BASIS</strong> WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+          </p>
+          <p className="text-sm leading-relaxed text-[#a1a1aa]">
+            WE DISCLAIM ALL IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT. WE DO NOT WARRANT THAT THE SERVICE WILL BE UNINTERRUPTED, ERROR-FREE, OR FREE OF HARMFUL COMPONENTS.
+          </p>
+        </section>
+
+        {/* Section 6: Liability */}
+        <section id="liability" className="bg-[#141417] border border-[#27272a] rounded-2xl p-6 sm:p-8 shadow-xl">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2.5 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400">
+              <Scale size={22} />
+            </div>
+            <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight m-0">
+              6. Limitation of Liability
+            </h2>
+          </div>
+          <p className="text-sm leading-relaxed text-[#a1a1aa] mb-4">
+            TO THE FULLEST EXTENT PERMITTED BY LAW, UTILITYHUB AND ITS DEVELOPERS SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR LOSS OF PROFITS OR DATA RESULTING FROM YOUR USE OR INABILITY TO USE THE PLATFORM.
+          </p>
+        </section>
+
+        {/* Section 7: Updates & Contact */}
+        <section id="updates" className="bg-[#141417] border border-[#27272a] rounded-2xl p-6 sm:p-8 shadow-xl">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2.5 rounded-xl bg-primary/10 border border-primary/20 text-primary">
+              <HelpCircle size={22} />
+            </div>
+            <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight m-0">
+              7. Updates to Terms & Contact Information
+            </h2>
+          </div>
+          <p className="text-sm leading-relaxed text-[#a1a1aa] mb-6">
+            We reserve the right to modify these Terms of Service at any time. When updates occur, we will update the "Last Updated" date at the top of this document. Continued use of the service constitutes acceptance of modified terms.
+          </p>
+          <div className="bg-[#18181b] border border-[#27272a] rounded-xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <span className="text-xs font-bold text-white block mb-0.5">Questions regarding these terms?</span>
+              <a href="mailto:jaganparida39064@gmail.com" className="text-xs text-primary font-bold hover:underline">
+                jaganparida39064@gmail.com
+              </a>
+            </div>
+          </div>
+        </section>
+
+      </div>
     </LegalLayout>
   );
 };
