@@ -290,8 +290,8 @@ Example: [{"start":0,"end":3.5,"text":"Hello everyone"},{"start":3.5,"end":7,"te
           }
         };
 
-        // Try gemini-2.0-flash first, then gemini-1.5-flash as fallback
-        const modelsToTry = ['gemini-2.0-flash', 'gemini-1.5-flash'];
+        // Models ordered by free-tier generosity: lite first (highest free quota), then standard
+        const modelsToTry = ['gemini-2.0-flash-lite', 'gemini-2.0-flash'];
         let lastError = null;
         let parsedSegments = null;
 
@@ -311,8 +311,23 @@ Example: [{"start":0,"end":3.5,"text":"Hello everyone"},{"start":3.5,"end":7,"te
             if (!resp.ok) {
               const errData = await resp.json().catch(() => ({}));
               const errMsg = errData?.error?.message || `HTTP ${resp.status}`;
+              
+              // If rate limited (429), wait 3 seconds and try next model
+              if (resp.status === 429) {
+                lastError = new Error(`Rate limited on ${model}. Trying next model...`);
+                toast(`Rate limited on ${model}, trying fallback...`, { icon: '⏳' });
+                await new Promise(r => setTimeout(r, 3000));
+                continue;
+              }
+              
+              // If model not found (404), skip silently
+              if (resp.status === 404) {
+                lastError = new Error(`Model ${model} not available`);
+                continue;
+              }
+              
               lastError = new Error(errMsg);
-              continue; // Try next model
+              continue;
             }
             
             const data = await resp.json();
