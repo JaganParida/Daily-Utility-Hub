@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Globe,
@@ -13,7 +12,6 @@ import { useAuth } from "../context/AuthContext";
 
 const Footer = () => {
   const { currentUser } = useAuth();
-  const [activeModal, setActiveModal] = useState(null);
 
   return (
     <footer className="w-full relative z-10 mt-auto bg-[#050507] border-t border-[#27272a] overflow-hidden shrink-0">
@@ -179,12 +177,12 @@ const Footer = () => {
               >
                 For Students
               </Link>
-              <button
-                onClick={() => setActiveModal("offline")}
-                className="text-sm text-[#a1a1aa] hover:text-[#2563eb] transition-colors font-medium text-center sm:text-left cursor-pointer bg-transparent border-none"
+              <Link
+                to="/privacy-policy#local-processing"
+                className="text-sm text-[#a1a1aa] hover:text-[#2563eb] transition-colors font-medium"
               >
                 Offline-First Mode
-              </button>
+              </Link>
               <Link
                 to="/tools/file-vault"
                 className="text-sm text-[#a1a1aa] hover:text-[#2563eb] transition-colors font-medium"
@@ -229,24 +227,24 @@ const Footer = () => {
               <h3 className="text-white text-xs font-bold tracking-widest uppercase mb-3">
                 Legal
               </h3>
-              <button
-                onClick={() => setActiveModal("privacy")}
-                className="text-sm text-[#a1a1aa] hover:text-[#2563eb] transition-colors font-medium text-center sm:text-left cursor-pointer bg-transparent border-none"
+              <Link
+                to="/privacy-policy"
+                className="text-sm text-[#a1a1aa] hover:text-[#2563eb] transition-colors font-medium"
               >
                 Privacy Policy
-              </button>
-              <button
-                onClick={() => setActiveModal("terms")}
-                className="text-sm text-[#a1a1aa] hover:text-[#2563eb] transition-colors font-medium text-center sm:text-left cursor-pointer bg-transparent border-none"
+              </Link>
+              <Link
+                to="/terms-of-service"
+                className="text-sm text-[#a1a1aa] hover:text-[#2563eb] transition-colors font-medium"
               >
                 Terms of Service
-              </button>
-              <button
-                onClick={() => setActiveModal("cookies")}
-                className="text-sm text-[#a1a1aa] hover:text-[#2563eb] transition-colors font-medium text-center sm:text-left cursor-pointer bg-transparent border-none"
+              </Link>
+              <Link
+                to="/cookie-policy"
+                className="text-sm text-[#a1a1aa] hover:text-[#2563eb] transition-colors font-medium"
               >
                 Cookie Settings
-              </button>
+              </Link>
             </div>
           </div>
         </div>
@@ -259,124 +257,6 @@ const Footer = () => {
           </p>
         </div>
       </div>
-
-      {/* Legal Modals Overlay */}
-      {activeModal && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
-          {/* Backdrop */}
-          <div
-            className="absolute inset-0 bg-[#09090b]/80 backdrop-blur-md"
-            onClick={() => setActiveModal(null)}
-          />
-
-          {/* Modal Container */}
-          <div className="relative z-10 w-full max-w-[500px] max-h-[80vh] bg-[#111116] border border-[#27272a] rounded-xl shadow-[0_20px_60px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col">
-            <div className="h-[2px] w-full bg-gradient-to-r from-[#2563eb] via-[#60a5fa] to-[#2563eb]" />
-
-            <div className="p-6 flex flex-col overflow-hidden h-full">
-              {/* Header */}
-              <div className="flex items-center justify-between mb-4 border-b border-[#27272a] pb-3 shrink-0">
-                <h3 className="text-sm font-black text-white uppercase tracking-wider">
-                  {activeModal === "privacy" && "Privacy Policy"}
-                  {activeModal === "terms" && "Terms of Service"}
-                  {activeModal === "cookies" && "Cookie Settings"}
-                  {activeModal === "offline" && "Offline-First Technology"}
-                </h3>
-                <button
-                  onClick={() => setActiveModal(null)}
-                  className="p-1 hover:bg-[#27272a] rounded-lg text-[#71717a] hover:text-white cursor-pointer transition-colors"
-                >
-                  <X size={15} />
-                </button>
-              </div>
-
-              {/* Scrollable Body content */}
-              <div className="overflow-y-auto pr-1 text-xs text-[#a1a1aa] space-y-4 leading-relaxed custom-scrollbar flex-1 text-left">
-                {activeModal === "privacy" && (
-                  <>
-                    <p className="font-bold text-white text-sm">
-                      Your privacy is guaranteed.
-                    </p>
-                    <p>
-                      At UtilityHub, we value your trust. Because all data
-                      calculations, file conversions, code compilation, and
-                      image editing are performed directly in your local browser
-                      sandbox,{" "}
-                      <strong>
-                        your files are never uploaded to any server.
-                      </strong>
-                    </p>
-                    <p>
-                      We do not collect, monitor, track, or share your data
-                      payloads. The application functions completely offline
-                      once loaded. Any account registrations only save
-                      configuration parameters (e.g. pinned tools) which are
-                      secured under enterprise encryption.
-                    </p>
-                  </>
-                )}
-                {activeModal === "terms" && (
-                  <>
-                    <p className="font-bold text-white text-sm">
-                      Agreement to Terms
-                    </p>
-                    <p>
-                      By using UtilityHub, you agree to access our suite of
-                      tools entirely for personal, educational, or professional
-                      purposes. You remain the sole owner of all content
-                      processed through the site.
-                    </p>
-                    <p>
-                      Since the application processes everything local to your
-                      computer hardware, we are not responsible for any file
-                      format conversions or data mutations that happen on your
-                      terminal. Use at your own discretion.
-                    </p>
-                  </>
-                )}
-                {activeModal === "cookies" && (
-                  <>
-                    <p className="font-bold text-white text-sm">
-                      Zero Tracking Cookies.
-                    </p>
-                    <p>
-                      We do not use analytics cookies, marketing trackers, or
-                      third-party ad pixels. We only utilize local browser
-                      storage (localStorage & sessionStorage) to save your
-                      configuration preferences, recent history logs, and active
-                      session tokens securely.
-                    </p>
-                    <p>
-                      You can clear your local configuration data at any time by
-                      clicking "Clear Storage" in your profile dashboard.
-                    </p>
-                  </>
-                )}
-                {activeModal === "offline" && (
-                  <>
-                    <p className="font-bold text-white text-sm">
-                      100% Client-Side Executed.
-                    </p>
-                    <p>
-                      UtilityHub is built as a Progressive Web Application
-                      (PWA). Every utility—from image compression to PDF
-                      merging—uses local WebAssembly or Javascript compilation
-                      to run exclusively on your CPU.
-                    </p>
-                    <p>
-                      You can completely turn off your internet, load this
-                      website, and everything will function perfectly.
-                      Confidential records and critical assets remain inside
-                      your local environment, making it the safest utility hub
-                      available.
-                    </p>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </footer>
   );
 };

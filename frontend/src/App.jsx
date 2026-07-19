@@ -40,6 +40,11 @@ const Login = lazyWithRetry(() => import('./pages/auth/Login'));
 const Register = lazyWithRetry(() => import('./pages/auth/Register'));
 const ForgotPassword = lazyWithRetry(() => import('./pages/auth/ForgotPassword'));
 
+// Legal Pages (Lazy loaded)
+const PrivacyPolicy = lazyWithRetry(() => import('./pages/legal/PrivacyPolicy'));
+const TermsOfService = lazyWithRetry(() => import('./pages/legal/TermsOfService'));
+const CookiePolicy = lazyWithRetry(() => import('./pages/legal/CookiePolicy'));
+
 // Image Tools (Lazy loaded)
 const ImageCompressor = lazyWithRetry(() => import('./pages/tools/ImageCompressor'));
 const ImageResizer = lazyWithRetry(() => import('./pages/tools/ImageResizer'));
@@ -199,6 +204,12 @@ function AnimatedRoutes() {
             <Route path="/recent" element={<RecentTools />} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             <Route path="/favorites" element={<ProtectedRoute><Favorites /></ProtectedRoute>} />
+            
+            {/* Legal Pages */}
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/terms-of-service" element={<TermsOfService />} />
+            <Route path="/cookie-policy" element={<CookiePolicy />} />
+
             <Route path="/tools/word-counter" element={<WordCounter />} />
             <Route path="/tools/voice-helper" element={<VoiceHelper />} />
             <Route path="/tools/audio-video-transcriber" element={<GuestLockRoute><AudioVideoTranscriber /></GuestLockRoute>} />
