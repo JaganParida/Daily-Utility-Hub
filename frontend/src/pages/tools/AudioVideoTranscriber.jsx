@@ -133,6 +133,70 @@ const AudioVideoTranscriber = () => {
     return channelData;
   };
 
+  // Encode Float32Array as 16-bit PCM WAV
+  const encodeWAV = (samples, sampleRate) => {
+    const buffer = new ArrayBuffer(44 + samples.length * 2);
+    const view = new DataView(buffer);
+    
+    const writeString = (offset, string) => {
+      for (let i = 0; i < string.length; i++) {
+        view.setUint8(offset + i, string.charCodeAt(i));
+      }
+    };
+    
+    writeString(0, 'RIFF');
+    view.setUint32(4, 36 + samples.length * 2, true);
+    writeString(8, 'WAVE');
+    writeString(12, 'fmt ');
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true); // PCM
+    view.setUint16(22, 1, true); // mono
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, sampleRate * 2, true); // byte rate
+    view.setUint16(32, 2, true); // block align
+    view.setUint16(34, 16, true); // bits per sample
+    writeString(36, 'data');
+    view.setUint32(40, samples.length * 2, true);
+    
+    // Convert float samples to 16-bit PCM
+    for (let i = 0; i < samples.length; i++) {
+      const s = Math.max(-1, Math.min(1, samples[i]));
+      view.setInt16(44 + i * 2, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+    }
+    
+    return buffer;
+  };
+
+  // Robust JSON parser for Gemini responses
+  const parseGeminiResponse = (text) => {
+    if (!text || !text.trim()) return null;
+    
+    let cleaned = text.trim();
+    
+    // Strip markdown code blocks
+    if (cleaned.startsWith('```json')) cleaned = cleaned.substring(7);
+    else if (cleaned.startsWith('```')) cleaned = cleaned.substring(3);
+    if (cleaned.endsWith('```')) cleaned = cleaned.substring(0, cleaned.length - 3);
+    cleaned = cleaned.trim();
+    
+    // Try direct parse
+    try {
+      const parsed = JSON.parse(cleaned);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    } catch (e) { /* continue */ }
+    
+    // Try to find JSON array in the text using regex
+    try {
+      const match = cleaned.match(/\[[\s\S]*\]/);
+      if (match) {
+        const parsed = JSON.parse(match[0]);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) { /* continue */ }
+    
+    return null;
+  };
+
   const handleTranscribe = async () => {
     if (!file) return;
 
@@ -147,55 +211,150 @@ const AudioVideoTranscriber = () => {
         setProcessStep('');
         return;
       }
-      setProcessStep('transcribing');
+      setProcessStep('decoding');
       try {
-        const reader = new FileReader();
-        const base64Promise = new Promise((resolve, reject) => {
-          reader.onload = () => resolve(reader.result.split(',')[1]);
-          reader.onerror = reject;
-        });
-        reader.readAsDataURL(file);
-        const base64Data = await base64Promise;
-        
-        const response = await fetch(
-          `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [
-                {
-                  parts: [
-                    {
-                      inlineData: {
-                        mimeType: file.type,
-                        data: base64Data,
-                      },
-                    },
-                    {
-                      text: "Transcribe this media file. Output MUST be a valid JSON array of objects representing chronological subtitle segments. Each object in the array MUST have exactly three keys: 'start' (number in seconds), 'end' (number in seconds), and 'text' (string representing the spoken words during that interval). Ensure intervals are small (between 2 to 6 seconds per segment). Do not wrap the JSON in markdown code blocks or add any other text. Return ONLY the raw JSON array string.",
-                    },
-                  ],
-                },
-              ],
-              generationConfig: {
-                responseMimeType: "application/json"
-              }
-            }),
+        let sendMimeType = file.type || 'audio/wav';
+        let base64Data;
+
+        // For video files, extract audio track and convert to WAV for better API compatibility
+        const isVideo = file.type.startsWith('video/');
+        if (isVideo) {
+          toast('Extracting audio from video...', { icon: '🎵' });
+          const audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
+          const arrayBuffer = await file.arrayBuffer();
+          const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+          
+          // Mixdown to mono 16kHz
+          const monoData = resampleTo16kMono(audioBuffer);
+          
+          // Encode as WAV
+          const wavBuffer = encodeWAV(monoData, 16000);
+          const wavBlob = new Blob([wavBuffer], { type: 'audio/wav' });
+          
+          // Check size (inline limit ~20MB)
+          if (wavBlob.size > 19 * 1024 * 1024) {
+            throw new Error('Audio is too large for inline upload. Please use a shorter clip (under ~10 minutes) or use Local Whisper mode.');
           }
-        );
-        
-        if (!response.ok) {
-          const errData = await response.json().catch(() => ({}));
-          throw new Error(errData?.error?.message || `HTTP error ${response.status}`);
+          
+          const wavBase64 = await new Promise((resolve, reject) => {
+            const r = new FileReader();
+            r.onload = () => resolve(r.result.split(',')[1]);
+            r.onerror = reject;
+            r.readAsDataURL(wavBlob);
+          });
+          
+          base64Data = wavBase64;
+          sendMimeType = 'audio/wav';
+          audioContext.close();
+        } else {
+          // For audio files, check size and send directly
+          if (file.size > 19 * 1024 * 1024) {
+            throw new Error('File is too large for inline upload. Please use a file under ~20MB or use Local Whisper mode.');
+          }
+          const reader = new FileReader();
+          base64Data = await new Promise((resolve, reject) => {
+            reader.onload = () => resolve(reader.result.split(',')[1]);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          });
         }
         
-        const data = await response.json();
-        const textResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        setProcessStep('transcribing');
         
-        let parsedSegments = JSON.parse(textResponse.trim());
-        if (!Array.isArray(parsedSegments)) {
-          throw new Error('Invalid JSON format returned from Gemini');
+        const promptText = `Listen carefully to ALL audio/speech in this file and transcribe it accurately. 
+Output MUST be a valid JSON array of objects. Each object MUST have exactly three keys:
+- "start": number (seconds from beginning)
+- "end": number (seconds from beginning) 
+- "text": string (the spoken words during that interval)
+Keep segments between 2-6 seconds each. Include ALL spoken words - do not skip anything.
+If there is music or silence with no speech, skip those intervals.
+Return ONLY the raw JSON array. No markdown, no explanation.
+Example: [{"start":0,"end":3.5,"text":"Hello everyone"},{"start":3.5,"end":7,"text":"Welcome to the video"}]`;
+        
+        const requestBody = {
+          contents: [
+            {
+              parts: [
+                {
+                  inlineData: {
+                    mimeType: sendMimeType,
+                    data: base64Data,
+                  },
+                },
+                { text: promptText },
+              ],
+            },
+          ],
+          generationConfig: {
+            temperature: 0.1,
+            responseMimeType: "application/json"
+          }
+        };
+
+        // Try with gemini-2.0-flash first, fallback to gemini-1.5-flash
+        const modelsToTry = ['gemini-2.0-flash', 'gemini-1.5-flash'];
+        let lastError = null;
+        let parsedSegments = null;
+
+        for (const model of modelsToTry) {
+          if (parsedSegments) break;
+          
+          // Attempt 1: with responseMimeType
+          try {
+            const resp = await fetch(
+              `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+              {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestBody),
+              }
+            );
+            
+            if (!resp.ok) {
+              const errData = await resp.json().catch(() => ({}));
+              const errMsg = errData?.error?.message || `HTTP ${resp.status}`;
+              
+              // If responseMimeType is not supported, retry without it
+              if (errMsg.includes('responseMimeType') || errMsg.includes('generation_config') || resp.status === 400) {
+                const fallbackBody = { ...requestBody, generationConfig: { temperature: 0.1 } };
+                const resp2 = await fetch(
+                  `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+                  {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(fallbackBody),
+                  }
+                );
+                if (!resp2.ok) {
+                  const err2 = await resp2.json().catch(() => ({}));
+                  lastError = new Error(err2?.error?.message || `HTTP ${resp2.status}`);
+                  continue;
+                }
+                const data2 = await resp2.json();
+                const text2 = data2.candidates?.[0]?.content?.parts?.[0]?.text || '';
+                parsedSegments = parseGeminiResponse(text2);
+                if (parsedSegments) break;
+                lastError = new Error('Could not parse transcription response');
+                continue;
+              }
+              
+              lastError = new Error(errMsg);
+              continue;
+            }
+            
+            const data = await resp.json();
+            const textResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+            parsedSegments = parseGeminiResponse(textResponse);
+            if (parsedSegments) break;
+            lastError = new Error('Could not parse transcription response');
+          } catch (err) {
+            lastError = err;
+            continue;
+          }
+        }
+        
+        if (!parsedSegments || parsedSegments.length === 0) {
+          throw lastError || new Error('Transcription returned empty result. The audio may have no detectable speech.');
         }
         
         const mappedSegments = parsedSegments.map((seg, idx) => ({

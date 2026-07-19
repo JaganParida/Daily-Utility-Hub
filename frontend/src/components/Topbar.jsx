@@ -85,7 +85,8 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
     setIsMobileMenuOpen(false);
   }, [currentPath]);
 
-  const searchRef = useRef(null);
+  const mobileSearchRef = useRef(null);
+  const desktopSearchRef = useRef(null);
   const searchInputRef = useRef(null);
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -114,14 +115,18 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
         setHoveredTab(null);
       if (favDropdownRef.current && !favDropdownRef.current.contains(e.target))
         setIsFavOpen(false);
-      if (searchRef.current && !searchRef.current.contains(e.target)) {
+      
+      const isOutsideMobile = !mobileSearchRef.current || !mobileSearchRef.current.contains(e.target);
+      const isOutsideDesktop = !desktopSearchRef.current || !desktopSearchRef.current.contains(e.target);
+      
+      if (isSearchExpanded && isOutsideMobile && isOutsideDesktop) {
         setIsSearchExpanded(false);
         setSearchQuery("");
       }
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
-  }, []);
+  }, [isSearchExpanded]);
 
   const getToolByPath = (path) => {
     for (const catName of Object.keys(toolCategories)) {
@@ -647,7 +652,7 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                 exit={{ opacity: 0, scale: 0.95, y: "-50%" }}
                 transition={{ type: "spring", damping: 25, stiffness: 350 }}
                 className="block md:hidden absolute left-4 right-4 top-1/2 z-50"
-                ref={searchRef}
+                ref={mobileSearchRef}
               >
                 <div className="relative flex items-center h-8 rounded-full border border-[#2563eb]/50 bg-[#18181b] px-3 shadow-lg w-full">
                   <button
@@ -753,7 +758,7 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
                 </button>
               )}
 
-              <div className="hidden md:flex items-center gap-2">
+              <div className="hidden md:flex items-center gap-2" ref={desktopSearchRef}>
                 {/* Desktop-only separate Back Button */}
                 <AnimatePresence>
                   {isSearchExpanded && (
@@ -778,7 +783,6 @@ const Topbar = ({ isScrolled, headerVisible = true }) => {
 
                 {/* Desktop single-element morphing search container */}
                 <motion.div
-                  ref={searchRef}
                   animate={{
                     width: isSearchExpanded ? searchWidth : 32,
                     borderColor: isSearchExpanded
