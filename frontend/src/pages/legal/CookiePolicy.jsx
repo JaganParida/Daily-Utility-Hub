@@ -6,14 +6,14 @@ import { toast } from "react-hot-toast";
 const CookiePolicy = () => {
   const lastUpdated = "July 20, 2026";
   const readTime = "3 min read";
-  const subtitle = "Learn how UtilityHub uses zero-tracking browser storage (localStorage & sessionStorage) to save your preferences without privacy intrusion.";
+  const subtitle = "Cookie & Local Storage Policy for Daily Utility Hub (daily-utility-hub-orpin.vercel.app).";
   const [cleared, setCleared] = useState(false);
 
   const sections = [
-    { id: "cookie-overview", label: "1. Zero-Tracking Cookie Promise" },
-    { id: "storage-breakdown", label: "2. Browser Storage Breakdown" },
-    { id: "data-table", label: "3. What We Store Locally" },
-    { id: "manage-clear", label: "4. Manage & Clear Storage" }
+    { id: "cookie-overview", label: "1. Zero Tracking Cookies" },
+    { id: "storage-breakdown", label: "2. Browser Storage Explanation" },
+    { id: "data-table", label: "3. Storage Keys Registry" },
+    { id: "manage-clear", label: "4. Clear Local Data" }
   ];
 
   const handleClearLocalData = () => {
@@ -21,16 +21,16 @@ const CookiePolicy = () => {
       localStorage.clear();
       sessionStorage.clear();
       setCleared(true);
-      toast.success("Local browser storage cleared successfully!");
-      setTimeout(() => setCleared(false), 4000);
+      toast.success("Local browser storage cleared!");
+      setTimeout(() => setCleared(false), 3000);
     } catch (e) {
-      toast.error("Failed to clear storage. Please clear manually in browser settings.");
+      toast.error("Failed to clear storage.");
     }
   };
 
   return (
     <LegalLayout 
-      title="Cookie Settings & Local Storage Policy" 
+      title="Cookie Settings & Storage Policy" 
       subtitle={subtitle} 
       lastUpdated={lastUpdated} 
       readTime={readTime}
@@ -38,21 +38,21 @@ const CookiePolicy = () => {
     >
       <div className="space-y-12 text-[#d4d4d8]">
 
-        {/* Section 1: Promise */}
+        {/* Section 1: Overview */}
         <section id="cookie-overview" className="bg-[#141417] border border-[#27272a] rounded-2xl p-6 sm:p-8 shadow-xl">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400">
               <Cookie size={22} />
             </div>
             <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight m-0">
-              1. Our Zero-Tracking Cookie Promise
+              1. Zero Tracking Cookies Policy
             </h2>
           </div>
           <p className="text-sm leading-relaxed text-[#a1a1aa] mb-4">
-            Unlike traditional websites that load dozens of third-party advertising pixels, cross-site trackers, and analytics cookies, <strong className="text-white">UtilityHub uses 0 tracking cookies.</strong>
+            <strong className="text-white">Daily Utility Hub</strong> (<a href="https://daily-utility-hub-orpin.vercel.app/" target="_blank" rel="noreferrer" className="text-primary hover:underline">daily-utility-hub-orpin.vercel.app</a>) does not use third-party advertising cookies or cross-site tracking pixels.
           </p>
           <p className="text-sm leading-relaxed text-[#a1a1aa] mb-6">
-            We do not sell your browsing activity, monetize user profiles, or track your visits across other websites.
+            We do not sell advertising data or profile user activity across the web.
           </p>
 
           <div className="bg-[#18181b] border border-[#27272a] rounded-xl p-5 flex items-center gap-4">
@@ -60,9 +60,9 @@ const CookiePolicy = () => {
               <ShieldCheck size={28} />
             </div>
             <div>
-              <span className="text-xs font-bold text-white block mb-0.5">Strict Privacy Standard</span>
+              <span className="text-xs font-bold text-white block mb-0.5">First-Party Browser Storage Only</span>
               <p className="text-xs text-[#a1a1aa] m-0">
-                All browser storage used by UtilityHub is <strong>first-party only</strong>, meaning it cannot be read or accessed by external domain names or advertisers.
+                All data stored by Daily Utility Hub stays inside your local web browser and cannot be accessed by external sites.
               </p>
             </div>
           </div>
@@ -75,11 +75,11 @@ const CookiePolicy = () => {
               <HardDrive size={22} />
             </div>
             <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight m-0">
-              2. Modern Browser Storage vs. Legacy Cookies
+              2. How Web Storage is Used
             </h2>
           </div>
           <p className="text-sm leading-relaxed text-[#a1a1aa] mb-6">
-            Instead of old HTTP cookies that send data back to a server on every click, we utilize modern Web Storage APIs directly in your browser client:
+            We use standard browser storage APIs (<code className="text-primary font-mono text-xs">localStorage</code> & <code className="text-primary font-mono text-xs">sessionStorage</code>) exclusively to save your tool choices and dark mode preferences:
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -91,17 +91,17 @@ const CookiePolicy = () => {
                     <HardDrive size={20} />
                   </div>
                   <span className="text-[10px] font-bold uppercase tracking-wider text-primary bg-primary/10 px-2.5 py-1 rounded-full border border-primary/20">
-                    Persistent Storage
+                    Local Storage
                   </span>
                 </div>
                 <h3 className="text-base font-bold text-white mb-2">Local Storage (localStorage)</h3>
                 <p className="text-xs text-[#a1a1aa] leading-relaxed mb-4">
-                  Saves your non-sensitive preferences directly on your device disk so your dashboard settings persist across browser restarts.
+                  Saves UI preferences directly in your browser so you don't lose your dashboard layout when you reload.
                 </p>
               </div>
               <div className="bg-[#141417] rounded-lg p-3 border border-[#27272a] text-xs text-[#a1a1aa]">
-                <strong className="text-white block mb-1">Examples:</strong>
-                Pinned shortcuts, Dark/Light mode theme, tool execution history.
+                <strong className="text-white block mb-1">Items saved:</strong>
+                Dark/Light theme, pinned tools, recent tool history.
               </div>
             </div>
 
@@ -113,17 +113,17 @@ const CookiePolicy = () => {
                     <Server size={20} />
                   </div>
                   <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
-                    Temporary Session
+                    Session Memory
                   </span>
                 </div>
                 <h3 className="text-base font-bold text-white mb-2">Session Storage (sessionStorage)</h3>
                 <p className="text-xs text-[#a1a1aa] leading-relaxed mb-4">
-                  Temporary volatile memory that is automatically destroyed the moment you close your browser tab.
+                  Temporary browser memory that is automatically cleared when you close the browser tab.
                 </p>
               </div>
               <div className="bg-[#141417] rounded-lg p-3 border border-[#27272a] text-xs text-[#a1a1aa]">
-                <strong className="text-white block mb-1">Examples:</strong>
-                Active authentication session tokens, temporary state flags.
+                <strong className="text-white block mb-1">Items saved:</strong>
+                Dashboard scroll position during navigation.
               </div>
             </div>
           </div>
@@ -136,11 +136,11 @@ const CookiePolicy = () => {
               <Info size={22} />
             </div>
             <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight m-0">
-              3. Complete Local Storage Key Registry
+              3. Storage Registry
             </h2>
           </div>
           <p className="text-sm leading-relaxed text-[#a1a1aa] mb-6">
-            For full transparency, here is the exact list of storage keys UtilityHub writes to your browser:
+            The keys used by Daily Utility Hub in your browser storage:
           </p>
 
           <div className="overflow-x-auto rounded-xl border border-[#27272a] bg-[#18181b]">
@@ -148,60 +148,55 @@ const CookiePolicy = () => {
               <thead className="bg-[#141417] text-[#a1a1aa] uppercase text-[10px] tracking-wider border-b border-[#27272a]">
                 <tr>
                   <th className="py-3.5 px-4 font-bold text-white">Storage Key</th>
-                  <th className="py-3.5 px-4 font-bold text-white">Type</th>
-                  <th className="py-3.5 px-4 font-bold text-white">Purpose & Description</th>
+                  <th className="py-3.5 px-4 font-bold text-white">Storage Type</th>
+                  <th className="py-3.5 px-4 font-bold text-white">Purpose</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#27272a]/60 text-[#a1a1aa]">
                 <tr>
                   <td className="py-3 px-4 font-mono font-bold text-primary">user_theme</td>
                   <td className="py-3 px-4"><span className="bg-[#27272a] px-2 py-0.5 rounded text-[10px] text-white">localStorage</span></td>
-                  <td className="py-3 px-4">Stores dark/light theme preference.</td>
+                  <td className="py-3 px-4">Saves dark/light mode preference.</td>
                 </tr>
                 <tr>
                   <td className="py-3 px-4 font-mono font-bold text-primary">pinned_tools</td>
                   <td className="py-3 px-4"><span className="bg-[#27272a] px-2 py-0.5 rounded text-[10px] text-white">localStorage</span></td>
-                  <td className="py-3 px-4">Stores IDs of tools you pin to your sidebar dashboard.</td>
+                  <td className="py-3 px-4">Saves pinned tool shortcuts.</td>
                 </tr>
                 <tr>
                   <td className="py-3 px-4 font-mono font-bold text-primary">recent_history</td>
                   <td className="py-3 px-4"><span className="bg-[#27272a] px-2 py-0.5 rounded text-[10px] text-white">localStorage</span></td>
-                  <td className="py-3 px-4">Stores array of recently opened utility pages.</td>
+                  <td className="py-3 px-4">Saves list of recent tools visited.</td>
                 </tr>
                 <tr>
                   <td className="py-3 px-4 font-mono font-bold text-primary">custom_gemini_key</td>
                   <td className="py-3 px-4"><span className="bg-[#27272a] px-2 py-0.5 rounded text-[10px] text-white">localStorage</span></td>
-                  <td className="py-3 px-4">Stores your personal Gemini API key if manually configured.</td>
-                </tr>
-                <tr>
-                  <td className="py-3 px-4 font-mono font-bold text-primary">firebase:authUser:*</td>
-                  <td className="py-3 px-4"><span className="bg-[#27272a] px-2 py-0.5 rounded text-[10px] text-white">indexedDB/session</span></td>
-                  <td className="py-3 px-4">Firebase SDK token for managing user authentication state.</td>
+                  <td className="py-3 px-4">Saves user's custom API key (if set).</td>
                 </tr>
               </tbody>
             </table>
           </div>
         </section>
 
-        {/* Section 4: Clear Storage Interactive Component */}
+        {/* Section 4: Clear Storage */}
         <section id="manage-clear" className="bg-[#141417] border border-[#27272a] rounded-2xl p-6 sm:p-8 shadow-xl">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-2.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400">
               <Trash2 size={22} />
             </div>
             <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight m-0">
-              4. Instant One-Click Storage Control
+              4. Clear Storage
             </h2>
           </div>
           <p className="text-sm leading-relaxed text-[#a1a1aa] mb-6">
-            You can clear all stored preferences, recent history, and local keys instantly using the action button below:
+            You can clear all stored site data at any time using this button:
           </p>
 
           <div className="bg-[#18181b] border border-[#27272a] rounded-xl p-6 flex flex-col sm:flex-row items-center justify-between gap-6">
             <div>
-              <h3 className="text-sm font-bold text-white mb-1">Clear Local Workspace Data</h3>
+              <h3 className="text-sm font-bold text-white mb-1">Clear Local Browser Data</h3>
               <p className="text-xs text-[#a1a1aa] m-0">
-                This will reset your pinned tools, local theme state, and clear temporary session caches on this browser.
+                Resets pinned tools and saved theme settings on this browser.
               </p>
             </div>
 

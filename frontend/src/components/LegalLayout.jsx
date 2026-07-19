@@ -81,17 +81,17 @@ const LegalLayout = ({ title, subtitle, lastUpdated, readTime, children, section
         <div className="mb-10">
           <div className="flex items-center gap-2 text-xs font-semibold text-[#a1a1aa] mb-6 uppercase tracking-wider">
             <Link to="/" className="hover:text-white transition-colors flex items-center gap-1.5">
-              <span>UtilityHub</span>
+              <span>Daily Utility Hub</span>
             </Link>
             <ChevronRight size={13} className="text-[#52525b]" />
-            <span className="text-primary font-bold">Legal & Compliance</span>
+            <span className="text-primary font-bold">Legal & Policies</span>
           </div>
 
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 border-b border-[#27272a] pb-8">
             <div className="flex-1">
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold mb-4 shadow-sm">
                 <Shield size={14} />
-                Official Trust & Legal Document
+                Daily Utility Hub Legal Center
               </div>
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight mb-3 leading-tight">
                 {title}

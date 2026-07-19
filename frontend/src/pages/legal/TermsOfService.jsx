@@ -1,24 +1,23 @@
 import LegalLayout from "../../components/LegalLayout";
-import { FileText, CheckCircle, ShieldAlert, Scale, RefreshCcw, AlertTriangle, HelpCircle } from "lucide-react";
+import { FileText, CheckCircle, ShieldAlert, RefreshCcw, AlertTriangle, HelpCircle } from "lucide-react";
 
 const TermsOfService = () => {
   const lastUpdated = "July 20, 2026";
-  const readTime = "5 min read";
-  const subtitle = "Please read these Terms of Service carefully before using the developer utilities, converters, and processing features on UtilityHub.";
+  const readTime = "4 min read";
+  const subtitle = "Terms of Service for using Daily Utility Hub (daily-utility-hub-orpin.vercel.app).";
 
   const sections = [
     { id: "acceptance", label: "1. Acceptance of Terms" },
-    { id: "license-scope", label: "2. Permitted Use & Scope" },
-    { id: "user-responsibilities", label: "3. User Responsibilities & Conduct" },
-    { id: "ai-terms", label: "4. AI & External Cloud Services" },
-    { id: "disclaimers", label: "5. Disclaimers & Data Mutations" },
-    { id: "liability", label: "6. Limitation of Liability" },
-    { id: "updates", label: "7. Term Modifications & Contact" }
+    { id: "license-scope", label: "2. Permitted Use" },
+    { id: "user-responsibilities", label: "3. File Ownership & Backups" },
+    { id: "ai-terms", label: "4. AI Features & Usage" },
+    { id: "disclaimers", label: "5. Disclaimer of Warranties" },
+    { id: "updates", label: "6. Modifications & Contact" }
   ];
 
   return (
     <LegalLayout 
-      title="Terms of Service & User Agreement" 
+      title="Terms of Service" 
       subtitle={subtitle} 
       lastUpdated={lastUpdated} 
       readTime={readTime}
@@ -37,10 +36,10 @@ const TermsOfService = () => {
             </h2>
           </div>
           <p className="text-sm leading-relaxed text-[#a1a1aa] mb-4">
-            By accessing or using <strong className="text-white">UtilityHub</strong> (available at utilityhub.app or affiliated domains), you enter into a binding agreement to comply with these Terms of Service and our Privacy Policy.
+            By visiting or using <strong className="text-white">Daily Utility Hub</strong> at <a href="https://daily-utility-hub-orpin.vercel.app/" target="_blank" rel="noreferrer" className="text-primary hover:underline">daily-utility-hub-orpin.vercel.app</a>, you agree to these Terms of Service and our Privacy Policy.
           </p>
           <p className="text-sm leading-relaxed text-[#a1a1aa]">
-            If you do not agree to these terms, you must discontinue using our platform immediately. These terms apply to all visitors, registered account holders, developers, and guests.
+            Daily Utility Hub is a free, web-based platform providing client-side developer and document tools. If you do not agree with these terms, please discontinue using the website.
           </p>
         </section>
 
@@ -51,76 +50,64 @@ const TermsOfService = () => {
               <CheckCircle size={22} />
             </div>
             <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight m-0">
-              2. Permitted Use & Software License
+              2. Permitted Use
             </h2>
           </div>
           <p className="text-sm leading-relaxed text-[#a1a1aa] mb-6">
-            UtilityHub grants you a non-exclusive, royalty-free, revocable worldwide license to access and use our suite of web utilities for personal, commercial, educational, and developer workflows.
+            You are welcome to use all utilities on Daily Utility Hub for both personal and commercial purposes free of charge.
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="bg-[#18181b] border border-[#27272a] rounded-xl p-5">
-              <h3 className="text-xs font-bold text-emerald-400 uppercase tracking-wider mb-2">Allowed Activities</h3>
+              <h3 className="text-xs font-bold text-emerald-400 uppercase tracking-wider mb-2">Allowed Uses</h3>
               <ul className="text-xs text-[#a1a1aa] space-y-2 pl-4 list-disc">
-                <li>Processing proprietary or open-source files locally in your browser.</li>
-                <li>Generating code snippets, UUIDs, hashes, and document templates.</li>
-                <li>Integrating outputs into personal or commercial client projects.</li>
-                <li>Running offline file operations without restriction.</li>
+                <li>Converting, editing, or compressing your files locally.</li>
+                <li>Generating code, passwords, hashes, and UUIDs for projects.</li>
+                <li>Using the output in personal, commercial, or open-source work.</li>
               </ul>
             </div>
             <div className="bg-[#18181b] border border-[#27272a] rounded-xl p-5">
-              <h3 className="text-xs font-bold text-red-400 uppercase tracking-wider mb-2">Prohibited Actions</h3>
+              <h3 className="text-xs font-bold text-red-400 uppercase tracking-wider mb-2">Prohibited Uses</h3>
               <ul className="text-xs text-[#a1a1aa] space-y-2 pl-4 list-disc">
-                <li>Attempting to reverse-engineer server endpoints to bypass rate limits.</li>
-                <li>Automated bot scraping that degrades platform performance.</li>
-                <li>Using AI tools to generate illegal, malicious, or abusive payloads.</li>
-                <li>Reselling raw application code as a competing standalone service.</li>
+                <li>Automated bot attacks or DDoS targeting the site host.</li>
+                <li>Using AI tools to generate illegal or harmful content.</li>
+                <li>Claiming the Daily Utility Hub platform software as your own.</li>
               </ul>
             </div>
           </div>
         </section>
 
-        {/* Section 3: User Responsibilities */}
+        {/* Section 3: File Ownership */}
         <section id="user-responsibilities" className="bg-[#141417] border border-[#27272a] rounded-2xl p-6 sm:p-8 shadow-xl">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400">
               <ShieldAlert size={22} />
             </div>
             <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight m-0">
-              3. User Data Ownership & Client Responsibilities
+              3. File Ownership & Backups
             </h2>
           </div>
           <p className="text-sm leading-relaxed text-[#a1a1aa] mb-4">
-            Because UtilityHub operates as a client-side platform:
+            You retain 100% full ownership of all files and content you process using Daily Utility Hub.
           </p>
-          <ul className="text-xs text-[#a1a1aa] space-y-3 pl-5 list-disc mb-6">
-            <li><strong className="text-white">You maintain 100% ownership</strong> of all files, text inputs, images, and converted outputs processed through our tools.</li>
-            <li><strong className="text-white">You are responsible for backing up your files.</strong> Because we do not store your uploaded files on cloud servers, we cannot recover lost or modified data once your browser session closes.</li>
-            <li><strong className="text-white">Account Credential Security:</strong> You are responsible for keeping your login credentials secure.</li>
-          </ul>
+          <p className="text-sm leading-relaxed text-[#a1a1aa]">
+            Because Daily Utility Hub does not store your files on cloud servers, you are responsible for maintaining backups of your original documents before running conversions or compressions.
+          </p>
         </section>
 
-        {/* Section 4: AI & External Cloud Services */}
+        {/* Section 4: AI Features */}
         <section id="ai-terms" className="bg-[#141417] border border-[#27272a] rounded-2xl p-6 sm:p-8 shadow-xl">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-2.5 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400">
               <RefreshCcw size={22} />
             </div>
             <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight m-0">
-              4. AI Models & External Cloud Integration
+              4. AI Features & Accuracy
             </h2>
           </div>
           <p className="text-sm leading-relaxed text-[#a1a1aa] mb-4">
-            Certain features utilize cloud APIs (such as Google Gemini). When using these AI tools:
+            AI features like the Audio & Video Captioner leverage the Google Gemini API. Generative AI outputs may occasionally contain inaccuracies. Users should verify transcribed text or AI-suggested code before using it in production systems.
           </p>
-          <div className="bg-[#18181b] border border-[#27272a] rounded-xl p-5 space-y-3 text-xs text-[#a1a1aa]">
-            <p className="m-0">
-              <strong className="text-white">Output Accuracy:</strong> Generative AI models may occasionally produce inaccurate, incomplete, or unexpected outputs. UtilityHub does not guarantee the correctness of AI-generated transcriptions or code suggestions.
-            </p>
-            <p className="m-0 border-t border-[#27272a] pt-3">
-              <strong className="text-white">Third-Party Terms:</strong> AI requests are subject to Google's Generative AI Additional Terms of Service.
-            </p>
-          </div>
         </section>
 
         {/* Section 5: Disclaimers */}
@@ -130,48 +117,30 @@ const TermsOfService = () => {
               <AlertTriangle size={22} />
             </div>
             <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight m-0">
-              5. Warranties Disclaimer ("As Is" Provision)
+              5. Disclaimer of Warranties
             </h2>
           </div>
-          <p className="text-sm leading-relaxed text-[#a1a1aa] mb-4">
-            UTILITYHUB AND ALL OF ITS TOOLS, CONVERTERS, RUNTIMES, AND UTILITIES ARE PROVIDED ON AN <strong className="text-white">"AS IS" AND "AS AVAILABLE" BASIS</strong> WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED.
-          </p>
           <p className="text-sm leading-relaxed text-[#a1a1aa]">
-            WE DISCLAIM ALL IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT. WE DO NOT WARRANT THAT THE SERVICE WILL BE UNINTERRUPTED, ERROR-FREE, OR FREE OF HARMFUL COMPONENTS.
+            Daily Utility Hub is provided on an <strong className="text-white">"as is" and "as available" basis</strong> without warranties of any kind. While we work to ensure high performance, we are not liable for lost data or browser issues during local operations.
           </p>
         </section>
 
-        {/* Section 6: Liability */}
-        <section id="liability" className="bg-[#141417] border border-[#27272a] rounded-2xl p-6 sm:p-8 shadow-xl">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2.5 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400">
-              <Scale size={22} />
-            </div>
-            <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight m-0">
-              6. Limitation of Liability
-            </h2>
-          </div>
-          <p className="text-sm leading-relaxed text-[#a1a1aa] mb-4">
-            TO THE FULLEST EXTENT PERMITTED BY LAW, UTILITYHUB AND ITS DEVELOPERS SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR LOSS OF PROFITS OR DATA RESULTING FROM YOUR USE OR INABILITY TO USE THE PLATFORM.
-          </p>
-        </section>
-
-        {/* Section 7: Updates & Contact */}
+        {/* Section 6: Modifications & Contact */}
         <section id="updates" className="bg-[#141417] border border-[#27272a] rounded-2xl p-6 sm:p-8 shadow-xl">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-2.5 rounded-xl bg-primary/10 border border-primary/20 text-primary">
               <HelpCircle size={22} />
             </div>
             <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight m-0">
-              7. Updates to Terms & Contact Information
+              6. Modifications & Contact
             </h2>
           </div>
           <p className="text-sm leading-relaxed text-[#a1a1aa] mb-6">
-            We reserve the right to modify these Terms of Service at any time. When updates occur, we will update the "Last Updated" date at the top of this document. Continued use of the service constitutes acceptance of modified terms.
+            We may update these terms as new tools are added. For any questions regarding terms of use, please reach out directly:
           </p>
           <div className="bg-[#18181b] border border-[#27272a] rounded-xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <span className="text-xs font-bold text-white block mb-0.5">Questions regarding these terms?</span>
+              <span className="text-xs font-bold text-white block mb-0.5">Developer Contact</span>
               <a href="mailto:jaganparida39064@gmail.com" className="text-xs text-primary font-bold hover:underline">
                 jaganparida39064@gmail.com
               </a>
