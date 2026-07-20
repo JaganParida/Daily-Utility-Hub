@@ -63,7 +63,7 @@ const Login = () => {
     setIsGoogleLoading(true);
     try {
       const response = await authPromise;
-      if (response && (response.isNewUser || response.isEmailVerified === false || response.emailVerified === false)) {
+      if (response && (response.requiresOtp || response.isNewUser || response.isEmailVerified === false || response.emailVerified === false)) {
         toast.success('Please verify your email to continue.');
         navigate('/register', { state: { email: response.email, triggerGoogleOtp: true } });
       } else if (response) {

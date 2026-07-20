@@ -202,7 +202,11 @@ export const AuthProvider = ({ children }) => {
   // Finalize Google Signup after OTP
   const finalizeGoogleSignup = async (firebaseUser, otpVerifiedToken) => {
     try {
-      const idToken = await firebaseUser.getIdToken();
+      const userToUse = firebaseUser || auth.currentUser;
+      if (!userToUse) {
+        throw new Error('Google session expired. Please click Continue with Google again.');
+      }
+      const idToken = await userToUse.getIdToken();
       const response = await api.post('/auth/session', { 
         idToken, 
         mode: 'google',
@@ -212,7 +216,7 @@ export const AuthProvider = ({ children }) => {
       toast.success('Signed in with Google!');
       setCurrentUser({
         ...response.data,
-        uid: firebaseUser.uid,
+        uid: userToUse.uid,
         emailVerified: true
       });
       return response.data;
@@ -327,7 +331,11 @@ export const AuthProvider = ({ children }) => {
           msg = 'No account found with this email.';
           break;
         case 'auth/wrong-password':
-          msg = 'Incorrect password.';
+        case 'auth/invalid-credential':
+          msg = 'Incorrect email or password.';
+          break;
+        case 'auth/missing-password':
+          msg = 'Password is required for registration.';
           break;
         case 'auth/email-already-in-use':
           msg = 'An account already exists with this email.';
@@ -339,8 +347,11 @@ export const AuthProvider = ({ children }) => {
           msg = 'Google login popup was blocked. Please enable popups or try again.';
           break;
         default:
+          msg = error.message ? error.message.replace(/^Firebase:\s*/i, '') : msg;
           break;
       }
+    } else if (msg.startsWith('Firebase:')) {
+      msg = msg.replace(/^Firebase:\s*Error\s*\(?/i, '').replace(/\)?\.?$/, '');
     }
     toast.error(msg);
   };
