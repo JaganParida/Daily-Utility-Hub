@@ -32,8 +32,8 @@ const getTransporter = async () => {
   } else {
     transporter = nodemailer.createTransport({
       host: 'smtp.gmail.com',
-      port: 465,
-      secure: true,
+      port: 587,
+      secure: false,
       auth: { user, pass },
       connectionTimeout: 10000,
       greetingTimeout: 10000,
