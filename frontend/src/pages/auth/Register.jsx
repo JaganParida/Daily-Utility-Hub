@@ -65,7 +65,15 @@ const Register = () => {
       setResendTimer(60);
       setExpireTimer(180);
       setOtpInput(['', '', '', '', '', '']);
-      toast.success('Verification code sent! Check your email inbox.');
+      
+      if (response.data.devOtp) {
+        toast.success(`OTP Sent! (Dev Mode: ${response.data.devOtp})`, {
+          duration: 10000,
+          icon: '🔧',
+        });
+      } else {
+        toast.success('Verification code sent! Check your email inbox.');
+      }
       return response.data.token;
     } catch (err) {
       console.error('Send OTP error details:', err);

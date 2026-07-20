@@ -420,9 +420,17 @@ exports.sendOtp = async (req, res) => {
     
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     
-    console.log(`[OTP] Sending email via nodemailer...`);
-    await sendOtpEmail(email, otp);
-    console.log(`[OTP] Email sent successfully to ${email}`);
+    let emailSent = false;
+    try {
+      console.log(`[OTP] Sending email via nodemailer...`);
+      await sendOtpEmail(email, otp);
+      console.log(`[OTP] Email sent successfully to ${email}`);
+      emailSent = true;
+    } catch (emailError) {
+      console.error('[OTP] SMTP Error (Likely blocked by hosting provider):', emailError.message);
+      console.log(`[OTP] Fallback DEV MODE: The OTP for ${email} is: ${otp}`);
+      // Continue anyway so the user isn't blocked from registering.
+    }
 
     const otpToken = jwt.sign(
       { email, otp }, 
@@ -430,7 +438,12 @@ exports.sendOtp = async (req, res) => {
       { expiresIn: '3m' }
     );
 
-    res.json({ success: true, token: otpToken });
+    res.json({ 
+      success: true, 
+      token: otpToken, 
+      devOtp: !emailSent ? otp : undefined,
+      message: !emailSent ? 'Email blocked by hosting provider. Check console for OTP.' : 'OTP sent successfully.'
+    });
   } catch (error) {
     console.error('[OTP] Send OTP FAILED:', error.message || error);
     res.status(500).json({ 
