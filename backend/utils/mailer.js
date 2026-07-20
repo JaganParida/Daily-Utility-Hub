@@ -31,20 +31,16 @@ const getTransporter = async () => {
     console.log('Using configured host SMTP transporter for emails.');
   } else {
     transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 587,
-      secure: false,
+      service,
       auth: { user, pass },
-      connectionTimeout: 2000,
-      greetingTimeout: 2000,
-      socketTimeout: 5000,
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 15000,
       tls: {
         rejectUnauthorized: false
-      },
-      family: 4
+      }
     });
-    console.log(`Using explicit smtp.gmail.com host for emails (${user}).`);
-
+    console.log(`Using Gmail SMTP service for emails (${user}).`);
   }
 
   return transporter;
