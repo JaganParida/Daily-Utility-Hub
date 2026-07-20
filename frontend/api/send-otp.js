@@ -12,14 +12,9 @@ export default async function handler(req, res) {
       return res.status(400).json({ message: 'Email is required' });
     }
 
-    const user = process.env.SMTP_USER;
-    const pass = process.env.SMTP_PASS;
+    const user = process.env.SMTP_USER || 'jaganparida39064@gmail.com';
+    const pass = process.env.SMTP_PASS || 'oexrwsbocfdhbftx';
     const jwtSecret = process.env.JWT_SECRET || 'fallback-secret';
-
-    if (!user || !pass) {
-      console.error('[Vercel OTP] Missing SMTP credentials in Vercel Environment Variables');
-      return res.status(500).json({ message: 'SMTP credentials not configured on Vercel' });
-    }
 
     // Configure Nodemailer for Gmail over IPv4/Port 465
     const transporter = nodemailer.createTransport({

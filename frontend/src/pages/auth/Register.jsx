@@ -54,27 +54,52 @@ const Register = () => {
 
   const sendRealOtp = async (targetEmail) => {
     try {
-      const response = await api.post('/auth/otp/send', { email: targetEmail });
-      if (!response.data?.success || !response.data?.token) {
-        throw new Error(response.data?.message || 'Failed to send OTP verification email');
+      let token = null;
+      let devOtp = null;
+
+      // 1. Try Vercel Serverless Function first (delivers real email via Vercel without SMTP port blocking)
+      try {
+        const vercelRes = await fetch('/api/send-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: targetEmail })
+        });
+        if (vercelRes.ok) {
+          const vercelData = await vercelRes.json();
+          if (vercelData.success && vercelData.token) {
+            token = vercelData.token;
+          }
+        }
+      } catch (vercelErr) {
+        console.warn('Vercel serverless OTP failed, falling back to backend API...', vercelErr);
       }
 
-      setOtpValidationToken(response.data.token);
+      // 2. Fallback to Render backend API if Vercel serverless endpoint was unavailable
+      if (!token) {
+        const response = await api.post('/auth/otp/send', { email: targetEmail });
+        if (!response.data?.success || !response.data?.token) {
+          throw new Error(response.data?.message || 'Failed to send OTP verification email');
+        }
+        token = response.data.token;
+        devOtp = response.data.devOtp;
+      }
+
+      setOtpValidationToken(token);
       setOtpSent(true);
       setOtpExpired(false);
       setResendTimer(60);
       setExpireTimer(180);
       setOtpInput(['', '', '', '', '', '']);
       
-      if (response.data.devOtp) {
-        toast.success(`OTP Sent! (Dev Mode: ${response.data.devOtp})`, {
+      if (devOtp) {
+        toast.success(`OTP Sent! (Dev Mode: ${devOtp})`, {
           duration: 10000,
           icon: '🔧',
         });
       } else {
         toast.success('Verification code sent! Check your email inbox.');
       }
-      return response.data.token;
+      return token;
     } catch (err) {
       console.error('Send OTP error details:', err);
       const msg = err.response?.data?.message || err.message || 'Failed to send OTP verification email.';
