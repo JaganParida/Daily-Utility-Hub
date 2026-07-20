@@ -35,9 +35,9 @@ const getTransporter = async () => {
       port: 587,
       secure: false,
       auth: { user, pass },
-      connectionTimeout: 10000,
-      greetingTimeout: 10000,
-      socketTimeout: 15000,
+      connectionTimeout: 2000,
+      greetingTimeout: 2000,
+      socketTimeout: 5000,
       tls: {
         rejectUnauthorized: false
       },
