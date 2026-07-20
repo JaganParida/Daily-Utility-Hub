@@ -1,5 +1,6 @@
 const nodemailer = require('nodemailer');
 const dns = require('dns');
+
 // Force Node to use IPv4 for DNS resolution.
 // This fixes 'ENETUNREACH' for IPv6 connections on cloud hosts like Render.
 if (dns.setDefaultResultOrder) {
@@ -11,74 +12,35 @@ let transporter;
 const getTransporter = async () => {
   if (transporter) return transporter;
 
+  const user = process.env.SMTP_USER || 'jaganparida39064@gmail.com';
+  const pass = process.env.SMTP_PASS || 'oexrwsbocfdhbftx';
   const host = process.env.SMTP_HOST;
   const port = process.env.SMTP_PORT || 587;
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
+  const service = process.env.SMTP_SERVICE || 'gmail';
 
-  if (user && pass) {
-    if (host) {
-      transporter = nodemailer.createTransport({
-        host,
-        port: parseInt(port),
-        secure: port == 465,
-        auth: { user, pass },
-        connectionTimeout: 10000,
-        greetingTimeout: 10000,
-        socketTimeout: 15000
-      });
-      console.log('Using configured SMTP transporter for emails.');
-    } else {
-      const service = process.env.SMTP_SERVICE || 'gmail';
-      // Explicitly configure Gmail for better reliability on cloud hosts (e.g. Render)
-      if (service.toLowerCase() === 'gmail') {
-        transporter = nodemailer.createTransport({
-          host: 'smtp.gmail.com',
-          port: 465,
-          secure: true,
-          auth: { user, pass },
-          connectionTimeout: 10000,
-          greetingTimeout: 10000,
-          socketTimeout: 15000,
-          tls: {
-            rejectUnauthorized: false
-          }
-        });
-      } else {
-        transporter = nodemailer.createTransport({
-          service,
-          auth: { user, pass },
-          connectionTimeout: 10000,
-          greetingTimeout: 10000,
-          socketTimeout: 15000,
-          tls: {
-            rejectUnauthorized: false
-          }
-        });
-      }
-      console.log(`Using inferred SMTP service (${service}) for emails.`);
-    }
-  } else {
-    if (process.env.NODE_ENV === 'production') {
-      throw new Error('SMTP configuration is missing. Please configure SMTP_USER and SMTP_PASS in your hosting environment variables.');
-    }
-
-    // Ethereal fallback for zero-configuration testing
-    const testAccount = await nodemailer.createTestAccount();
+  if (host) {
     transporter = nodemailer.createTransport({
-      host: 'smtp.ethereal.email',
-      port: 587,
-      secure: false,
-      auth: {
-        user: testAccount.user,
-        pass: testAccount.pass
+      host,
+      port: parseInt(port),
+      secure: parseInt(port) === 465,
+      auth: { user, pass },
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 15000
+    });
+    console.log('Using configured host SMTP transporter for emails.');
+  } else {
+    transporter = nodemailer.createTransport({
+      service,
+      auth: { user, pass },
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 15000,
+      tls: {
+        rejectUnauthorized: false
       }
     });
-    console.log('--------------------------------------------------');
-    console.log('SMTP config not found in .env. Using Ethereal Email.');
-    console.log(`Ethereal Test User: ${testAccount.user}`);
-    console.log(`Ethereal Test Pass: ${testAccount.pass}`);
-    console.log('--------------------------------------------------');
+    console.log(`Using Gmail SMTP service for emails (${user}).`);
   }
 
   return transporter;
@@ -88,7 +50,7 @@ const sendOtpEmail = async (email, otp) => {
   try {
     const activeTransporter = await getTransporter();
     
-    const fromEmail = process.env.SMTP_USER || 'no-reply@dailyutilityhub.com';
+    const fromEmail = process.env.SMTP_USER || 'jaganparida39064@gmail.com';
     const info = await activeTransporter.sendMail({
       from: `"Daily Utility Hub" <${fromEmail}>`,
       to: email,
@@ -109,12 +71,7 @@ const sendOtpEmail = async (email, otp) => {
       `
     });
 
-    if (info.envelope && info.envelope.to) {
-      const previewUrl = nodemailer.getTestMessageUrl(info);
-      if (previewUrl) {
-        console.log(`[Email Sent] Preview URL: ${previewUrl}`);
-      }
-    }
+    console.log(`[Email Sent] Message ID: ${info.messageId} to ${email}`);
     return true;
   } catch (error) {
     console.error('Nodemailer send error:', error);
