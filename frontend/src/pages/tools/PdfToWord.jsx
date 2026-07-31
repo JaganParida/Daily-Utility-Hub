@@ -5,7 +5,7 @@ import JSZip from 'jszip';
 import Tesseract from 'tesseract.js';
 import { 
   UploadCloud, FileText, CheckCircle2, Download, Loader2, X, 
-  Sparkles, Layers, Globe, Image as ImageIcon, Eye, FileCode, ChevronDown, ChevronUp
+  Sparkles, Image as ImageIcon, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { motion } from 'framer-motion';
@@ -28,27 +28,21 @@ const PdfToWord = () => {
   const [file, setFile] = useState(null);
   const [pdfDocument, setPdfDocument] = useState(null);
   const [totalPages, setTotalPages] = useState(0);
-
-  // Default optimal settings (automated behind the scenes)
-  const [conversionMode, setConversionMode] = useState('smart'); // 'smart', 'ocr', 'vector'
   const [ocrLanguage, setOcrLanguage] = useState('eng');
-  const [includeImages, setIncludeImages] = useState(true);
-  const [preserveSpacing, setPreserveSpacing] = useState(true);
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   // Processing state
-  const [isInspecting, setIsInspecting] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [currentStatus, setCurrentStatus] = useState('');
+  const [conversionMethod, setConversionMethod] = useState('');
 
-  // Results & Preview
-  const [extractedPages, setExtractedPages] = useState([]);
+  // Results
   const [wordBlob, setWordBlob] = useState(null);
   const [wordFileName, setWordFileName] = useState('');
-  const [activeTab, setActiveTab] = useState('preview'); // 'preview', 'stats'
 
   const fileInputRef = useRef(null);
+  const pdfArrayBufferRef = useRef(null); // Store raw ArrayBuffer for backend upload
 
   useEffect(() => {
     const initialFile = location.state?.initialFile;
@@ -59,8 +53,6 @@ const PdfToWord = () => {
   }, [location.state]);
 
   const handleFileLoad = async (selectedFile) => {
-    setIsInspecting(true);
-    setExtractedPages([]);
     setWordBlob(null);
     const toastId = toast.loading('Reading PDF document...');
 
@@ -69,24 +61,22 @@ const PdfToWord = () => {
       fileReader.onload = async (e) => {
         try {
           const typedarray = new Uint8Array(e.target.result);
+          pdfArrayBufferRef.current = e.target.result;
           const loadingTask = pdfjsLib.getDocument({ data: typedarray });
           const pdf = await loadingTask.promise;
 
           setFile(selectedFile);
           setPdfDocument(pdf);
           setTotalPages(pdf.numPages);
-          setIsInspecting(false);
           toast.success(`PDF Loaded: ${pdf.numPages} ${pdf.numPages === 1 ? 'page' : 'pages'} detected`, { id: toastId });
         } catch (err) {
           console.error(err);
-          setIsInspecting(false);
           toast.error('Could not parse PDF file.', { id: toastId });
         }
       };
       fileReader.readAsArrayBuffer(selectedFile);
     } catch (e) {
       console.error(e);
-      setIsInspecting(false);
       toast.error('Failed to load PDF.', { id: toastId });
     }
   };
@@ -107,8 +97,9 @@ const PdfToWord = () => {
     setPdfDocument(null);
     setTotalPages(0);
     setProgress(0);
-    setExtractedPages([]);
     setWordBlob(null);
+    setConversionMethod('');
+    pdfArrayBufferRef.current = null;
   };
 
   // Helper XML escaper
@@ -126,78 +117,43 @@ const PdfToWord = () => {
     });
   };
 
-  // Render high resolution page canvas for OCR / Image embedding
-  const renderPageCanvas = async (page, scale = 2.0) => {
+  // Render page to canvas at high resolution
+  const renderPageCanvas = async (page, scale = 2.5) => {
     const viewport = page.getViewport({ scale });
     const canvas = document.createElement('canvas');
     canvas.width = viewport.width;
     canvas.height = viewport.height;
     const ctx = canvas.getContext('2d');
     await page.render({ canvasContext: ctx, viewport }).promise;
-    return canvas;
+    return { canvas, viewport };
   };
 
-  // Perform Tesseract OCR on canvas image
-  const performOcr = async (canvas, language, pageNum) => {
-    try {
-      setCurrentStatus(`Running OCR on Page ${pageNum}...`);
-      const imageBuffer = canvas.toDataURL('image/png');
-      const result = await Tesseract.recognize(imageBuffer, language, {
-        logger: (m) => {
-          if (m.status === 'recognizing text') {
-            const subProgress = Math.round(m.progress * 100);
-            setCurrentStatus(`OCR Page ${pageNum}: ${subProgress}% complete`);
-          }
-        }
-      });
-
-      const lines = result.data.lines || [];
-      const elements = lines.map(line => ({
-        type: 'paragraph',
-        text: line.text.trim(),
-        isHeader: line.text.length < 50 && line.confidence > 80 && line.text === line.text.toUpperCase(),
-        isBold: line.text.length < 60 && line.confidence > 85,
-        isItalic: false,
-        fontSize: line.text.length < 40 ? 14 : 11
-      })).filter(l => l.text.length > 0);
-
-      return {
-        elements,
-        isOcrUsed: true,
-        confidence: Math.round(result.data.confidence || 90)
-      };
-    } catch (err) {
-      console.error(`OCR failed on page ${pageNum}`, err);
-      return { elements: [], isOcrUsed: true, confidence: 0 };
-    }
-  };
-
-  // Advanced Layout Engine: Extracts paragraphs, multi-column tables, and headings
-  const parsePageElements = async (page) => {
+  // Extract text content with spatial positioning from a PDF page
+  const extractPageText = async (page) => {
     const textContent = await page.getTextContent();
     const items = textContent.items;
+    if (!items || items.length === 0) return { hasText: false, textRuns: [] };
 
-    if (!items || items.length === 0) {
-      return [];
-    }
+    let totalChars = 0;
+    const textRuns = [];
 
-    // Determine average font height
+    // Get average font size for relative sizing
     let totalFontSize = 0;
-    let validItemsCount = 0;
+    let validCount = 0;
     items.forEach(item => {
       if (item.str && item.str.trim()) {
-        const height = Math.abs(item.transform[3] || item.height || 10);
-        totalFontSize += height;
-        validItemsCount++;
+        totalFontSize += Math.abs(item.transform[3] || item.height || 10);
+        validCount++;
       }
     });
-    const avgFontSize = validItemsCount > 0 ? totalFontSize / validItemsCount : 10;
+    const avgFontSize = validCount > 0 ? totalFontSize / validCount : 10;
 
-    // Group items by vertical Y line (rounded with 3px threshold)
+    // Group text items by Y-line
     const rowsByY = {};
     items.forEach(item => {
       if (!item.str || !item.str.trim()) return;
-      const y = Math.round(item.transform[5] / 4) * 4;
+      totalChars += item.str.trim().length;
+      const y = Math.round(item.transform[5] / 3) * 3;
       const x = Math.round(item.transform[4]);
       const height = Math.abs(item.transform[3] || item.height || 10);
       const fontName = (item.fontName || '').toLowerCase();
@@ -205,346 +161,288 @@ const PdfToWord = () => {
       const isItalic = fontName.includes('italic') || fontName.includes('oblique');
 
       if (!rowsByY[y]) rowsByY[y] = [];
-      rowsByY[y].push({ text: item.str.trim(), x, height, isBold, isItalic });
+      rowsByY[y].push({ text: item.str, x, height, isBold, isItalic });
     });
 
-    const sortedY = Object.keys(rowsByY).sort((a, b) => b - a);
+    // Sort by Y (top to bottom), then merge items on same line
+    const sortedYKeys = Object.keys(rowsByY).sort((a, b) => Number(b) - Number(a));
 
-    // Analyze horizontal column layout for table detection
-    const parsedRows = sortedY.map(y => {
+    sortedYKeys.forEach(y => {
       const lineItems = rowsByY[y].sort((a, b) => a.x - b.x);
       
-      const cells = [];
-      let currentCell = null;
-
+      // Merge items that are close together into runs
+      const runs = [];
+      let current = null;
       lineItems.forEach(item => {
-        if (!currentCell) {
-          currentCell = { text: item.text, x: item.x, isBold: item.isBold, isItalic: item.isItalic, height: item.height };
+        if (!current) {
+          current = { ...item };
         } else {
-          const approxCharWidth = (currentCell.height || 10) * 0.55;
-          const prevEnd = currentCell.x + (currentCell.text.length * approxCharWidth);
+          const charW = (current.height || 10) * 0.55;
+          const prevEnd = current.x + current.text.length * charW;
           const gap = item.x - prevEnd;
 
-          // If gap is greater than 2.5 times the character width, it's a new column
-          if (gap > approxCharWidth * 2.5 || gap > 25) {
-            cells.push(currentCell);
-            currentCell = { text: item.text, x: item.x, isBold: item.isBold, isItalic: item.isItalic, height: item.height };
+          if (gap > charW * 3) {
+            // Big gap = likely table columns or separate blocks
+            runs.push(current);
+            current = { ...item };
           } else {
-            currentCell.text += ' ' + item.text;
-            currentCell.isBold = currentCell.isBold || item.isBold;
-            currentCell.isItalic = currentCell.isItalic || item.isItalic;
+            current.text += (gap > charW ? '  ' : ' ') + item.text;
+            current.isBold = current.isBold || item.isBold;
+            current.isItalic = current.isItalic || item.isItalic;
           }
         }
       });
-      if (currentCell) cells.push(currentCell);
+      if (current) runs.push(current);
 
-      return {
+      // Determine if this line has multiple separate columns (table row indicator)
+      const isMultiCol = runs.length >= 2;
+      const maxH = Math.max(...runs.map(r => r.height));
+      const isHeader = maxH > avgFontSize * 1.3 || (runs.length === 1 && runs[0].text.length < 60 && runs[0].isBold);
+
+      textRuns.push({
         y: Number(y),
-        cells,
-        isTableCandidate: cells.length >= 2
-      };
+        runs,
+        isMultiCol,
+        isHeader,
+        maxHeight: maxH
+      });
     });
 
-    // Group elements into Paragraphs or Tables
-    const elements = [];
-    let currentTableRows = [];
-
-    parsedRows.forEach(row => {
-      if (row.isTableCandidate) {
-        currentTableRows.push(row.cells);
-      } else {
-        if (currentTableRows.length > 0) {
-          elements.push({ type: 'table', rows: currentTableRows });
-          currentTableRows = [];
-        }
-
-        const fullText = row.cells.map(c => c.text).join(' ').replace(/\s+/g, ' ').trim();
-        if (fullText) {
-          const maxH = Math.max(...row.cells.map(c => c.height));
-          const hasBold = row.cells.some(c => c.isBold);
-          const hasItalic = row.cells.some(c => c.isItalic);
-          const isHeader = maxH > avgFontSize * 1.3 || (fullText.length < 50 && hasBold);
-
-          elements.push({
-            type: 'paragraph',
-            text: fullText,
-            fontSize: Math.round(maxH * 1.2) || 11,
-            isBold: hasBold,
-            isItalic: hasItalic,
-            isHeader
-          });
-        }
-      }
-    });
-
-    if (currentTableRows.length > 0) {
-      elements.push({ type: 'table', rows: currentTableRows });
-    }
-
-    return elements;
+    return { hasText: totalChars > 10, textRuns, totalChars };
   };
 
-  // Convert PDF to Word process
+  // Build OOXML for text-based pages (paragraphs and tables)
+  const buildTextDocXml = (pageTextData) => {
+    let xml = '';
+    
+    // Group consecutive multi-col lines into tables
+    let tableBuffer = [];
+    
+    const flushTable = () => {
+      if (tableBuffer.length === 0) return;
+      
+      // Determine max columns across all rows
+      const maxCols = Math.max(...tableBuffer.map(row => row.runs.length));
+      
+      xml += `<w:tbl>
+      <w:tblPr>
+        <w:tblStyle w:val="TableGrid"/>
+        <w:tblW w:w="5000" w:type="pct"/>
+        <w:tblBorders>
+          <w:top w:val="single" w:sz="4" w:space="0" w:color="888888"/>
+          <w:left w:val="single" w:sz="4" w:space="0" w:color="888888"/>
+          <w:bottom w:val="single" w:sz="4" w:space="0" w:color="888888"/>
+          <w:right w:val="single" w:sz="4" w:space="0" w:color="888888"/>
+          <w:insideH w:val="single" w:sz="4" w:space="0" w:color="AAAAAA"/>
+          <w:insideV w:val="single" w:sz="4" w:space="0" w:color="AAAAAA"/>
+        </w:tblBorders>
+        <w:tblCellMar>
+          <w:top w:w="60" w:type="dxa"/>
+          <w:left w:w="100" w:type="dxa"/>
+          <w:bottom w:w="60" w:type="dxa"/>
+          <w:right w:w="100" w:type="dxa"/>
+        </w:tblCellMar>
+      </w:tblPr>`;
+      
+      tableBuffer.forEach(row => {
+        xml += `<w:tr>`;
+        for (let c = 0; c < maxCols; c++) {
+          const cell = row.runs[c];
+          const cellText = cell ? escapeXml(cell.text.trim()) : '';
+          const isBold = cell ? cell.isBold : false;
+          xml += `<w:tc><w:p><w:r><w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri"/>${isBold ? '<w:b/>' : ''}<w:sz w:val="20"/></w:rPr><w:t xml:space="preserve">${cellText}</w:t></w:r></w:p></w:tc>`;
+        }
+        xml += `</w:tr>`;
+      });
+      
+      xml += `</w:tbl>`;
+      tableBuffer = [];
+    };
+
+    pageTextData.forEach(line => {
+      if (line.isMultiCol) {
+        tableBuffer.push(line);
+      } else {
+        flushTable();
+        
+        const fullText = line.runs.map(r => r.text).join(' ').trim();
+        if (!fullText) return;
+        
+        const escaped = escapeXml(fullText);
+        const isBold = line.runs.some(r => r.isBold);
+        const isItalic = line.runs.some(r => r.isItalic);
+        const fontSize = Math.round(Math.max(18, Math.min(36, (line.maxHeight || 10) * 2)));
+
+        xml += `<w:p><w:pPr><w:spacing w:after="120" w:line="276" w:lineRule="auto"/>${line.isHeader ? '<w:jc w:val="center"/>' : ''}</w:pPr>`;
+        xml += `<w:r><w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri"/>`;
+        if (isBold) xml += '<w:b/>';
+        if (isItalic) xml += '<w:i/>';
+        xml += `<w:sz w:val="${fontSize}"/></w:rPr>`;
+        xml += `<w:t xml:space="preserve">${escaped}</w:t></w:r></w:p>`;
+      }
+    });
+    
+    flushTable();
+    return xml;
+  };
+
+  // Main conversion handler
   const handleConvert = async () => {
     if (!file || !pdfDocument) return;
 
     setIsProcessing(true);
     setProgress(0);
-    setExtractedPages([]);
     setWordBlob(null);
+    setConversionMethod('');
 
     const toastId = toast.loading('Converting PDF to Word...');
 
-    // Attempt 1: Try High-Fidelity Backend Python pdf2docx Conversion Engine
+    // ====================================================================
+    // ATTEMPT 1: Backend Python pdf2docx (highest fidelity, if available)
+    // ====================================================================
     try {
-      setCurrentStatus('Running High-Fidelity Converter Engine...');
-      setProgress(25);
+      setCurrentStatus('Trying server-side high-fidelity engine...');
+      setProgress(10);
 
       const formData = new FormData();
       formData.append('pdf', file);
 
       const response = await api.post('/pdf/convert-to-word', formData, {
         responseType: 'blob',
-        headers: { 'Content-Type': 'multipart/form-data' }
+        headers: { 'Content-Type': 'multipart/form-data' },
+        timeout: 120000 // 2 minutes max
       });
 
-      if (response.data) {
+      // Verify the response is actually a docx and not a JSON error
+      if (response.data && response.data.size > 500 && response.data.type !== 'application/json') {
         const blob = new Blob([response.data], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
         const outName = `${file.name.replace(/\.pdf$/i, '')}_converted.docx`;
         setWordBlob(blob);
         setWordFileName(outName);
-
+        setConversionMethod('server');
         setProgress(100);
         setCurrentStatus('Conversion complete!');
-        toast.success('High-Fidelity Word (.docx) document created!', { id: toastId });
+        toast.success('High-fidelity Word document created!', { id: toastId });
         setIsProcessing(false);
         return;
       }
     } catch (serverErr) {
-      console.warn('Backend Python converter unavailable or unauthenticated. Falling back to client-side engine...', serverErr);
+      console.warn('Backend converter unavailable, using client-side engine.', serverErr?.message);
     }
 
-    const pageResults = [];
-    const mediaImages = []; // Stores images to embed in OOXML zip { filename, base64 }
-
+    // ====================================================================
+    // ATTEMPT 2: Client-side smart conversion
+    // Renders each page as a high-res image AND extracts text layer
+    // Produces a docx with editable text + embedded page images for fidelity
+    // ====================================================================
     try {
+      setCurrentStatus('Starting client-side conversion...');
+      setProgress(15);
+
+      const mediaImages = []; // { filename, base64 }
+      const rels = []; // { rId, target }
+      let bodyXml = '';
+
       for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
-        const stepProgress = Math.round(((pageNum - 1) / totalPages) * 80);
-        setProgress(stepProgress);
-        setCurrentStatus(`Processing Page ${pageNum} of ${totalPages}...`);
-        toast.loading(`Processing Page ${pageNum} of ${totalPages}...`, { id: toastId });
+        const pct = 15 + Math.round(((pageNum - 1) / totalPages) * 70);
+        setProgress(pct);
+        setCurrentStatus(`Processing page ${pageNum} of ${totalPages}...`);
 
         const page = await pdfDocument.getPage(pageNum);
-        let parsedElements = await parsePageElements(page);
+        const viewport1 = page.getViewport({ scale: 1.0 });
+        const pageWidthPt = viewport1.width;
+        const pageHeightPt = viewport1.height;
 
-        // Count native characters
-        let totalNativeCharCount = 0;
-        parsedElements.forEach(el => {
-          if (el.type === 'paragraph') totalNativeCharCount += el.text.length;
-          if (el.type === 'table') {
-            el.rows.forEach(r => r.forEach(c => totalNativeCharCount += c.text.length));
-          }
-        });
+        // --- Extract native text ---
+        const textData = await extractPageText(page);
+        let hasNativeText = textData.hasText;
+        let textRuns = textData.textRuns;
 
-        let isOcrUsed = false;
-        let ocrConfidence = 100;
-
-        // Auto OCR fallback for scanned pages (< 20 native text chars)
-        const needsOcr = conversionMode === 'ocr' || (conversionMode === 'smart' && totalNativeCharCount < 20);
-
-        if (needsOcr) {
-          setCurrentStatus(`Page ${pageNum}: Extracting scanned document with OCR...`);
-          const canvas = await renderPageCanvas(page, 2.0);
-          const ocrResult = await performOcr(canvas, ocrLanguage, pageNum);
-          if (ocrResult.elements.length > 0) {
-            parsedElements = ocrResult.elements;
-            isOcrUsed = true;
-            ocrConfidence = ocrResult.confidence;
-          }
-        }
-
-        // Extract ACTUAL native images embedded in the PDF page (not the whole page render)
-        if (includeImages) {
+        // --- OCR fallback for scanned/image-only pages ---
+        if (!hasNativeText) {
+          setCurrentStatus(`Page ${pageNum}: Running OCR...`);
           try {
-            const operatorList = await page.getOperatorList();
-            for (let i = 0; i < operatorList.fnArray.length; i++) {
-              const fn = operatorList.fnArray[i];
-              if (fn === pdfjsLib.OPS.paintImageXObject || fn === pdfjsLib.OPS.paintInlineImageXObject) {
-                const imgName = operatorList.argsArray[i][0];
-                try {
-                  const img = await page.objs.get(imgName);
-                  if (img && img.data && img.width && img.height) {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = img.width;
-                    canvas.height = img.height;
-                    const ctx = canvas.getContext('2d');
-                    const imgData = ctx.createImageData(img.width, img.height);
-                    
-                    if (img.data.length === img.width * img.height * 4) {
-                      imgData.data.set(img.data);
-                      ctx.putImageData(imgData, 0, 0);
-                    } else if (img.data.length === img.width * img.height * 3) {
-                      const rgba = new Uint8ClampedArray(img.width * img.height * 4);
-                      for(let j=0, k=0; j < img.data.length; j+=3, k+=4) {
-                        rgba[k] = img.data[j]; rgba[k+1] = img.data[j+1]; rgba[k+2] = img.data[j+2]; rgba[k+3] = 255;
-                      }
-                      imgData.data.set(rgba);
-                      ctx.putImageData(imgData, 0, 0);
-                    } else {
-                      continue; // Unsupported image format
-                    }
-                    
-                    const imgDataUrl = canvas.toDataURL('image/jpeg', 0.9);
-                    const base64Data = imgDataUrl.split(',')[1];
-                    const filename = `image_p${pageNum}_${i}.jpg`;
-                    
-                    mediaImages.push({ filename, base64: base64Data });
-                    parsedElements.push({ type: 'image', imageName: filename });
-                  } else if (img && img.src) {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = img.width || 800;
-                    canvas.height = img.height || 600;
-                    canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-                    const imgDataUrl = canvas.toDataURL('image/jpeg', 0.9);
-                    const base64Data = imgDataUrl.split(',')[1];
-                    const filename = `image_p${pageNum}_${i}.jpg`;
-                    
-                    mediaImages.push({ filename, base64: base64Data });
-                    parsedElements.push({ type: 'image', imageName: filename });
-                  }
-                } catch (imgErr) {
-                  console.warn('Failed to extract embedded image', imgErr);
+            const { canvas } = await renderPageCanvas(page, 2.0);
+            const imageDataUrl = canvas.toDataURL('image/png');
+            const ocrResult = await Tesseract.recognize(imageDataUrl, ocrLanguage, {
+              logger: (m) => {
+                if (m.status === 'recognizing text') {
+                  setCurrentStatus(`Page ${pageNum}: OCR ${Math.round(m.progress * 100)}%`);
                 }
               }
+            });
+            const ocrLines = (ocrResult.data.lines || []).filter(l => l.text.trim().length > 0);
+            if (ocrLines.length > 0) {
+              textRuns = ocrLines.map(line => ({
+                y: 0,
+                runs: [{ text: line.text.trim(), isBold: false, isItalic: false, height: 10 }],
+                isMultiCol: false,
+                isHeader: false,
+                maxHeight: 10
+              }));
+              hasNativeText = true;
             }
-          } catch (e) {
-            console.warn(`Could not process images for page ${pageNum}`, e);
+          } catch (ocrErr) {
+            console.warn(`OCR failed on page ${pageNum}:`, ocrErr);
           }
         }
 
-        pageResults.push({
-          pageNum,
-          elements: parsedElements,
-          isOcrUsed,
-          ocrConfidence,
-          needsOcr
-        });
-      }
+        // --- Render page as image for visual fidelity ---
+        const imgScale = 2.0;
+        const { canvas: pageCanvas } = await renderPageCanvas(page, imgScale);
+        const imgDataUrl = pageCanvas.toDataURL('image/jpeg', 0.92);
+        const base64Data = imgDataUrl.split(',')[1];
+        const imgFilename = `page_${pageNum}.jpg`;
+        mediaImages.push({ filename: imgFilename, base64: base64Data });
 
-      setExtractedPages(pageResults);
-      setProgress(85);
-      setCurrentStatus('Creating Word document (.docx)...');
-      toast.loading('Compiling Word document (.docx)...', { id: toastId });
+        const rId = `rIdImg${pageNum}`;
+        rels.push({ rId, target: `media/${imgFilename}` });
 
-      // Build OOXML document.xml
-      let documentXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
-            xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
-            xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
-            xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
-            xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
-  <w:body>`;
+        // Calculate EMUs for proper sizing (1 point = 12700 EMU, max width ~6 inches = 5486400 EMU)
+        const maxWidthEmu = 5486400;
+        const maxHeightEmu = 7772400;
+        let imgWidthEmu = Math.round(pageWidthPt * 12700);
+        let imgHeightEmu = Math.round(pageHeightPt * 12700);
 
-      const rels = []; // Store image relationships
+        // Scale down proportionally if needed
+        if (imgWidthEmu > maxWidthEmu) {
+          const ratio = maxWidthEmu / imgWidthEmu;
+          imgWidthEmu = maxWidthEmu;
+          imgHeightEmu = Math.round(imgHeightEmu * ratio);
+        }
+        if (imgHeightEmu > maxHeightEmu) {
+          const ratio = maxHeightEmu / imgHeightEmu;
+          imgHeightEmu = maxHeightEmu;
+          imgWidthEmu = Math.round(imgWidthEmu * ratio);
+        }
 
-      pageResults.forEach((pData, pIdx) => {
-        pData.elements.forEach(el => {
-          if (el.type === 'paragraph') {
-            const escaped = escapeXml(el.text);
-            const fontSizeVal = Math.max(18, Math.min(36, (el.fontSize || 11) * 2));
+        // --- Build page content ---
+        // Add editable text first
+        if (hasNativeText && textRuns.length > 0) {
+          bodyXml += buildTextDocXml(textRuns);
+        }
 
-            documentXml += `
-    <w:p>
-      <w:pPr>
-        <w:spacing w:after="${preserveSpacing ? '140' : '80'}" w:line="240" w:lineRule="auto"/>
-      </w:pPr>
-      <w:r>
-        <w:rPr>
-          <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri"/>
-          ${el.isBold ? '<w:b/>' : ''}
-          ${el.isItalic ? '<w:i/>' : ''}
-          <w:sz w:val="${fontSizeVal}"/>
-        </w:rPr>
-        <w:t xml:space="preserve">${escaped}</w:t>
-      </w:r>
-    </w:p>`;
-          } else if (el.type === 'table') {
-            // Build Microsoft Word Table
-            documentXml += `
-    <w:tbl>
-      <w:tblPr>
-        <w:tblW w:w="0" w:type="auto"/>
-        <w:tblBorders>
-          <w:top w:val="single" w:sz="6" w:space="0" w:color="000000"/>
-          <w:left w:val="single" w:sz="6" w:space="0" w:color="000000"/>
-          <w:bottom w:val="single" w:sz="6" w:space="0" w:color="000000"/>
-          <w:right w:val="single" w:sz="6" w:space="0" w:color="000000"/>
-          <w:insideH w:val="single" w:sz="4" w:space="0" w:color="D1D5DB"/>
-          <w:insideV w:val="single" w:sz="4" w:space="0" w:color="D1D5DB"/>
-        </w:tblBorders>
-      </w:tblPr>`;
-
-            el.rows.forEach(row => {
-              documentXml += `
-      <w:tr>`;
-              row.forEach(cell => {
-                const cellEscaped = escapeXml(cell.text);
-                documentXml += `
-        <w:tc>
-          <w:tcPr>
-            <w:tcMar>
-              <w:top w:w="120" w:type="dxa"/>
-              <w:left w:w="160" w:type="dxa"/>
-              <w:bottom w:w="120" w:type="dxa"/>
-              <w:right w:w="160" w:type="dxa"/>
-            </w:tcMar>
-          </w:tcPr>
-          <w:p>
-            <w:r>
-              <w:rPr>
-                <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri"/>
-                ${cell.isBold ? '<w:b/>' : ''}
-                <w:sz w:val="20"/>
-              </w:rPr>
-              <w:t xml:space="preserve">${cellEscaped}</w:t>
-            </w:r>
-          </w:p>
-        </w:tc>`;
-              });
-              documentXml += `
-      </w:tr>`;
-            });
-
-            documentXml += `
-    </w:tbl>`;
-          } else if (el.type === 'image') {
-            const rId = `rId_img_${pIdx}_${Math.random().toString(36).substr(2, 9)}`;
-            rels.push({ rId, target: `media/${el.imageName}` });
-
-            documentXml += `
-    <w:p>
-      <w:pPr>
-        <w:jc w:val="center"/>
-        <w:spacing w:before="180" w:after="240"/>
-      </w:pPr>
+        // Add rendered page image (preserves exact visual layout)
+        bodyXml += `<w:p>
+      <w:pPr><w:jc w:val="center"/><w:spacing w:before="120" w:after="120"/></w:pPr>
       <w:r>
         <w:drawing>
-          <wp:inline distT="0" distB="0" distL="0" distR="0">
-            <wp:extent cx="5080000" cy="5080000"/>
-            <wp:docPr id="${Math.floor(Math.random() * 10000)}" name="Extracted Image"/>
-            <a:graphic>
+          <wp:inline distT="0" distB="0" distL="0" distR="0" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing">
+            <wp:extent cx="${imgWidthEmu}" cy="${imgHeightEmu}"/>
+            <wp:docPr id="${pageNum}" name="Page ${pageNum}"/>
+            <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
               <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
-                <pic:pic>
+                <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
                   <pic:nvPicPr>
-                    <pic:cNvPr id="${Math.floor(Math.random() * 10000)}" name="Picture"/>
+                    <pic:cNvPr id="${pageNum}" name="Page${pageNum}.jpg"/>
                     <pic:cNvPicPr/>
                   </pic:nvPicPr>
                   <pic:blipFill>
-                    <a:blip r:embed="${rId}"/>
+                    <a:blip r:embed="${rId}" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"/>
                     <a:stretch><a:fillRect/></a:stretch>
                   </pic:blipFill>
                   <pic:spPr>
-                    <a:xfrm><a:off x="0" y="0"/><a:ext cx="5080000" cy="5080000"/></a:xfrm>
+                    <a:xfrm><a:off x="0" y="0"/><a:ext cx="${imgWidthEmu}" cy="${imgHeightEmu}"/></a:xfrm>
                     <a:prstGeom prst="rect"><a:avLst/></a:prstGeom>
                   </pic:spPr>
                 </pic:pic>
@@ -554,41 +452,42 @@ const PdfToWord = () => {
         </w:drawing>
       </w:r>
     </w:p>`;
-          }
-        });
 
-        // Add page break between pages except the last page
-        if (pIdx < pageResults.length - 1) {
-          documentXml += `
-    <w:p>
-      <w:r>
-        <w:br w:type="page"/>
-      </w:r>
-    </w:p>`;
+        // Page break between pages
+        if (pageNum < totalPages) {
+          bodyXml += `<w:p><w:r><w:br w:type="page"/></w:r></w:p>`;
         }
-      });
+      }
 
-      documentXml += `
+      setProgress(90);
+      setCurrentStatus('Assembling Word document...');
+
+      // Assemble complete OOXML
+      const documentXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+            xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+            xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
+            xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
+            xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+  <w:body>
+    ${bodyXml}
     <w:sectPr>
       <w:pgSz w:w="12240" w:h="15840"/>
-      <w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440"/>
+      <w:pgMar w:top="720" w:right="720" w:bottom="720" w:left="720"/>
     </w:sectPr>
   </w:body>
 </w:document>`;
 
-      // Document Relationships XML
+      // Document relationships
       let docRelsXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
   <Relationship Id="rIdStyle" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>`;
-
       rels.forEach(rel => {
-        docRelsXml += `
-  <Relationship Id="${rel.rId}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="${rel.target}"/>`;
+        docRelsXml += `\n  <Relationship Id="${rel.rId}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="${rel.target}"/>`;
       });
       docRelsXml += `\n</Relationships>`;
 
-      // Content Types XML
-      let contentTypesXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+      const contentTypesXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
   <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
   <Default Extension="xml" ContentType="application/xml"/>
@@ -608,14 +507,32 @@ const PdfToWord = () => {
   <w:docDefaults>
     <w:rPrDefault>
       <w:rPr>
-        <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri"/>
+        <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/>
         <w:sz w:val="22"/>
       </w:rPr>
     </w:rPrDefault>
+    <w:pPrDefault>
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+      </w:pPr>
+    </w:pPrDefault>
   </w:docDefaults>
+  <w:style w:type="table" w:styleId="TableGrid">
+    <w:name w:val="Table Grid"/>
+    <w:tblPr>
+      <w:tblBorders>
+        <w:top w:val="single" w:sz="4" w:space="0" w:color="auto"/>
+        <w:left w:val="single" w:sz="4" w:space="0" w:color="auto"/>
+        <w:bottom w:val="single" w:sz="4" w:space="0" w:color="auto"/>
+        <w:right w:val="single" w:sz="4" w:space="0" w:color="auto"/>
+        <w:insideH w:val="single" w:sz="4" w:space="0" w:color="auto"/>
+        <w:insideV w:val="single" w:sz="4" w:space="0" w:color="auto"/>
+      </w:tblBorders>
+    </w:tblPr>
+  </w:style>
 </w:styles>`;
 
-      // Assemble ZIP
+      // Build ZIP
       const zip = new JSZip();
       zip.file('[Content_Types].xml', contentTypesXml);
       zip.file('_rels/.rels', globalRelsXml);
@@ -627,18 +544,18 @@ const PdfToWord = () => {
         zip.file(`word/media/${img.filename}`, img.base64, { base64: true });
       });
 
-      const zipContent = await zip.generateAsync({ type: 'blob' });
-      const blob = new Blob([zipContent], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
-
+      const zipBlob = await zip.generateAsync({ type: 'blob' });
+      const blob = new Blob([zipBlob], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
       const outName = `${file.name.replace(/\.pdf$/i, '')}_converted.docx`;
+
       setWordBlob(blob);
       setWordFileName(outName);
-
+      setConversionMethod('client');
       setProgress(100);
       setCurrentStatus('Conversion complete!');
-      toast.success('Converted PDF to editable Word (.docx) document!', { id: toastId });
+      toast.success('Word document created successfully!', { id: toastId });
     } catch (err) {
-      console.error(err);
+      console.error('Client-side conversion failed:', err);
       toast.error('Conversion failed. Please try again.', { id: toastId });
     } finally {
       setIsProcessing(false);
@@ -657,36 +574,21 @@ const PdfToWord = () => {
     toast.success('Downloaded .docx file!');
   };
 
-  const totalWordsExtracted = extractedPages.reduce((acc, p) => {
-    return acc + p.elements.reduce((lAcc, el) => {
-      if (el.type === 'paragraph') return lAcc + el.text.split(/\s+/).length;
-      if (el.type === 'table') {
-        let count = 0;
-        el.rows.forEach(r => r.forEach(c => count += c.text.split(/\s+/).length));
-        return lAcc + count;
-      }
-      return lAcc;
-    }, 0);
-  }, 0);
-
-  const ocrPagesCount = extractedPages.filter(p => p.isOcrUsed).length;
-
   return (
     <div className="max-w-5xl mx-auto px-4 py-8 space-y-8">
-      {/* Sleek Header Banner */}
+      {/* Header Banner */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-900/40 via-indigo-900/40 to-slate-900/40 border border-blue-500/20 p-8 backdrop-blur-xl">
         <div className="absolute top-0 right-0 -mt-8 -mr-8 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
         <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="space-y-2">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold uppercase tracking-wider">
-              <Sparkles className="w-3.5 h-3.5" /> High-Fidelity Tables, Layout & OCR
+              <Sparkles className="w-3.5 h-3.5" /> Exact PDF Layout Preserved
             </div>
             <h1 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight">
               PDF to Word Converter
             </h1>
             <p className="text-slate-300 text-sm md:text-base max-w-2xl">
-              Convert any PDF document into a 100% editable Microsoft Word (<code className="text-blue-400 font-mono">.docx</code>) file. 
-              Supports tables with borders, embedded photos, headers, and automatic OCR.
+              Convert any PDF into an editable Word (<code className="text-blue-400 font-mono">.docx</code>) file with exact visual layout, tables, images, and OCR support.
             </p>
           </div>
 
@@ -702,9 +604,8 @@ const PdfToWord = () => {
         </div>
       </div>
 
-      {/* Main Content Area */}
+      {/* Main Content */}
       {!file ? (
-        /* Clean Upload Dropzone */
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
@@ -727,20 +628,20 @@ const PdfToWord = () => {
             Select PDF file, or <span className="text-blue-400 underline">drag & drop</span>
           </h3>
           <p className="text-slate-400 text-sm max-w-md mx-auto">
-            Supports native digital PDFs, scanned documents, receipts, eBooks, and assignments.
+            Works with all PDFs — digital, scanned, receipts, assignments, forms, and reports.
           </p>
 
           <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-xs text-slate-400">
-            <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-emerald-400" /> Real Word Tables</span>
-            <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-emerald-400" /> Photos & Figures Included</span>
-            <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-emerald-400" /> Secure & Private</span>
+            <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-emerald-400" /> Exact Visual Layout</span>
+            <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-emerald-400" /> Tables & Images</span>
+            <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-emerald-400" /> Auto OCR</span>
+            <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-emerald-400" /> 100% Free & Private</span>
           </div>
         </motion.div>
       ) : (
-        /* File Loaded Card & Action Panel */
         <div className="space-y-6">
-          {/* Main Action Bar */}
           <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-8 space-y-6 backdrop-blur-md">
+            {/* File info & actions */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 pb-6 border-b border-slate-800">
               <div className="flex items-center gap-4">
                 <div className="w-14 h-14 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 shrink-0">
@@ -790,7 +691,7 @@ const PdfToWord = () => {
               </div>
             </div>
 
-            {/* Progress Status Bar when converting */}
+            {/* Progress */}
             {isProcessing && (
               <div className="space-y-3 pt-2">
                 <div className="flex justify-between items-center text-xs font-semibold text-blue-400">
@@ -809,169 +710,70 @@ const PdfToWord = () => {
               </div>
             )}
 
-            {/* Optional Collapsible Settings for Power Users */}
+            {/* Optional OCR Language */}
             <div className="pt-2">
               <button
                 onClick={() => setShowAdvanced(!showAdvanced)}
                 className="text-xs text-slate-400 hover:text-slate-200 transition flex items-center gap-1.5 font-medium"
               >
                 {showAdvanced ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                {showAdvanced ? 'Hide Language Options' : 'OCR Language Options (Optional)'}
+                {showAdvanced ? 'Hide Language Options' : 'OCR Language (for scanned PDFs)'}
               </button>
 
               {showAdvanced && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
-                  className="mt-4 pt-4 border-t border-slate-800 grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs"
+                  className="mt-4 pt-4 border-t border-slate-800 max-w-sm text-xs"
                 >
-                  <div>
-                    <span className="text-slate-400 mb-1 block">OCR Recognition Language</span>
-                    <select
-                      value={ocrLanguage}
-                      onChange={(e) => setOcrLanguage(e.target.value)}
-                      className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-blue-500"
-                    >
-                      {OCR_LANGUAGES.map((lang) => (
-                        <option key={lang.code} value={lang.code}>
-                          {lang.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="flex items-center gap-6 pt-5">
-                    <label className="flex items-center gap-2 text-slate-300 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={includeImages}
-                        onChange={(e) => setIncludeImages(e.target.checked)}
-                        className="rounded bg-slate-800 border-slate-700 text-blue-500 focus:ring-blue-500"
-                      />
-                      <span>Include Figures & Images</span>
-                    </label>
-                  </div>
+                  <span className="text-slate-400 mb-1 block">OCR Recognition Language</span>
+                  <select
+                    value={ocrLanguage}
+                    onChange={(e) => setOcrLanguage(e.target.value)}
+                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-blue-500"
+                  >
+                    {OCR_LANGUAGES.map((lang) => (
+                      <option key={lang.code} value={lang.code}>
+                        {lang.name}
+                      </option>
+                    ))}
+                  </select>
                 </motion.div>
               )}
             </div>
-          </div>
 
-          {/* Results & Interactive Preview Area */}
-          {extractedPages.length > 0 && (
-            <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 space-y-6">
-              {/* Tab Selector */}
-              <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setActiveTab('preview')}
-                    className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
-                      activeTab === 'preview'
-                        ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
-                        : 'bg-slate-800 text-slate-400 hover:text-white'
-                    }`}
-                  >
-                    <Eye className="w-4 h-4" /> Extracted Document Preview
-                  </button>
-
-                  <button
-                    onClick={() => setActiveTab('stats')}
-                    className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
-                      activeTab === 'stats'
-                        ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
-                        : 'bg-slate-800 text-slate-400 hover:text-white'
-                    }`}
-                  >
-                    <FileCode className="w-4 h-4" /> Document Statistics
-                  </button>
+            {/* Success Result */}
+            {wordBlob && (
+              <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-2xl p-6 space-y-4">
+                <div className="flex items-center gap-3">
+                  <CheckCircle2 className="w-6 h-6 text-emerald-400" />
+                  <div>
+                    <h5 className="text-white font-bold text-sm">Conversion Complete!</h5>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      {conversionMethod === 'server' 
+                        ? 'Converted using high-fidelity server engine (pdf2docx)' 
+                        : 'Converted with full layout preservation + editable text'}
+                    </p>
+                  </div>
                 </div>
 
-                {wordBlob && (
+                <div className="flex items-center gap-3">
                   <button
                     onClick={handleDownload}
-                    className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-md shadow-emerald-600/20 transition flex items-center gap-2"
+                    className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-600/25 transition flex items-center gap-2"
                   >
-                    <Download className="w-4 h-4" /> Download .docx
+                    <Download className="w-4 h-4" /> Download {wordFileName}
                   </button>
-                )}
+                  <button
+                    onClick={() => { setWordBlob(null); setConversionMethod(''); }}
+                    className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold border border-slate-700 transition"
+                  >
+                    Convert Again
+                  </button>
+                </div>
               </div>
-
-              {/* Tab Content */}
-              {activeTab === 'preview' ? (
-                <div className="space-y-6 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
-                  {extractedPages.map((page) => (
-                    <div key={page.pageNum} className="bg-slate-950/80 border border-slate-800 rounded-2xl p-5 space-y-4">
-                      <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
-                        <span className="text-xs font-bold text-blue-400 flex items-center gap-2">
-                          Page {page.pageNum}
-                          {page.isOcrUsed && (
-                            <span className="px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px]">
-                              OCR Auto-Recognised
-                            </span>
-                          )}
-                        </span>
-                        <span className="text-[11px] text-slate-500">
-                          {page.elements.length} layout elements parsed
-                        </span>
-                      </div>
-
-                      <div className="space-y-3 font-sans text-xs text-slate-200 leading-relaxed">
-                        {page.elements.map((el, elIdx) => {
-                          if (el.type === 'paragraph') {
-                            return (
-                              <p
-                                key={elIdx}
-                                className={`${el.isHeader ? 'font-bold text-white text-sm my-1' : ''} ${
-                                  el.isBold ? 'font-semibold text-blue-200' : ''
-                                } ${el.isItalic ? 'italic' : ''}`}
-                              >
-                                {el.text}
-                              </p>
-                            );
-                          } else if (el.type === 'table') {
-                            return (
-                              <div key={elIdx} className="overflow-x-auto my-2">
-                                <table className="w-full border-collapse border border-slate-700 text-xs text-slate-200">
-                                  <tbody>
-                                    {el.rows.map((row, rIdx) => (
-                                      <tr key={rIdx} className={rIdx === 0 ? 'bg-slate-800/80 font-bold' : 'hover:bg-slate-900/50'}>
-                                        {row.map((cell, cIdx) => (
-                                          <td key={cIdx} className="border border-slate-700 px-3 py-1.5">
-                                            {cell.text}
-                                          </td>
-                                        ))}
-                                      </tr>
-                                    ))}
-                                  </tbody>
-                                </table>
-                              </div>
-                            );
-                          }
-                          return null;
-                        })}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div className="p-4 bg-slate-950/60 border border-slate-800 rounded-2xl space-y-1">
-                    <span className="text-xs text-slate-400">Total Pages</span>
-                    <h5 className="text-2xl font-bold text-white">{totalPages}</h5>
-                  </div>
-
-                  <div className="p-4 bg-slate-950/60 border border-slate-800 rounded-2xl space-y-1">
-                    <span className="text-xs text-slate-400">Word Count</span>
-                    <h5 className="text-2xl font-bold text-blue-400">{totalWordsExtracted}</h5>
-                  </div>
-
-                  <div className="p-4 bg-slate-950/60 border border-slate-800 rounded-2xl space-y-1">
-                    <span className="text-xs text-slate-400">OCR Pages</span>
-                    <h5 className="text-2xl font-bold text-emerald-400">{ocrPagesCount}</h5>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
+            )}
+          </div>
         </div>
       )}
     </div>

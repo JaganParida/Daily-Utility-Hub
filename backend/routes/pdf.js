@@ -13,10 +13,6 @@ const {
   pdfMetadataValidation
 } = require('../middleware/validationRules');
 
-// Apply auth protection to all PDF operations
-router.use(protect);
-router.use(userRateLimiter);
-
 // Ensure that we only allow PDF files for these routes
 const ensurePdf = (req, res, next) => {
   const files = req.files ? (Array.isArray(req.files) ? req.files : Object.values(req.files).flat()) : (req.file ? [req.file] : []);
@@ -30,6 +26,13 @@ const ensurePdf = (req, res, next) => {
   }
   next();
 };
+
+// Route: Convert PDF to Word - NO AUTH required (public utility)
+router.post('/convert-to-word', upload.single('pdf'), validateFileType, ensurePdf, convertToWord);
+
+// Apply auth protection to all other PDF operations
+router.use(protect);
+router.use(userRateLimiter);
 
 // Route: Merge PDFs
 // Expects an array of files under the field name 'pdfs'
@@ -56,7 +59,6 @@ router.post('/metadata', upload.single('pdf'), validateFileType, ensurePdf, pdfM
 router.post('/extract-text', upload.single('pdf'), validateFileType, ensurePdf, extractText);
 
 // Route: Inspect PDF
-// Route: Convert PDF to Word (Python pdf2docx Engine)
-router.post('/convert-to-word', upload.single('pdf'), validateFileType, ensurePdf, convertToWord);
+router.post('/inspect', upload.single('pdf'), validateFileType, ensurePdf, inspectPdf);
 
 module.exports = router;
