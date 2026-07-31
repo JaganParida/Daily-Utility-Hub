@@ -5,7 +5,7 @@ import JSZip from 'jszip';
 import Tesseract from 'tesseract.js';
 import { 
   UploadCloud, FileText, CheckCircle2, Download, Loader2, X, 
-  Sparkles, Layers, Cpu, Globe, Image as ImageIcon, Eye, FileCode, RefreshCw, AlertCircle
+  Sparkles, Layers, Globe, Image as ImageIcon, Eye, FileCode, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -28,11 +28,12 @@ const PdfToWord = () => {
   const [pdfDocument, setPdfDocument] = useState(null);
   const [totalPages, setTotalPages] = useState(0);
 
-  // Configuration options
+  // Default optimal settings (automated behind the scenes)
   const [conversionMode, setConversionMode] = useState('smart'); // 'smart', 'ocr', 'vector'
   const [ocrLanguage, setOcrLanguage] = useState('eng');
   const [includeImages, setIncludeImages] = useState(true);
   const [preserveSpacing, setPreserveSpacing] = useState(true);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   // Processing state
   const [isInspecting, setIsInspecting] = useState(false);
@@ -60,7 +61,7 @@ const PdfToWord = () => {
     setIsInspecting(true);
     setExtractedPages([]);
     setWordBlob(null);
-    const toastId = toast.loading('Inspecting PDF document...');
+    const toastId = toast.loading('Reading PDF document...');
 
     try {
       const fileReader = new FileReader();
@@ -78,7 +79,7 @@ const PdfToWord = () => {
         } catch (err) {
           console.error(err);
           setIsInspecting(false);
-          toast.error('Could not parse PDF file. File may be password protected or corrupted.', { id: toastId });
+          toast.error('Could not parse PDF file.', { id: toastId });
         }
       };
       fileReader.readAsArrayBuffer(selectedFile);
@@ -267,7 +268,7 @@ const PdfToWord = () => {
     setExtractedPages([]);
     setWordBlob(null);
 
-    const toastId = toast.loading('Initializing PDF to Word conversion engine...');
+    const toastId = toast.loading('Converting PDF to Word...');
     const pageResults = [];
     const mediaImages = []; // Stores images to embed in OOXML zip { filename, base64 }
 
@@ -291,7 +292,7 @@ const PdfToWord = () => {
         const needsOcr = conversionMode === 'ocr' || (conversionMode === 'smart' && totalNativeCharCount < 20);
 
         if (needsOcr) {
-          setCurrentStatus(`Page ${pageNum} appears scanned/image-based. Running OCR...`);
+          setCurrentStatus(`Page ${pageNum}: Extracting scanned text with OCR...`);
           const canvas = await renderPageCanvas(page, 2.0);
           const ocrResult = await performOcr(canvas, ocrLanguage, pageNum);
           if (ocrResult.lines.length > 0) {
@@ -332,8 +333,8 @@ const PdfToWord = () => {
 
       setExtractedPages(pageResults);
       setProgress(85);
-      setCurrentStatus('Packaging Microsoft Word (.docx) document...');
-      toast.loading('Compiling Microsoft Word (.docx) document...', { id: toastId });
+      setCurrentStatus('Creating Word document (.docx)...');
+      toast.loading('Compiling Word document (.docx)...', { id: toastId });
 
       // Build OOXML document.xml
       let documentXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -365,7 +366,7 @@ const PdfToWord = () => {
           <w:color w:val="2563EB"/>
           <w:sz w:val="24"/>
         </w:rPr>
-        <w:t>${escapeXml(`--- Page ${pData.pageNum} ${pData.isOcrUsed ? '(OCR Recognised)' : ''} ---`)}</w:t>
+        <w:t>${escapeXml(`--- Page ${pData.pageNum} ---`)}</w:t>
       </w:r>
     </w:p>`;
 
@@ -537,21 +538,21 @@ const PdfToWord = () => {
   const ocrPagesCount = extractedPages.filter(p => p.isOcrUsed).length;
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8 space-y-8">
-      {/* Header Banner */}
+    <div className="max-w-5xl mx-auto px-4 py-8 space-y-8">
+      {/* Sleek Header Banner */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-900/40 via-indigo-900/40 to-slate-900/40 border border-blue-500/20 p-8 backdrop-blur-xl">
         <div className="absolute top-0 right-0 -mt-8 -mr-8 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
         <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="space-y-2">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold uppercase tracking-wider">
-              <Sparkles className="w-3.5 h-3.5" /> High-Fidelity OCR & Layout Preservation
+              <Sparkles className="w-3.5 h-3.5" /> Fast 1-Click PDF to Word
             </div>
             <h1 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight">
               PDF to Word Converter
             </h1>
             <p className="text-slate-300 text-sm md:text-base max-w-2xl">
-              Convert PDF documents into 100% editable Microsoft Word (<code className="text-blue-400 font-mono">.docx</code>) files. 
-              Supports automatic Tesseract OCR for scanned PDFs, font size preservation, and embedded figures.
+              Convert any PDF document into a 100% editable Microsoft Word (<code className="text-blue-400 font-mono">.docx</code>) file. 
+              Automatic text extraction, layout formatting, and OCR included seamlessly.
             </p>
           </div>
 
@@ -561,7 +562,7 @@ const PdfToWord = () => {
               className="px-4 py-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 hover:text-white border border-slate-700 text-xs font-medium transition flex items-center gap-2"
             >
               <ImageIcon className="w-4 h-4 text-rose-400" />
-              Need PDF to Images?
+              PDF to Images
             </button>
           </div>
         </div>
@@ -569,7 +570,7 @@ const PdfToWord = () => {
 
       {/* Main Content Area */}
       {!file ? (
-        /* Upload Area */
+        /* Clean Upload Dropzone */
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
@@ -589,204 +590,141 @@ const PdfToWord = () => {
             <UploadCloud className="w-10 h-10" />
           </div>
           <h3 className="text-xl font-bold text-white mb-2">
-            Drop your PDF here, or <span className="text-blue-400 underline">browse</span>
+            Select PDF file, or <span className="text-blue-400 underline">drag & drop</span>
           </h3>
           <p className="text-slate-400 text-sm max-w-md mx-auto">
-            Supports native digital PDFs, scanned documents, receipts, eBooks, and assignments up to multi-page files.
+            Supports native digital PDFs, scanned documents, receipts, eBooks, and assignments.
           </p>
 
           <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-xs text-slate-400">
             <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-emerald-400" /> 100% Editable DOCX</span>
-            <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-emerald-400" /> Smart Tesseract OCR</span>
-            <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-emerald-400" /> Client-Side Privacy</span>
+            <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-emerald-400" /> Auto OCR & Images</span>
+            <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-emerald-400" /> Secure & Private</span>
           </div>
         </motion.div>
       ) : (
-        /* File Loaded Dashboard & Settings */
+        /* File Loaded Card & Action Panel */
         <div className="space-y-6">
-          {/* File Card & Control Header */}
-          <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 backdrop-blur-md">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 shrink-0">
-                <FileText className="w-6 h-6" />
+          {/* Main Action Bar */}
+          <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-8 space-y-6 backdrop-blur-md">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 pb-6 border-b border-slate-800">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 shrink-0">
+                  <FileText className="w-7 h-7" />
+                </div>
+                <div>
+                  <h4 className="text-xl font-bold text-white truncate max-w-md">{file.name}</h4>
+                  <p className="text-xs text-slate-400 mt-1">
+                    {(file.size / (1024 * 1024)).toFixed(2)} MB • {totalPages} {totalPages === 1 ? 'Page' : 'Pages'}
+                  </p>
+                </div>
               </div>
-              <div>
-                <h4 className="text-lg font-bold text-white truncate max-w-md">{file.name}</h4>
-                <p className="text-xs text-slate-400">
-                  {(file.size / (1024 * 1024)).toFixed(2)} MB • {totalPages} {totalPages === 1 ? 'Page' : 'Pages'}
-                </p>
+
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={handleClear}
+                  disabled={isProcessing}
+                  className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold border border-slate-700 transition flex items-center gap-2 disabled:opacity-50"
+                >
+                  <X className="w-4 h-4" /> Change PDF
+                </button>
+
+                {wordBlob ? (
+                  <button
+                    onClick={handleDownload}
+                    className="px-8 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold shadow-lg shadow-emerald-600/25 transition flex items-center gap-2"
+                  >
+                    <Download className="w-5 h-5" /> Download Word (.docx)
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleConvert}
+                    disabled={isProcessing}
+                    className="px-8 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold shadow-lg shadow-blue-600/25 transition flex items-center gap-2 disabled:opacity-50"
+                  >
+                    {isProcessing ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" /> Converting...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-5 h-5" /> Convert to Word
+                      </>
+                    )}
+                  </button>
+                )}
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
+            {/* Progress Status Bar when converting */}
+            {isProcessing && (
+              <div className="space-y-3 pt-2">
+                <div className="flex justify-between items-center text-xs font-semibold text-blue-400">
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin text-blue-400" />
+                    {currentStatus || 'Converting document...'}
+                  </span>
+                  <span>{progress}%</span>
+                </div>
+                <div className="w-full bg-slate-800 rounded-full h-3 overflow-hidden">
+                  <div
+                    className="bg-gradient-to-r from-blue-500 to-indigo-500 h-full transition-all duration-300 rounded-full"
+                    style={{ width: `${progress}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Optional Collapsible Settings for Power Users */}
+            <div className="pt-2">
               <button
-                onClick={handleClear}
-                disabled={isProcessing}
-                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold border border-slate-700 transition flex items-center gap-2 disabled:opacity-50"
+                onClick={() => setShowAdvanced(!showAdvanced)}
+                className="text-xs text-slate-400 hover:text-slate-200 transition flex items-center gap-1.5 font-medium"
               >
-                <X className="w-4 h-4" /> Change File
+                {showAdvanced ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                {showAdvanced ? 'Hide Language Options' : 'OCR Language Options (Optional)'}
               </button>
 
-              {wordBlob ? (
-                <button
-                  onClick={handleDownload}
-                  className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-600/20 transition flex items-center gap-2"
+              {showAdvanced && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  className="mt-4 pt-4 border-t border-slate-800 grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs"
                 >
-                  <Download className="w-4 h-4" /> Download DOCX
-                </button>
-              ) : (
-                <button
-                  onClick={handleConvert}
-                  disabled={isProcessing}
-                  className="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-lg shadow-blue-600/20 transition flex items-center gap-2 disabled:opacity-50"
-                >
-                  {isProcessing ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" /> Processing...
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="w-4 h-4" /> Convert to Word
-                    </>
-                  )}
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Conversion Mode & Settings Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Conversion Mode Selection */}
-            <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-5 space-y-4">
-              <label className="text-xs font-semibold text-slate-300 flex items-center gap-2">
-                <Cpu className="w-4 h-4 text-blue-400" /> Conversion Mode
-              </label>
-              <div className="space-y-2">
-                <button
-                  onClick={() => setConversionMode('smart')}
-                  className={`w-full text-left p-3 rounded-xl border text-xs transition flex flex-col gap-1 ${
-                    conversionMode === 'smart'
-                      ? 'bg-blue-500/10 border-blue-500/40 text-blue-300'
-                      : 'bg-slate-800/40 border-slate-700/50 text-slate-400 hover:bg-slate-800/80'
-                  }`}
-                >
-                  <span className="font-bold text-white flex items-center justify-between">
-                    Auto Smart Mode <Sparkles className="w-3.5 h-3.5 text-blue-400" />
-                  </span>
-                  <span>Extracts vector text + auto Tesseract OCR for scanned pages.</span>
-                </button>
-
-                <button
-                  onClick={() => setConversionMode('ocr')}
-                  className={`w-full text-left p-3 rounded-xl border text-xs transition flex flex-col gap-1 ${
-                    conversionMode === 'ocr'
-                      ? 'bg-blue-500/10 border-blue-500/40 text-blue-300'
-                      : 'bg-slate-800/40 border-slate-700/50 text-slate-400 hover:bg-slate-800/80'
-                  }`}
-                >
-                  <span className="font-bold text-white">Full High-Precision OCR</span>
-                  <span>Forces Tesseract OCR recognition across all pages at 300 DPI.</span>
-                </button>
-
-                <button
-                  onClick={() => setConversionMode('vector')}
-                  className={`w-full text-left p-3 rounded-xl border text-xs transition flex flex-col gap-1 ${
-                    conversionMode === 'vector'
-                      ? 'bg-blue-500/10 border-blue-500/40 text-blue-300'
-                      : 'bg-slate-800/40 border-slate-700/50 text-slate-400 hover:bg-slate-800/80'
-                  }`}
-                >
-                  <span className="font-bold text-white">Fast Digital Vector Text</span>
-                  <span>Ultra-fast extraction for digital PDFs without OCR.</span>
-                </button>
-              </div>
-            </div>
-
-            {/* OCR Language & Options */}
-            <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-5 space-y-4">
-              <label className="text-xs font-semibold text-slate-300 flex items-center gap-2">
-                <Globe className="w-4 h-4 text-blue-400" /> OCR Language & Formatting
-              </label>
-
-              <div className="space-y-3">
-                <div>
-                  <span className="text-xs text-slate-400 mb-1.5 block">OCR Recognition Language</span>
-                  <select
-                    value={ocrLanguage}
-                    onChange={(e) => setOcrLanguage(e.target.value)}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500"
-                  >
-                    {OCR_LANGUAGES.map((lang) => (
-                      <option key={lang.code} value={lang.code}>
-                        {lang.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="pt-2 space-y-2">
-                  <label className="flex items-center justify-between text-xs text-slate-300 cursor-pointer">
-                    <span>Embed Page Snapshot Figures</span>
-                    <input
-                      type="checkbox"
-                      checked={includeImages}
-                      onChange={(e) => setIncludeImages(e.target.checked)}
-                      className="rounded bg-slate-800 border-slate-700 text-blue-500 focus:ring-blue-500"
-                    />
-                  </label>
-
-                  <label className="flex items-center justify-between text-xs text-slate-300 cursor-pointer">
-                    <span>Preserve Paragraph Spacing</span>
-                    <input
-                      type="checkbox"
-                      checked={preserveSpacing}
-                      onChange={(e) => setPreserveSpacing(e.target.checked)}
-                      className="rounded bg-slate-800 border-slate-700 text-blue-500 focus:ring-blue-500"
-                    />
-                  </label>
-                </div>
-              </div>
-            </div>
-
-            {/* Status & Highlights */}
-            <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-5 space-y-4 flex flex-col justify-between">
-              <div>
-                <label className="text-xs font-semibold text-slate-300 flex items-center gap-2 mb-3">
-                  <Layers className="w-4 h-4 text-blue-400" /> Quality Guarantee
-                </label>
-
-                <div className="space-y-2 text-xs text-slate-400">
-                  <p className="flex items-start gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                    <span><strong>100% Editable DOCX:</strong> Generated using native OOXML standards for Word and Google Docs.</span>
-                  </p>
-                  <p className="flex items-start gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                    <span><strong>No Empty Blank Files:</strong> Scanned pages automatically trigger high-resolution Tesseract OCR.</span>
-                  </p>
-                </div>
-              </div>
-
-              {isProcessing && (
-                <div className="space-y-2 pt-2 border-t border-slate-800">
-                  <div className="flex justify-between text-xs font-semibold text-blue-400">
-                    <span>{currentStatus || 'Processing...'}</span>
-                    <span>{progress}%</span>
+                  <div>
+                    <span className="text-slate-400 mb-1 block">OCR Recognition Language</span>
+                    <select
+                      value={ocrLanguage}
+                      onChange={(e) => setOcrLanguage(e.target.value)}
+                      className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-blue-500"
+                    >
+                      {OCR_LANGUAGES.map((lang) => (
+                        <option key={lang.code} value={lang.code}>
+                          {lang.name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
-                  <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
-                    <div
-                      className="bg-gradient-to-r from-blue-500 to-indigo-500 h-full transition-all duration-300"
-                      style={{ width: `${progress}%` }}
-                    />
+
+                  <div className="flex items-center gap-6 pt-5">
+                    <label className="flex items-center gap-2 text-slate-300 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={includeImages}
+                        onChange={(e) => setIncludeImages(e.target.checked)}
+                        className="rounded bg-slate-800 border-slate-700 text-blue-500 focus:ring-blue-500"
+                      />
+                      <span>Include Figures & Images</span>
+                    </label>
                   </div>
-                </div>
+                </motion.div>
               )}
             </div>
           </div>
 
           {/* Results & Interactive Preview Area */}
           {extractedPages.length > 0 && (
-            <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 space-y-6">
+            <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 space-y-6">
               {/* Tab Selector */}
               <div className="flex items-center justify-between border-b border-slate-800 pb-4">
                 <div className="flex gap-2">
@@ -827,22 +765,22 @@ const PdfToWord = () => {
               {activeTab === 'preview' ? (
                 <div className="space-y-6 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
                   {extractedPages.map((page) => (
-                    <div key={page.pageNum} className="bg-slate-950/80 border border-slate-800 rounded-xl p-5 space-y-3">
+                    <div key={page.pageNum} className="bg-slate-950/80 border border-slate-800 rounded-2xl p-5 space-y-3">
                       <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
                         <span className="text-xs font-bold text-blue-400 flex items-center gap-2">
                           Page {page.pageNum}
                           {page.isOcrUsed && (
-                            <span className="px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[10px]">
-                              OCR Recognised ({page.ocrConfidence}%)
+                            <span className="px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px]">
+                              OCR Auto-Recognised
                             </span>
                           )}
                         </span>
                         <span className="text-[11px] text-slate-500">
-                          {page.lines.length} lines parsed
+                          {page.lines.length} paragraphs
                         </span>
                       </div>
 
-                      <div className="space-y-1.5 font-sans text-xs text-slate-200 leading-relaxed">
+                      <div className="space-y-2 font-sans text-xs text-slate-200 leading-relaxed">
                         {page.lines.length === 0 ? (
                           <p className="text-slate-500 italic text-center py-4">No text detected on this page.</p>
                         ) : (
@@ -863,18 +801,18 @@ const PdfToWord = () => {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div className="p-4 bg-slate-950/60 border border-slate-800 rounded-xl space-y-1">
-                    <span className="text-xs text-slate-400">Total Pages Parsed</span>
+                  <div className="p-4 bg-slate-950/60 border border-slate-800 rounded-2xl space-y-1">
+                    <span className="text-xs text-slate-400">Total Pages</span>
                     <h5 className="text-2xl font-bold text-white">{totalPages}</h5>
                   </div>
 
-                  <div className="p-4 bg-slate-950/60 border border-slate-800 rounded-xl space-y-1">
-                    <span className="text-xs text-slate-400">Estimated Words</span>
+                  <div className="p-4 bg-slate-950/60 border border-slate-800 rounded-2xl space-y-1">
+                    <span className="text-xs text-slate-400">Word Count</span>
                     <h5 className="text-2xl font-bold text-blue-400">{totalWordsExtracted}</h5>
                   </div>
 
-                  <div className="p-4 bg-slate-950/60 border border-slate-800 rounded-xl space-y-1">
-                    <span className="text-xs text-slate-400">Pages with OCR Triggered</span>
+                  <div className="p-4 bg-slate-950/60 border border-slate-800 rounded-2xl space-y-1">
+                    <span className="text-xs text-slate-400">OCR Pages</span>
                     <h5 className="text-2xl font-bold text-emerald-400">{ocrPagesCount}</h5>
                   </div>
                 </div>
