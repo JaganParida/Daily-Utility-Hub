@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { motion } from 'framer-motion';
+import api from '../../lib/api';
 
 // Configure pdf.js worker using unpkg CDN
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
@@ -293,6 +294,36 @@ const PdfToWord = () => {
     setWordBlob(null);
 
     const toastId = toast.loading('Converting PDF to Word...');
+
+    // Attempt 1: Try High-Fidelity Backend Python pdf2docx Conversion Engine
+    try {
+      setCurrentStatus('Running High-Fidelity Converter Engine...');
+      setProgress(25);
+
+      const formData = new FormData();
+      formData.append('pdf', file);
+
+      const response = await api.post('/pdf/convert-to-word', formData, {
+        responseType: 'blob',
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+
+      if (response.data) {
+        const blob = new Blob([response.data], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+        const outName = `${file.name.replace(/\.pdf$/i, '')}_converted.docx`;
+        setWordBlob(blob);
+        setWordFileName(outName);
+
+        setProgress(100);
+        setCurrentStatus('Conversion complete!');
+        toast.success('High-Fidelity Word (.docx) document created!', { id: toastId });
+        setIsProcessing(false);
+        return;
+      }
+    } catch (serverErr) {
+      console.warn('Backend Python converter unavailable or unauthenticated. Falling back to client-side engine...', serverErr);
+    }
+
     const pageResults = [];
     const mediaImages = []; // Stores images to embed in OOXML zip { filename, base64 }
 

@@ -488,3 +488,48 @@ exports.inspectPdf = async (req, res) => {
     res.status(500).json({ message: 'Failed to inspect PDF file.' });
   }
 };
+
+// High-Fidelity PDF to Word Conversion using Python pdf2docx
+const { spawn } = require('child_process');
+
+exports.convertToWord = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'Please upload a PDF file.' });
+    }
+
+    const inputPdfPath = req.file.path;
+    const outputDocxPath = req.file.path + '.docx';
+    const scriptPath = path.join(__dirname, '../utils/pdf_to_docx_converter.py');
+
+    const pythonProcess = spawn('python', [scriptPath, inputPdfPath, outputDocxPath]);
+
+    let stderrData = '';
+    pythonProcess.stderr.on('data', (data) => {
+      stderrData += data.toString();
+    });
+
+    pythonProcess.on('close', (code) => {
+      if (code === 0 && fs.existsSync(outputDocxPath)) {
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+        res.setHeader('Content-Disposition', `attachment; filename="${req.file.originalname.replace(/\.pdf$/i, '')}_converted.docx"`);
+
+        const fileStream = fs.createReadStream(outputDocxPath);
+        fileStream.pipe(res);
+
+        fileStream.on('end', () => {
+          cleanupFiles([{ path: inputPdfPath }, { path: outputDocxPath }]);
+        });
+      } else {
+        console.error('Python pdf2docx Error:', stderrData);
+        cleanupFiles([{ path: inputPdfPath }, { path: outputDocxPath }]);
+        return res.status(500).json({ message: 'PDF to Word conversion failed on server.' });
+      }
+    });
+  } catch (error) {
+    cleanupFiles(req.file ? [req.file] : []);
+    console.error('Convert To Word Error:', error);
+    res.status(500).json({ message: 'Server error during PDF to Word conversion.' });
+  }
+};
+

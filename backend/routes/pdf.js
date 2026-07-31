@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { upload, validateFileType } = require('../middleware/uploadMiddleware');
 const { protect } = require('../middleware/authMiddleware');
-const { mergePdfs, splitPdf, watermarkPdf, lockPdf, unlockPdf, editMetadata, extractText, inspectPdf } = require('../controllers/pdfController');
+const { mergePdfs, splitPdf, watermarkPdf, lockPdf, unlockPdf, editMetadata, extractText, inspectPdf, convertToWord } = require('../controllers/pdfController');
 const { validate } = require('../middleware/validationMiddleware');
 const { userRateLimiter } = require('../middleware/rateLimitMiddleware');
 const {
@@ -56,6 +56,7 @@ router.post('/metadata', upload.single('pdf'), validateFileType, ensurePdf, pdfM
 router.post('/extract-text', upload.single('pdf'), validateFileType, ensurePdf, extractText);
 
 // Route: Inspect PDF
-router.post('/inspect', upload.single('pdf'), validateFileType, ensurePdf, inspectPdf);
+// Route: Convert PDF to Word (Python pdf2docx Engine)
+router.post('/convert-to-word', upload.single('pdf'), validateFileType, ensurePdf, convertToWord);
 
 module.exports = router;
