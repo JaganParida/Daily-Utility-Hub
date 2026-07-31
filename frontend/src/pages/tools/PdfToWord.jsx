@@ -325,6 +325,7 @@ const PdfToWord = () => {
           lines: finalPageLines,
           isOcrUsed,
           ocrConfidence,
+          needsOcr,
           imageName: pageImageName
         });
       }
@@ -390,7 +391,7 @@ const PdfToWord = () => {
         });
 
         // If embedded image is present and native lines are low, embed image shape
-        if (pData.imageName && (pData.lines.length === 0 || needsOcr)) {
+        if (pData.imageName && (pData.lines.length === 0 || pData.needsOcr)) {
           const rId = `rId_img_${pData.pageNum}`;
           rels.push({ rId, target: `media/${pData.imageName}` });
 
