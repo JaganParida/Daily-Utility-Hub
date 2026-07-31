@@ -89,6 +89,7 @@ const AiCodePlayground = lazyWithRetry(() => import('./pages/tools/AiCodePlaygro
 // PDF Tools (Lazy loaded)
 const PdfEdit = lazyWithRetry(() => import('./pages/tools/PdfEdit'));
 const PdfConverter = lazyWithRetry(() => import('./pages/tools/PdfConverter'));
+const PdfToWord = lazyWithRetry(() => import('./pages/tools/PdfToWord'));
 const PdfMerge = lazyWithRetry(() => import('./pages/tools/PdfMerge'));
 const PdfSplit = lazyWithRetry(() => import('./pages/tools/PdfSplit'));
 const PdfWatermark = lazyWithRetry(() => import('./pages/tools/PdfWatermark'));
@@ -259,6 +260,7 @@ function AnimatedRoutes() {
             <Route path="/tools/pdf-to-text" element={<PdfToText />} />
             <Route path="/tools/pdf-edit" element={<PdfEdit />} />
             <Route path="/tools/pdf-converter" element={<PdfConverter />} />
+            <Route path="/tools/pdf-to-word" element={<PdfToWord />} />
             <Route path="/tools/pdf-compressor" element={<PdfCompressor />} />
             <Route path="/tools/pdf-organizer" element={<PdfOrganizer />} />
             <Route path="/tools/pdf-audio-reader" element={<PdfAudioReader />} />

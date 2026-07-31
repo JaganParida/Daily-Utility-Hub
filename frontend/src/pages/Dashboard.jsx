@@ -27,7 +27,8 @@ const SOURCE_FORMATS = [
 const OPERATIONS_MAP = {
   pdf: [
     { label: "Compress", result: "Smaller PDF", to: "/tools/pdf-compressor" },
-    { label: "Convert to Word / Image", result: "Word / Image", to: "/tools/pdf-converter" },
+    { label: "Convert to Word (DOCX)", result: "Editable Word Doc", to: "/tools/pdf-to-word" },
+    { label: "Convert to Images", result: "PNG / JPG Images", to: "/tools/pdf-converter" },
     { label: "Extract Text", result: "Plain Text", to: "/tools/pdf-to-text" },
     { label: "Merge Files", result: "Combined PDF", to: "/tools/pdf-merge" },
     { label: "Split Pages", result: "Individual PDFs", to: "/tools/pdf-split" },
