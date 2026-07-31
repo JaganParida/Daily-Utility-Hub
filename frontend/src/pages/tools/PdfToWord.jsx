@@ -220,11 +220,12 @@ const PdfToWord = () => {
         if (!currentCell) {
           currentCell = { text: item.text, x: item.x, isBold: item.isBold, isItalic: item.isItalic, height: item.height };
         } else {
-          const approxCharWidth = (currentCell.height || 10) * 0.5;
+          const approxCharWidth = (currentCell.height || 10) * 0.55;
           const prevEnd = currentCell.x + (currentCell.text.length * approxCharWidth);
           const gap = item.x - prevEnd;
 
-          if (gap > 30) {
+          // If gap is greater than 2.5 times the character width, it's a new column
+          if (gap > approxCharWidth * 2.5 || gap > 25) {
             cells.push(currentCell);
             currentCell = { text: item.text, x: item.x, isBold: item.isBold, isItalic: item.isItalic, height: item.height };
           } else {
@@ -331,20 +332,62 @@ const PdfToWord = () => {
           }
         }
 
-        // Always capture visual snapshot for embedded figures/photos
-        let pageImageName = null;
+        // Extract ACTUAL native images embedded in the PDF page (not the whole page render)
         if (includeImages) {
           try {
-            const pageCanvas = await renderPageCanvas(page, 1.5);
-            const imgDataUrl = pageCanvas.toDataURL('image/jpeg', 0.85);
-            const base64Data = imgDataUrl.split(',')[1];
-            pageImageName = `page_image_${pageNum}.jpg`;
-            mediaImages.push({
-              filename: pageImageName,
-              base64: base64Data
-            });
+            const operatorList = await page.getOperatorList();
+            for (let i = 0; i < operatorList.fnArray.length; i++) {
+              const fn = operatorList.fnArray[i];
+              if (fn === pdfjsLib.OPS.paintImageXObject || fn === pdfjsLib.OPS.paintInlineImageXObject) {
+                const imgName = operatorList.argsArray[i][0];
+                try {
+                  const img = await page.objs.get(imgName);
+                  if (img && img.data && img.width && img.height) {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    const ctx = canvas.getContext('2d');
+                    const imgData = ctx.createImageData(img.width, img.height);
+                    
+                    if (img.data.length === img.width * img.height * 4) {
+                      imgData.data.set(img.data);
+                      ctx.putImageData(imgData, 0, 0);
+                    } else if (img.data.length === img.width * img.height * 3) {
+                      const rgba = new Uint8ClampedArray(img.width * img.height * 4);
+                      for(let j=0, k=0; j < img.data.length; j+=3, k+=4) {
+                        rgba[k] = img.data[j]; rgba[k+1] = img.data[j+1]; rgba[k+2] = img.data[j+2]; rgba[k+3] = 255;
+                      }
+                      imgData.data.set(rgba);
+                      ctx.putImageData(imgData, 0, 0);
+                    } else {
+                      continue; // Unsupported image format
+                    }
+                    
+                    const imgDataUrl = canvas.toDataURL('image/jpeg', 0.9);
+                    const base64Data = imgDataUrl.split(',')[1];
+                    const filename = `image_p${pageNum}_${i}.jpg`;
+                    
+                    mediaImages.push({ filename, base64: base64Data });
+                    parsedElements.push({ type: 'image', imageName: filename });
+                  } else if (img && img.src) {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.width || 800;
+                    canvas.height = img.height || 600;
+                    canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+                    const imgDataUrl = canvas.toDataURL('image/jpeg', 0.9);
+                    const base64Data = imgDataUrl.split(',')[1];
+                    const filename = `image_p${pageNum}_${i}.jpg`;
+                    
+                    mediaImages.push({ filename, base64: base64Data });
+                    parsedElements.push({ type: 'image', imageName: filename });
+                  }
+                } catch (imgErr) {
+                  console.warn('Failed to extract embedded image', imgErr);
+                }
+              }
+            }
           } catch (e) {
-            console.warn(`Could not render image for page ${pageNum}`, e);
+            console.warn(`Could not process images for page ${pageNum}`, e);
           }
         }
 
@@ -353,8 +396,7 @@ const PdfToWord = () => {
           elements: parsedElements,
           isOcrUsed,
           ocrConfidence,
-          needsOcr,
-          imageName: pageImageName
+          needsOcr
         });
       }
 
@@ -444,15 +486,11 @@ const PdfToWord = () => {
 
             documentXml += `
     </w:tbl>`;
-          }
-        });
+          } else if (el.type === 'image') {
+            const rId = `rId_img_${pIdx}_${Math.random().toString(36).substr(2, 9)}`;
+            rels.push({ rId, target: `media/${el.imageName}` });
 
-        // Always embed page photos/figures if available
-        if (pData.imageName) {
-          const rId = `rId_img_${pData.pageNum}`;
-          rels.push({ rId, target: `media/${pData.imageName}` });
-
-          documentXml += `
+            documentXml += `
     <w:p>
       <w:pPr>
         <w:jc w:val="center"/>
@@ -462,12 +500,12 @@ const PdfToWord = () => {
         <w:drawing>
           <wp:inline distT="0" distB="0" distL="0" distR="0">
             <wp:extent cx="5080000" cy="5080000"/>
-            <wp:docPr id="${pData.pageNum}" name="Page Figure ${pData.pageNum}"/>
+            <wp:docPr id="${Math.floor(Math.random() * 10000)}" name="Extracted Image"/>
             <a:graphic>
               <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
                 <pic:pic>
                   <pic:nvPicPr>
-                    <pic:cNvPr id="${pData.pageNum}" name="Picture ${pData.pageNum}"/>
+                    <pic:cNvPr id="${Math.floor(Math.random() * 10000)}" name="Picture"/>
                     <pic:cNvPicPr/>
                   </pic:nvPicPr>
                   <pic:blipFill>
@@ -485,7 +523,8 @@ const PdfToWord = () => {
         </w:drawing>
       </w:r>
     </w:p>`;
-        }
+          }
+        });
 
         // Add page break between pages except the last page
         if (pIdx < pageResults.length - 1) {
