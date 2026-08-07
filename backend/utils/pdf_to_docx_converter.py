@@ -1,480 +1,301 @@
 """
-Ultimate PDF to DOCX Converter - Maximum Fidelity
-Strategy:
-1. Use pdf2docx for core conversion (best text + table layout reconstruction)
-2. Post-process with PyMuPDF to inject ALL images that pdf2docx missed
-3. This hybrid approach gives the exact same visual output as the PDF
+PDF to DOCX Converter - Production Grade
+Uses pdf2docx for text/tables + PyMuPDF for missing image injection.
 """
+import sys, os, io, traceback
 
-import sys
-import os
-import io
-import traceback
-import fitz  # PyMuPDF
-from docx import Document
-from docx.shared import Pt, Inches, Emu, Cm, RGBColor
-from docx.enum.text import WD_ALIGN_PARAGRAPH
-from docx.oxml.ns import qn
-from docx.oxml import OxmlElement
-
-
-def inject_missing_images(pdf_path, docx_path):
-    """
-    Open the pdf2docx-generated docx and inject any images 
-    that pdf2docx failed to extract from the PDF.
-    """
-    pdf = fitz.open(pdf_path)
-    doc = Document(docx_path)
-    
-    images_added = 0
-    
-    for page_idx in range(len(pdf)):
-        page = pdf[page_idx]
-        image_list = page.get_images(full=True)
-        
-        for img_idx, img_info in enumerate(image_list):
-            xref = img_info[0]
-            try:
-                base_image = pdf.extract_image(xref)
-                if not base_image or not base_image.get("image"):
-                    continue
-                
-                image_bytes = base_image["image"]
-                img_ext = base_image.get("ext", "png")
-                
-                # Skip tiny images (< 1KB, likely artifacts/masks)
-                if len(image_bytes) < 1024:
-                    continue
-                
-                # Check image dimensions
-                width = base_image.get("width", 0)
-                height = base_image.get("height", 0)
-                if width < 20 or height < 20:
-                    continue
-                
-                # Calculate display size
-                # Get the image's actual position on the page using get_image_rects
-                try:
-                    rects = page.get_image_rects(xref)
-                    if rects and len(rects) > 0:
-                        rect = rects[0]
-                        display_width_pt = rect.width
-                        display_height_pt = rect.height
-                    else:
-                        display_width_pt = width * 72 / 96  # Approximate
-                        display_height_pt = height * 72 / 96
-                except:
-                    display_width_pt = width * 72 / 96
-                    display_height_pt = height * 72 / 96
-                
-                # Convert to inches, cap at page width
-                img_width_inches = min(display_width_pt / 72.0, 6.0)
-                img_height_inches = display_height_pt / 72.0 * (img_width_inches / (display_width_pt / 72.0))
-                
-                # Cap height
-                if img_height_inches > 8.0:
-                    ratio = 8.0 / img_height_inches
-                    img_height_inches = 8.0
-                    img_width_inches *= ratio
-                
-                # Minimum size
-                if img_width_inches < 0.3:
-                    img_width_inches = 0.5
-                    img_height_inches = 0.5
-                
-                # Add image paragraph
-                para = doc.add_paragraph()
-                para.alignment = WD_ALIGN_PARAGRAPH.CENTER
-                para.paragraph_format.space_before = Pt(6)
-                para.paragraph_format.space_after = Pt(6)
-                
-                run = para.add_run()
-                image_stream = io.BytesIO(image_bytes)
-                run.add_picture(image_stream, width=Inches(img_width_inches))
-                images_added += 1
-                
-            except Exception as e:
-                continue
-    
-    pdf.close()
-    
-    if images_added > 0:
-        doc.save(docx_path)
-    
-    return images_added
-
-
-def convert_with_pdf2docx(pdf_path, docx_path):
-    """Use pdf2docx library for maximum text/table fidelity."""
+def convert(pdf_path, docx_path):
+    """Primary: pdf2docx + image injection post-processing."""
+    import fitz
     from pdf2docx import Converter
-    
+    from docx import Document
+    from docx.shared import Inches
+    from docx.enum.text import WD_ALIGN_PARAGRAPH
+
+    # Step 1: pdf2docx core conversion
+    print("  [1/3] pdf2docx converting...", file=sys.stderr)
     cv = Converter(pdf_path)
     cv.convert(docx_path, start=0, end=None, multi_processing=False)
     cv.close()
     
-    return os.path.exists(docx_path) and os.path.getsize(docx_path) > 100
+    if not os.path.exists(docx_path) or os.path.getsize(docx_path) < 100:
+        raise RuntimeError("pdf2docx produced empty output")
+    
+    # Step 2: Count images already in the docx
+    from zipfile import ZipFile
+    existing = 0
+    try:
+        with ZipFile(docx_path, 'r') as z:
+            existing = len([f for f in z.namelist() if f.startswith('word/media/')])
+    except:
+        pass
+    print(f"  [2/3] pdf2docx included {existing} images", file=sys.stderr)
+    
+    # Step 3: Extract ALL images from PDF and inject missing ones
+    pdf = fitz.open(pdf_path)
+    total_pdf_images = 0
+    inject_images = []
+    
+    for page_idx in range(len(pdf)):
+        page = pdf[page_idx]
+        for img_info in page.get_images(full=True):
+            xref = img_info[0]
+            try:
+                base = pdf.extract_image(xref)
+                if not base or not base.get("image"):
+                    continue
+                img_bytes = base["image"]
+                w, h = base.get("width", 0), base.get("height", 0)
+                
+                # Skip tiny images (artifacts, masks)
+                if len(img_bytes) < 500 or w < 20 or h < 20:
+                    continue
+                
+                total_pdf_images += 1
+                
+                # Get display size
+                dw, dh = w * 72 / 96, h * 72 / 96
+                try:
+                    rects = page.get_image_rects(xref)
+                    if rects and len(rects) > 0:
+                        dw, dh = rects[0].width, rects[0].height
+                except:
+                    pass
+                
+                inject_images.append({
+                    "data": img_bytes,
+                    "w_inches": min(dw / 72.0, 6.0),
+                    "h_inches": min(dh / 72.0, 8.0),
+                    "page": page_idx
+                })
+            except:
+                continue
+    pdf.close()
+    
+    print(f"  [3/3] PDF has {total_pdf_images} images total", file=sys.stderr)
+    
+    # Only inject if pdf2docx missed images
+    if total_pdf_images > existing and inject_images:
+        doc = Document(docx_path)
+        added = 0
+        for img in inject_images:
+            try:
+                para = doc.add_paragraph()
+                para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                run = para.add_run()
+                run.add_picture(
+                    io.BytesIO(img["data"]),
+                    width=Inches(max(img["w_inches"], 0.5))
+                )
+                added += 1
+            except:
+                continue
+        if added > 0:
+            doc.save(docx_path)
+        print(f"  Injected {added} missing images", file=sys.stderr)
+    else:
+        print("  All images present, no injection needed", file=sys.stderr)
 
 
-def convert_custom_pymupdf(pdf_path, docx_path):
-    """
-    Fallback: Full custom converter using PyMuPDF for extraction 
-    and python-docx for building. Handles EVERYTHING including images.
-    """
+def fallback_convert(pdf_path, docx_path):
+    """Fallback: PyMuPDF text extraction + image extraction → python-docx."""
+    import fitz
+    from docx import Document
+    from docx.shared import Pt, Inches, Cm, RGBColor
+    from docx.enum.text import WD_ALIGN_PARAGRAPH
+    from docx.oxml.ns import qn
+    from docx.oxml import OxmlElement
+
     pdf = fitz.open(pdf_path)
     doc = Document()
     
-    # Set margins
     for section in doc.sections:
         section.top_margin = Cm(1.5)
         section.bottom_margin = Cm(1.5)
         section.left_margin = Cm(2.0)
         section.right_margin = Cm(2.0)
     
-    for page_idx in range(len(pdf)):
-        page = pdf[page_idx]
-        page_width = page.rect.width
-        
-        # Get all blocks sorted by position
+    for pi in range(len(pdf)):
+        page = pdf[pi]
+        pw = page.rect.width
         blocks = page.get_text("dict", flags=fitz.TEXT_PRESERVE_WHITESPACE)["blocks"]
         blocks.sort(key=lambda b: (round(b["bbox"][1] / 3) * 3, b["bbox"][0]))
         
-        # Track table areas
-        table_areas = set()
-        
-        # Extract tables
+        # Tables
+        table_bi = set()
+        tables_data = []
         try:
             tables = page.find_tables()
             if tables and tables.tables:
-                for table in tables.tables:
-                    tb = table.bbox
-                    rows = table.extract()
-                    if rows and len(rows) > 0:
-                        # Mark blocks inside table
-                        for bi, block in enumerate(blocks):
-                            if block["type"] == 0:
-                                bb = block["bbox"]
+                for t in tables.tables:
+                    tb = t.bbox
+                    rows = t.extract()
+                    if rows:
+                        tables_data.append({"bbox": tb, "rows": rows})
+                        for bi, b in enumerate(blocks):
+                            if b["type"] == 0:
+                                bb = b["bbox"]
                                 if bb[0] >= tb[0]-5 and bb[1] >= tb[1]-5 and bb[2] <= tb[2]+5 and bb[3] <= tb[3]+5:
-                                    table_areas.add(bi)
+                                    table_bi.add(bi)
         except:
-            tables = type('obj', (object,), {'tables': []})()
+            pass
         
-        # Process blocks
-        processed_table_y = set()
-        
+        done_tables = set()
         for bi, block in enumerate(blocks):
-            if bi in table_areas:
-                # Check if we should insert a table at this Y position
-                y_key = round(block["bbox"][1] / 10) * 10
-                if y_key not in processed_table_y:
-                    processed_table_y.add(y_key)
-                    # Find matching table
-                    try:
-                        for table in tables.tables:
-                            tb = table.bbox
-                            if abs(tb[1] - block["bbox"][1]) < 15:
-                                rows = table.extract()
-                                if rows:
-                                    _add_table_to_doc(doc, rows)
-                                break
-                    except:
-                        pass
+            if bi in table_bi:
+                yk = round(block["bbox"][1] / 10) * 10
+                if yk not in done_tables:
+                    done_tables.add(yk)
+                    for td in tables_data:
+                        if abs(td["bbox"][1] - block["bbox"][1]) < 15:
+                            _make_table(doc, td["rows"])
+                            break
                 continue
             
-            if block["type"] == 0:  # Text
-                _add_text_block_v2(doc, block, page_width)
-            elif block["type"] == 1:  # Image
-                _add_image_from_block(doc, block, page, pdf)
+            if block["type"] == 0:
+                for line in block.get("lines", []):
+                    spans = line.get("spans", [])
+                    text = "".join(s.get("text", "") for s in spans).strip()
+                    if not text:
+                        continue
+                    para = doc.add_paragraph()
+                    lx0, lx1 = line["bbox"][0], line["bbox"][2]
+                    if abs((lx0+lx1)/2 - pw/2) < 25 and (lx1-lx0) < pw*0.65:
+                        para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                    para.paragraph_format.space_before = Pt(1)
+                    para.paragraph_format.space_after = Pt(1)
+                    for s in spans:
+                        t = s.get("text", "")
+                        if not t: continue
+                        run = para.add_run(t)
+                        run.font.size = Pt(max(6, min(40, s.get("size", 10))))
+                        fn = s.get("font", "")
+                        if fn:
+                            run.font.name = fn.split("+")[-1] if "+" in fn else fn
+                        fl = s.get("flags", 0)
+                        if (fl & 16) or "bold" in fn.lower(): run.bold = True
+                        if (fl & 2) or "italic" in fn.lower(): run.italic = True
+            
+            elif block["type"] == 1:
+                bbox = block["bbox"]
+                wp, hp = bbox[2]-bbox[0], bbox[3]-bbox[1]
+                if wp < 10 or hp < 10: continue
+                img_data = block.get("image")
+                if not img_data:
+                    for ii in page.get_images(full=True):
+                        try:
+                            rects = page.get_image_rects(ii[0])
+                            for r in rects:
+                                if abs(r.x0-bbox[0]) < 20 and abs(r.y0-bbox[1]) < 20:
+                                    base = pdf.extract_image(ii[0])
+                                    if base and base.get("image"):
+                                        img_data = base["image"]
+                                        break
+                        except: continue
+                        if img_data: break
+                if not img_data:
+                    try:
+                        pix = page.get_pixmap(matrix=fitz.Matrix(3,3), clip=fitz.Rect(bbox))
+                        img_data = pix.tobytes("png")
+                    except: continue
+                if img_data and len(img_data) > 500:
+                    try:
+                        para = doc.add_paragraph()
+                        para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                        run = para.add_run()
+                        run.add_picture(io.BytesIO(img_data), width=Inches(min(wp/72, 5.5)))
+                    except: pass
         
-        # Also extract standalone images not in blocks
-        image_list = page.get_images(full=True)
-        block_image_count = sum(1 for b in blocks if b["type"] == 1)
-        
-        if len(image_list) > block_image_count:
-            # There are images not captured in blocks
-            for img_info in image_list:
-                xref = img_info[0]
+        # Extra images
+        imgs = page.get_images(full=True)
+        bimgs = sum(1 for b in blocks if b["type"] == 1)
+        if len(imgs) > bimgs:
+            for ii in imgs:
                 try:
-                    base_image = pdf.extract_image(xref)
-                    if not base_image or not base_image.get("image"):
-                        continue
-                    if len(base_image["image"]) < 1024:
-                        continue
-                    
-                    w = base_image.get("width", 0)
-                    h = base_image.get("height", 0)
-                    if w < 30 or h < 30:
-                        continue
-                    
-                    img_w = min(w / 96.0 * 72 / 72.0, 5.5)
-                    img_h = h / 96.0 * 72 / 72.0 * (img_w / (w / 96.0 * 72 / 72.0))
-                    if img_h > 8:
-                        ratio = 8 / img_h
-                        img_h = 8
-                        img_w *= ratio
-                    
+                    base = pdf.extract_image(ii[0])
+                    if not base or not base.get("image") or len(base["image"]) < 500: continue
+                    w, h = base.get("width", 0), base.get("height", 0)
+                    if w < 30 or h < 30: continue
                     para = doc.add_paragraph()
                     para.alignment = WD_ALIGN_PARAGRAPH.CENTER
                     run = para.add_run()
-                    run.add_picture(io.BytesIO(base_image["image"]), width=Inches(img_w))
-                except:
-                    continue
+                    run.add_picture(io.BytesIO(base["image"]), width=Inches(min(w*72/96/72, 5.5)))
+                except: continue
         
-        # Page break
-        if page_idx < len(pdf) - 1:
+        if pi < len(pdf) - 1:
             doc.add_page_break()
     
     pdf.close()
     doc.save(docx_path)
 
 
-def _add_text_block_v2(doc, block, page_width):
-    """Add text block with full formatting preservation."""
-    for line in block.get("lines", []):
-        spans = line.get("spans", [])
-        if not spans:
-            continue
-        
-        full_text = "".join(s.get("text", "") for s in spans).strip()
-        if not full_text:
-            continue
-        
-        para = doc.add_paragraph()
-        
-        # Alignment
-        lx0 = line["bbox"][0]
-        lx1 = line["bbox"][2]
-        lcenter = (lx0 + lx1) / 2
-        pcenter = page_width / 2
-        lwidth = lx1 - lx0
-        
-        if abs(lcenter - pcenter) < 25 and lwidth < page_width * 0.65:
-            para.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        elif lx0 > page_width * 0.55:
-            para.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-        
-        para.paragraph_format.space_before = Pt(1)
-        para.paragraph_format.space_after = Pt(1)
-        
-        for span in spans:
-            text = span.get("text", "")
-            if not text:
-                continue
-            
-            run = para.add_run(text)
-            
-            # Size
-            size = span.get("size", 10)
-            run.font.size = Pt(max(6, min(40, size)))
-            
-            # Font
-            font_name = span.get("font", "")
-            if font_name:
-                clean = font_name.split("+")[-1] if "+" in font_name else font_name
-                run.font.name = clean
-            
-            # Bold
-            flags = span.get("flags", 0)
-            if (flags & 16) or "bold" in font_name.lower() or "black" in font_name.lower():
-                run.bold = True
-            
-            # Italic
-            if (flags & 2) or "italic" in font_name.lower() or "oblique" in font_name.lower():
-                run.italic = True
-            
-            # Underline
-            if flags & 4:
-                run.underline = True
-            
-            # Color
-            color = span.get("color", 0)
-            if color and color != 0:
-                try:
-                    r = (color >> 16) & 0xFF
-                    g = (color >> 8) & 0xFF
-                    b = color & 0xFF
-                    if not (r == 0 and g == 0 and b == 0):
-                        run.font.color.rgb = RGBColor(r, g, b)
-                except:
-                    pass
-
-
-def _add_image_from_block(doc, block, page, pdf_doc):
-    """Extract and add image from a PyMuPDF image block."""
-    try:
-        bbox = block["bbox"]
-        w_pt = bbox[2] - bbox[0]
-        h_pt = bbox[3] - bbox[1]
-        
-        if w_pt < 10 or h_pt < 10:
-            return
-        
-        image_data = None
-        
-        # Try block's direct image data
-        if "image" in block:
-            image_data = block["image"]
-        
-        # Try extracting via xref from page images
-        if not image_data:
-            try:
-                for img_info in page.get_images(full=True):
-                    xref = img_info[0]
-                    try:
-                        rects = page.get_image_rects(xref)
-                        for rect in rects:
-                            # Check if this image's rect overlaps with our block
-                            if (abs(rect.x0 - bbox[0]) < 20 and abs(rect.y0 - bbox[1]) < 20):
-                                base = pdf_doc.extract_image(xref)
-                                if base and base.get("image"):
-                                    image_data = base["image"]
-                                    break
-                    except:
-                        continue
-                    if image_data:
-                        break
-            except:
-                pass
-        
-        # Clip-render fallback
-        if not image_data:
-            try:
-                clip = fitz.Rect(bbox)
-                mat = fitz.Matrix(3, 3)
-                pix = page.get_pixmap(matrix=mat, clip=clip)
-                image_data = pix.tobytes("png")
-            except:
-                return
-        
-        if not image_data or len(image_data) < 500:
-            return
-        
-        img_w = min(w_pt / 72.0, 5.5)
-        img_h = h_pt / 72.0 * (img_w / (w_pt / 72.0))
-        if img_h > 8:
-            r = 8 / img_h
-            img_h = 8
-            img_w *= r
-        
-        para = doc.add_paragraph()
-        para.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        para.paragraph_format.space_before = Pt(4)
-        para.paragraph_format.space_after = Pt(4)
-        run = para.add_run()
-        run.add_picture(io.BytesIO(image_data), width=Inches(img_w))
-    except:
-        pass
-
-
-def _add_table_to_doc(doc, rows):
-    """Add a table with borders to the document."""
-    if not rows:
-        return
+def _make_table(doc, rows):
+    from docx.oxml.ns import qn
+    from docx.oxml import OxmlElement
+    from docx.shared import Pt
     
-    max_cols = max(len(r) for r in rows)
-    if max_cols == 0:
-        return
+    mc = max(len(r) for r in rows)
+    if mc == 0: return
+    t = doc.add_table(rows=len(rows), cols=mc)
     
-    table = doc.add_table(rows=len(rows), cols=max_cols)
-    
-    # Set table borders
-    tbl = table._tbl
-    tblPr = tbl.tblPr
-    if tblPr is None:
-        tblPr = OxmlElement('w:tblPr')
-        tbl.insert(0, tblPr)
-    
+    tbl = t._tbl
+    tblPr = tbl.tblPr or OxmlElement('w:tblPr')
     borders = OxmlElement('w:tblBorders')
-    for edge in ('top', 'left', 'bottom', 'right', 'insideH', 'insideV'):
-        element = OxmlElement(f'w:{edge}')
-        element.set(qn('w:val'), 'single')
-        element.set(qn('w:sz'), '4')
-        element.set(qn('w:space'), '0')
-        element.set(qn('w:color'), '000000')
-        borders.append(element)
+    for e in ('top','left','bottom','right','insideH','insideV'):
+        el = OxmlElement(f'w:{e}')
+        el.set(qn('w:val'), 'single')
+        el.set(qn('w:sz'), '4')
+        el.set(qn('w:space'), '0')
+        el.set(qn('w:color'), '000000')
+        borders.append(el)
     tblPr.append(borders)
     
-    # Auto width
-    tblW = OxmlElement('w:tblW')
-    tblW.set(qn('w:w'), '5000')
-    tblW.set(qn('w:type'), 'pct')
-    tblPr.append(tblW)
-    
-    # Fill cells
     for ri, row in enumerate(rows):
-        for ci in range(max_cols):
-            cell = table.cell(ri, ci)
-            text = str(row[ci]).strip() if ci < len(row) and row[ci] else ""
-            cell.text = text
-            for para in cell.paragraphs:
-                para.paragraph_format.space_before = Pt(1)
-                para.paragraph_format.space_after = Pt(1)
-                for run in para.runs:
+        for ci in range(mc):
+            cell = t.cell(ri, ci)
+            cell.text = str(row[ci]).strip() if ci < len(row) and row[ci] else ""
+            for p in cell.paragraphs:
+                for run in p.runs:
                     run.font.size = Pt(9)
-                    run.font.name = "Calibri"
-                    if ri == 0:
-                        run.bold = True
-    
-    doc.add_paragraph().paragraph_format.space_after = Pt(2)
-
-
-def main(pdf_path, docx_path):
-    """
-    Ultimate conversion pipeline:
-    1. Try pdf2docx (best for text layout + tables)
-    2. Post-process to inject missing images
-    3. If pdf2docx fails, use custom PyMuPDF converter
-    """
-    
-    success = False
-    
-    # === STEP 1: pdf2docx conversion ===
-    try:
-        print("Step 1: Running pdf2docx converter...", file=sys.stderr)
-        success = convert_with_pdf2docx(pdf_path, docx_path)
-        if success:
-            print("Step 1: pdf2docx conversion successful", file=sys.stderr)
-    except Exception as e:
-        print(f"Step 1: pdf2docx failed: {e}", file=sys.stderr)
-        success = False
-    
-    # === STEP 2: Inject missing images ===
-    if success:
-        try:
-            print("Step 2: Injecting missing images...", file=sys.stderr)
-            count = inject_missing_images(pdf_path, docx_path)
-            print(f"Step 2: Injected {count} additional images", file=sys.stderr)
-        except Exception as e:
-            print(f"Step 2: Image injection failed (non-critical): {e}", file=sys.stderr)
-    
-    # === STEP 3: Fallback to custom converter ===
-    if not success:
-        try:
-            print("Step 3: Using custom PyMuPDF converter...", file=sys.stderr)
-            convert_custom_pymupdf(pdf_path, docx_path)
-            if os.path.exists(docx_path) and os.path.getsize(docx_path) > 100:
-                success = True
-                print("Step 3: Custom converter successful", file=sys.stderr)
-        except Exception as e:
-            print(f"Step 3: Custom converter also failed: {e}", file=sys.stderr)
-            traceback.print_exc(file=sys.stderr)
-    
-    return success
+                    if ri == 0: run.bold = True
 
 
 if __name__ == '__main__':
     if len(sys.argv) < 3:
-        print("Usage: python pdf_to_docx_converter.py <pdf_path> <docx_path>", file=sys.stderr)
+        print("Usage: pdf_to_docx_converter.py <pdf> <docx>", file=sys.stderr)
         sys.exit(1)
     
-    pdf_input = sys.argv[1]
-    docx_output = sys.argv[2]
+    pdf_in, docx_out = sys.argv[1], sys.argv[2]
     
-    if not os.path.exists(pdf_input):
-        print(f"ERROR: Input file not found: {pdf_input}", file=sys.stderr)
+    if not os.path.exists(pdf_in):
+        print(f"ERROR: Not found: {pdf_in}", file=sys.stderr)
         sys.exit(1)
     
-    if main(pdf_input, docx_output):
+    ok = False
+    
+    # Primary: pdf2docx + image injection
+    try:
+        print("Method 1: pdf2docx + image injection", file=sys.stderr)
+        convert(pdf_in, docx_out)
+        if os.path.exists(docx_out) and os.path.getsize(docx_out) > 100:
+            ok = True
+    except Exception as e:
+        print(f"Method 1 failed: {e}", file=sys.stderr)
+        traceback.print_exc(file=sys.stderr)
+    
+    # Fallback: custom PyMuPDF
+    if not ok:
+        try:
+            print("Method 2: Custom PyMuPDF fallback", file=sys.stderr)
+            fallback_convert(pdf_in, docx_out)
+            if os.path.exists(docx_out) and os.path.getsize(docx_out) > 100:
+                ok = True
+        except Exception as e:
+            print(f"Method 2 failed: {e}", file=sys.stderr)
+            traceback.print_exc(file=sys.stderr)
+    
+    if ok:
         print("SUCCESS")
     else:
-        print("ERROR: All conversion methods failed", file=sys.stderr)
+        print("ERROR: All methods failed", file=sys.stderr)
         sys.exit(1)

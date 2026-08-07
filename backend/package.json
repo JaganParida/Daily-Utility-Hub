@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "postinstall": "pip3 install --no-cache-dir --user -r requirements.txt 2>/dev/null || pip install --no-cache-dir --user -r requirements.txt 2>/dev/null || echo python-skip"
   },
   "keywords": [],
   "author": "",

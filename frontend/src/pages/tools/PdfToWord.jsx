@@ -298,151 +298,111 @@ const PdfToWord = () => {
     const toastId = toast.loading('Converting PDF to Word...');
 
     // ====================================================================
-    // ATTEMPT 1: Backend Python pdf2docx (highest fidelity, if available)
+    // ATTEMPT 1: Backend Python pdf2docx (highest fidelity)
     // ====================================================================
-    try {
-      setCurrentStatus('Trying server-side high-fidelity engine...');
-      setProgress(10);
+    let serverSuccess = false;
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        setCurrentStatus(attempt === 1 ? 'Converting with high-fidelity engine...' : 'Retrying server conversion...');
+        setProgress(10 + (attempt - 1) * 15);
 
-      const formData = new FormData();
-      formData.append('pdf', file);
+        const formData = new FormData();
+        formData.append('pdf', file);
 
-      const response = await api.post('/pdf/convert-to-word', formData, {
-        responseType: 'blob',
-        headers: { 'Content-Type': 'multipart/form-data' },
-        timeout: 120000 // 2 minutes max
-      });
+        const response = await api.post('/pdf/convert-to-word', formData, {
+          responseType: 'blob',
+          headers: { 'Content-Type': 'multipart/form-data' },
+          timeout: 120000
+        });
 
-      // Verify the response is actually a docx and not a JSON error
-      if (response.data && response.data.size > 500 && response.data.type !== 'application/json') {
-        const blob = new Blob([response.data], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
-        const outName = `${file.name.replace(/\.pdf$/i, '')}_converted.docx`;
-        setWordBlob(blob);
-        setWordFileName(outName);
-        setConversionMethod('server');
-        setProgress(100);
-        setCurrentStatus('Conversion complete!');
-        toast.success('High-fidelity Word document created!', { id: toastId });
-        setIsProcessing(false);
-        return;
+        // Validate: must be > 1KB and not a JSON error response
+        if (response.data && response.data.size > 1000) {
+          // Check if it's actually JSON error disguised as blob
+          const contentType = response.headers?.['content-type'] || '';
+          if (contentType.includes('application/json')) {
+            throw new Error('Server returned error response');
+          }
+
+          const blob = new Blob([response.data], { 
+            type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' 
+          });
+          const outName = `${file.name.replace(/\.pdf$/i, '')}_converted.docx`;
+          setWordBlob(blob);
+          setWordFileName(outName);
+          setConversionMethod('server');
+          setProgress(100);
+          setCurrentStatus('Conversion complete!');
+          toast.success('Word document created successfully!', { id: toastId });
+          setIsProcessing(false);
+          serverSuccess = true;
+          return;
+        }
+      } catch (err) {
+        console.warn(`Server attempt ${attempt} failed:`, err?.message);
+        if (attempt < 2) {
+          await new Promise(r => setTimeout(r, 1000)); // Wait 1s before retry
+        }
       }
-    } catch (serverErr) {
-      console.warn('Backend converter unavailable, using client-side engine.', serverErr?.message);
     }
 
     // ====================================================================
-    // ATTEMPT 2: Client-side smart conversion
-    // Renders each page as a high-res image AND extracts text layer
-    // Produces a docx with editable text + embedded page images for fidelity
+    // ATTEMPT 2: Client-side fallback (page images in docx)
+    // Each page rendered as high-res image = exact visual match
     // ====================================================================
-    try {
-      setCurrentStatus('Starting client-side conversion...');
-      setProgress(15);
+    if (!serverSuccess) {
+      try {
+        setCurrentStatus('Using client-side converter...');
+        setProgress(20);
 
-      const mediaImages = []; // { filename, base64 }
-      const rels = []; // { rId, target }
-      let bodyXml = '';
+        const mediaImages = [];
+        const rels = [];
+        let bodyXml = '';
 
-      for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
-        const pct = 15 + Math.round(((pageNum - 1) / totalPages) * 70);
-        setProgress(pct);
-        setCurrentStatus(`Processing page ${pageNum} of ${totalPages}...`);
+        for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
+          const pct = 20 + Math.round(((pageNum - 1) / totalPages) * 65);
+          setProgress(pct);
+          setCurrentStatus(`Rendering page ${pageNum} of ${totalPages}...`);
 
-        const page = await pdfDocument.getPage(pageNum);
-        const viewport1 = page.getViewport({ scale: 1.0 });
-        const pageWidthPt = viewport1.width;
-        const pageHeightPt = viewport1.height;
+          const page = await pdfDocument.getPage(pageNum);
+          const viewport1 = page.getViewport({ scale: 1.0 });
 
-        // --- Extract native text ---
-        const textData = await extractPageText(page);
-        let hasNativeText = textData.hasText;
-        let textRuns = textData.textRuns;
+          // Render page at high resolution
+          const scale = 2.5;
+          const { canvas } = await renderPageCanvas(page, scale);
+          const imgDataUrl = canvas.toDataURL('image/jpeg', 0.92);
+          const base64Data = imgDataUrl.split(',')[1];
+          const imgFilename = `page_${pageNum}.jpg`;
+          mediaImages.push({ filename: imgFilename, base64: base64Data });
 
-        // --- OCR fallback for scanned/image-only pages ---
-        if (!hasNativeText) {
-          setCurrentStatus(`Page ${pageNum}: Running OCR...`);
-          try {
-            const { canvas } = await renderPageCanvas(page, 2.0);
-            const imageDataUrl = canvas.toDataURL('image/png');
-            const ocrResult = await Tesseract.recognize(imageDataUrl, ocrLanguage, {
-              logger: (m) => {
-                if (m.status === 'recognizing text') {
-                  setCurrentStatus(`Page ${pageNum}: OCR ${Math.round(m.progress * 100)}%`);
-                }
-              }
-            });
-            const ocrLines = (ocrResult.data.lines || []).filter(l => l.text.trim().length > 0);
-            if (ocrLines.length > 0) {
-              textRuns = ocrLines.map(line => ({
-                y: 0,
-                runs: [{ text: line.text.trim(), isBold: false, isItalic: false, height: 10 }],
-                isMultiCol: false,
-                isHeader: false,
-                maxHeight: 10
-              }));
-              hasNativeText = true;
-            }
-          } catch (ocrErr) {
-            console.warn(`OCR failed on page ${pageNum}:`, ocrErr);
-          }
-        }
+          const rId = `rIdImg${pageNum}`;
+          rels.push({ rId, target: `media/${imgFilename}` });
 
-        // --- Render page as image for visual fidelity ---
-        const imgScale = 2.0;
-        const { canvas: pageCanvas } = await renderPageCanvas(page, imgScale);
-        const imgDataUrl = pageCanvas.toDataURL('image/jpeg', 0.92);
-        const base64Data = imgDataUrl.split(',')[1];
-        const imgFilename = `page_${pageNum}.jpg`;
-        mediaImages.push({ filename: imgFilename, base64: base64Data });
+          // Calculate EMUs (1 point = 12700 EMU)
+          const maxWEmu = 5486400; // ~6 inches
+          const maxHEmu = 7772400; // ~8.5 inches
+          let wEmu = Math.round(viewport1.width * 12700);
+          let hEmu = Math.round(viewport1.height * 12700);
 
-        const rId = `rIdImg${pageNum}`;
-        rels.push({ rId, target: `media/${imgFilename}` });
+          if (wEmu > maxWEmu) { const r = maxWEmu / wEmu; wEmu = maxWEmu; hEmu = Math.round(hEmu * r); }
+          if (hEmu > maxHEmu) { const r = maxHEmu / hEmu; hEmu = maxHEmu; wEmu = Math.round(wEmu * r); }
 
-        // Calculate EMUs for proper sizing (1 point = 12700 EMU, max width ~6 inches = 5486400 EMU)
-        const maxWidthEmu = 5486400;
-        const maxHeightEmu = 7772400;
-        let imgWidthEmu = Math.round(pageWidthPt * 12700);
-        let imgHeightEmu = Math.round(pageHeightPt * 12700);
-
-        // Scale down proportionally if needed
-        if (imgWidthEmu > maxWidthEmu) {
-          const ratio = maxWidthEmu / imgWidthEmu;
-          imgWidthEmu = maxWidthEmu;
-          imgHeightEmu = Math.round(imgHeightEmu * ratio);
-        }
-        if (imgHeightEmu > maxHeightEmu) {
-          const ratio = maxHeightEmu / imgHeightEmu;
-          imgHeightEmu = maxHeightEmu;
-          imgWidthEmu = Math.round(imgWidthEmu * ratio);
-        }
-
-        // --- Build page content ---
-        // Add editable text first
-        if (hasNativeText && textRuns.length > 0) {
-          bodyXml += buildTextDocXml(textRuns);
-        }
-
-        // Add rendered page image (preserves exact visual layout)
-        bodyXml += `<w:p>
-      <w:pPr><w:jc w:val="center"/><w:spacing w:before="120" w:after="120"/></w:pPr>
+          bodyXml += `<w:p>
+      <w:pPr><w:jc w:val="center"/><w:spacing w:before="0" w:after="0"/></w:pPr>
       <w:r>
         <w:drawing>
           <wp:inline distT="0" distB="0" distL="0" distR="0" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing">
-            <wp:extent cx="${imgWidthEmu}" cy="${imgHeightEmu}"/>
+            <wp:extent cx="${wEmu}" cy="${hEmu}"/>
             <wp:docPr id="${pageNum}" name="Page ${pageNum}"/>
             <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
               <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
                 <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
-                  <pic:nvPicPr>
-                    <pic:cNvPr id="${pageNum}" name="Page${pageNum}.jpg"/>
-                    <pic:cNvPicPr/>
-                  </pic:nvPicPr>
+                  <pic:nvPicPr><pic:cNvPr id="${pageNum}" name="Page${pageNum}.jpg"/><pic:cNvPicPr/></pic:nvPicPr>
                   <pic:blipFill>
                     <a:blip r:embed="${rId}" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"/>
                     <a:stretch><a:fillRect/></a:stretch>
                   </pic:blipFill>
                   <pic:spPr>
-                    <a:xfrm><a:off x="0" y="0"/><a:ext cx="${imgWidthEmu}" cy="${imgHeightEmu}"/></a:xfrm>
+                    <a:xfrm><a:off x="0" y="0"/><a:ext cx="${wEmu}" cy="${hEmu}"/></a:xfrm>
                     <a:prstGeom prst="rect"><a:avLst/></a:prstGeom>
                   </pic:spPr>
                 </pic:pic>
@@ -453,113 +413,54 @@ const PdfToWord = () => {
       </w:r>
     </w:p>`;
 
-        // Page break between pages
-        if (pageNum < totalPages) {
-          bodyXml += `<w:p><w:r><w:br w:type="page"/></w:r></w:p>`;
+          if (pageNum < totalPages) {
+            bodyXml += `<w:p><w:r><w:br w:type="page"/></w:r></w:p>`;
+          }
         }
-      }
 
-      setProgress(90);
-      setCurrentStatus('Assembling Word document...');
+        setProgress(90);
+        setCurrentStatus('Assembling Word document...');
 
-      // Assemble complete OOXML
-      const documentXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
-            xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
-            xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
-            xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
-            xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
-  <w:body>
-    ${bodyXml}
-    <w:sectPr>
-      <w:pgSz w:w="12240" w:h="15840"/>
-      <w:pgMar w:top="720" w:right="720" w:bottom="720" w:left="720"/>
-    </w:sectPr>
-  </w:body>
+        const documentXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+  <w:body>${bodyXml}<w:sectPr><w:pgSz w:w="12240" w:h="15840"/><w:pgMar w:top="360" w:right="360" w:bottom="360" w:left="360"/></w:sectPr></w:body>
 </w:document>`;
 
-      // Document relationships
-      let docRelsXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-  <Relationship Id="rIdStyle" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>`;
-      rels.forEach(rel => {
-        docRelsXml += `\n  <Relationship Id="${rel.rId}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="${rel.target}"/>`;
-      });
-      docRelsXml += `\n</Relationships>`;
+        let docRelsXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rIdStyle" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>`;
+        rels.forEach(rel => { docRelsXml += `<Relationship Id="${rel.rId}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="${rel.target}"/>`; });
+        docRelsXml += `</Relationships>`;
 
-      const contentTypesXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
-  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
-  <Default Extension="xml" ContentType="application/xml"/>
-  <Default Extension="jpg" ContentType="image/jpeg"/>
-  <Default Extension="png" ContentType="image/png"/>
-  <Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
-  <Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>
-</Types>`;
+        const contentTypesXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="jpg" ContentType="image/jpeg"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/></Types>`;
 
-      const globalRelsXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
-</Relationships>`;
+        const globalRelsXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>`;
 
-      const stylesXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
-  <w:docDefaults>
-    <w:rPrDefault>
-      <w:rPr>
-        <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/>
-        <w:sz w:val="22"/>
-      </w:rPr>
-    </w:rPrDefault>
-    <w:pPrDefault>
-      <w:pPr>
-        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
-      </w:pPr>
-    </w:pPrDefault>
-  </w:docDefaults>
-  <w:style w:type="table" w:styleId="TableGrid">
-    <w:name w:val="Table Grid"/>
-    <w:tblPr>
-      <w:tblBorders>
-        <w:top w:val="single" w:sz="4" w:space="0" w:color="auto"/>
-        <w:left w:val="single" w:sz="4" w:space="0" w:color="auto"/>
-        <w:bottom w:val="single" w:sz="4" w:space="0" w:color="auto"/>
-        <w:right w:val="single" w:sz="4" w:space="0" w:color="auto"/>
-        <w:insideH w:val="single" w:sz="4" w:space="0" w:color="auto"/>
-        <w:insideV w:val="single" w:sz="4" w:space="0" w:color="auto"/>
-      </w:tblBorders>
-    </w:tblPr>
-  </w:style>
-</w:styles>`;
+        const stylesXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri"/><w:sz w:val="22"/></w:rPr></w:rPrDefault></w:docDefaults></w:styles>`;
 
-      // Build ZIP
-      const zip = new JSZip();
-      zip.file('[Content_Types].xml', contentTypesXml);
-      zip.file('_rels/.rels', globalRelsXml);
-      zip.file('word/document.xml', documentXml);
-      zip.file('word/styles.xml', stylesXml);
-      zip.file('word/_rels/document.xml.rels', docRelsXml);
+        const zip = new JSZip();
+        zip.file('[Content_Types].xml', contentTypesXml);
+        zip.file('_rels/.rels', globalRelsXml);
+        zip.file('word/document.xml', documentXml);
+        zip.file('word/styles.xml', stylesXml);
+        zip.file('word/_rels/document.xml.rels', docRelsXml);
+        mediaImages.forEach(img => { zip.file(`word/media/${img.filename}`, img.base64, { base64: true }); });
 
-      mediaImages.forEach(img => {
-        zip.file(`word/media/${img.filename}`, img.base64, { base64: true });
-      });
+        const zipBlob = await zip.generateAsync({ type: 'blob' });
+        const blob = new Blob([zipBlob], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+        const outName = `${file.name.replace(/\.pdf$/i, '')}_converted.docx`;
 
-      const zipBlob = await zip.generateAsync({ type: 'blob' });
-      const blob = new Blob([zipBlob], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
-      const outName = `${file.name.replace(/\.pdf$/i, '')}_converted.docx`;
-
-      setWordBlob(blob);
-      setWordFileName(outName);
-      setConversionMethod('client');
-      setProgress(100);
-      setCurrentStatus('Conversion complete!');
-      toast.success('Word document created successfully!', { id: toastId });
-    } catch (err) {
-      console.error('Client-side conversion failed:', err);
-      toast.error('Conversion failed. Please try again.', { id: toastId });
-    } finally {
-      setIsProcessing(false);
+        setWordBlob(blob);
+        setWordFileName(outName);
+        setConversionMethod('client');
+        setProgress(100);
+        setCurrentStatus('Conversion complete!');
+        toast.success('Word document created!', { id: toastId });
+      } catch (err) {
+        console.error('Client-side conversion failed:', err);
+        toast.error('Conversion failed. Please try again.', { id: toastId });
+      }
     }
+
+    setIsProcessing(false);
   };
 
   const handleDownload = () => {

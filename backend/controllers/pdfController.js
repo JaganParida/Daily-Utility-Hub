@@ -490,7 +490,21 @@ exports.inspectPdf = async (req, res) => {
 };
 
 // High-Fidelity PDF to Word Conversion using Python pdf2docx
-const { spawn } = require('child_process');
+const { spawn, execSync } = require('child_process');
+
+// Detect available Python command
+let pythonCmd = null;
+try {
+  execSync('python3 --version', { stdio: 'pipe' });
+  pythonCmd = 'python3';
+} catch {
+  try {
+    execSync('python --version', { stdio: 'pipe' });
+    pythonCmd = 'python';
+  } catch {
+    console.warn('⚠️ No Python found. PDF-to-Word conversion will be unavailable.');
+  }
+}
 
 exports.convertToWord = async (req, res) => {
   try {
@@ -498,21 +512,51 @@ exports.convertToWord = async (req, res) => {
       return res.status(400).json({ message: 'Please upload a PDF file.' });
     }
 
+    if (!pythonCmd) {
+      cleanupFiles([req.file]);
+      return res.status(503).json({ message: 'Python is not available on this server.' });
+    }
+
     const inputPdfPath = req.file.path;
     const outputDocxPath = req.file.path + '.docx';
     const scriptPath = path.join(__dirname, '../utils/pdf_to_docx_converter.py');
 
-    const pythonProcess = spawn('python', [scriptPath, inputPdfPath, outputDocxPath]);
+    console.log(`[PDF-to-Word] Starting conversion: ${req.file.originalname} (${(req.file.size / 1024).toFixed(1)} KB)`);
 
+    const pythonProcess = spawn(pythonCmd, [scriptPath, inputPdfPath, outputDocxPath], {
+      timeout: 120000 // 2 minute timeout
+    });
+
+    let stdoutData = '';
     let stderrData = '';
+
+    pythonProcess.stdout.on('data', (data) => {
+      stdoutData += data.toString();
+    });
+
     pythonProcess.stderr.on('data', (data) => {
       stderrData += data.toString();
     });
 
+    pythonProcess.on('error', (err) => {
+      console.error('[PDF-to-Word] Process error:', err.message);
+      cleanupFiles([{ path: inputPdfPath }, { path: outputDocxPath }]);
+      if (!res.headersSent) {
+        return res.status(500).json({ message: 'Failed to start conversion process.' });
+      }
+    });
+
     pythonProcess.on('close', (code) => {
-      if (code === 0 && fs.existsSync(outputDocxPath)) {
+      console.log(`[PDF-to-Word] Process exited with code ${code}`);
+      if (stderrData) console.log('[PDF-to-Word] Logs:', stderrData.trim());
+
+      if (code === 0 && fs.existsSync(outputDocxPath) && fs.statSync(outputDocxPath).size > 100) {
+        const fileSize = fs.statSync(outputDocxPath).size;
+        console.log(`[PDF-to-Word] Output: ${(fileSize / 1024).toFixed(1)} KB`);
+
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
-        res.setHeader('Content-Disposition', `attachment; filename="${req.file.originalname.replace(/\.pdf$/i, '')}_converted.docx"`);
+        res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(req.file.originalname.replace(/\.pdf$/i, ''))}_converted.docx"`);
+        res.setHeader('Content-Length', fileSize);
 
         const fileStream = fs.createReadStream(outputDocxPath);
         fileStream.pipe(res);
@@ -520,16 +564,24 @@ exports.convertToWord = async (req, res) => {
         fileStream.on('end', () => {
           cleanupFiles([{ path: inputPdfPath }, { path: outputDocxPath }]);
         });
+
+        fileStream.on('error', (streamErr) => {
+          console.error('[PDF-to-Word] Stream error:', streamErr);
+          cleanupFiles([{ path: inputPdfPath }, { path: outputDocxPath }]);
+        });
       } else {
-        console.error('Python pdf2docx Error:', stderrData);
+        console.error('[PDF-to-Word] Conversion failed. stderr:', stderrData);
         cleanupFiles([{ path: inputPdfPath }, { path: outputDocxPath }]);
-        return res.status(500).json({ message: 'PDF to Word conversion failed on server.' });
+        if (!res.headersSent) {
+          return res.status(500).json({ message: 'PDF to Word conversion failed on server.' });
+        }
       }
     });
   } catch (error) {
     cleanupFiles(req.file ? [req.file] : []);
-    console.error('Convert To Word Error:', error);
-    res.status(500).json({ message: 'Server error during PDF to Word conversion.' });
+    console.error('[PDF-to-Word] Error:', error);
+    if (!res.headersSent) {
+      res.status(500).json({ message: 'Server error during PDF to Word conversion.' });
+    }
   }
 };
-
