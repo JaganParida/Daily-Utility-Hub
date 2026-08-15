@@ -4,7 +4,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import {
   ArrowRight, UploadCloud, X, ChevronDown, Zap, Shield, Cpu,
   FileText, ImageIcon, Code2, Type, Table2, FileSpreadsheet, MonitorPlay,
-  FolderArchive, Music, Layers, Search, ChevronLeft, ChevronRight, Heart, Pin, Sparkles
+  FolderArchive, Music, Layers, Search, ChevronLeft, ChevronRight, Heart, Pin, Sparkles, Terminal, Activity
 } from "lucide-react";
 import PageTransition from "../components/PageTransition";
 import { useAuth } from "../context/AuthContext";
@@ -158,7 +158,7 @@ const EXT_TO_SOURCE = {
   txt: "text", md: "text",
 };
 
-// ─── Custom Light Dropdown Component ───
+// ─── WhatsApp Dark Custom Dropdown Component ───
 const CustomDropdown = ({ 
   value, 
   onChange, 
@@ -230,15 +230,15 @@ const CustomDropdown = ({
           isPop ? "animate-scale-pop" : ""
         } ${
           open 
-            ? "border-blue-600 bg-blue-50/40 ring-2 ring-blue-500/20 shadow-xs" 
-            : "border-slate-200 bg-white"
+            ? "border-[#00a884] bg-[#202c33] ring-2 ring-[#00a884]/30 shadow-lg" 
+            : "border-[#2a3942] bg-[#202c33]"
         } ${
           disabled 
-            ? "opacity-60 cursor-not-allowed border-slate-200 bg-slate-50/70 pointer-events-none text-slate-400" 
-            : "cursor-pointer hover:border-blue-400 hover:bg-slate-50/80 active:scale-[0.98] text-slate-800 shadow-2xs"
+            ? "opacity-50 cursor-not-allowed border-[#222d34] bg-[#111b21] pointer-events-none text-[#8696a0]" 
+            : "cursor-pointer hover:border-[#00a884]/60 hover:bg-[#222e35] active:scale-[0.98] text-[#e9edef] shadow-xs"
         }`}
       >
-        {Icon && <Icon size={14} className="text-slate-400 shrink-0" />}
+        {Icon && <Icon size={14} className="text-[#8696a0] shrink-0" />}
         <span className="text-xs font-bold truncate flex-1 block overflow-hidden h-4 relative">
           <AnimatePresence mode="wait">
             <motion.span
@@ -247,13 +247,13 @@ const CustomDropdown = ({
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: -8, opacity: 0 }}
               transition={{ duration: 0.15, ease: "easeOut" }}
-              className={`absolute inset-y-0 left-0 truncate w-full flex items-center ${selected ? "text-slate-900" : "text-slate-400"}`}
+              className={`absolute inset-y-0 left-0 truncate w-full flex items-center ${selected ? "text-[#e9edef]" : "text-[#8696a0]"}`}
             >
               {selected ? selected.label : placeholder}
             </motion.span>
           </AnimatePresence>
         </span>
-        <ChevronDown size={13} className={`ml-auto text-slate-400 shrink-0 transition-transform ${open ? "rotate-180 text-blue-600" : ""}`} />
+        <ChevronDown size={13} className={`ml-auto text-[#8696a0] shrink-0 transition-transform ${open ? "rotate-180 text-[#00a884]" : ""}`} />
       </button>
 
       <AnimatePresence>
@@ -263,18 +263,18 @@ const CustomDropdown = ({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 4, scale: 0.97 }}
             transition={{ duration: 0.15 }}
-            className="absolute top-full left-0 mt-2 w-full min-w-[200px] max-h-[260px] overflow-hidden bg-white border border-slate-200 rounded-2xl shadow-[0_15px_40px_rgba(0,0,0,0.12)] z-[200] flex flex-col"
+            className="absolute top-full left-0 mt-2 w-full min-w-[200px] max-h-[260px] overflow-hidden bg-[#111b21] border border-[#222d34] rounded-2xl shadow-[0_15px_40px_rgba(0,0,0,0.6)] z-[200] flex flex-col"
           >
             {options.length > 5 && (
-              <div className="px-2 py-2 border-b border-slate-100 sticky top-0 bg-white z-10 shrink-0">
-                <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 focus-within:border-blue-500 focus-within:bg-white transition-colors">
-                  <Search size={12} className="text-slate-400" />
+              <div className="px-2 py-2 border-b border-[#222d34] sticky top-0 bg-[#111b21] z-10 shrink-0">
+                <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#202c33] border border-[#2a3942] focus-within:border-[#00a884] transition-colors">
+                  <Search size={12} className="text-[#8696a0]" />
                   <input
                     type="text"
                     placeholder="Search options..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-transparent border-none text-[11px] text-slate-900 focus:outline-none placeholder:text-slate-400"
+                    className="w-full bg-transparent border-none text-[11px] text-[#e9edef] focus:outline-none placeholder:text-[#8696a0]"
                     onClick={(e) => e.stopPropagation()}
                     onMouseDown={(e) => e.stopPropagation()}
                   />
@@ -283,7 +283,7 @@ const CustomDropdown = ({
                       type="button"
                       onClick={(e) => { e.stopPropagation(); setSearchQuery(""); }}
                       onMouseDown={(e) => e.stopPropagation()}
-                      className="text-slate-400 hover:text-slate-700"
+                      className="text-[#8696a0] hover:text-[#e9edef]"
                     >
                       <X size={11} />
                     </button>
@@ -311,14 +311,14 @@ const CustomDropdown = ({
                       onMouseDown={(e) => { e.preventDefault(); onChange(opt.value); setOpen(false); }}
                       className={`w-full flex items-center gap-2.5 px-3.5 py-2 text-left text-xs font-semibold transition-colors cursor-pointer ${
                         (opt.value === value || opt.value === highlightedValue || opt.label === highlightedValue)
-                          ? "bg-blue-50 text-blue-600 font-bold border-l-2 border-blue-600"
-                          : "text-slate-700 hover:bg-slate-50 hover:text-slate-900"
+                          ? "bg-[#00a884]/15 text-[#00a884] font-bold border-l-2 border-[#00a884]"
+                          : "text-[#8696a0] hover:bg-[#202c33] hover:text-[#e9edef]"
                       }`}
                     >
-                      {OptIcon && <OptIcon size={14} className="shrink-0 opacity-60" />}
+                      {OptIcon && <OptIcon size={14} className="shrink-0 opacity-70" />}
                       <span className="truncate">{opt.label}</span>
                       {opt.value === value && (
-                        <svg className="w-3.5 h-3.5 ml-auto text-blue-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round">
+                        <svg className="w-3.5 h-3.5 ml-auto text-[#00a884] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round">
                           <polyline points="20 6 9 17 4 12" />
                         </svg>
                       )}
@@ -326,7 +326,7 @@ const CustomDropdown = ({
                   );
                 })
               ) : (
-                <div className="px-3.5 py-4 text-center text-xs text-slate-400">
+                <div className="px-3.5 py-4 text-center text-xs text-[#8696a0]">
                   No matching options
                 </div>
               )}
@@ -355,25 +355,33 @@ const AnimatedCounter = ({ end, suffix = "" }) => {
   return <span>{count}{suffix}</span>;
 };
 
-// ─── Interactive Hub Graphic in Light Theme ───
+// ─── WhatsApp Dark Animated Interactive Hub Graphic ───
 const InteractiveHubGraphic = () => {
   const fileTypes = [
     { label: "PDF", color: "from-rose-500 to-red-600", x: -95, y: -45, delay: 0 },
-    { label: "PNG", color: "from-emerald-400 to-teal-500", x: 95, y: -45, delay: 1 },
+    { label: "PNG", color: "from-[#00a884] to-[#25d366]", x: 95, y: -45, delay: 1 },
     { label: "JSON", color: "from-amber-400 to-orange-500", x: -95, y: 45, delay: 2 },
-    { label: "ZIP", color: "from-blue-500 to-indigo-600", x: 95, y: 45, delay: 3 },
+    { label: "ZIP", color: "from-[#53bdeb] to-blue-600", x: 95, y: 45, delay: 3 },
   ];
 
   return (
-    <div className="relative w-full h-[240px] flex items-center justify-center overflow-hidden">
-      <div className="absolute w-[180px] h-[180px] rounded-full bg-blue-500/10 blur-[50px]" />
-      <div className="absolute w-[240px] h-[240px] rounded-full border border-slate-200 border-dashed animate-[spin_40s_linear_infinite]" />
-      <div className="absolute w-[160px] h-[160px] rounded-full border border-slate-300/80 animate-[spin_25s_linear_infinite_reverse]" />
-      <div className="relative z-10 w-[72px] h-[72px] rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 p-[1.5px] shadow-[0_10px_25px_rgba(37,99,235,0.25)]">
-        <div className="w-full h-full rounded-2xl bg-white flex items-center justify-center">
-          <Cpu className="text-blue-600 animate-pulse" size={26} />
+    <div className="relative w-full h-[250px] flex items-center justify-center overflow-hidden">
+      {/* Emerald Ambient Glow */}
+      <div className="absolute w-[200px] h-[200px] rounded-full bg-[#00a884]/15 blur-[60px]" />
+      
+      {/* Rotating Dotted Rings */}
+      <div className="absolute w-[240px] h-[240px] rounded-full border border-[#222d34] border-dashed animate-[spin_45s_linear_infinite]" />
+      <div className="absolute w-[170px] h-[170px] rounded-full border border-[#2a3942] animate-[spin_30s_linear_infinite_reverse]" />
+
+      {/* Central WhatsApp Dark CPU Node */}
+      <div className="relative z-10 w-[74px] h-[74px] rounded-2xl bg-gradient-to-tr from-[#00a884] to-[#53bdeb] p-[1.5px] shadow-[0_0_30px_rgba(0,168,132,0.3)]">
+        <div className="w-full h-full rounded-2xl bg-[#111b21] flex flex-col items-center justify-center">
+          <Cpu className="text-[#00a884] animate-pulse" size={26} />
+          <span className="text-[8px] font-black tracking-widest text-[#00a884] uppercase mt-0.5">LOCAL</span>
         </div>
       </div>
+
+      {/* Orbiting File Node Chips */}
       {fileTypes.map((type) => (
         <motion.div
           key={type.label}
@@ -389,12 +397,20 @@ const InteractiveHubGraphic = () => {
             delay: type.delay,
           }}
         >
-          <div className="px-3 py-1.5 rounded-xl bg-white border border-slate-200 hover:border-blue-400 transition-all shadow-md flex items-center gap-1.5 cursor-default group">
-            <span className={`w-2 h-2 rounded-full bg-gradient-to-r ${type.color}`} />
-            <span className="text-[11px] font-black text-slate-800 group-hover:text-blue-600 transition-colors">{type.label}</span>
+          <div className="px-3 py-1.5 rounded-xl bg-[#111b21] border border-[#2a3942] hover:border-[#00a884] transition-all shadow-[0_8px_20px_rgba(0,0,0,0.4)] flex items-center gap-1.5 cursor-default group">
+            <span className={`w-2 h-2 rounded-full bg-gradient-to-r ${type.color} shadow-[0_0_8px_currentColor]`} />
+            <span className="text-[11px] font-black text-[#e9edef] group-hover:text-[#00a884] transition-colors">{type.label}</span>
           </div>
         </motion.div>
       ))}
+
+      {/* Real-time Status Badge */}
+      <div className="absolute bottom-2 inset-x-0 flex justify-center">
+        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#111b21]/90 border border-[#222d34] shadow-md">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#00a884] animate-ping" />
+          <span className="text-[10px] font-mono text-[#8696a0]">0.00s Latency • 100% Client-Side Engine</span>
+        </div>
+      </div>
     </div>
   );
 };
@@ -421,13 +437,13 @@ const getFilteredOperations = (source, ext) => {
         ["/tools/excel-merge-split", "/tools/data-cleaner", "/tools/csv-sql-runner"].includes(op.to)
       );
 
-    case "document": // Word Docs
+    case "document":
       return allOps.filter(op => 
         ["/tools/docx-converter", "/tools/doc-metadata-cleaner", "/tools/grammar-checker", 
          "/tools/similarity-checker", "/tools/batch-find-replace", "/tools/academic-format-checker"].includes(op.to)
       );
 
-    case "presentation": // Slides
+    case "presentation":
       return allOps.filter(op => 
         ["/tools/ppt-to-pdf", "/tools/pptx-metadata-editor"].includes(op.to)
       );
@@ -448,7 +464,7 @@ const getFilteredOperations = (source, ext) => {
       return allOps.filter(op => 
         ["/tools/text-diff", "/tools/word-counter", "/tools/find-replace", 
          "/tools/case-converter", "/tools/text-line-editor", "/tools/text-analyzer", 
-         "/tools/markdown-editor"].includes(op.to)
+         "/tools/lorem-ipsum", "/tools/font-converter"].includes(op.to)
       );
 
     case "archive":
@@ -457,246 +473,169 @@ const getFilteredOperations = (source, ext) => {
       );
 
     case "media":
-      return allOps.filter(op => 
-        ["/tools/audio-video-transcriber", "/tools/voice-helper"].includes(op.to)
-      );
+      if (["mp3", "wav", "ogg", "m4a"].includes(lowercaseExt)) {
+        return allOps.filter(op => ["/tools/audio-video-transcriber", "/tools/voice-helper", "/tools/pdf-audio-reader"].includes(op.to));
+      }
+      if (["mp4", "webm", "mkv", "avi", "mov"].includes(lowercaseExt)) {
+        return allOps.filter(op => ["/tools/audio-video-transcriber"].includes(op.to));
+      }
+      return allOps;
 
     default:
       return allOps;
   }
 };
 
-// ─── GUEST PROTECTED TOOLS ───
-const LOCKED_GUEST_TOOLS = [
-  '/tools/ai-pdf-to-markdown',
-  '/tools/ai-image-to-markdown',
-  '/tools/google-search-builder',
-  '/tools/regex-tester',
-  '/tools/ai-code-playground',
-  '/tools/cron-parser',
-  '/tools/audio-video-transcriber'
-];
-
-// ─── MAIN COMPONENT ───
-
 const Dashboard = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { currentUser, toggleFavorite, togglePin } = useAuth();
+  
+  const [source, setSource] = useState("");
+  const [operations, setOperations] = useState([]);
+  const [activeOp, setActiveOp] = useState(null);
+  const [selectedOpTo, setSelectedOpTo] = useState("");
+  const [droppedFile, setDroppedFile] = useState(null);
+  const [rawFile, setRawFile] = useState(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [activeTab, setActiveTab] = useState("pdf");
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isPinnedOpen, setIsPinnedOpen] = useState(true);
+
+  // Dropdown open states
+  const [isFormatOpen, setIsFormatOpen] = useState(false);
+  const [isOperationOpen, setIsOperationOpen] = useState(false);
+
+  // Animation micro-state
+  const [isIconDropping, setIsIconDropping] = useState(false);
+  const [isLaunchPop, setIsLaunchPop] = useState(false);
+
+  // Simulated Animation Demo States
+  const [demoStep, setDemoStep] = useState(0);
+  const [isDemoRunning, setIsDemoRunning] = useState(true);
+  const demoIntervalRef = useRef(null);
+  const [simulatedFormatHighlight, setSimulatedFormatHighlight] = useState("");
+  const [simulatedOpHighlight, setSimulatedOpHighlight] = useState("");
+
+  const DEMO_FORMATS = ["PDF", "PNG", "Spreadsheet", "JSON"];
+  const DEMO_OPERATIONS = ["Compress", "Convert to PDF", "Clean Data", "Format JSON"];
+
+  // File Inputs
   const fileInputRefDesktop = useRef(null);
   const fileInputRefMobile = useRef(null);
 
-  const { currentUser, togglePin, toggleFavorite, loginWithGoogle } = useAuth();
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    if (params.get("authGate") === "true") {
-      setIsAuthModalOpen(true);
-      navigate("/", { replace: true });
-    }
-  }, [location.search, navigate]);
-
-  const [source, setSource] = useState("");
-  const [selectedOpTo, setSelectedOpTo] = useState("");
-  const [droppedFile, setDroppedFile] = useState(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [activeTab, setActiveTab] = useState(() => sessionStorage.getItem('dashboardActiveTab') || "pdf");
-  
-  useEffect(() => {
-    sessionStorage.setItem('dashboardActiveTab', activeTab);
-  }, [activeTab]);
-  const [isPinnedOpen, setIsPinnedOpen] = useState(false);
-  
-  const [isLaunchPop, setIsLaunchPop] = useState(false);
-  const prevHasActiveOp = useRef(false);
-
-  const [isFormatOpen, setIsFormatOpen] = useState(false);
-  const [isOperationOpen, setIsOperationOpen] = useState(false);
-  const [simulatedFormatHighlight, setSimulatedFormatHighlight] = useState(null);
-  const [simulatedOpHighlight, setSimulatedOpHighlight] = useState(null);
-  const simulationTimeouts = useRef([]);
-  const hasUserInteracted = useRef(false);
-
-  const DEMO_FORMATS = ["Format", "Image", "PDF", "Word Doc"];
-  const DEMO_OPERATIONS = ["Operation", "Convert to PDF", "Compress PDF", "Resize Image"];
-  
-  const clearSimulation = useCallback(() => {
-    simulationTimeouts.current.forEach(clearTimeout);
-    simulationTimeouts.current = [];
-    setSimulatedFormatHighlight(null);
-    setSimulatedOpHighlight(null);
-    setIsFormatOpen(false);
-    setIsOperationOpen(false);
-  }, []);
-
-  const stopDemoAndInteract = useCallback(() => {
-    if (hasUserInteracted.current) return;
-    hasUserInteracted.current = true;
-    clearSimulation();
-    setDroppedFile((prev) => {
-      if (prev?.isDemo) {
-        setSource("");
-        setSelectedOpTo("");
-        return null;
-      }
-      return prev;
-    });
-  }, [clearSimulation]);
-
-  const [isIconDropping, setIsIconDropping] = useState(false);
-  const [demoStep, setDemoStep] = useState(0);
-
-  useEffect(() => {
-    if (droppedFile || hasUserInteracted.current) {
-      setDemoStep(0);
-      return;
-    }
-
-    const interval = setInterval(() => {
-      setDemoStep((prev) => (prev + 1) % 4);
-      
-      setIsIconDropping(true);
-      const t = setTimeout(() => setIsIconDropping(false), 600);
-      simulationTimeouts.current.push(t);
-    }, 2800);
-
-    return () => clearInterval(interval);
-  }, [droppedFile]);
-
-  useEffect(() => {
-    return () => {
-      simulationTimeouts.current.forEach(clearTimeout);
-    };
-  }, []);
-
+  // Category Tabs Scrolling
   const tabsRef = useRef(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(false);
 
-  const updateScrollButtons = useCallback(() => {
-    if (tabsRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = tabsRef.current;
-      setShowLeftArrow(scrollLeft > 2);
-      setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 2);
-    }
+  const checkScrollArrows = useCallback(() => {
+    if (!tabsRef.current) return;
+    const { scrollLeft, scrollWidth, clientWidth } = tabsRef.current;
+    setShowLeftArrow(scrollLeft > 4);
+    setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 4);
   }, []);
 
   useEffect(() => {
-    const tabsEl = tabsRef.current;
-    if (tabsEl) {
-      updateScrollButtons();
-      tabsEl.addEventListener("scroll", updateScrollButtons, { passive: true });
-      window.addEventListener("resize", updateScrollButtons);
-      const t = setTimeout(updateScrollButtons, 100);
-      return () => {
-        tabsEl.removeEventListener("scroll", updateScrollButtons);
-        window.removeEventListener("resize", updateScrollButtons);
-        clearTimeout(t);
-      };
-    }
-  }, [updateScrollButtons]);
+    checkScrollArrows();
+    window.addEventListener("resize", checkScrollArrows);
+    return () => window.removeEventListener("resize", checkScrollArrows);
+  }, [checkScrollArrows]);
 
   const scrollTabs = (direction) => {
-    if (tabsRef.current) {
-      const scrollAmount = 240;
-      const currentScroll = tabsRef.current.scrollLeft;
-      const target = direction === 'left' ? currentScroll - scrollAmount : currentScroll + scrollAmount;
-      tabsRef.current.scrollTo({
-        left: target,
-        behavior: 'smooth'
-      });
-    }
-  };
-
-  const operations = source ? getFilteredOperations(source, droppedFile?.ext) : [];
-  const activeOp = operations.find(op => op.to === (selectedOpTo || (operations[0]?.to || ""))) || null;
-  const tabOps = OPERATIONS_MAP[activeTab] || [];
-
-  const handleToolClick = (e, path) => {
-    if (LOCKED_GUEST_TOOLS.includes(path) && !currentUser) {
-      e.preventDefault();
-      setIsAuthModalOpen(true);
-    }
-  };
-
-  const getToolCategoryAndDetails = (toPath) => {
-    for (const catKey of Object.keys(OPERATIONS_MAP)) {
-      const found = OPERATIONS_MAP[catKey].find(op => op.to === toPath);
-      if (found) {
-        const catTab = CATEGORY_TABS.find(tab => tab.id === catKey);
-        return {
-          ...found,
-          categoryKey: catKey,
-          categoryLabel: catTab?.label || catKey,
-          icon: catTab?.icon || ArrowRight
-        };
-      }
-    }
-    return null;
-  };
-
-  const pinnedResolved = (currentUser?.pinnedTools || [])
-    .map(path => getToolCategoryAndDetails(path))
-    .filter(Boolean);
-
-  useEffect(() => {
-    const hasOp = !!activeOp;
-    if (!prevHasActiveOp.current && hasOp) {
-      setIsLaunchPop(true);
-      const timer = setTimeout(() => setIsLaunchPop(false), 500);
-      return () => clearTimeout(timer);
-    }
-    prevHasActiveOp.current = hasOp;
-  }, [activeOp]);
-
-  const handleSourceChange = (val) => { 
-    clearSimulation();
-    setSource(val); 
-    const ops = getFilteredOperations(val, droppedFile?.ext);
-    setSelectedOpTo(ops[0]?.to || "");
-  };
-  
-  const handleOperationChange = (val) => {
-    setSelectedOpTo(val);
-  };
-
-  const handleLaunch = () => { 
-    if (activeOp) {
-      if (LOCKED_GUEST_TOOLS.includes(activeOp.to) && !currentUser) {
-        setIsAuthModalOpen(true);
-        return;
-      }
-      navigate(activeOp.to, { state: { initialFile: droppedFile?.rawFile } });
-    }
-  };
-
-  const handleFileDrop = useCallback((file) => {
-    clearSimulation();
-    hasUserInteracted.current = true;
-
-    const ext = file.name.split(".").pop().toLowerCase();
-    const mapped = EXT_TO_SOURCE[ext] || "";
-    setDroppedFile({ 
-      rawFile: file,
-      name: file.name, 
-      size: (file.size / 1024).toFixed(1) + " KB", 
-      ext: ext.toUpperCase() 
+    if (!tabsRef.current) return;
+    const scrollAmount = 220;
+    tabsRef.current.scrollBy({
+      left: direction === "left" ? -scrollAmount : scrollAmount,
+      behavior: "smooth",
     });
+    setTimeout(checkScrollArrows, 300);
+  };
 
-    setSource("");
-    setSelectedOpTo("");
+  // Automated Showcase Pipeline Demo
+  useEffect(() => {
+    if (!isDemoRunning || droppedFile) return;
 
-    if (mapped) {
-      setSource(mapped);
-      const ops = getFilteredOperations(mapped, ext);
-      setSelectedOpTo(ops[0]?.to || "");
+    demoIntervalRef.current = setInterval(() => {
+      setDemoStep((prev) => (prev + 1) % DEMO_FORMATS.length);
+    }, 3200);
+
+    return () => clearInterval(demoIntervalRef.current);
+  }, [isDemoRunning, droppedFile]);
+
+  const stopDemoAndInteract = () => {
+    setIsDemoRunning(false);
+    if (demoIntervalRef.current) clearInterval(demoIntervalRef.current);
+  };
+
+  // Handle actual file drop or upload
+  const handleFileDrop = (file) => {
+    stopDemoAndInteract();
+    const ext = file.name.split(".").pop().toLowerCase();
+    const detectedSource = EXT_TO_SOURCE[ext] || "document";
+    
+    setIsIconDropping(true);
+    setTimeout(() => setIsIconDropping(false), 600);
+
+    setDroppedFile({
+      name: file.name,
+      size: `${(file.size / 1024).toFixed(1)} KB`,
+      ext: ext.toUpperCase(),
+      fileObj: file
+    });
+    setRawFile(file);
+
+    setSource(detectedSource);
+    const filteredOps = getFilteredOperations(detectedSource, ext);
+    setOperations(filteredOps);
+
+    if (filteredOps.length > 0) {
+      setActiveOp(filteredOps[0]);
+      setSelectedOpTo(filteredOps[0].to);
     }
-  }, [clearSimulation]);
+  };
 
-  const clearFile = () => { 
-    clearSimulation();
-    setDroppedFile(null); 
-    setSource(""); 
+  const handleSourceChange = (newSource) => {
+    stopDemoAndInteract();
+    setSource(newSource);
+    const filteredOps = getFilteredOperations(newSource, droppedFile ? droppedFile.ext : null);
+    setOperations(filteredOps);
+    if (filteredOps.length > 0) {
+      setActiveOp(filteredOps[0]);
+      setSelectedOpTo(filteredOps[0].to);
+    } else {
+      setActiveOp(null);
+      setSelectedOpTo("");
+    }
+  };
+
+  const handleOperationChange = (opTo) => {
+    stopDemoAndInteract();
+    setSelectedOpTo(opTo);
+    const found = operations.find((o) => o.to === opTo);
+    if (found) setActiveOp(found);
+  };
+
+  const handleLaunch = () => {
+    if (!activeOp) return;
+    setIsLaunchPop(true);
+    setTimeout(() => {
+      setIsLaunchPop(false);
+      navigate(activeOp.to, { state: { initialFile: rawFile } });
+    }, 200);
+  };
+
+  const handleToolClick = (e, to) => {
+    // Normal link navigation
+  };
+
+  const clearFile = (e) => {
+    e.stopPropagation();
+    setDroppedFile(null);
+    setRawFile(null);
+    setSource("");
+    setOperations([]);
+    setActiveOp(null);
     setSelectedOpTo("");
   };
 
@@ -712,35 +651,41 @@ const Dashboard = () => {
     icon: Zap,
   }));
 
+  const tabOps = OPERATIONS_MAP[activeTab] || [];
+
+  // Pinned tools
+  const pinnedResolved = (currentUser?.pinnedTools || [])
+    .map((path) => {
+      for (const cat of Object.values(OPERATIONS_MAP)) {
+        const found = cat.find((op) => op.to === path);
+        if (found) return found;
+      }
+      return null;
+    })
+    .filter(Boolean);
+
   return (
     <>
       <PageTransition>
       <style>{`
         @keyframes gradient-shift { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
         @keyframes flow-pulse { 0% { transform: translateX(-100%); } 100% { transform: translateX(200%); } }
-        @keyframes icon-drop {
-          0% { transform: translateY(-22px) scale(0.6); opacity: 0; }
-          60% { transform: translateY(4px) scale(1.1); opacity: 1; }
-          100% { transform: translateY(0) scale(1); }
-        }
         @keyframes flash-glow {
-          0% { border-color: #e2e8f0; box-shadow: 0 0 0 rgba(37, 99, 235, 0); }
-          30% { border-color: #2563eb; box-shadow: 0 0 15px rgba(37, 99, 235, 0.25); }
-          100% { border-color: #e2e8f0; box-shadow: 0 0 0 rgba(37, 99, 235, 0); }
+          0% { border-color: #2a3942; box-shadow: 0 0 0 rgba(0, 168, 132, 0); }
+          30% { border-color: #00a884; box-shadow: 0 0 15px rgba(0, 168, 132, 0.4); }
+          100% { border-color: #2a3942; box-shadow: 0 0 0 rgba(0, 168, 132, 0); }
         }
         @keyframes scale-pop {
           0% { transform: scale(1); }
-          50% { transform: scale(1.05); border-color: #2563eb; box-shadow: 0 0 12px rgba(37, 99, 235, 0.2); }
+          50% { transform: scale(1.05); border-color: #00a884; box-shadow: 0 0 15px rgba(0, 168, 132, 0.35); }
           100% { transform: scale(1); }
         }
         .animate-flash-glow { animation: flash-glow 0.8s ease-out; }
         .animate-scale-pop { animation: scale-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1); }
-        .gradient-text { background: linear-gradient(135deg, #2563eb, #4f46e5, #0284c7); background-size: 200% 200%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: gradient-shift 4s ease infinite; }
-        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .gradient-emerald-text { background: linear-gradient(135deg, #00a884, #25d366, #53bdeb); background-size: 200% 200%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: gradient-shift 4s ease infinite; }
       `}</style>
 
-      <div className="w-full min-h-screen">
+      <div className="w-full min-h-screen bg-[#0b141a] text-[#e9edef]">
         <section
           className="w-full bg-transparent relative overflow-hidden"
           onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
@@ -750,69 +695,82 @@ const Dashboard = () => {
             if (e.dataTransfer.files?.[0]) handleFileDrop(e.dataTransfer.files[0]);
           }}
         >
-          {/* Subtle light mesh decorations */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[380px] bg-gradient-to-b from-blue-100/40 via-indigo-50/30 to-transparent blur-[100px] pointer-events-none" />
+          {/* Subtle Ambient Emerald Background Lights */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-gradient-to-b from-[#00a884]/10 via-[#53bdeb]/5 to-transparent blur-[120px] pointer-events-none" />
 
           <AnimatePresence>
             {isDragging && (
               <motion.div
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                className="absolute inset-0 z-50 bg-white/95 backdrop-blur-md border-3 border-dashed border-blue-600 flex flex-col items-center justify-center gap-3 pointer-events-none"
+                className="absolute inset-0 z-50 bg-[#0b141a]/95 backdrop-blur-md border-3 border-dashed border-[#00a884] flex flex-col items-center justify-center gap-3 pointer-events-none"
               >
-                <UploadCloud size={44} className="text-blue-600 animate-bounce" />
-                <p className="text-base font-black text-slate-900">Drop your file anywhere</p>
-                <p className="text-xs text-slate-500 font-medium">We'll automatically detect its format</p>
+                <UploadCloud size={48} className="text-[#00a884] animate-bounce" />
+                <p className="text-lg font-black text-[#e9edef]">Drop your file anywhere</p>
+                <p className="text-xs text-[#8696a0] font-medium">Auto-detecting file format and suggested local tools</p>
               </motion.div>
             )}
           </AnimatePresence>
 
-          <div className="relative z-10 w-full max-w-[1050px] mx-auto px-4 sm:px-6 md:px-8 pt-24 sm:pt-28 md:pt-32 pb-12 sm:pb-14 md:pb-16">
+          <div className="relative z-10 w-full max-w-[1100px] mx-auto px-4 sm:px-6 md:px-8 pt-24 sm:pt-28 md:pt-32 pb-12 sm:pb-14 md:pb-16">
 
+            {/* Hero Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center mb-10 lg:mb-12">
               
               <div className="lg:col-span-7 text-center lg:text-left">
+                {/* Emerald Security Badge */}
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#111b21] border border-[#222d34] shadow-xs mb-4"
+                >
+                  <span className="w-2 h-2 rounded-full bg-[#00a884] shadow-[0_0_8px_#00a884]" />
+                  <span className="text-[11px] font-bold text-[#e9edef] tracking-tight">Offline-First • 100% Private Client Execution</span>
+                </motion.div>
+
                 <motion.h1
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
-                  className="text-3xl sm:text-4xl md:text-5xl lg:text-[2.75rem] xl:text-[3.25rem] font-black tracking-tight text-slate-900 leading-[1.12] mb-4"
+                  className="text-3xl sm:text-4xl md:text-5xl lg:text-[2.75rem] xl:text-[3.25rem] font-black tracking-tight text-[#e9edef] leading-[1.12] mb-4"
                 >
                   What do you want to
-                  <span className="gradient-text"> process</span>
-                  <span className="text-slate-900">?</span>
+                  <span className="gradient-emerald-text"> process</span>
+                  <span className="text-[#e9edef]">?</span>
                 </motion.h1>
 
                 <motion.p
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: 0.2 }}
-                  className="text-slate-600 text-xs sm:text-sm max-w-sm sm:max-w-md mx-auto lg:mx-0 leading-relaxed mb-6"
+                  className="text-[#8696a0] text-xs sm:text-sm max-w-sm sm:max-w-md mx-auto lg:mx-0 leading-relaxed mb-6"
                 >
-                  Daily Utility Hub offers over 90+ utilities to convert, compress, format, and edit files entirely in your browser with zero latency.
+                  Daily Utility Hub offers 90+ lightning-fast utilities to edit PDFs, compress media, convert documents, and test code locally with zero latency.
                 </motion.p>
 
+                {/* Stat Badges */}
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.3 }}
-                  className="flex items-center justify-center lg:justify-start gap-4 sm:gap-6 md:gap-8"
+                  className="flex items-center justify-center lg:justify-start gap-3 sm:gap-4 md:gap-6 flex-wrap"
                 >
                   {[
-                    { icon: Zap, value: 90, suffix: "+", label: "Tools" },
-                    { icon: Shield, value: 100, suffix: "%", label: "Local" },
+                    { icon: Zap, value: 90, suffix: "+", label: "Client Tools" },
+                    { icon: Shield, value: 100, suffix: "%", label: "Local Privacy" },
                     { icon: Cpu, value: 0, suffix: "", label: "Server Uploads", display: "Zero" },
                   ].map((stat, i) => (
-                    <div key={i} className="flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 rounded-full bg-white border border-slate-200/80 shadow-2xs">
-                      <stat.icon size={13} className="text-blue-600 shrink-0" />
-                      <span className="text-[11px] sm:text-xs font-black text-slate-900">
+                    <div key={i} className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#111b21] border border-[#222d34] shadow-xs">
+                      <stat.icon size={14} className="text-[#00a884] shrink-0" />
+                      <span className="text-xs sm:text-sm font-black text-[#e9edef]">
                         {stat.display || <AnimatedCounter end={stat.value} suffix={stat.suffix} />}
                       </span>
-                      <span className="text-[10px] text-slate-500 font-medium">{stat.label}</span>
+                      <span className="text-[10px] sm:text-[11px] text-[#8696a0] font-medium">{stat.label}</span>
                     </div>
                   ))}
                 </motion.div>
               </div>
 
+              {/* Graphic Node */}
               <div className="lg:col-span-5 hidden lg:block">
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
@@ -824,7 +782,7 @@ const Dashboard = () => {
               </div>
             </div>
 
-            {/* ═══ INTERACTIVE WORKFLOW CENTERPIECE ═══ */}
+            {/* ═══ WHATSAPP DARK WORKFLOW CENTERPIECE ═══ */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -832,7 +790,7 @@ const Dashboard = () => {
               onMouseDownCapture={stopDemoAndInteract}
               className="relative z-30 mb-8 rounded-2xl"
             >
-              <div className="relative rounded-2xl bg-white border border-slate-200/90 shadow-[0_12px_40px_-10px_rgba(0,0,0,0.08)] p-4 sm:p-5 flex flex-col">
+              <div className="relative rounded-2xl bg-[#111b21] border border-[#222d34] shadow-[0_20px_50px_rgba(0,0,0,0.5)] p-4 sm:p-5 flex flex-col">
                 <div className="w-full">
                   {/* Desktop/Tablet Flow */}
                   <motion.div layout className="hidden sm:flex items-center justify-between gap-4">
@@ -845,28 +803,28 @@ const Dashboard = () => {
                           animate={{ scale: 1, opacity: 1, y: 0 }}
                           exit={{ scale: 0.9, opacity: 0, y: -10 }}
                           transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                          className="flex items-center gap-2.5 bg-blue-50/70 border border-blue-200 px-3.5 py-2 rounded-xl min-w-[200px] max-w-[260px] h-[44px] shadow-2xs"
+                          className="flex items-center gap-2.5 bg-[#00a884]/15 border border-[#00a884]/40 px-3.5 py-2 rounded-xl min-w-[200px] max-w-[260px] h-[44px] shadow-xs"
                         >
                           <motion.div 
                             initial={{ y: -30, opacity: 0, scale: 0.5 }}
                             animate={{ y: 0, opacity: 1, scale: 1 }}
                             transition={{ type: "spring", stiffness: 450, damping: 15, delay: 0.12 }}
-                            className="w-7 h-7 rounded-lg bg-blue-600 text-white font-black text-[10px] flex items-center justify-center shrink-0 shadow-xs"
+                            className="w-7 h-7 rounded-lg bg-[#00a884] text-white font-black text-[10px] flex items-center justify-center shrink-0 shadow-sm"
                           >
                             {droppedFile.ext}
                           </motion.div>
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-1.5 min-w-0">
-                              <p className="text-xs font-bold text-slate-900 truncate">{droppedFile.name}</p>
+                              <p className="text-xs font-bold text-[#e9edef] truncate">{droppedFile.name}</p>
                               {droppedFile.isDemo && (
-                                <span className="px-1.5 py-0.5 text-[8px] font-black bg-blue-100 text-blue-700 border border-blue-300 rounded uppercase tracking-wider shrink-0 animate-pulse">
+                                <span className="px-1.5 py-0.5 text-[8px] font-black bg-[#00a884]/20 text-[#00a884] border border-[#00a884]/30 rounded uppercase tracking-wider shrink-0 animate-pulse">
                                   Demo
                                 </span>
                               )}
                             </div>
-                            <p className="text-[10px] text-slate-500 font-medium">{droppedFile.size}</p>
+                            <p className="text-[10px] text-[#8696a0] font-medium">{droppedFile.size}</p>
                           </div>
-                          <button onClick={clearFile} className="p-1 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-white transition-colors cursor-pointer shrink-0">
+                          <button onClick={clearFile} className="p-1 text-[#8696a0] hover:text-[#e9edef] rounded-lg hover:bg-[#202c33] transition-colors cursor-pointer shrink-0">
                             <X size={13} />
                           </button>
                         </motion.div>
@@ -879,12 +837,12 @@ const Dashboard = () => {
                             exit={{ scale: 0.95, opacity: 0 }}
                             transition={{ duration: 0.2 }}
                             onClick={() => fileInputRefDesktop.current?.click()}
-                            className="flex items-center gap-2 px-3.5 py-2 bg-slate-50 hover:bg-blue-50/50 border border-dashed border-slate-300 hover:border-blue-400 text-slate-700 hover:text-blue-600 rounded-xl transition-all cursor-pointer min-w-[200px] max-w-[260px] h-[44px] group"
+                            className="flex items-center gap-2 px-3.5 py-2 bg-[#202c33] hover:bg-[#222e35] border border-dashed border-[#2a3942] hover:border-[#00a884] text-[#8696a0] hover:text-[#00a884] rounded-xl transition-all cursor-pointer min-w-[200px] max-w-[260px] h-[44px] group shadow-xs"
                           >
                             <UploadCloud 
                               size={15} 
-                              className={`text-slate-400 group-hover:text-blue-600 shrink-0 ${
-                                isIconDropping ? "animate-[icon-drop_0.6s_cubic-bezier(0.34,1.56,0.64,1)] text-blue-600" : ""
+                              className={`text-[#8696a0] group-hover:text-[#00a884] shrink-0 ${
+                                isIconDropping ? "animate-[icon-drop_0.6s_cubic-bezier(0.34,1.56,0.64,1)] text-[#00a884]" : ""
                               }`} 
                             />
                             <span className="text-xs font-bold truncate">Select or drop file</span>
@@ -901,11 +859,11 @@ const Dashboard = () => {
 
                     {/* Animated Connector Line */}
                     <motion.div layout className="flex-1 flex items-center justify-center relative min-w-[40px]">
-                      <div className="w-full h-[2px] bg-slate-200 relative overflow-hidden rounded-full">
-                        <div className="absolute top-0 left-0 w-16 h-full bg-blue-500 animate-[flow-pulse_1.5s_ease-in-out_infinite]" />
+                      <div className="w-full h-[2px] bg-[#222d34] relative overflow-hidden rounded-full">
+                        <div className="absolute top-0 left-0 w-16 h-full bg-gradient-to-r from-transparent via-[#00a884] to-transparent animate-[flow-pulse_1.8s_ease-in-out_infinite]" />
                       </div>
-                      <div className="absolute w-5 h-5 rounded-full bg-white border border-slate-200 flex items-center justify-center shadow-xs">
-                        <ArrowRight size={10} className="text-blue-600" />
+                      <div className="absolute w-5 h-5 rounded-full bg-[#111b21] border border-[#2a3942] flex items-center justify-center shadow-xs">
+                        <ArrowRight size={10} className="text-[#00a884]" />
                       </div>
                     </motion.div>
 
@@ -944,10 +902,10 @@ const Dashboard = () => {
                       layout
                       onClick={handleLaunch}
                       disabled={!droppedFile || !activeOp}
-                      className={`h-11 px-6 bg-blue-600 hover:bg-blue-700 text-white text-xs font-black transition-all rounded-xl flex items-center justify-center gap-1.5 shadow-md shadow-blue-500/20 cursor-pointer shrink-0 ${
+                      className={`h-11 px-6 bg-[#00a884] hover:bg-[#25d366] text-white text-xs font-black transition-all rounded-xl flex items-center justify-center gap-1.5 shadow-md shadow-[#00a884]/25 cursor-pointer shrink-0 ${
                         !droppedFile || !activeOp
-                          ? "opacity-40 cursor-not-allowed bg-slate-200 text-slate-500 shadow-none pointer-events-none"
-                          : "hover:shadow-lg hover:shadow-blue-500/30 hover:scale-[1.02] active:scale-[0.98]"
+                          ? "opacity-40 cursor-not-allowed bg-[#202c33] text-[#8696a0] shadow-none pointer-events-none"
+                          : "hover:shadow-lg hover:shadow-[#00a884]/40 hover:scale-[1.02] active:scale-[0.98]"
                       } ${
                         isLaunchPop ? "animate-scale-pop" : ""
                       }`}
@@ -956,7 +914,7 @@ const Dashboard = () => {
                     </motion.button>
                   </motion.div>
 
-                   {/* Mobile Flow (stacked) */}
+                  {/* Mobile Flow (stacked) */}
                   <motion.div layout className="flex sm:hidden flex-col gap-3">
                     <AnimatePresence mode="wait">
                       {droppedFile ? (
@@ -966,28 +924,28 @@ const Dashboard = () => {
                           animate={{ scale: 1, opacity: 1, y: 0 }}
                           exit={{ scale: 0.9, opacity: 0, y: -10 }}
                           transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                          className="flex items-center gap-2.5 bg-blue-50 border border-blue-200 px-3.5 py-2.5 rounded-xl shadow-2xs"
+                          className="flex items-center gap-2.5 bg-[#00a884]/15 border border-[#00a884]/40 px-3.5 py-2.5 rounded-xl shadow-xs"
                         >
                           <motion.div 
                             initial={{ y: -35, opacity: 0, scale: 0.5 }}
                             animate={{ y: 0, opacity: 1, scale: 1 }}
                             transition={{ type: "spring", stiffness: 450, damping: 15, delay: 0.12 }}
-                            className="w-8 h-8 rounded-lg bg-blue-600 text-white font-black text-xs flex items-center justify-center shrink-0"
+                            className="w-8 h-8 rounded-lg bg-[#00a884] text-white font-black text-xs flex items-center justify-center shrink-0"
                           >
                             {droppedFile.ext}
                           </motion.div>
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-1.5 min-w-0">
-                              <p className="text-xs font-bold text-slate-900 truncate">{droppedFile.name}</p>
+                              <p className="text-xs font-bold text-[#e9edef] truncate">{droppedFile.name}</p>
                               {droppedFile.isDemo && (
-                                <span className="px-1.5 py-0.5 text-[8px] font-black bg-blue-100 text-blue-700 border border-blue-300 rounded uppercase tracking-wider shrink-0 animate-pulse">
+                                <span className="px-1.5 py-0.5 text-[8px] font-black bg-[#00a884]/20 text-[#00a884] border border-[#00a884]/30 rounded uppercase tracking-wider shrink-0 animate-pulse">
                                   Demo
                                 </span>
                               )}
                             </div>
-                            <p className="text-[10px] text-slate-500 font-medium">{droppedFile.size}</p>
+                            <p className="text-[10px] text-[#8696a0] font-medium">{droppedFile.size}</p>
                           </div>
-                          <button onClick={clearFile} className="p-1 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-white transition-colors cursor-pointer shrink-0">
+                          <button onClick={clearFile} className="p-1 text-[#8696a0] hover:text-[#e9edef] rounded-lg hover:bg-[#202c33] transition-colors cursor-pointer shrink-0">
                             <X size={13} />
                           </button>
                         </motion.div>
@@ -1000,12 +958,12 @@ const Dashboard = () => {
                             exit={{ scale: 0.95, opacity: 0 }}
                             transition={{ duration: 0.2 }}
                             onClick={() => fileInputRefMobile.current?.click()}
-                            className="flex items-center justify-center gap-2 py-3 bg-slate-50 border border-dashed border-slate-300 text-slate-700 rounded-xl transition-all cursor-pointer group"
+                            className="flex items-center justify-center gap-2 py-3 bg-[#202c33] border border-dashed border-[#2a3942] text-[#8696a0] rounded-xl transition-all cursor-pointer group"
                           >
                             <UploadCloud 
                               size={15} 
-                              className={`text-slate-400 group-hover:text-blue-600 shrink-0 ${
-                                isIconDropping ? "animate-[icon-drop_0.6s_cubic-bezier(0.34,1.56,0.64,1)] text-blue-600" : ""
+                              className={`text-[#8696a0] group-hover:text-[#00a884] shrink-0 ${
+                                isIconDropping ? "animate-[icon-drop_0.6s_cubic-bezier(0.34,1.56,0.64,1)] text-[#00a884]" : ""
                               }`} 
                             />
                             <span className="text-xs font-bold">Select or drop file</span>
@@ -1049,9 +1007,9 @@ const Dashboard = () => {
                       layout
                       onClick={handleLaunch}
                       disabled={!droppedFile || !activeOp}
-                      className={`w-full h-11 bg-blue-600 hover:bg-blue-700 text-white text-xs font-black transition-all rounded-xl flex items-center justify-center gap-2 shadow-md shadow-blue-500/20 cursor-pointer ${
+                      className={`w-full h-11 bg-[#00a884] hover:bg-[#25d366] text-white text-xs font-black transition-all rounded-xl flex items-center justify-center gap-2 shadow-md shadow-[#00a884]/25 cursor-pointer ${
                         !droppedFile || !activeOp
-                          ? "opacity-40 cursor-not-allowed bg-slate-200 text-slate-500 shadow-none pointer-events-none"
+                          ? "opacity-40 cursor-not-allowed bg-[#202c33] text-[#8696a0] shadow-none pointer-events-none"
                           : "active:scale-[0.98]"
                       } ${
                         isLaunchPop ? "animate-scale-pop" : ""
@@ -1069,20 +1027,20 @@ const Dashboard = () => {
               <div className="mb-8 text-center sm:text-left">
                 <button
                   onClick={() => setIsPinnedOpen(!isPinnedOpen)}
-                  className="w-full sm:w-auto px-5 py-2.5 bg-white border border-slate-200 hover:border-blue-400 rounded-xl flex items-center justify-between sm:justify-start gap-4 transition-all mx-auto sm:mx-0 group shadow-2xs cursor-pointer"
+                  className="w-full sm:w-auto px-5 py-2.5 bg-[#111b21] border border-[#222d34] hover:border-[#00a884] rounded-xl flex items-center justify-between sm:justify-start gap-4 transition-all mx-auto sm:mx-0 group shadow-xs cursor-pointer"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
+                    <div className="w-7 h-7 rounded-lg bg-[#00a884]/15 flex items-center justify-center text-[#00a884]">
                       <Pin size={13} />
                     </div>
-                    <span className="text-xs sm:text-sm font-bold text-slate-800 group-hover:text-blue-600 transition-colors">
+                    <span className="text-xs sm:text-sm font-bold text-[#e9edef] group-hover:text-[#00a884] transition-colors">
                       {isPinnedOpen ? 'Hide Pinned Workspaces' : 'Show Pinned Workspaces'} 
-                      <span className="ml-1.5 text-slate-400 font-medium">({pinnedResolved.length})</span>
+                      <span className="ml-1.5 text-[#8696a0] font-medium">({pinnedResolved.length})</span>
                     </span>
                   </div>
                   <ChevronDown 
                     size={16} 
-                    className={`text-slate-400 transition-transform duration-300 ${isPinnedOpen ? 'rotate-180 text-blue-600' : 'rotate-0'}`} 
+                    className={`text-[#8696a0] transition-transform duration-300 ${isPinnedOpen ? 'rotate-180 text-[#00a884]' : 'rotate-0'}`} 
                   />
                 </button>
 
@@ -1098,43 +1056,34 @@ const Dashboard = () => {
                       <div className="flex overflow-x-auto hide-scrollbar gap-4 snap-x pb-3 pt-2 px-1 -mx-1">
                         {pinnedResolved.map((tool, i) => (
                           <motion.div 
-                            key={tool.to} 
-                            initial={{ opacity: 0, y: -20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            transition={{ duration: 0.3, delay: i * 0.05, ease: 'easeOut' }}
-                            className="group relative flex flex-col flex-shrink-0 w-[76px] sm:w-[88px] snap-start"
+                            key={tool.to}
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: i * 0.05 }}
+                            className="flex-shrink-0 w-[240px] sm:w-[260px] snap-start bg-[#111b21] border border-[#222d34] hover:border-[#00a884]/60 p-4 rounded-2xl shadow-xs transition-all group flex flex-col justify-between"
                           >
-                            <Link
-                              to={tool.to}
-                              onClick={(e) => {
-                                if (LOCKED_GUEST_TOOLS.includes(tool.to) && !currentUser) {
-                                  e.preventDefault();
-                                  setIsAuthModalOpen(true);
-                                }
-                              }}
-                              className="w-full flex flex-col items-center gap-2"
-                            >
-                              <div className="w-[60px] h-[60px] sm:w-[72px] sm:h-[72px] rounded-2xl bg-white border border-slate-200 group-hover:border-blue-400 group-hover:bg-blue-50/50 flex items-center justify-center transition-all shadow-xs relative">
-                                <tool.icon size={22} className="text-slate-600 group-hover:text-blue-600 transition-colors" />
+                            <div className="flex items-start justify-between gap-2 mb-3">
+                              <div className="w-8 h-8 rounded-xl bg-[#202c33] group-hover:bg-[#00a884]/20 flex items-center justify-center text-[#8696a0] group-hover:text-[#00a884] transition-colors">
+                                <Zap size={16} />
                               </div>
-                              <span className="text-[10px] sm:text-xs font-bold text-slate-700 group-hover:text-blue-600 transition-colors text-center w-full truncate leading-tight px-0.5">
-                                {tool.label}
-                              </span>
-                            </Link>
-                            
-                            {/* Unpin button */}
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                e.preventDefault();
-                                togglePin(tool.to);
-                              }}
-                              className="absolute top-0 right-0 sm:-top-1 sm:-right-1 w-6 h-6 bg-white hover:bg-rose-50 border border-slate-200 hover:border-rose-300 rounded-full flex items-center justify-center text-slate-400 hover:text-rose-600 transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100 shadow-sm z-10 cursor-pointer"
-                              title="Unpin Workspace"
+                              <button
+                                onClick={() => togglePin(tool.to)}
+                                className="text-[#8696a0] hover:text-rose-500 p-1 rounded-lg hover:bg-[#202c33] transition-colors cursor-pointer"
+                                title="Unpin tool"
+                              >
+                                <X size={14} />
+                              </button>
+                            </div>
+                            <div>
+                              <h4 className="text-xs font-bold text-[#e9edef] group-hover:text-[#00a884] transition-colors truncate">{tool.label}</h4>
+                              <p className="text-[10px] text-[#8696a0] truncate mt-0.5">{tool.result}</p>
+                            </div>
+                            <Link 
+                              to={tool.to}
+                              className="mt-4 flex items-center justify-center gap-1.5 py-1.5 px-3 bg-[#202c33] hover:bg-[#00a884] text-[#e9edef] hover:text-white rounded-xl text-[11px] font-bold transition-colors"
                             >
-                              <X size={12} strokeWidth={2.5} />
-                            </button>
+                              Launch Utility <ArrowRight size={12} />
+                            </Link>
                           </motion.div>
                         ))}
                       </div>
@@ -1144,174 +1093,162 @@ const Dashboard = () => {
               </div>
             )}
 
-            {/* ═══ CATEGORY TABS ═══ */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.45, duration: 0.5 }}
-            >
-              <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-widest text-center mb-4 sm:mb-5">
-                Explore Utilities By Category
-              </h2>
-              
-              {/* Slider Tabs Container */}
-              <div className="relative w-full mb-5 sm:mb-6 group">
-                
-                {/* Left shadow fade + Arrow */}
-                <AnimatePresence>
-                  {showLeftArrow && (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-[#f8fafc] via-[#f8fafc]/80 to-transparent z-20 flex items-center justify-start pointer-events-none"
-                    >
-                      <button
-                        onClick={() => scrollTabs('left')}
-                        className="w-7 h-7 rounded-full bg-white border border-slate-200 text-slate-700 hover:text-blue-600 hover:border-blue-400 transition-all flex items-center justify-center shadow-xs pointer-events-auto ml-1 cursor-pointer hover:scale-105"
-                      >
-                        <ChevronLeft size={14} />
-                      </button>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-                {/* Tabs Row */}
-                <div 
-                  ref={tabsRef}
-                  className="overflow-x-auto hide-scrollbar flex items-center justify-start gap-2 w-full flex-nowrap py-1 scroll-smooth"
-                >
-                  {CATEGORY_TABS.map((tab) => {
-                    const TabIcon = tab.icon;
-                    return (
-                      <button
-                        key={tab.id}
-                        onClick={() => setActiveTab(tab.id)}
-                        className={`relative px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 shrink-0 select-none ${
-                          activeTab === tab.id
-                            ? "text-white shadow-sm shadow-blue-500/20"
-                            : "text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200/80 shadow-2xs"
-                        }`}
-                      >
-                        {activeTab === tab.id && (
-                          <motion.div
-                            layoutId="activeTab"
-                            className="absolute inset-0 bg-blue-600 rounded-xl"
-                            transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                          />
-                        )}
-                        <TabIcon size={14} className="relative z-10" />
-                        <span className="relative z-10">{tab.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {/* Right shadow fade + Arrow */}
-                <AnimatePresence>
-                  {showRightArrow && (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-[#f8fafc] via-[#f8fafc]/80 to-transparent z-20 flex items-center justify-end pointer-events-none"
-                    >
-                      <button
-                        onClick={() => scrollTabs('right')}
-                        className="w-7 h-7 rounded-full bg-white border border-slate-200 text-slate-700 hover:text-blue-600 hover:border-blue-400 transition-all flex items-center justify-center shadow-xs pointer-events-auto mr-1 cursor-pointer hover:scale-105"
-                      >
-                        <ChevronRight size={14} />
-                      </button>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-
-              {/* Operations grid */}
-              <div className="min-h-[120px] sm:min-h-[140px]">
-                <AnimatePresence mode="wait">
+            {/* ═══ CATEGORY TABS SLIDER ═══ */}
+            <div className="relative mb-6">
+              {/* Left arrow */}
+              <AnimatePresence>
+                {showLeftArrow && (
                   <motion.div
-                    key={activeTab}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    transition={{ duration: 0.25 }}
-                    className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-[#0b141a] via-[#0b141a]/80 to-transparent z-20 flex items-center justify-start pointer-events-none"
                   >
-                    {tabOps.map((op, i) => (
-                      <motion.div
-                        key={op.to}
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.2, delay: i * 0.03 }}
-                        className="group relative flex items-center bg-white border border-slate-200/90 hover:border-blue-400/80 hover:bg-blue-50/20 transition-all rounded-2xl shadow-2xs hover:shadow-sm overflow-hidden"
-                      >
-                        <Link
-                          to={op.to}
-                          onClick={(e) => handleToolClick(e, op.to)}
-                          className="flex-1 flex items-center gap-2.5 sm:gap-3 pl-3 sm:pl-4 pr-1 sm:pr-1.5 py-2.5 sm:py-3.5 min-w-0"
-                        >
-                          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-slate-100 group-hover:bg-blue-600 group-hover:text-white flex items-center justify-center transition-colors shrink-0 text-slate-600">
-                            <ArrowRight className="w-3 h-3 transition-colors" />
-                          </div>
-                          <div className="min-w-0 flex-1 py-0.5">
-                            <p className="text-[11px] sm:text-xs font-bold text-slate-800 group-hover:text-blue-600 transition-colors line-clamp-2 sm:truncate leading-[1.2]">{op.label}</p>
-                            <p className="hidden sm:block text-[10px] text-slate-400 group-hover:text-slate-500 transition-colors truncate mt-0.5">{op.result}</p>
-                          </div>
-                        </Link>
-                        
-                        {/* ACTIONS - Horizontal on the right */}
-                        <div className="flex items-center gap-0.5 sm:gap-1 pr-1.5 sm:pr-2 w-[52px] sm:w-[76px] opacity-100 md:w-0 md:opacity-0 md:group-hover:w-[76px] md:group-hover:opacity-100 transition-all duration-300 ease-out shrink-0 overflow-hidden">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              e.preventDefault();
-                              if (!currentUser) {
-                                setIsAuthModalOpen(true);
-                              } else {
-                                toggleFavorite(op.to);
-                              }
-                            }}
-                            className={`w-6 h-6 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center transition-all active:scale-90 cursor-pointer shrink-0 ${
-                              currentUser?.favoriteTools?.includes(op.to)
-                                ? 'text-rose-500 hover:text-rose-600 bg-rose-50'
-                                : 'text-slate-400 hover:text-rose-500 hover:bg-rose-50'
-                            }`}
-                          >
-                            <Heart className="w-3.5 h-3.5" fill={currentUser?.favoriteTools?.includes(op.to) ? "currentColor" : "none"} />
-                          </button>
-                          
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              e.preventDefault();
-                              if (!currentUser) {
-                                setIsAuthModalOpen(true);
-                              } else {
-                                togglePin(op.to);
-                              }
-                            }}
-                            className={`w-6 h-6 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center transition-all active:scale-90 cursor-pointer shrink-0 ${
-                              currentUser?.pinnedTools?.includes(op.to)
-                                ? 'text-blue-600 hover:text-blue-700 bg-blue-50'
-                                : 'text-slate-400 hover:text-blue-600 hover:bg-blue-50'
-                            }`}
-                          >
-                            <Pin className="w-3.5 h-3.5" fill={currentUser?.pinnedTools?.includes(op.to) ? "currentColor" : "none"} />
-                          </button>
-                        </div>
-                      </motion.div>
-                    ))}
+                    <button
+                      onClick={() => scrollTabs('left')}
+                      className="w-7 h-7 rounded-full bg-[#111b21] border border-[#2a3942] text-[#8696a0] hover:text-[#00a884] hover:border-[#00a884] transition-all flex items-center justify-center shadow-md pointer-events-auto ml-1 cursor-pointer hover:scale-105"
+                    >
+                      <ChevronLeft size={14} />
+                    </button>
                   </motion.div>
-                </AnimatePresence>
+                )}
+              </AnimatePresence>
+
+              {/* Tabs List */}
+              <div 
+                ref={tabsRef}
+                className="overflow-x-auto hide-scrollbar flex items-center justify-start gap-2 w-full flex-nowrap py-1 scroll-smooth"
+              >
+                {CATEGORY_TABS.map((tab) => {
+                  const TabIcon = tab.icon;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`relative px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 shrink-0 select-none ${
+                        activeTab === tab.id
+                          ? "text-white shadow-md shadow-[#00a884]/25"
+                          : "text-[#8696a0] hover:text-[#e9edef] bg-[#202c33] hover:bg-[#222e35] border border-[#2a3942] shadow-xs"
+                      }`}
+                    >
+                      {activeTab === tab.id && (
+                        <motion.div
+                          layoutId="activeTab"
+                          className="absolute inset-0 bg-[#00a884] rounded-xl"
+                          transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                        />
+                      )}
+                      <TabIcon size={14} className="relative z-10" />
+                      <span className="relative z-10">{tab.label}</span>
+                    </button>
+                  );
+                })}
               </div>
-            </motion.div>
+
+              {/* Right arrow */}
+              <AnimatePresence>
+                {showRightArrow && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-[#0b141a] via-[#0b141a]/80 to-transparent z-20 flex items-center justify-end pointer-events-none"
+                  >
+                    <button
+                      onClick={() => scrollTabs('right')}
+                      className="w-7 h-7 rounded-full bg-[#111b21] border border-[#2a3942] text-[#8696a0] hover:text-[#00a884] hover:border-[#00a884] transition-all flex items-center justify-center shadow-md pointer-events-auto mr-1 cursor-pointer hover:scale-105"
+                    >
+                      <ChevronRight size={14} />
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* ═══ OPERATIONS GRID ═══ */}
+            <div className="min-h-[120px] sm:min-h-[140px]">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeTab}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.25 }}
+                  className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3"
+                >
+                  {tabOps.map((op, i) => (
+                    <motion.div
+                      key={op.to}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.2, delay: i * 0.03 }}
+                      className="group relative flex items-center bg-[#111b21] border border-[#222d34] hover:border-[#00a884]/80 hover:bg-[#202c33] transition-all rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.25)] overflow-hidden"
+                    >
+                      <Link
+                        to={op.to}
+                        onClick={(e) => handleToolClick(e, op.to)}
+                        className="flex-1 flex items-center gap-2.5 sm:gap-3 pl-3 sm:pl-4 pr-1 sm:pr-1.5 py-2.5 sm:py-3.5 min-w-0"
+                      >
+                        <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-[#202c33] group-hover:bg-[#00a884] group-hover:text-white flex items-center justify-center transition-colors shrink-0 text-[#8696a0]">
+                          <ArrowRight className="w-3 h-3 transition-colors" />
+                        </div>
+                        <div className="min-w-0 flex-1 py-0.5">
+                          <p className="text-[11px] sm:text-xs font-bold text-[#e9edef] group-hover:text-[#00a884] transition-colors line-clamp-2 sm:truncate leading-[1.2]">{op.label}</p>
+                          <p className="hidden sm:block text-[10px] text-[#8696a0] group-hover:text-[#8696a0]/80 transition-colors truncate mt-0.5">{op.result}</p>
+                        </div>
+                      </Link>
+                      
+                      {/* Action buttons on card hover */}
+                      <div className="flex items-center gap-0.5 sm:gap-1 pr-1.5 sm:pr-2 w-[52px] sm:w-[76px] opacity-100 md:w-0 md:opacity-0 md:group-hover:w-[76px] md:group-hover:opacity-100 transition-all duration-300 ease-out shrink-0 overflow-hidden">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            if (!currentUser) {
+                              setIsAuthModalOpen(true);
+                            } else {
+                              toggleFavorite(op.to);
+                            }
+                          }}
+                          className={`w-6 h-6 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center transition-all active:scale-90 cursor-pointer shrink-0 ${
+                            currentUser?.favoriteTools?.includes(op.to)
+                              ? 'text-rose-500 hover:text-rose-400 bg-rose-500/10'
+                              : 'text-[#8696a0] hover:text-rose-500 hover:bg-rose-500/10'
+                          }`}
+                        >
+                          <Heart className="w-3.5 h-3.5" fill={currentUser?.favoriteTools?.includes(op.to) ? "currentColor" : "none"} />
+                        </button>
+                        
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            if (!currentUser) {
+                              setIsAuthModalOpen(true);
+                            } else {
+                              togglePin(op.to);
+                            }
+                          }}
+                          className={`w-6 h-6 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center transition-all active:scale-90 cursor-pointer shrink-0 ${
+                            currentUser?.pinnedTools?.includes(op.to)
+                              ? 'text-[#00a884] hover:text-[#25d366] bg-[#00a884]/15'
+                              : 'text-[#8696a0] hover:text-[#00a884] hover:bg-[#00a884]/15'
+                          }`}
+                        >
+                          <Pin className="w-3.5 h-3.5" fill={currentUser?.pinnedTools?.includes(op.to) ? "currentColor" : "none"} />
+                        </button>
+                      </div>
+                    </motion.div>
+                  ))}
+                </motion.div>
+              </AnimatePresence>
+            </div>
           </div>
         </section>
       </div>
     </PageTransition>
 
-    {/* Light Auth Gate Modal */}
+    {/* WhatsApp Dark Auth Gate Modal */}
     <AnimatePresence>
       {isAuthModalOpen && (
         <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
@@ -1320,76 +1257,45 @@ const Dashboard = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setIsAuthModalOpen(false)}
-            className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs"
+            className="fixed inset-0 bg-black/60 backdrop-blur-xs"
           />
           
           <motion.div
             initial={{ scale: 0.96, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.96, opacity: 0 }}
-            className="relative w-full max-w-sm bg-white border border-slate-200 p-8 shadow-2xl rounded-2xl z-10 flex flex-col text-left"
+            className="relative w-full max-w-sm bg-[#111b21] border border-[#222d34] p-8 shadow-2xl rounded-2xl z-10 flex flex-col text-left"
           >
             <button
               onClick={() => setIsAuthModalOpen(false)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
+              className="absolute top-4 right-4 text-[#8696a0] hover:text-[#e9edef] transition-colors cursor-pointer"
             >
               <X size={16} />
             </button>
             
             <div className="flex flex-col items-center text-center mb-6">
-              <div className="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center mb-4 text-blue-600 shadow-xs">
+              <div className="w-12 h-12 rounded-2xl bg-[#00a884]/15 border border-[#00a884]/30 flex items-center justify-center mb-4 text-[#00a884] shadow-xs">
                 <Shield size={22} />
               </div>
-              <h3 className="text-xl font-black text-slate-900 tracking-tight">Authentication Required</h3>
-              <p className="text-xs text-slate-500 mt-2 leading-relaxed">
-                Create an account or log in to use advanced utilities, sync favorites across devices, and keep tools pinned.
+              <h3 className="text-xl font-black text-[#e9edef] tracking-tight">Authentication Required</h3>
+              <p className="text-xs text-[#8696a0] mt-2 leading-relaxed">
+                Sign in to sync your favorite utilities across devices, pin frequently used workspaces, and unlock cloud sync.
               </p>
             </div>
             
-            <div className="space-y-3.5">
-              <button
-                onClick={async () => {
-                  try {
-                    await loginWithGoogle();
-                    setIsAuthModalOpen(false);
-                  } catch (e) {}
-                }}
-                className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-slate-200 rounded-xl bg-white hover:bg-slate-50 text-slate-700 font-bold transition-all text-xs shadow-2xs cursor-pointer active:scale-[0.98]"
+            <div className="space-y-3">
+              <Link
+                to="/login"
+                className="w-full py-3 bg-[#00a884] hover:bg-[#25d366] text-white font-bold rounded-xl text-center text-xs block transition-all shadow-md shadow-[#00a884]/25 cursor-pointer"
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                  <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                  <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                  <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                </svg>
-                Continue with Google
-              </button>
-              
-              <div className="relative my-3">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-slate-200"></div>
-                </div>
-                <div className="relative flex justify-center text-xs">
-                  <span className="px-3 bg-white text-slate-400 text-[10px] uppercase tracking-widest font-bold">Or with email</span>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-2">
-                <Link
-                  to="/login"
-                  onClick={() => setIsAuthModalOpen(false)}
-                  className="flex items-center justify-center py-2.5 border border-slate-200 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-xs transition-colors"
-                >
-                  Sign In
-                </Link>
-                <Link
-                  to="/register"
-                  onClick={() => setIsAuthModalOpen(false)}
-                  className="flex items-center justify-center py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition-colors rounded-xl shadow-xs"
-                >
-                  Register
-                </Link>
-              </div>
+                Sign In to Account
+              </Link>
+              <Link
+                to="/register"
+                className="w-full py-3 bg-[#202c33] hover:bg-[#222e35] text-[#e9edef] font-bold rounded-xl text-center text-xs block border border-[#2a3942] transition-colors cursor-pointer"
+              >
+                Create New Account
+              </Link>
             </div>
           </motion.div>
         </div>

@@ -33,21 +33,22 @@
 
 @layer base {
   :root {
-    --background: #f8fafc;
-    --foreground: #0f172a;
-    --card: #ffffff;
-    --card-foreground: #0f172a;
-    --primary: #2563eb;
+    /* WhatsApp Dark Mode Palette */
+    --background: #0b141a;
+    --foreground: #e9edef;
+    --card: #111b21;
+    --card-foreground: #e9edef;
+    --primary: #00a884;
     --primary-foreground: #ffffff;
-    --secondary: #f1f5f9;
-    --secondary-foreground: #1e293b;
-    --muted: #f1f5f9;
-    --muted-foreground: #64748b;
-    --accent: #f1f5f9;
-    --accent-foreground: #0f172a;
-    --border: #e2e8f0;
-    --input: #e2e8f0;
-    --ring: #2563eb;
+    --secondary: #202c33;
+    --secondary-foreground: #e9edef;
+    --muted: #182229;
+    --muted-foreground: #8696a0;
+    --accent: #202c33;
+    --accent-foreground: #00a884;
+    --border: #222d34;
+    --input: #202c33;
+    --ring: #00a884;
     --destructive: #ef4444;
     --destructive-foreground: #ffffff;
     --radius: 0.875rem;
@@ -62,31 +63,31 @@
     @apply bg-background text-foreground;
     font-family: var(--font-sans);
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
-    background-color: #f8fafc;
+    background-color: #0b141a;
     background-image: 
-      radial-gradient(at 100% 0%, rgba(37, 99, 235, 0.04) 0px, transparent 55%),
-      radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.035) 0px, transparent 50%),
-      radial-gradient(at 50% 100%, rgba(14, 165, 233, 0.03) 0px, transparent 50%);
+      radial-gradient(at 100% 0%, rgba(0, 168, 132, 0.06) 0px, transparent 50%),
+      radial-gradient(at 0% 0%, rgba(83, 189, 235, 0.04) 0px, transparent 45%),
+      radial-gradient(at 50% 100%, rgba(0, 168, 132, 0.03) 0px, transparent 50%);
     background-attachment: fixed;
-    color: #0f172a;
+    color: #e9edef;
     letter-spacing: -0.01em;
   }
 }
 
-/* Glassmorphism utilities for light theme */
+/* WhatsApp Dark Glassmorphism Utilities */
 .glass {
-  @apply bg-white/85 backdrop-blur-xl border border-slate-200/90 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)];
+  @apply bg-[#111b21]/90 backdrop-blur-xl border border-[#222d34] shadow-[0_8px_32px_rgba(0,0,0,0.37)];
 }
 
 .glass-header {
-  @apply bg-white/85 backdrop-blur-xl border-b border-slate-200/80 sticky top-0 z-40 shadow-[0_1px_3px_rgba(0,0,0,0.03)];
+  @apply bg-[#111b21]/90 backdrop-blur-xl border-b border-[#222d34] sticky top-0 z-40 shadow-[0_4px_20px_rgba(0,0,0,0.25)];
 }
 
 .card-elevated {
-  @apply bg-white border border-slate-200/90 rounded-2xl shadow-[0_2px_10px_-2px_rgba(0,0,0,0.04),0_10px_25px_-5px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_30px_-4px_rgba(37,99,235,0.1)] hover:border-blue-400/80 transition-all duration-200;
+  @apply bg-[#111b21] border border-[#222d34] rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.25)] hover:shadow-[0_8px_30px_rgba(0,168,132,0.15)] hover:border-[#00a884]/60 transition-all duration-200;
 }
 
-/* Premium Light Custom Scrollbar */
+/* WhatsApp Dark Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -97,17 +98,17 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #2a3942;
   border-radius: 99px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #374248;
 }
 
 .custom-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 transparent;
+  scrollbar-color: #2a3942 transparent;
 }
 .custom-scrollbar::-webkit-scrollbar {
   width: 5px;
@@ -117,18 +118,42 @@
   background: transparent;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #2a3942;
   border-radius: 99px;
 }
 .custom-scrollbar:hover::-webkit-scrollbar-thumb {
-  background: #94a3b8;
+  background: #374248;
 }
 
-/* Hide scrollbar for elements with .no-scrollbar */
-.no-scrollbar::-webkit-scrollbar {
+/* Hide scrollbar for elements with .no-scrollbar / .hide-scrollbar */
+.no-scrollbar::-webkit-scrollbar,
+.hide-scrollbar::-webkit-scrollbar {
   display: none;
 }
-.no-scrollbar {
+.no-scrollbar,
+.hide-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Dynamic Animation Utilities */
+@keyframes flow-pulse {
+  0% { transform: translateX(-100%); opacity: 0; }
+  50% { opacity: 1; }
+  100% { transform: translateX(200%); opacity: 0; }
+}
+
+@keyframes pulse-emerald {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0, 168, 132, 0.4); }
+  50% { box-shadow: 0 0 20px 6px rgba(0, 168, 132, 0.15); }
+}
+
+@keyframes icon-drop {
+  0% { transform: translateY(-16px); opacity: 0; }
+  50% { transform: translateY(4px); }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+.animate-icon-drop {
+  animation: icon-drop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
