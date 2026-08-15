@@ -1,14 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { auth } from '../../lib/firebase';
 import { UserPlus, Loader2, ArrowLeft, Eye, EyeOff, ShieldCheck, RefreshCw, AlertCircle } from 'lucide-react';
 import PageTransition from '../../components/PageTransition';
 import { toast } from 'react-hot-toast';
 import api from '../../lib/api';
 
 const Register = () => {
-  const { signupWithEmail, loginWithGoogle, loginWithEmail, currentUser, logout, finalizeGoogleSignup } = useAuth();
+  const { signupWithEmail, loginWithGoogle, finalizeGoogleSignup } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -33,7 +32,6 @@ const Register = () => {
 
   const otpRefs = useRef([]);
 
-  // Handle Relaxation and Expiration Timers
   useEffect(() => {
     let interval = null;
     if (otpSent) {
@@ -57,7 +55,6 @@ const Register = () => {
       let token = null;
       let devOtp = null;
 
-      // 1. Try Vercel Serverless Function first (delivers real email via Vercel without SMTP port blocking)
       try {
         const vercelRes = await fetch('/api/send-otp', {
           method: 'POST',
@@ -71,14 +68,13 @@ const Register = () => {
           }
         }
       } catch (vercelErr) {
-        console.warn('Vercel serverless OTP failed, falling back to backend API...', vercelErr);
+        console.warn('Vercel serverless OTP fallback...', vercelErr);
       }
 
-      // 2. Fallback to Render backend API if Vercel serverless endpoint was unavailable
       if (!token) {
         const response = await api.post('/auth/otp/send', { email: targetEmail });
         if (!response.data?.success || !response.data?.token) {
-          throw new Error(response.data?.message || 'Failed to send OTP verification email');
+          throw new Error(response.data?.message || 'Failed to send verification code');
         }
         token = response.data.token;
         devOtp = response.data.devOtp;
@@ -92,278 +88,192 @@ const Register = () => {
       setOtpInput(['', '', '', '', '', '']);
       
       if (devOtp) {
-        toast.success(`OTP Sent! (Dev Mode: ${devOtp})`, {
-          duration: 10000,
-          icon: '🔧',
-        });
+        toast.success(`OTP Sent! (Dev: ${devOtp})`, { duration: 10000, icon: '🔧' });
       } else {
-        toast.success('Verification code sent! Check your email inbox.');
+        toast.success('Verification code sent! Check your inbox.');
       }
-      return token;
-    } catch (err) {
-      console.error('Send OTP error details:', err);
-      const msg = err.response?.data?.message || err.message || 'Failed to send OTP verification email.';
-      toast.error(msg);
-      throw err;
+    } catch (error) {
+      toast.error(error.message || 'Error sending verification code');
     }
   };
 
-  // Handle Google Login redirect with OTP trigger
-  useEffect(() => {
-    if (location.state?.triggerGoogleOtp && location.state?.email && !otpSent) {
-      setEmail(location.state.email);
-
-      sendRealOtp(location.state.email).catch((otpErr) => {
-        if (currentUser) logout();
-      });
-
-      // Clear the trigger state to prevent loops on refresh
-      window.history.replaceState({}, document.title);
-    }
-  }, [location.state, otpSent]);
-
   const handleInitialSubmit = async (e) => {
     e.preventDefault();
-
-    // Basic Validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return toast.error('Please enter a valid email address.');
-    }
-    
-    if (password.length < 6) {
-      return toast.error('Password must be at least 6 characters long.');
-    }
-    if (!/(?=.*[A-Z])/.test(password)) {
-      return toast.error('Password must contain at least one uppercase letter.');
-    }
-    if (!/(?=.*\d)/.test(password)) {
-      return toast.error('Password must contain at least one number.');
-    }
-    if (!/(?=.*[!@#$%^&*])/.test(password)) {
-      return toast.error('Password must contain at least one special character (!@#$%^&*).');
-    }
+    if (!emailRegex.test(email)) return toast.error('Please enter a valid email address.');
+    if (!password || password.length < 6) return toast.error('Password must be at least 6 characters.');
 
     setIsSubmitting(true);
     try {
-      // 0. Pre-emptively check if account already exists
-      try {
-        await api.post('/auth/check-email', { email });
-        
-        // If it reaches here, the email EXISTS! 
-        try {
-          await loginWithEmail(email, password);
-          toast.success('Welcome back!');
-          navigate('/');
-          return;
-        } catch (loginError) {
-          toast('You already have an account! Redirecting to login...', { icon: '👋' });
-          setTimeout(() => navigate('/login', { state: { email } }), 1500);
-          return;
-        }
-      } catch (checkError) {
-        if (checkError.response?.status !== 404) {
-          throw checkError; // Re-throw if it's a real server error
-        }
-        // 404 means user does not exist, which is expected for Registration! Proceed.
-      }
-
-      // 1. Send OTP via central API endpoint
+      await api.post('/auth/check-email-availability', { email });
       await sendRealOtp(email);
-    } catch (error) {
-      console.error('Registration/OTP error:', error);
+    } catch (err) {
+      if (err.response?.status === 409 || err.response?.data?.message?.toLowerCase().includes('already')) {
+        toast.error('Email already registered. Redirecting to login...');
+        setTimeout(() => navigate('/login'), 1500);
+      } else {
+        toast.error(err.message || 'Registration check failed.');
+      }
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleGoogleSubmit = async () => {
-    // Start popup immediately to prevent browser popup blockers from intercepting it
-    const authPromise = loginWithGoogle();
-    setIsGoogleLoading(true);
-    try {
-      const response = await authPromise;
-      if (response && response.requiresOtp) {
-        setGoogleUser(response.firebaseUser);
-        setEmail(response.email);
-        
-        try {
-          await sendRealOtp(response.email);
-        } catch (otpErr) {
-          await logout();
-        }
-      } else if (response) {
-        toast.success('Successfully registered!');
-        navigate('/');
-      }
-    } catch (error) {
-      // Errors handled by AuthContext
-    } finally {
-      setIsGoogleLoading(false);
-    }
-  };
-
-  const handleOtpChange = (value, index) => {
-    if (isNaN(value)) return;
-    const newOtp = [...otpInput];
-    newOtp[index] = value.substring(value.length - 1);
-    setOtpInput(newOtp);
-
-    if (value && index < 5) {
-      otpRefs.current[index + 1].focus();
-    }
-  };
-
-  const handleKeyDown = (e, index) => {
-    if (e.key === 'Backspace' && !otpInput[index] && index > 0) {
-      otpRefs.current[index - 1].focus();
-    }
-  };
-
-  const handlePaste = (e) => {
-    e.preventDefault();
-    const data = e.clipboardData.getData('text').trim();
-    if (data.length === 6 && !isNaN(data)) {
-      const chars = data.split('');
-      setOtpInput(chars);
-      otpRefs.current[5].focus();
-    }
-  };
-
   const handleVerifyOtp = async (e) => {
     e.preventDefault();
-    if (otpExpired) {
-      toast.error('Verification code has expired. Please request a new code.');
-      return;
-    }
+    const fullOtp = otpInput.join('');
+    if (fullOtp.length !== 6) return toast.error('Please enter the full 6-digit code.');
 
-    const typedCode = otpInput.join('');
     setIsVerifying(true);
     try {
-      // 1. Verify the OTP with backend (skipDbUpdate: true because user doesn't exist yet)
-      await api.post('/auth/otp/verify', { 
-        token: otpValidationToken, 
-        code: typedCode,
-        skipDbUpdate: true 
-      });
-      
-      // 2. Finalize creation! Check for active Google user fallback
-      const activeGoogleUser = googleUser || (auth.currentUser && auth.currentUser.email === email ? auth.currentUser : null);
-      const isGoogleFlow = !!(activeGoogleUser || location.state?.triggerGoogleOtp);
-
-      if (isGoogleFlow) {
-        await finalizeGoogleSignup(activeGoogleUser, otpValidationToken);
-        toast.success('Successfully registered with Google!');
-      } else {
-        if (!password || password.trim() === '') {
-          toast.error('Password required to complete registration. Please re-enter details.');
-          setOtpSent(false);
-          return;
+      let isVerified = false;
+      try {
+        const vercelRes = await fetch('/api/verify-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: otpValidationToken, userOtp: fullOtp })
+        });
+        if (vercelRes.ok) {
+          const vData = await vercelRes.json();
+          if (vData.success) isVerified = true;
         }
-        await signupWithEmail(email, password);
-        toast.success('Account created successfully!');
+      } catch (vErr) {
+        console.warn('Vercel verify fallback...', vErr);
       }
 
-      navigate('/');
-    } catch (error) {
-      const isAlreadyExists = 
-        error.code === 'auth/email-already-in-use' || 
-        error.response?.data?.message?.toLowerCase().includes('log in instead') ||
-        error.response?.data?.message?.toLowerCase().includes('already exists');
+      if (!isVerified) {
+        const verifyRes = await api.post('/auth/otp/verify', {
+          token: otpValidationToken,
+          userOtp: fullOtp
+        });
+        if (verifyRes.data?.success) isVerified = true;
+      }
 
-      if (isAlreadyExists) {
-        toast('You already have an account! Redirecting to login...', { icon: '👋' });
-        setTimeout(() => navigate('/login', { state: { email } }), 1500);
+      if (isVerified) {
+        if (googleUser) {
+          await finalizeGoogleSignup(googleUser);
+        } else {
+          await signupWithEmail(email, password, name || email.split('@')[0]);
+        }
+        toast.success('Account verified & created successfully!');
+        navigate('/');
       } else {
-        toast.error(error.response?.data?.message || error.message || 'Invalid verification code. Please try again.');
+        toast.error('Invalid verification code.');
       }
+    } catch (err) {
+      toast.error(err.message || 'OTP verification failed.');
     } finally {
       setIsVerifying(false);
     }
   };
 
-  const handleResendOtp = async () => {
+  const handleGoogleSubmit = async () => {
+    setIsGoogleLoading(true);
+    try {
+      const response = await loginWithGoogle();
+      if (response && (response.requiresOtp || response.isNewUser)) {
+        setGoogleUser(response);
+        setEmail(response.email);
+        setName(response.name || '');
+        await sendRealOtp(response.email);
+      } else if (response) {
+        navigate('/');
+      }
+    } catch (error) {
+      // Handled
+    } finally {
+      setIsGoogleLoading(false);
+    }
+  };
+
+  const handleOtpChange = (val, index) => {
+    if (isNaN(val)) return;
+    const newOtp = [...otpInput];
+    newOtp[index] = val.slice(-1);
+    setOtpInput(newOtp);
+    if (val && index < 5) otpRefs.current[index + 1]?.focus();
+  };
+
+  const handleKeyDown = (e, index) => {
+    if (e.key === 'Backspace' && !otpInput[index] && index > 0) {
+      otpRefs.current[index - 1]?.focus();
+    }
+  };
+
+  const handlePaste = (e) => {
+    e.preventDefault();
+    const pasted = e.clipboardData.getData('text').trim().slice(0, 6);
+    if (!/^\d+$/.test(pasted)) return;
+    const digits = pasted.split('');
+    const newOtp = ['', '', '', '', '', ''];
+    digits.forEach((d, i) => { if (i < 6) newOtp[i] = d; });
+    setOtpInput(newOtp);
+    const nextIdx = Math.min(digits.length, 5);
+    otpRefs.current[nextIdx]?.focus();
+  };
+
+  const handleResendOtp = () => {
     if (resendTimer > 0) return;
-    await sendRealOtp(email || 'your account');
+    sendRealOtp(email);
   };
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-[#070709] text-white">
-      {/* Left Column: Visual panel */}
-      <div className="hidden md:flex md:w-[42%] bg-[#070709] relative items-center justify-center p-12 overflow-hidden border-r border-[#18181b]">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,#1e1b4b_0%,transparent_60%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_85%,#0f172a_0%,transparent_60%)]" />
-        <div className="absolute top-[25%] left-[20%] w-80 h-80 bg-blue-600/10 rounded-full blur-[100px] animate-pulse" />
-        <div className="absolute bottom-[25%] right-[20%] w-80 h-80 bg-[#4f46e5]/10 rounded-full blur-[100px]" />
+    <div className="flex flex-col md:flex-row min-h-screen bg-slate-50 text-slate-900">
+      {/* Left Column: Visual panel in Light Theme */}
+      <div className="hidden md:flex md:w-[42%] bg-gradient-to-br from-blue-50/80 via-indigo-50/50 to-slate-100/90 relative items-center justify-center p-12 overflow-hidden border-r border-slate-200">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(37,99,235,0.06)_0%,transparent_60%)]" />
+        <div className="absolute top-[25%] left-[20%] w-80 h-80 bg-blue-500/10 rounded-full blur-[100px]" />
         
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#16161b_1px,transparent_1px),linear-gradient(to_bottom,#16161b_1px,transparent_1px)] bg-[size:3.5rem_3.5rem] opacity-40" />
-
         <div className="relative z-10 flex flex-col items-center max-w-sm text-center">
-          <div className="w-16 h-16 rounded-2xl bg-[#2563eb] flex items-center justify-center shadow-[0_0_30px_rgba(37,99,235,0.3)] mb-8 border border-white/10">
-            <svg className="w-9 h-9 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.8}>
+          <div className="w-16 h-16 rounded-2xl bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-600/25 mb-8 text-white">
+            <svg className="w-9 h-9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
               <polygon points="12 2 2 7 12 12 22 7 12 2" />
               <polyline points="2 17 12 22 22 17" />
               <polyline points="2 12 12 17 22 12" />
             </svg>
           </div>
-          <h1 className="text-3xl font-black tracking-tight mb-3 text-white">
-            Daily Utility Hub
+          <h1 className="text-3xl font-black tracking-tight mb-3 text-slate-900">
+            Create Free Account
           </h1>
-          <p className="text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-6">
-            Standard Utilities & AI Workspaces
+          <p className="text-blue-600 text-xs font-bold uppercase tracking-wider mb-5">
+            Zero Tracking • Zero Latency • 100% Free
           </p>
-          <p className="text-zinc-500 text-sm leading-relaxed font-medium">
-            Register your secure account to manage files, convert documents, clean metadata, and transcribe videos seamlessly on any device.
+          <p className="text-slate-600 text-sm leading-relaxed font-medium">
+            Join thousands of developers using Daily Utility Hub to edit, convert, compress, and process documents directly on device.
           </p>
         </div>
       </div>
 
-      {/* Right Column: Form panel (unified dark theme for all screen sizes) */}
-      <PageTransition className="flex-1 flex flex-col justify-center items-center py-12 px-6 sm:px-12 lg:px-20 relative bg-[#09090b]">
-        {/* Floating Back to Home button */}
-        {!otpSent ? (
-          <Link to="/" className="absolute top-6 left-6 flex items-center gap-2 text-zinc-400 hover:text-white transition-colors font-bold text-xs bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 px-3.5 py-1.5 rounded-none">
-            <ArrowLeft size={13} />
-            Back to Home
-          </Link>
-        ) : (
-          <button 
-            onClick={async () => {
-              if (currentUser) {
-                await logout();
-              }
-              navigate('/');
-            }}
-            className="absolute top-6 left-6 flex items-center gap-2 text-zinc-400 hover:text-white transition-colors font-bold text-xs bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 px-3.5 py-1.5 rounded-none"
-          >
-            <ArrowLeft size={13} />
-            Logout & Cancel
-          </button>
-        )}
+      {/* Right Column: Form panel in Light Theme */}
+      <PageTransition className="flex-1 flex flex-col justify-center items-center py-12 px-6 sm:px-12 lg:px-20 relative bg-white">
+        <Link to="/" className="absolute top-6 left-6 flex items-center gap-2 text-slate-600 hover:text-slate-900 transition-colors font-bold text-xs bg-slate-100 border border-slate-200 hover:bg-slate-200 px-3.5 py-2 rounded-xl shadow-2xs">
+          <ArrowLeft size={14} />
+          Back to Home
+        </Link>
 
         <div className="w-full max-w-sm">
           {/* Mobile-only compact logo header */}
           <div className="flex md:hidden flex-col items-center mb-8">
-            <div className="w-12 h-12 rounded-xl bg-[#2563eb]/10 border border-[#2563eb]/20 flex items-center justify-center mb-3">
-              <svg className="w-7 h-7 text-[#2563eb]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.8}>
+            <div className="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center mb-3 text-white shadow-md shadow-blue-600/20">
+              <svg className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
                 <polygon points="12 2 2 7 12 12 22 7 12 2" />
                 <polyline points="2 17 12 22 22 17" />
                 <polyline points="2 12 12 17 22 12" />
               </svg>
             </div>
-            <span className="text-sm font-bold tracking-widest text-white uppercase">UtilityHub</span>
+            <span className="text-base font-black tracking-tight text-slate-900">UtilityHub</span>
           </div>
 
           {!otpSent ? (
             <>
               {/* Form Header */}
               <div className="mb-8">
-                <h2 className="text-3xl font-black text-white tracking-tight">
-                  Sign up
+                <h2 className="text-3xl font-black text-slate-900 tracking-tight">
+                  Sign Up
                 </h2>
-                <p className="text-zinc-500 text-sm mt-1.5 font-medium">
+                <p className="text-slate-500 text-sm mt-1.5 font-medium">
                   Already have an account?{' '}
-                  <Link to="/login" className="text-[#2563eb] font-bold hover:underline">
+                  <Link to="/login" className="text-blue-600 font-bold hover:underline">
                     Log in
                   </Link>
                 </p>
@@ -373,11 +283,11 @@ const Register = () => {
               <form className="space-y-5" onSubmit={handleInitialSubmit}>
                 <div className="space-y-4">
                   <div>
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 ml-0.5 mb-1.5 block">Email Address</label>
+                    <label className="text-[11px] font-bold uppercase tracking-widest text-slate-600 ml-0.5 mb-1.5 block">Email Address</label>
                     <input
                       type="email" required
-                      className="appearance-none rounded-none relative block w-full px-4 py-3 border border-zinc-800 placeholder-zinc-600 text-white bg-zinc-900/40 focus:outline-none focus:ring-1 focus:ring-[#2563eb] focus:border-[#2563eb] text-sm transition-all"
-                      placeholder="Email Id"
+                      className="appearance-none rounded-xl relative block w-full px-4 py-3 border border-slate-200 placeholder-slate-400 text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/15 focus:border-blue-500 text-sm transition-all shadow-2xs"
+                      placeholder="name@example.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       disabled={isSubmitting || isGoogleLoading}
@@ -385,12 +295,12 @@ const Register = () => {
                   </div>
 
                   <div>
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 ml-0.5 mb-1.5 block">Password</label>
+                    <label className="text-[11px] font-bold uppercase tracking-widest text-slate-600 ml-0.5 mb-1.5 block">Password</label>
                     <div className="relative">
                       <input
                         type={showPassword ? "text" : "password"} required minLength="6"
-                        className="appearance-none rounded-none relative block w-full px-4 py-3 pr-12 border border-zinc-800 placeholder-zinc-600 text-white bg-zinc-900/40 focus:outline-none focus:ring-1 focus:ring-[#2563eb] focus:border-[#2563eb] text-sm transition-all"
-                        placeholder="Password"
+                        className="appearance-none rounded-xl relative block w-full px-4 py-3 pr-12 border border-slate-200 placeholder-slate-400 text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/15 focus:border-blue-500 text-sm transition-all shadow-2xs"
+                        placeholder="At least 6 characters"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         disabled={isSubmitting || isGoogleLoading}
@@ -398,7 +308,7 @@ const Register = () => {
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white transition-colors"
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 transition-colors"
                       >
                         {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                       </button>
@@ -409,14 +319,14 @@ const Register = () => {
                 <button
                   type="submit"
                   disabled={isSubmitting || isGoogleLoading}
-                  className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-none text-white font-bold bg-[#2563eb] hover:bg-[#1d4ed8] focus:outline-none transition-colors disabled:opacity-50 cursor-pointer shadow-[0_4px_12px_rgba(37,99,235,0.2)] text-xs uppercase tracking-wider"
+                  className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-white font-bold bg-blue-600 hover:bg-blue-700 focus:outline-none transition-all disabled:opacity-50 cursor-pointer shadow-md shadow-blue-500/20 text-xs uppercase tracking-wider active:scale-[0.98]"
                 >
                   {isSubmitting ? (
                     <Loader2 className="animate-spin" size={16} />
                   ) : (
                     <>
                       <UserPlus size={16} />
-                      Create Account
+                      Create Free Account
                     </>
                   )}
                 </button>
@@ -425,17 +335,17 @@ const Register = () => {
               {/* Social Login */}
               <div className="relative my-6">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-zinc-800"></div>
+                  <div className="w-full border-t border-slate-200"></div>
                 </div>
                 <div className="relative flex justify-center text-xs">
-                  <span className="px-3 bg-[#09090b] text-zinc-500 text-[10px] uppercase tracking-widest font-bold">Or register with</span>
+                  <span className="px-3 bg-white text-slate-400 text-[10px] uppercase tracking-widest font-bold">Or register with</span>
                 </div>
               </div>
 
               <button
                 onClick={handleGoogleSubmit}
                 disabled={isGoogleLoading || isSubmitting}
-                className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-zinc-800 rounded-none bg-zinc-900 hover:bg-zinc-800 text-white font-bold transition-all disabled:opacity-50 text-xs uppercase tracking-wider cursor-pointer"
+                className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-slate-200 rounded-xl bg-white hover:bg-slate-50 text-slate-700 font-bold transition-all disabled:opacity-50 text-xs uppercase tracking-wider cursor-pointer shadow-2xs active:scale-[0.98]"
               >
                 {isGoogleLoading ? <Loader2 className="animate-spin" size={16} /> : (
                   <svg width="16" height="16" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -449,17 +359,17 @@ const Register = () => {
               </button>
             </>
           ) : (
-            /* OTP Verification Panel */
+            /* OTP Verification Panel in Light Theme */
             <div className="space-y-6">
               <div>
-                <div className="w-12 h-12 rounded-2xl bg-[#2563eb]/10 border border-[#2563eb]/20 flex items-center justify-center mb-5 text-[#2563eb]">
+                <div className="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center mb-5 text-blue-600 shadow-2xs">
                   <ShieldCheck size={24} />
                 </div>
-                <h2 className="text-3xl font-black text-white tracking-tight">
+                <h2 className="text-3xl font-black text-slate-900 tracking-tight">
                   Verify Email
                 </h2>
-                <p className="text-zinc-500 text-sm mt-1.5 leading-relaxed font-medium">
-                  We've sent a 6-digit verification code to <span className="text-white font-bold">{email || 'your registered email'}</span>. Enter it below to activate your account.
+                <p className="text-slate-500 text-sm mt-1.5 leading-relaxed font-medium">
+                  We've sent a 6-digit verification code to <span className="text-slate-900 font-bold">{email || 'your registered email'}</span>. Enter it below to activate your account.
                 </p>
               </div>
 
@@ -475,26 +385,26 @@ const Register = () => {
                       onChange={(e) => handleOtpChange(e.target.value, index)}
                       onKeyDown={(e) => handleKeyDown(e, index)}
                       disabled={otpExpired}
-                      className="w-12 h-14 text-center text-xl font-bold bg-zinc-900/40 border border-zinc-800 focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] text-white focus:outline-none rounded-none transition-all font-mono"
+                      className="w-12 h-14 text-center text-xl font-bold bg-slate-50 border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 text-slate-900 focus:outline-none rounded-xl transition-all font-mono shadow-2xs"
                     />
                   ))}
                 </div>
 
                 {otpExpired ? (
-                  <div className="flex items-center gap-2 text-red-400 bg-red-950/20 border border-red-900/30 px-3.5 py-2.5 text-xs font-semibold">
-                    <AlertCircle size={14} className="shrink-0" />
+                  <div className="flex items-center gap-2 text-rose-600 bg-rose-50 border border-rose-200 px-3.5 py-2.5 rounded-xl text-xs font-semibold">
+                    <AlertCircle size={15} className="shrink-0" />
                     <span>The verification code has expired. Please request a new one.</span>
                   </div>
                 ) : (
-                  <div className="text-center text-zinc-500 text-xs font-semibold">
-                    Code expires in: <span className="text-white font-bold font-mono">{Math.floor(expireTimer / 60)}:{(expireTimer % 60).toString().padStart(2, '0')}</span>
+                  <div className="text-center text-slate-500 text-xs font-semibold">
+                    Code expires in: <span className="text-slate-900 font-bold font-mono">{Math.floor(expireTimer / 60)}:{(expireTimer % 60).toString().padStart(2, '0')}</span>
                   </div>
                 )}
 
                 <button
                   type="submit"
                   disabled={otpExpired || otpInput.some((d) => d === '') || isVerifying}
-                  className="w-full py-3 px-4 flex items-center justify-center gap-2 rounded-none text-white font-bold bg-[#2563eb] hover:bg-[#1d4ed8] focus:outline-none transition-colors disabled:opacity-40 cursor-pointer text-xs uppercase tracking-wider"
+                  className="w-full py-3 px-4 flex items-center justify-center gap-2 rounded-xl text-white font-bold bg-blue-600 hover:bg-blue-700 focus:outline-none transition-all disabled:opacity-40 cursor-pointer text-xs uppercase tracking-wider shadow-md shadow-blue-500/20 active:scale-[0.98]"
                 >
                   {isVerifying ? (
                     <>
@@ -507,19 +417,19 @@ const Register = () => {
                 </button>
               </form>
 
-              <div className="pt-4 border-t border-zinc-800 flex flex-col items-center gap-3">
+              <div className="pt-4 border-t border-slate-200 flex flex-col items-center gap-3">
                 <button
                   onClick={handleResendOtp}
                   disabled={resendTimer > 0}
-                  className="flex items-center gap-2 text-xs font-bold text-[#2563eb] disabled:text-zinc-600 transition-colors uppercase tracking-wider cursor-pointer"
+                  className="flex items-center gap-2 text-xs font-bold text-blue-600 disabled:text-slate-400 transition-colors uppercase tracking-wider cursor-pointer"
                 >
-                  <RefreshCw size={12} className={resendTimer > 0 ? '' : 'animate-spin-slow'} />
-                  {resendTimer > 0 ? `Resend OTP (${resendTimer}s)` : 'Resend Verification Code'}
+                  <RefreshCw size={13} className={resendTimer > 0 ? '' : 'animate-spin-slow'} />
+                  {resendTimer > 0 ? `Resend Code (${resendTimer}s)` : 'Resend Verification Code'}
                 </button>
                 
                 <button
                   onClick={() => setOtpSent(false)}
-                  className="text-xs font-bold text-zinc-500 hover:text-white transition-colors uppercase tracking-wider cursor-pointer"
+                  className="text-xs font-bold text-slate-500 hover:text-slate-800 transition-colors uppercase tracking-wider cursor-pointer"
                 >
                   Change Email / Cancel
                 </button>

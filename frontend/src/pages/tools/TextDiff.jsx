@@ -149,6 +149,24 @@ const TextDiff = () => {
                  rightTitle={splitView ? newFileName : undefined}
                  styles={{
                    variables: {
+                     light: {
+                       diffViewerBackground: '#ffffff',
+                       diffViewerTitleBackground: '#f8fafc',
+                       diffViewerTitleColor: '#0f172a',
+                       diffViewerTitleBorderColor: '#e2e8f0',
+                       diffViewerColor: '#334155',
+                       addedBackground: '#ecfdf5',
+                       addedColor: '#065f46',
+                       removedBackground: '#fff1f2',
+                       removedColor: '#9f1239',
+                       wordAddedBackground: '#a7f3d0',
+                       wordRemovedBackground: '#fecdd3',
+                       addedGutterBackground: '#ecfdf5',
+                       removedGutterBackground: '#fff1f2',
+                       gutterBackground: '#f8fafc',
+                       gutterColor: '#94a3b8',
+                       emptyLineBackground: '#ffffff',
+                     },
                      dark: {
                        diffViewerBackground: '#0d1117',
                        diffViewerTitleBackground: '#161b22',
@@ -157,12 +175,12 @@ const TextDiff = () => {
                        diffViewerColor: '#c9d1d9',
                        addedBackground: '#04260f',
                        addedColor: '#c9d1d9',
-                       removedBackground: '#3fb950', // Note: Using GitHub dark colors loosely
+                       removedBackground: '#7f1d1d',
                        removedColor: '#c9d1d9',
                        wordAddedBackground: '#2ea043',
                        wordRemovedBackground: '#f85149',
                        addedGutterBackground: '#04260f',
-                       removedGutterBackground: '#3fb950',
+                       removedGutterBackground: '#7f1d1d',
                        gutterBackground: '#0d1117',
                        gutterColor: '#484f58',
                        emptyLineBackground: '#0d1117',

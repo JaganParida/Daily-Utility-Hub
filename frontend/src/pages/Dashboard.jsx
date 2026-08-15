@@ -2,9 +2,9 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useRef, useCallback, useEffect } from "react";
 import {
-  ArrowRight, UploadCloud, X, FileCheck, ChevronDown, Zap, Shield, Cpu,
+  ArrowRight, UploadCloud, X, ChevronDown, Zap, Shield, Cpu,
   FileText, ImageIcon, Code2, Type, Table2, FileSpreadsheet, MonitorPlay,
-  FolderArchive, Music, Layers, Search, ChevronLeft, ChevronRight, Heart, Pin
+  FolderArchive, Music, Layers, Search, ChevronLeft, ChevronRight, Heart, Pin, Sparkles
 } from "lucide-react";
 import PageTransition from "../components/PageTransition";
 import { useAuth } from "../context/AuthContext";
@@ -158,7 +158,7 @@ const EXT_TO_SOURCE = {
   txt: "text", md: "text",
 };
 
-// ─── Custom Dropdown Component ───
+// ─── Custom Light Dropdown Component ───
 const CustomDropdown = ({ 
   value, 
   onChange, 
@@ -230,15 +230,15 @@ const CustomDropdown = ({
           isPop ? "animate-scale-pop" : ""
         } ${
           open 
-            ? "border-[#2563eb] bg-[#27272a] shadow-[0_0_15px_rgba(124,92,252,0.15)] ring-1 ring-[#2563eb]/30" 
-            : "border-[#3f3f46] bg-[#18181b]"
+            ? "border-blue-600 bg-blue-50/40 ring-2 ring-blue-500/20 shadow-xs" 
+            : "border-slate-200 bg-white"
         } ${
           disabled 
-            ? "opacity-60 cursor-not-allowed border-[#3f3f46]/40 bg-[#18181b]/50 pointer-events-none" 
-            : "cursor-pointer hover:border-[#2563eb]/50 hover:bg-[#27272a] active:scale-[0.98] focus:border-[#2563eb]/80 focus:ring-1 focus:ring-[#2563eb]/30"
+            ? "opacity-60 cursor-not-allowed border-slate-200 bg-slate-50/70 pointer-events-none text-slate-400" 
+            : "cursor-pointer hover:border-blue-400 hover:bg-slate-50/80 active:scale-[0.98] text-slate-800 shadow-2xs"
         }`}
       >
-        {Icon && <Icon size={13} className="text-[#71717a] shrink-0" />}
+        {Icon && <Icon size={14} className="text-slate-400 shrink-0" />}
         <span className="text-xs font-bold truncate flex-1 block overflow-hidden h-4 relative">
           <AnimatePresence mode="wait">
             <motion.span
@@ -247,13 +247,13 @@ const CustomDropdown = ({
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: -8, opacity: 0 }}
               transition={{ duration: 0.15, ease: "easeOut" }}
-              className={`absolute inset-y-0 left-0 truncate w-full flex items-center ${selected ? "text-white" : "text-[#52525b]"}`}
+              className={`absolute inset-y-0 left-0 truncate w-full flex items-center ${selected ? "text-slate-900" : "text-slate-400"}`}
             >
               {selected ? selected.label : placeholder}
             </motion.span>
           </AnimatePresence>
         </span>
-        <ChevronDown size={11} className={`ml-auto text-[#71717a] shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
+        <ChevronDown size={13} className={`ml-auto text-slate-400 shrink-0 transition-transform ${open ? "rotate-180 text-blue-600" : ""}`} />
       </button>
 
       <AnimatePresence>
@@ -263,18 +263,18 @@ const CustomDropdown = ({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 4, scale: 0.97 }}
             transition={{ duration: 0.15 }}
-            className="absolute top-full left-0 mt-2 w-full min-w-[180px] max-h-[260px] overflow-hidden bg-[#18181b] border border-[#3f3f46] rounded-xl shadow-[0_12px_40px_rgba(0,0,0,0.6)] z-[200] flex flex-col"
+            className="absolute top-full left-0 mt-2 w-full min-w-[200px] max-h-[260px] overflow-hidden bg-white border border-slate-200 rounded-2xl shadow-[0_15px_40px_rgba(0,0,0,0.12)] z-[200] flex flex-col"
           >
             {options.length > 5 && (
-              <div className="px-2 py-1.5 border-b border-[#3f3f46] sticky top-0 bg-[#18181b] z-10 shrink-0">
-                <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-[#27272a] border border-[#3f3f46] focus-within:border-[#2563eb]/50 transition-colors">
-                  <Search size={11} className="text-[#52525b]" />
+              <div className="px-2 py-2 border-b border-slate-100 sticky top-0 bg-white z-10 shrink-0">
+                <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 focus-within:border-blue-500 focus-within:bg-white transition-colors">
+                  <Search size={12} className="text-slate-400" />
                   <input
                     type="text"
-                    placeholder="Search..."
+                    placeholder="Search options..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-transparent border-none text-[11px] text-white focus:outline-none placeholder:text-[#71717a]"
+                    className="w-full bg-transparent border-none text-[11px] text-slate-900 focus:outline-none placeholder:text-slate-400"
                     onClick={(e) => e.stopPropagation()}
                     onMouseDown={(e) => e.stopPropagation()}
                   />
@@ -283,9 +283,9 @@ const CustomDropdown = ({
                       type="button"
                       onClick={(e) => { e.stopPropagation(); setSearchQuery(""); }}
                       onMouseDown={(e) => e.stopPropagation()}
-                      className="text-[#52525b] hover:text-white"
+                      className="text-slate-400 hover:text-slate-700"
                     >
-                      <X size={10} />
+                      <X size={11} />
                     </button>
                   )}
                 </div>
@@ -309,16 +309,16 @@ const CustomDropdown = ({
                       type="button"
                       key={opt.value}
                       onMouseDown={(e) => { e.preventDefault(); onChange(opt.value); setOpen(false); }}
-                      className={`w-full flex items-center gap-2.5 px-3.5 py-2 text-left text-xs font-medium transition-all duration-200 cursor-pointer ${
+                      className={`w-full flex items-center gap-2.5 px-3.5 py-2 text-left text-xs font-semibold transition-colors cursor-pointer ${
                         (opt.value === value || opt.value === highlightedValue || opt.label === highlightedValue)
-                          ? "bg-[#2563eb]/15 text-[#2563eb] font-extrabold border-l-2 border-[#2563eb]"
-                          : "text-[#d4d4d8] hover:bg-[#ffffff08] hover:text-white"
+                          ? "bg-blue-50 text-blue-600 font-bold border-l-2 border-blue-600"
+                          : "text-slate-700 hover:bg-slate-50 hover:text-slate-900"
                       }`}
                     >
-                      {OptIcon && <OptIcon size={13} className="shrink-0 opacity-60" />}
+                      {OptIcon && <OptIcon size={14} className="shrink-0 opacity-60" />}
                       <span className="truncate">{opt.label}</span>
                       {opt.value === value && (
-                        <svg className="w-3 h-3 ml-auto text-[#2563eb] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round">
+                        <svg className="w-3.5 h-3.5 ml-auto text-blue-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round">
                           <polyline points="20 6 9 17 4 12" />
                         </svg>
                       )}
@@ -326,8 +326,8 @@ const CustomDropdown = ({
                   );
                 })
               ) : (
-                <div className="px-3.5 py-3 text-center text-[10px] text-[#52525b]">
-                  No results found
+                <div className="px-3.5 py-4 text-center text-xs text-slate-400">
+                  No matching options
                 </div>
               )}
             </motion.div>
@@ -355,10 +355,10 @@ const AnimatedCounter = ({ end, suffix = "" }) => {
   return <span>{count}{suffix}</span>;
 };
 
-// ─── Interactive Hub Graphic ───
+// ─── Interactive Hub Graphic in Light Theme ───
 const InteractiveHubGraphic = () => {
   const fileTypes = [
-    { label: "PDF", color: "from-red-500 to-rose-600", x: -95, y: -45, delay: 0 },
+    { label: "PDF", color: "from-rose-500 to-red-600", x: -95, y: -45, delay: 0 },
     { label: "PNG", color: "from-emerald-400 to-teal-500", x: 95, y: -45, delay: 1 },
     { label: "JSON", color: "from-amber-400 to-orange-500", x: -95, y: 45, delay: 2 },
     { label: "ZIP", color: "from-blue-500 to-indigo-600", x: 95, y: 45, delay: 3 },
@@ -366,12 +366,12 @@ const InteractiveHubGraphic = () => {
 
   return (
     <div className="relative w-full h-[240px] flex items-center justify-center overflow-hidden">
-      <div className="absolute w-[180px] h-[180px] rounded-full bg-[#2563eb]/10 blur-[60px]" />
-      <div className="absolute w-[240px] h-[240px] rounded-full border border-[#3f3f46]/40 border-dashed animate-[spin_40s_linear_infinite]" />
-      <div className="absolute w-[160px] h-[160px] rounded-full border border-[#3f3f46]/60 animate-[spin_25s_linear_infinite_reverse]" />
-      <div className="relative z-10 w-[72px] h-[72px] rounded-2xl bg-gradient-to-tr from-[#2563eb] to-[#60a5fa] p-[1.5px] shadow-[0_0_30px_rgba(124,92,252,0.3)]">
-        <div className="w-full h-full rounded-2xl bg-[#09090b] flex items-center justify-center">
-          <Cpu className="text-[#2563eb] animate-pulse" size={24} />
+      <div className="absolute w-[180px] h-[180px] rounded-full bg-blue-500/10 blur-[50px]" />
+      <div className="absolute w-[240px] h-[240px] rounded-full border border-slate-200 border-dashed animate-[spin_40s_linear_infinite]" />
+      <div className="absolute w-[160px] h-[160px] rounded-full border border-slate-300/80 animate-[spin_25s_linear_infinite_reverse]" />
+      <div className="relative z-10 w-[72px] h-[72px] rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 p-[1.5px] shadow-[0_10px_25px_rgba(37,99,235,0.25)]">
+        <div className="w-full h-full rounded-2xl bg-white flex items-center justify-center">
+          <Cpu className="text-blue-600 animate-pulse" size={26} />
         </div>
       </div>
       {fileTypes.map((type) => (
@@ -389,9 +389,9 @@ const InteractiveHubGraphic = () => {
             delay: type.delay,
           }}
         >
-          <div className="px-3 py-1.5 rounded-lg bg-[#18181b]/90 border border-[#3f3f46] hover:border-[#2563eb]/50 transition-all shadow-[0_8px_20px_rgba(0,0,0,0.4)] flex items-center gap-1.5 cursor-default group">
-            <span className={`w-1.5 h-1.5 rounded-full bg-gradient-to-r ${type.color}`} />
-            <span className="text-[10px] font-black text-white group-hover:text-[#60a5fa] transition-colors">{type.label}</span>
+          <div className="px-3 py-1.5 rounded-xl bg-white border border-slate-200 hover:border-blue-400 transition-all shadow-md flex items-center gap-1.5 cursor-default group">
+            <span className={`w-2 h-2 rounded-full bg-gradient-to-r ${type.color}`} />
+            <span className="text-[11px] font-black text-slate-800 group-hover:text-blue-600 transition-colors">{type.label}</span>
           </div>
         </motion.div>
       ))}
@@ -639,18 +639,6 @@ const Dashboard = () => {
     .map(path => getToolCategoryAndDetails(path))
     .filter(Boolean);
 
-  const pinnedGroups = pinnedResolved.reduce((groups, tool) => {
-    if (!groups[tool.categoryKey]) {
-      groups[tool.categoryKey] = {
-        label: tool.categoryLabel,
-        icon: tool.icon,
-        tools: []
-      };
-    }
-    groups[tool.categoryKey].tools.push(tool);
-    return groups;
-  }, {});
-
   useEffect(() => {
     const hasOp = !!activeOp;
     if (!prevHasActiveOp.current && hasOp) {
@@ -683,7 +671,6 @@ const Dashboard = () => {
   };
 
   const handleFileDrop = useCallback((file) => {
-    console.log("File drop event detected:", file.name);
     clearSimulation();
     hasUserInteracted.current = true;
 
@@ -737,26 +724,25 @@ const Dashboard = () => {
           100% { transform: translateY(0) scale(1); }
         }
         @keyframes flash-glow {
-          0% { border-color: #3f3f46; box-shadow: 0 0 0 rgba(124, 92, 252, 0); }
-          30% { border-color: #2563eb; box-shadow: 0 0 15px rgba(124, 92, 252, 0.4); }
-          100% { border-color: #3f3f46; box-shadow: 0 0 0 rgba(124, 92, 252, 0); }
+          0% { border-color: #e2e8f0; box-shadow: 0 0 0 rgba(37, 99, 235, 0); }
+          30% { border-color: #2563eb; box-shadow: 0 0 15px rgba(37, 99, 235, 0.25); }
+          100% { border-color: #e2e8f0; box-shadow: 0 0 0 rgba(37, 99, 235, 0); }
         }
         @keyframes scale-pop {
           0% { transform: scale(1); }
-          50% { transform: scale(1.05); border-color: #2563eb; box-shadow: 0 0 12px rgba(124, 92, 252, 0.25); }
+          50% { transform: scale(1.05); border-color: #2563eb; box-shadow: 0 0 12px rgba(37, 99, 235, 0.2); }
           100% { transform: scale(1); }
         }
         .animate-flash-glow { animation: flash-glow 0.8s ease-out; }
         .animate-scale-pop { animation: scale-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1); }
-        .gradient-text { background: linear-gradient(135deg, #2563eb, #60a5fa, #2563eb); background-size: 200% 200%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: gradient-shift 4s ease infinite; }
+        .gradient-text { background: linear-gradient(135deg, #2563eb, #4f46e5, #0284c7); background-size: 200% 200%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: gradient-shift 4s ease infinite; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
       `}</style>
 
       <div className="w-full min-h-screen">
-
         <section
-          className="w-full bg-[#09090b] relative overflow-hidden"
+          className="w-full bg-transparent relative overflow-hidden"
           onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
           onDragLeave={(e) => { e.preventDefault(); setIsDragging(false); }}
           onDrop={(e) => {
@@ -764,23 +750,23 @@ const Dashboard = () => {
             if (e.dataTransfer.files?.[0]) handleFileDrop(e.dataTransfer.files[0]);
           }}
         >
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
-          <div className="absolute top-[-100px] left-1/2 -translate-x-1/2 w-[500px] h-[350px] bg-[radial-gradient(ellipse_at_center,rgba(124,92,252,0.07),transparent_70%)] pointer-events-none" />
+          {/* Subtle light mesh decorations */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[380px] bg-gradient-to-b from-blue-100/40 via-indigo-50/30 to-transparent blur-[100px] pointer-events-none" />
 
           <AnimatePresence>
             {isDragging && (
               <motion.div
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                className="absolute inset-0 z-50 bg-[#09090b]/90 border-2 border-dashed border-[#2563eb] flex flex-col items-center justify-center gap-3 pointer-events-none"
+                className="absolute inset-0 z-50 bg-white/95 backdrop-blur-md border-3 border-dashed border-blue-600 flex flex-col items-center justify-center gap-3 pointer-events-none"
               >
-                <UploadCloud size={36} className="text-[#2563eb] animate-bounce" />
-                <p className="text-sm font-bold text-white">Drop your file anywhere</p>
-                <p className="text-[11px] text-[#52525b]">We'll auto-detect the format</p>
+                <UploadCloud size={44} className="text-blue-600 animate-bounce" />
+                <p className="text-base font-black text-slate-900">Drop your file anywhere</p>
+                <p className="text-xs text-slate-500 font-medium">We'll automatically detect its format</p>
               </motion.div>
             )}
           </AnimatePresence>
 
-          <div className="relative z-10 w-full max-w-[1000px] mx-auto px-4 sm:px-6 md:px-8 pt-28 sm:pt-32 md:pt-36 pb-12 sm:pb-14 md:pb-16">
+          <div className="relative z-10 w-full max-w-[1050px] mx-auto px-4 sm:px-6 md:px-8 pt-24 sm:pt-28 md:pt-32 pb-12 sm:pb-14 md:pb-16">
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center mb-10 lg:mb-12">
               
@@ -789,20 +775,20 @@ const Dashboard = () => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
-                  className="text-3xl sm:text-4xl md:text-5xl lg:text-[2.75rem] xl:text-[3.25rem] font-black tracking-tight text-white leading-[1.1] mb-4"
+                  className="text-3xl sm:text-4xl md:text-5xl lg:text-[2.75rem] xl:text-[3.25rem] font-black tracking-tight text-slate-900 leading-[1.12] mb-4"
                 >
                   What do you want to
                   <span className="gradient-text"> process</span>
-                  <span className="text-white">?</span>
+                  <span className="text-slate-900">?</span>
                 </motion.h1>
 
                 <motion.p
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: 0.2 }}
-                  className="text-[#71717a] text-xs sm:text-sm max-w-sm sm:max-w-md mx-auto lg:mx-0 leading-relaxed mb-6"
+                  className="text-slate-600 text-xs sm:text-sm max-w-sm sm:max-w-md mx-auto lg:mx-0 leading-relaxed mb-6"
                 >
-                  Supercharge your files. Daily Utility Hub offers over 90+ utilities to convert, compress, and edit documents locally in your browser.
+                  Daily Utility Hub offers over 90+ utilities to convert, compress, format, and edit files entirely in your browser with zero latency.
                 </motion.p>
 
                 <motion.div
@@ -816,12 +802,12 @@ const Dashboard = () => {
                     { icon: Shield, value: 100, suffix: "%", label: "Local" },
                     { icon: Cpu, value: 0, suffix: "", label: "Server Uploads", display: "Zero" },
                   ].map((stat, i) => (
-                    <div key={i} className="flex items-center gap-1.5 sm:gap-2 text-[#3f3f46]">
-                      <stat.icon size={12} className="text-[#27272a] shrink-0" />
-                      <span className="text-[10px] sm:text-xs font-black text-[#71717a]">
+                    <div key={i} className="flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 rounded-full bg-white border border-slate-200/80 shadow-2xs">
+                      <stat.icon size={13} className="text-blue-600 shrink-0" />
+                      <span className="text-[11px] sm:text-xs font-black text-slate-900">
                         {stat.display || <AnimatedCounter end={stat.value} suffix={stat.suffix} />}
                       </span>
-                      <span className="text-[9px] sm:text-[10px] font-medium">{stat.label}</span>
+                      <span className="text-[10px] text-slate-500 font-medium">{stat.label}</span>
                     </div>
                   ))}
                 </motion.div>
@@ -838,19 +824,17 @@ const Dashboard = () => {
               </div>
             </div>
 
+            {/* ═══ INTERACTIVE WORKFLOW CENTERPIECE ═══ */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.25 }}
               onMouseDownCapture={stopDemoAndInteract}
-              className="relative z-30 mb-8 rounded-2xl p-[1px]"
+              className="relative z-30 mb-8 rounded-2xl"
             >
-              <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none z-0">
-                <div className="absolute top-1/2 left-1/2 w-[200%] aspect-square -translate-x-1/2 -translate-y-1/2 bg-[conic-gradient(from_0deg,#2563eb,#60a5fa,#3b82f6,#2563eb)] animate-[spin_4s_linear_infinite]" />
-              </div>
-              <div className="relative z-10 rounded-[calc(1rem-1px)] bg-[#111116] p-4 sm:p-5 flex flex-col">
+              <div className="relative rounded-2xl bg-white border border-slate-200/90 shadow-[0_12px_40px_-10px_rgba(0,0,0,0.08)] p-4 sm:p-5 flex flex-col">
                 <div className="w-full">
-                  {/* Desktop/Tablet Flow (visible format & operation at all times) */}
+                  {/* Desktop/Tablet Flow */}
                   <motion.div layout className="hidden sm:flex items-center justify-between gap-4">
                     {/* Source File Badge / Selector */}
                     <AnimatePresence mode="wait">
@@ -861,29 +845,29 @@ const Dashboard = () => {
                           animate={{ scale: 1, opacity: 1, y: 0 }}
                           exit={{ scale: 0.9, opacity: 0, y: -10 }}
                           transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                          className="flex items-center gap-2.5 bg-[#18181b] border border-[#2563eb]/40 px-3.5 py-2 rounded-xl min-w-[200px] max-w-[260px] h-[44px] shadow-[0_0_15px_rgba(124,92,252,0.15)]"
+                          className="flex items-center gap-2.5 bg-blue-50/70 border border-blue-200 px-3.5 py-2 rounded-xl min-w-[200px] max-w-[260px] h-[44px] shadow-2xs"
                         >
                           <motion.div 
                             initial={{ y: -30, opacity: 0, scale: 0.5 }}
                             animate={{ y: 0, opacity: 1, scale: 1 }}
                             transition={{ type: "spring", stiffness: 450, damping: 15, delay: 0.12 }}
-                            className="w-7 h-7 rounded-lg bg-[#2563eb]/10 flex items-center justify-center text-[#2563eb] font-black text-[10px] shrink-0"
+                            className="w-7 h-7 rounded-lg bg-blue-600 text-white font-black text-[10px] flex items-center justify-center shrink-0 shadow-xs"
                           >
                             {droppedFile.ext}
                           </motion.div>
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-1.5 min-w-0">
-                              <p className="text-xs font-bold text-white truncate">{droppedFile.name}</p>
+                              <p className="text-xs font-bold text-slate-900 truncate">{droppedFile.name}</p>
                               {droppedFile.isDemo && (
-                                <span className="px-1.5 py-0.5 text-[8px] font-black bg-[#2563eb]/20 text-[#60a5fa] border border-[#2563eb]/40 rounded uppercase tracking-wider shrink-0 animate-pulse">
+                                <span className="px-1.5 py-0.5 text-[8px] font-black bg-blue-100 text-blue-700 border border-blue-300 rounded uppercase tracking-wider shrink-0 animate-pulse">
                                   Demo
                                 </span>
                               )}
                             </div>
-                            <p className="text-[10px] text-[#52525b]">{droppedFile.size}</p>
+                            <p className="text-[10px] text-slate-500 font-medium">{droppedFile.size}</p>
                           </div>
-                          <button onClick={clearFile} className="p-1 text-[#52525b] hover:text-white rounded hover:bg-white/5 transition-colors cursor-pointer shrink-0">
-                            <X size={12} />
+                          <button onClick={clearFile} className="p-1 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-white transition-colors cursor-pointer shrink-0">
+                            <X size={13} />
                           </button>
                         </motion.div>
                       ) : (
@@ -895,12 +879,12 @@ const Dashboard = () => {
                             exit={{ scale: 0.95, opacity: 0 }}
                             transition={{ duration: 0.2 }}
                             onClick={() => fileInputRefDesktop.current?.click()}
-                            className="flex items-center gap-2 px-3.5 py-2 bg-[#27272a]/50 hover:bg-[#27272a] border border-dashed border-[#3f3f46] hover:border-[#2563eb]/30 text-[#d4d4d8] hover:text-white rounded-xl transition-all cursor-pointer min-w-[200px] max-w-[260px] h-[44px] group"
+                            className="flex items-center gap-2 px-3.5 py-2 bg-slate-50 hover:bg-blue-50/50 border border-dashed border-slate-300 hover:border-blue-400 text-slate-700 hover:text-blue-600 rounded-xl transition-all cursor-pointer min-w-[200px] max-w-[260px] h-[44px] group"
                           >
                             <UploadCloud 
-                              size={14} 
-                              className={`text-[#2563eb]/80 group-hover:text-[#2563eb] shrink-0 ${
-                                isIconDropping ? "animate-[icon-drop_0.6s_cubic-bezier(0.34,1.56,0.64,1)] text-[#2563eb]" : ""
+                              size={15} 
+                              className={`text-slate-400 group-hover:text-blue-600 shrink-0 ${
+                                isIconDropping ? "animate-[icon-drop_0.6s_cubic-bezier(0.34,1.56,0.64,1)] text-blue-600" : ""
                               }`} 
                             />
                             <span className="text-xs font-bold truncate">Select or drop file</span>
@@ -917,11 +901,11 @@ const Dashboard = () => {
 
                     {/* Animated Connector Line */}
                     <motion.div layout className="flex-1 flex items-center justify-center relative min-w-[40px]">
-                      <div className="w-full h-[1px] bg-gradient-to-r from-[#2563eb]/20 via-[#2563eb]/80 to-[#2563eb]/20 relative overflow-hidden">
-                        <div className="absolute top-0 left-0 w-16 h-full bg-gradient-to-r from-transparent via-white to-transparent animate-[flow-pulse_1.5s_ease-in-out_infinite]" />
+                      <div className="w-full h-[2px] bg-slate-200 relative overflow-hidden rounded-full">
+                        <div className="absolute top-0 left-0 w-16 h-full bg-blue-500 animate-[flow-pulse_1.5s_ease-in-out_infinite]" />
                       </div>
-                      <div className="absolute w-5 h-5 rounded-full bg-[#27272a] border border-[#3f3f46] flex items-center justify-center shadow-lg">
-                        <ArrowRight size={10} className="text-[#2563eb]" />
+                      <div className="absolute w-5 h-5 rounded-full bg-white border border-slate-200 flex items-center justify-center shadow-xs">
+                        <ArrowRight size={10} className="text-blue-600" />
                       </div>
                     </motion.div>
 
@@ -960,15 +944,15 @@ const Dashboard = () => {
                       layout
                       onClick={handleLaunch}
                       disabled={!droppedFile || !activeOp}
-                      className={`h-11 px-6 bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-xs font-black transition-all rounded-xl flex items-center justify-center gap-1.5 shadow-[0_0_20px_rgba(124,92,252,0.15)] cursor-pointer shrink-0 ${
+                      className={`h-11 px-6 bg-blue-600 hover:bg-blue-700 text-white text-xs font-black transition-all rounded-xl flex items-center justify-center gap-1.5 shadow-md shadow-blue-500/20 cursor-pointer shrink-0 ${
                         !droppedFile || !activeOp
-                          ? "opacity-35 cursor-not-allowed bg-[#27272a] text-[#27272a] shadow-none pointer-events-none"
-                          : "hover:shadow-[0_0_20px_rgba(124,92,252,0.3)] hover:scale-[1.02] active:scale-[0.98]"
+                          ? "opacity-40 cursor-not-allowed bg-slate-200 text-slate-500 shadow-none pointer-events-none"
+                          : "hover:shadow-lg hover:shadow-blue-500/30 hover:scale-[1.02] active:scale-[0.98]"
                       } ${
                         isLaunchPop ? "animate-scale-pop" : ""
                       }`}
                     >
-                      Launch <ArrowRight size={12} />
+                      Launch <ArrowRight size={13} />
                     </motion.button>
                   </motion.div>
 
@@ -982,29 +966,29 @@ const Dashboard = () => {
                           animate={{ scale: 1, opacity: 1, y: 0 }}
                           exit={{ scale: 0.9, opacity: 0, y: -10 }}
                           transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                          className="flex items-center gap-2.5 bg-[#18181b] border border-[#2563eb]/40 px-3.5 py-2.5 rounded-xl shadow-[0_0_15px_rgba(124,92,252,0.15)]"
+                          className="flex items-center gap-2.5 bg-blue-50 border border-blue-200 px-3.5 py-2.5 rounded-xl shadow-2xs"
                         >
                           <motion.div 
                             initial={{ y: -35, opacity: 0, scale: 0.5 }}
                             animate={{ y: 0, opacity: 1, scale: 1 }}
                             transition={{ type: "spring", stiffness: 450, damping: 15, delay: 0.12 }}
-                            className="w-8 h-8 rounded-lg bg-[#2563eb]/10 flex items-center justify-center text-[#2563eb] font-black text-xs shrink-0"
+                            className="w-8 h-8 rounded-lg bg-blue-600 text-white font-black text-xs flex items-center justify-center shrink-0"
                           >
                             {droppedFile.ext}
                           </motion.div>
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-1.5 min-w-0">
-                              <p className="text-xs font-bold text-white truncate">{droppedFile.name}</p>
+                              <p className="text-xs font-bold text-slate-900 truncate">{droppedFile.name}</p>
                               {droppedFile.isDemo && (
-                                <span className="px-1.5 py-0.5 text-[8px] font-black bg-[#2563eb]/20 text-[#60a5fa] border border-[#2563eb]/40 rounded uppercase tracking-wider shrink-0 animate-pulse">
+                                <span className="px-1.5 py-0.5 text-[8px] font-black bg-blue-100 text-blue-700 border border-blue-300 rounded uppercase tracking-wider shrink-0 animate-pulse">
                                   Demo
                                 </span>
                               )}
                             </div>
-                            <p className="text-[10px] text-[#52525b]">{droppedFile.size}</p>
+                            <p className="text-[10px] text-slate-500 font-medium">{droppedFile.size}</p>
                           </div>
-                          <button onClick={clearFile} className="p-1 text-[#52525b] hover:text-white rounded hover:bg-white/5 transition-colors cursor-pointer shrink-0">
-                            <X size={12} />
+                          <button onClick={clearFile} className="p-1 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-white transition-colors cursor-pointer shrink-0">
+                            <X size={13} />
                           </button>
                         </motion.div>
                       ) : (
@@ -1016,12 +1000,12 @@ const Dashboard = () => {
                             exit={{ scale: 0.95, opacity: 0 }}
                             transition={{ duration: 0.2 }}
                             onClick={() => fileInputRefMobile.current?.click()}
-                            className="flex items-center justify-center gap-2 py-3 bg-[#27272a]/50 border border-dashed border-[#3f3f46] text-[#d4d4d8] rounded-xl transition-all cursor-pointer group"
+                            className="flex items-center justify-center gap-2 py-3 bg-slate-50 border border-dashed border-slate-300 text-slate-700 rounded-xl transition-all cursor-pointer group"
                           >
                             <UploadCloud 
-                              size={14} 
-                              className={`text-[#2563eb] shrink-0 ${
-                                isIconDropping ? "animate-[icon-drop_0.6s_cubic-bezier(0.34,1.56,0.64,1)]" : ""
+                              size={15} 
+                              className={`text-slate-400 group-hover:text-blue-600 shrink-0 ${
+                                isIconDropping ? "animate-[icon-drop_0.6s_cubic-bezier(0.34,1.56,0.64,1)] text-blue-600" : ""
                               }`} 
                             />
                             <span className="text-xs font-bold">Select or drop file</span>
@@ -1065,9 +1049,9 @@ const Dashboard = () => {
                       layout
                       onClick={handleLaunch}
                       disabled={!droppedFile || !activeOp}
-                      className={`w-full h-11 bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-xs font-black transition-all rounded-xl flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(124,92,252,0.15)] cursor-pointer ${
+                      className={`w-full h-11 bg-blue-600 hover:bg-blue-700 text-white text-xs font-black transition-all rounded-xl flex items-center justify-center gap-2 shadow-md shadow-blue-500/20 cursor-pointer ${
                         !droppedFile || !activeOp
-                          ? "opacity-35 cursor-not-allowed bg-[#27272a] text-[#27272a] shadow-none pointer-events-none"
+                          ? "opacity-40 cursor-not-allowed bg-slate-200 text-slate-500 shadow-none pointer-events-none"
                           : "active:scale-[0.98]"
                       } ${
                         isLaunchPop ? "animate-scale-pop" : ""
@@ -1085,20 +1069,20 @@ const Dashboard = () => {
               <div className="mb-8 text-center sm:text-left">
                 <button
                   onClick={() => setIsPinnedOpen(!isPinnedOpen)}
-                  className="w-full sm:w-auto px-5 py-3 bg-[#111116] border border-[#27272a] hover:border-[#2563eb]/40 rounded-xl flex items-center justify-between sm:justify-start gap-4 transition-all mx-auto sm:mx-0 group shadow-sm hover:shadow-[0_0_15px_rgba(37,99,235,0.1)] active:scale-[0.98]"
+                  className="w-full sm:w-auto px-5 py-2.5 bg-white border border-slate-200 hover:border-blue-400 rounded-xl flex items-center justify-between sm:justify-start gap-4 transition-all mx-auto sm:mx-0 group shadow-2xs cursor-pointer"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-7 h-7 rounded-lg bg-[#2563eb]/10 flex items-center justify-center">
-                      <Pin size={12} className="text-[#2563eb]" />
+                    <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
+                      <Pin size={13} />
                     </div>
-                    <span className="text-xs sm:text-sm font-bold text-white group-hover:text-zinc-300 transition-colors">
+                    <span className="text-xs sm:text-sm font-bold text-slate-800 group-hover:text-blue-600 transition-colors">
                       {isPinnedOpen ? 'Hide Pinned Workspaces' : 'Show Pinned Workspaces'} 
-                      <span className="ml-1.5 text-zinc-500 font-medium">({pinnedResolved.length})</span>
+                      <span className="ml-1.5 text-slate-400 font-medium">({pinnedResolved.length})</span>
                     </span>
                   </div>
                   <ChevronDown 
                     size={16} 
-                    className={`text-zinc-500 transition-transform duration-300 ${isPinnedOpen ? 'rotate-180' : 'rotate-0'}`} 
+                    className={`text-slate-400 transition-transform duration-300 ${isPinnedOpen ? 'rotate-180 text-blue-600' : 'rotate-0'}`} 
                   />
                 </button>
 
@@ -1106,54 +1090,54 @@ const Dashboard = () => {
                   {isPinnedOpen && (
                     <motion.div
                       initial={{ height: 0, opacity: 0, marginTop: 0 }}
-                      animate={{ height: 'auto', opacity: 1, marginTop: 16 }}
+                      animate={{ height: 'auto', opacity: 1, marginTop: 14 }}
                       exit={{ height: 0, opacity: 0, marginTop: 0 }}
                       transition={{ duration: 0.3, ease: 'easeInOut' }}
                       className="overflow-hidden"
                     >
-                        <div className="flex overflow-x-auto hide-scrollbar gap-4 snap-x pb-3 pt-3 px-1 -mx-1">
-                          {pinnedResolved.map((tool, i) => (
-                            <motion.div 
-                              key={tool.to} 
-                              initial={{ opacity: 0, y: -20 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              exit={{ opacity: 0, y: -10 }}
-                              transition={{ duration: 0.3, delay: i * 0.05, ease: 'easeOut' }}
-                              className="group relative flex flex-col flex-shrink-0 w-[72px] sm:w-[84px] snap-start"
-                            >
-                              <Link
-                                to={tool.to}
-                                onClick={(e) => {
-                                  if (LOCKED_GUEST_TOOLS.includes(tool.to) && !currentUser) {
-                                    e.preventDefault();
-                                    setIsAuthModalOpen(true);
-                                  }
-                                }}
-                                className="w-full flex flex-col items-center gap-2"
-                              >
-                                <div className="w-[60px] h-[60px] sm:w-[72px] sm:h-[72px] rounded-2xl bg-[#18181b] border border-[#27272a] group-hover:border-[#2563eb]/50 group-hover:bg-[#2563eb]/10 flex items-center justify-center transition-all shadow-sm group-hover:shadow-[0_0_20px_rgba(37,99,235,0.15)] relative">
-                                  <tool.icon size={22} className="text-[#52525b] group-hover:text-[#2563eb] transition-colors" />
-                                </div>
-                                <span className="text-[10px] sm:text-xs font-bold text-[#a1a1aa] group-hover:text-white transition-colors text-center w-full truncate leading-tight px-0.5">
-                                  {tool.label}
-                                </span>
-                              </Link>
-                              
-                              {/* Unpin button */}
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
+                      <div className="flex overflow-x-auto hide-scrollbar gap-4 snap-x pb-3 pt-2 px-1 -mx-1">
+                        {pinnedResolved.map((tool, i) => (
+                          <motion.div 
+                            key={tool.to} 
+                            initial={{ opacity: 0, y: -20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            transition={{ duration: 0.3, delay: i * 0.05, ease: 'easeOut' }}
+                            className="group relative flex flex-col flex-shrink-0 w-[76px] sm:w-[88px] snap-start"
+                          >
+                            <Link
+                              to={tool.to}
+                              onClick={(e) => {
+                                if (LOCKED_GUEST_TOOLS.includes(tool.to) && !currentUser) {
                                   e.preventDefault();
-                                  togglePin(tool.to);
-                                }}
-                                className="absolute top-0 right-0 sm:-top-1 sm:-right-1 w-6 h-6 bg-[#27272a] hover:bg-rose-500/20 border border-[#3f3f46] hover:border-rose-500/50 rounded-full flex items-center justify-center text-[#a1a1aa] hover:text-rose-500 transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100 shadow-lg z-10 scale-90 sm:scale-100"
-                                title="Unpin Workspace"
-                              >
-                                <X size={12} strokeWidth={2.5} />
-                              </button>
-                            </motion.div>
-                          ))}
-                        </div>
+                                  setIsAuthModalOpen(true);
+                                }
+                              }}
+                              className="w-full flex flex-col items-center gap-2"
+                            >
+                              <div className="w-[60px] h-[60px] sm:w-[72px] sm:h-[72px] rounded-2xl bg-white border border-slate-200 group-hover:border-blue-400 group-hover:bg-blue-50/50 flex items-center justify-center transition-all shadow-xs relative">
+                                <tool.icon size={22} className="text-slate-600 group-hover:text-blue-600 transition-colors" />
+                              </div>
+                              <span className="text-[10px] sm:text-xs font-bold text-slate-700 group-hover:text-blue-600 transition-colors text-center w-full truncate leading-tight px-0.5">
+                                {tool.label}
+                              </span>
+                            </Link>
+                            
+                            {/* Unpin button */}
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
+                                togglePin(tool.to);
+                              }}
+                              className="absolute top-0 right-0 sm:-top-1 sm:-right-1 w-6 h-6 bg-white hover:bg-rose-50 border border-slate-200 hover:border-rose-300 rounded-full flex items-center justify-center text-slate-400 hover:text-rose-600 transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100 shadow-sm z-10 cursor-pointer"
+                              title="Unpin Workspace"
+                            >
+                              <X size={12} strokeWidth={2.5} />
+                            </button>
+                          </motion.div>
+                        ))}
+                      </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -1166,9 +1150,10 @@ const Dashboard = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.45, duration: 0.5 }}
             >
-              <h2 className="text-[10px] sm:text-xs font-black text-[#52525b] uppercase tracking-widest text-center mb-4 sm:mb-5">
-                Browse by category
+              <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-widest text-center mb-4 sm:mb-5">
+                Explore Utilities By Category
               </h2>
+              
               {/* Slider Tabs Container */}
               <div className="relative w-full mb-5 sm:mb-6 group">
                 
@@ -1179,11 +1164,11 @@ const Dashboard = () => {
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-[#060608] via-[#060608]/70 to-transparent z-20 flex items-center justify-start pointer-events-none"
+                      className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-[#f8fafc] via-[#f8fafc]/80 to-transparent z-20 flex items-center justify-start pointer-events-none"
                     >
                       <button
                         onClick={() => scrollTabs('left')}
-                        className="w-7 h-7 rounded-full bg-[#121217] border border-[#3f3f46] text-[#a1a1aa] hover:text-white hover:border-[#2563eb]/60 transition-all flex items-center justify-center shadow-[0_4px_12px_rgba(0,0,0,0.5)] pointer-events-auto ml-1 cursor-pointer hover:scale-105"
+                        className="w-7 h-7 rounded-full bg-white border border-slate-200 text-slate-700 hover:text-blue-600 hover:border-blue-400 transition-all flex items-center justify-center shadow-xs pointer-events-auto ml-1 cursor-pointer hover:scale-105"
                       >
                         <ChevronLeft size={14} />
                       </button>
@@ -1194,7 +1179,7 @@ const Dashboard = () => {
                 {/* Tabs Row */}
                 <div 
                   ref={tabsRef}
-                  className="overflow-x-auto hide-scrollbar flex items-center justify-start gap-1.5 w-full flex-nowrap py-1 scroll-smooth"
+                  className="overflow-x-auto hide-scrollbar flex items-center justify-start gap-2 w-full flex-nowrap py-1 scroll-smooth"
                 >
                   {CATEGORY_TABS.map((tab) => {
                     const TabIcon = tab.icon;
@@ -1202,20 +1187,20 @@ const Dashboard = () => {
                       <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
-                        className={`relative px-3.5 py-2 rounded-xl text-[11px] sm:text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shrink-0 select-none ${
+                        className={`relative px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 shrink-0 select-none ${
                           activeTab === tab.id
-                            ? "text-white"
-                            : "text-[#52525b] hover:text-[#a1a1aa] hover:bg-[#ffffff04]"
+                            ? "text-white shadow-sm shadow-blue-500/20"
+                            : "text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200/80 shadow-2xs"
                         }`}
                       >
                         {activeTab === tab.id && (
                           <motion.div
                             layoutId="activeTab"
-                            className="absolute inset-0 bg-[#2563eb]/15 border border-[#2563eb]/30 rounded-xl"
+                            className="absolute inset-0 bg-blue-600 rounded-xl"
                             transition={{ type: "spring", damping: 25, stiffness: 300 }}
                           />
                         )}
-                        <TabIcon size={13} className="relative z-10" />
+                        <TabIcon size={14} className="relative z-10" />
                         <span className="relative z-10">{tab.label}</span>
                       </button>
                     );
@@ -1229,11 +1214,11 @@ const Dashboard = () => {
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-[#060608] via-[#060608]/70 to-transparent z-20 flex items-center justify-end pointer-events-none"
+                      className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-[#f8fafc] via-[#f8fafc]/80 to-transparent z-20 flex items-center justify-end pointer-events-none"
                     >
                       <button
                         onClick={() => scrollTabs('right')}
-                        className="w-7 h-7 rounded-full bg-[#121217] border border-[#3f3f46] text-[#a1a1aa] hover:text-white hover:border-[#2563eb]/60 transition-all flex items-center justify-center shadow-[0_4px_12px_rgba(0,0,0,0.5)] pointer-events-auto mr-1 cursor-pointer hover:scale-105"
+                        className="w-7 h-7 rounded-full bg-white border border-slate-200 text-slate-700 hover:text-blue-600 hover:border-blue-400 transition-all flex items-center justify-center shadow-xs pointer-events-auto mr-1 cursor-pointer hover:scale-105"
                       >
                         <ChevronRight size={14} />
                       </button>
@@ -1251,7 +1236,7 @@ const Dashboard = () => {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -8 }}
                     transition={{ duration: 0.25 }}
-                    className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2"
+                    className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3"
                   >
                     {tabOps.map((op, i) => (
                       <motion.div
@@ -1259,19 +1244,19 @@ const Dashboard = () => {
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.2, delay: i * 0.03 }}
-                        className="group relative flex items-center bg-[#18181b] border border-[#27272a] hover:border-[#2563eb]/30 hover:bg-[#2563eb]/5 transition-all rounded-xl overflow-hidden"
+                        className="group relative flex items-center bg-white border border-slate-200/90 hover:border-blue-400/80 hover:bg-blue-50/20 transition-all rounded-2xl shadow-2xs hover:shadow-sm overflow-hidden"
                       >
                         <Link
                           to={op.to}
                           onClick={(e) => handleToolClick(e, op.to)}
-                          className="flex-1 flex items-center gap-2 sm:gap-3 pl-2.5 sm:pl-4 pr-1 sm:pr-1.5 py-2 sm:py-3 min-w-0"
+                          className="flex-1 flex items-center gap-2.5 sm:gap-3 pl-3 sm:pl-4 pr-1 sm:pr-1.5 py-2.5 sm:py-3.5 min-w-0"
                         >
-                          <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-[#27272a] group-hover:bg-[#2563eb]/10 flex items-center justify-center transition-colors shrink-0">
-                            <ArrowRight className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-[#52525b] group-hover:text-[#2563eb] transition-colors" />
+                          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-slate-100 group-hover:bg-blue-600 group-hover:text-white flex items-center justify-center transition-colors shrink-0 text-slate-600">
+                            <ArrowRight className="w-3 h-3 transition-colors" />
                           </div>
                           <div className="min-w-0 flex-1 py-0.5">
-                            <p className="text-[10px] sm:text-xs font-bold text-[#e4e4e7] group-hover:text-white transition-colors line-clamp-2 sm:truncate leading-[1.2]">{op.label}</p>
-                            <p className="hidden sm:block text-[10px] text-[#3f3f46] group-hover:text-[#71717a] transition-colors truncate mt-0.5">{op.result}</p>
+                            <p className="text-[11px] sm:text-xs font-bold text-slate-800 group-hover:text-blue-600 transition-colors line-clamp-2 sm:truncate leading-[1.2]">{op.label}</p>
+                            <p className="hidden sm:block text-[10px] text-slate-400 group-hover:text-slate-500 transition-colors truncate mt-0.5">{op.result}</p>
                           </div>
                         </Link>
                         
@@ -1287,13 +1272,13 @@ const Dashboard = () => {
                                 toggleFavorite(op.to);
                               }
                             }}
-                            className={`w-6 h-6 sm:w-8 sm:h-8 rounded-md sm:rounded-lg flex items-center justify-center transition-all active:scale-90 cursor-pointer shrink-0 ${
+                            className={`w-6 h-6 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center transition-all active:scale-90 cursor-pointer shrink-0 ${
                               currentUser?.favoriteTools?.includes(op.to)
-                                ? 'text-rose-500 hover:text-rose-400 bg-rose-500/10'
-                                : 'text-[#3f3f46] hover:text-rose-400 hover:bg-[#ffffff04]'
+                                ? 'text-rose-500 hover:text-rose-600 bg-rose-50'
+                                : 'text-slate-400 hover:text-rose-500 hover:bg-rose-50'
                             }`}
                           >
-                            <Heart className="w-3 h-3 sm:w-3.5 sm:h-3.5" fill={currentUser?.favoriteTools?.includes(op.to) ? "currentColor" : "none"} />
+                            <Heart className="w-3.5 h-3.5" fill={currentUser?.favoriteTools?.includes(op.to) ? "currentColor" : "none"} />
                           </button>
                           
                           <button
@@ -1306,13 +1291,13 @@ const Dashboard = () => {
                                 togglePin(op.to);
                               }
                             }}
-                            className={`w-6 h-6 sm:w-8 sm:h-8 rounded-md sm:rounded-lg flex items-center justify-center transition-all active:scale-90 cursor-pointer shrink-0 ${
+                            className={`w-6 h-6 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center transition-all active:scale-90 cursor-pointer shrink-0 ${
                               currentUser?.pinnedTools?.includes(op.to)
-                                ? 'text-[#2563eb] hover:text-[#1d4ed8] bg-[#2563eb]/10'
-                                : 'text-[#3f3f46] hover:text-[#2563eb] hover:bg-[#ffffff04]'
+                                ? 'text-blue-600 hover:text-blue-700 bg-blue-50'
+                                : 'text-slate-400 hover:text-blue-600 hover:bg-blue-50'
                             }`}
                           >
-                            <Pin className="w-3 h-3 sm:w-3.5 sm:h-3.5" fill={currentUser?.pinnedTools?.includes(op.to) ? "currentColor" : "none"} />
+                            <Pin className="w-3.5 h-3.5" fill={currentUser?.pinnedTools?.includes(op.to) ? "currentColor" : "none"} />
                           </button>
                         </div>
                       </motion.div>
@@ -1326,7 +1311,7 @@ const Dashboard = () => {
       </div>
     </PageTransition>
 
-    {/* Professional Auth Gate Modal with Sharp Corners */}
+    {/* Light Auth Gate Modal */}
     <AnimatePresence>
       {isAuthModalOpen && (
         <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
@@ -1335,29 +1320,29 @@ const Dashboard = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setIsAuthModalOpen(false)}
-            className="fixed inset-0 bg-black/90 backdrop-blur-xs"
+            className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs"
           />
           
           <motion.div
             initial={{ scale: 0.96, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.96, opacity: 0 }}
-            className="relative w-full max-w-sm bg-[#09090b] border border-zinc-800 p-8 shadow-[0_20px_50px_rgba(0,0,0,0.8)] rounded-none z-10 flex flex-col text-left"
+            className="relative w-full max-w-sm bg-white border border-slate-200 p-8 shadow-2xl rounded-2xl z-10 flex flex-col text-left"
           >
             <button
               onClick={() => setIsAuthModalOpen(false)}
-              className="absolute top-4 right-4 text-zinc-500 hover:text-white transition-colors cursor-pointer"
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
             >
-              <X size={15} />
+              <X size={16} />
             </button>
             
             <div className="flex flex-col items-center text-center mb-6">
-              <div className="w-12 h-12 rounded-none bg-[#2563eb]/10 border border-[#2563eb]/20 flex items-center justify-center mb-4 text-[#2563eb]">
-                <Shield size={20} />
+              <div className="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center mb-4 text-blue-600 shadow-xs">
+                <Shield size={22} />
               </div>
-              <h3 className="text-lg font-black text-white tracking-tight">Authentication Required</h3>
-              <p className="text-[11px] text-zinc-500 mt-1.5 max-w-xs leading-normal font-medium">
-                Create an account or log in to use this workspace, save your favorite tools, and keep them pinned.
+              <h3 className="text-xl font-black text-slate-900 tracking-tight">Authentication Required</h3>
+              <p className="text-xs text-slate-500 mt-2 leading-relaxed">
+                Create an account or log in to use advanced utilities, sync favorites across devices, and keep tools pinned.
               </p>
             </div>
             
@@ -1369,9 +1354,9 @@ const Dashboard = () => {
                     setIsAuthModalOpen(false);
                   } catch (e) {}
                 }}
-                className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-zinc-800 rounded-none bg-zinc-900 hover:bg-zinc-800 text-white font-bold transition-all text-[11px] uppercase tracking-wider cursor-pointer"
+                className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-slate-200 rounded-xl bg-white hover:bg-slate-50 text-slate-700 font-bold transition-all text-xs shadow-2xs cursor-pointer active:scale-[0.98]"
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <svg width="16" height="16" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
                   <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
                   <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
@@ -1382,10 +1367,10 @@ const Dashboard = () => {
               
               <div className="relative my-3">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-zinc-800"></div>
+                  <div className="w-full border-t border-slate-200"></div>
                 </div>
                 <div className="relative flex justify-center text-xs">
-                  <span className="px-3 bg-[#09090b] text-zinc-500 text-[9px] uppercase tracking-widest font-bold">Or use email</span>
+                  <span className="px-3 bg-white text-slate-400 text-[10px] uppercase tracking-widest font-bold">Or with email</span>
                 </div>
               </div>
               
@@ -1393,14 +1378,14 @@ const Dashboard = () => {
                 <Link
                   to="/login"
                   onClick={() => setIsAuthModalOpen(false)}
-                  className="flex items-center justify-center py-2.5 border border-zinc-800 rounded-none bg-zinc-900/40 hover:bg-zinc-800 text-white font-bold text-[10px] uppercase tracking-wider transition-colors"
+                  className="flex items-center justify-center py-2.5 border border-slate-200 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-xs transition-colors"
                 >
                   Sign In
                 </Link>
                 <Link
                   to="/register"
                   onClick={() => setIsAuthModalOpen(false)}
-                  className="flex items-center justify-center py-2.5 bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-bold text-[10px] uppercase tracking-wider transition-colors"
+                  className="flex items-center justify-center py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition-colors rounded-xl shadow-xs"
                 >
                   Register
                 </Link>

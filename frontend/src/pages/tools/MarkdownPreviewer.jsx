@@ -70,11 +70,11 @@ Use the helper buttons to format notes easily!`);
   <meta charset="UTF-8">
   <title>Markdown Document</title>
   <style>
-    body { font-family: system-ui, -apple-system, sans-serif; line-height: 1.6; max-width: 800px; margin: 40px auto; padding: 20px; background: #060608; color: #f4f4f5; }
-    h1, h2, h3 { color: #818cf8; }
-    code { background: #1e1b4b; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
-    pre { background: #1c1c21; pading: 16px; border-radius: 8px; overflow-x: auto; padding: 15px; }
-    blockquote { border-left: 4px solid #4f46e5; margin: 0; padding-left: 15px; color: #a1a1aa; font-style: italic; }
+    body { font-family: system-ui, -apple-system, sans-serif; line-height: 1.6; max-width: 800px; margin: 40px auto; padding: 20px; background: #ffffff; color: #0f172a; }
+    h1, h2, h3 { color: #2563eb; }
+    code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-family: monospace; color: #0f172a; border: 1px solid #e2e8f0; }
+    pre { background: #0f172a; color: #f8fafc; border-radius: 8px; overflow-x: auto; padding: 15px; }
+    blockquote { border-left: 4px solid #2563eb; margin: 0; padding-left: 15px; color: #64748b; font-style: italic; }
   </style>
 </head>
 <body>
@@ -212,7 +212,7 @@ Use the helper buttons to format notes easily!`);
             {/* Markdown rendered output */}
             <div 
               id="md-preview-content"
-              className="p-5 bg-background/20 border border-border/80 rounded-xl overflow-y-auto custom-scrollbar prose prose-invert max-w-full text-foreground/90 font-sans leading-relaxed text-sm min-h-[360px]"
+              className="p-5 bg-white border border-border/80 rounded-xl overflow-y-auto custom-scrollbar prose prose-slate max-w-full text-foreground/90 font-sans leading-relaxed text-sm min-h-[360px]"
             >
               {markdown.trim() ? (
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>

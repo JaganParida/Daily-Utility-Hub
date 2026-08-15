@@ -196,12 +196,14 @@ const SheetConverter = () => {
             {isProcessing && <RefreshCw size={16} className="animate-spin text-primary" />}
           </div>
 
-          <textarea
-            readOnly
-            value={output}
-            className="w-full flex-1 bg-[#0d1117] text-[#e6edf3] border-none p-6 text-xs focus:outline-none font-mono resize-none custom-scrollbar leading-relaxed min-h-[400px]"
-            placeholder="Parsed spreadsheet data code will be rendered here..."
-          />
+          <div className="p-4 flex-1 flex flex-col">
+            <textarea
+              readOnly
+              value={output}
+              className="w-full flex-1 bg-slate-900 text-slate-100 rounded-xl p-5 text-xs focus:outline-none font-mono resize-none custom-scrollbar leading-relaxed min-h-[400px] shadow-inner"
+              placeholder="Parsed spreadsheet data code will be rendered here..."
+            />
+          </div>
         </div>
 
       </div>

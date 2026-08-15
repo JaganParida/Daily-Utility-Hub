@@ -242,16 +242,16 @@ const MarkdownEditor = () => {
             </button>
           </div>
 
-          <div className="bg-[#0d1117] border border-border rounded-2xl shadow-sm flex flex-col flex-1 min-h-0 overflow-hidden">
-            <div className="p-4 border-b border-border/10 bg-[#161b22] flex justify-between items-center shrink-0">
-              <h2 className="font-semibold flex items-center gap-2 text-[#e6edf3] text-sm uppercase tracking-wider">
+          <div className="bg-white border border-border rounded-2xl shadow-sm flex flex-col flex-1 min-h-0 overflow-hidden">
+            <div className="p-4 border-b border-border bg-slate-50 flex justify-between items-center shrink-0">
+              <h2 className="font-bold flex items-center gap-2 text-foreground text-xs uppercase tracking-wider">
                 <BookOpen size={16} className="text-primary" />
                 Live Preview
               </h2>
             </div>
             
-            <div className="flex-1 overflow-auto custom-scrollbar p-6 bg-background">
-               <div className="prose prose-sm dark:prose-invert max-w-none prose-pre:bg-[#1e1e1e] prose-pre:p-0 prose-a:text-primary hover:prose-a:text-primary/90 prose-img:rounded-xl">
+            <div className="flex-1 overflow-auto custom-scrollbar p-6 bg-white">
+               <div className="prose prose-sm max-w-none prose-pre:p-0 prose-a:text-primary hover:prose-a:text-primary/90 prose-img:rounded-xl">
                  <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
                     components={{
@@ -262,22 +262,22 @@ const MarkdownEditor = () => {
                             style={vscDarkPlus}
                             language={match[1]}
                             PreTag="div"
-                            className="rounded-lg my-4 !bg-[#161b22] border border-[#30363d] !text-xs"
+                            className="rounded-xl my-4 !bg-slate-900 !text-slate-100 border border-slate-800 !text-xs shadow-xs"
                             {...props}
                           >
                             {String(children).replace(/\n$/, '')}
                           </SyntaxHighlighter>
                         ) : (
-                          <code className="bg-[#161b22] px-1.5 py-0.5 rounded text-[#e6edf3] font-mono text-[0.9em] border border-[#30363d]" {...props}>
+                          <code className="bg-slate-100 px-1.5 py-0.5 rounded text-slate-800 font-mono text-[0.9em] border border-slate-200" {...props}>
                             {children}
                           </code>
                         )
                       },
-                      h1: ({node, ...props}) => <h1 className="text-2xl font-bold border-b border-[#21262d] pb-2 mb-4 text-foreground" {...props} />,
-                      h2: ({node, ...props}) => <h2 className="text-xl font-bold border-b border-[#21262d] pb-2 mt-6 mb-4 text-foreground" {...props} />,
-                      a: ({node, ...props}) => <a className="text-[#58a6ff] hover:underline" {...props} />,
-                      ul: ({node, ...props}) => <ul className="list-disc pl-5 space-y-1 mb-4 text-foreground" {...props} />,
-                      img: ({node, ...props}) => <img className="inline-block mr-1 max-w-full rounded-xl shadow-md border border-border" {...props} />
+                      h1: ({node, ...props}) => <h1 className="text-2xl font-bold border-b border-slate-200 pb-2 mb-4 text-slate-900" {...props} />,
+                      h2: ({node, ...props}) => <h2 className="text-xl font-bold border-b border-slate-200 pb-2 mt-6 mb-4 text-slate-900" {...props} />,
+                      a: ({node, ...props}) => <a className="text-blue-600 hover:underline font-semibold" {...props} />,
+                      ul: ({node, ...props}) => <ul className="list-disc pl-5 space-y-1 mb-4 text-slate-700" {...props} />,
+                      img: ({node, ...props}) => <img className="inline-block mr-1 max-w-full rounded-xl shadow-md border border-slate-200" {...props} />
                     }}
                   >
                     {markdown}

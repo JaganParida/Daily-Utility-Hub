@@ -55,35 +55,37 @@ const SearchPage = () => {
     { name: 'Image Compressor', to: '/tools/image-compressor' },
     { name: 'JWT Decoder', to: '/tools/jwt-decoder' },
     { name: 'UUID Generator', to: '/tools/uuid-generator' },
-    { name: 'Base64 Converter', to: '/tools/base64-converter' },
+    { name: 'PDF to Word', to: '/tools/pdf-to-word' },
   ];
 
   return (
-    <div className="min-h-screen bg-[#07070a] text-white pt-20 pb-16 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+    <div className="min-h-screen bg-transparent text-slate-900 pt-16 pb-16 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
       {/* Background glowing decorations */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#2563eb]/5 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-10 right-10 w-[300px] h-[300px] bg-[#60a5fa]/5 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-blue-500/5 rounded-full blur-[120px] pointer-events-none" />
 
-      <div className="max-w-[1000px] mx-auto relative z-10">
+      <div className="max-w-[1050px] mx-auto relative z-10">
         {/* Header */}
         <div className="text-center mb-8">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="flex items-center justify-center gap-2 mb-2"
+            className="inline-flex items-center justify-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-100 text-blue-600 mb-3 shadow-2xs"
           >
-            <Sparkles size={16} className="text-[#60a5fa]" />
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#a1a1aa]">Instant Search</span>
+            <Sparkles size={14} />
+            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Instant Tool Finder</span>
           </motion.div>
           <motion.h1
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-3xl sm:text-4xl font-black bg-gradient-to-r from-white via-white to-[#a1a1aa] bg-clip-text text-transparent"
+            className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 tracking-tight"
           >
             What utility do you need?
           </motion.h1>
+          <p className="text-slate-500 text-sm mt-2 max-w-md mx-auto">
+            Search across all 90+ offline-first developer, document, and media tools.
+          </p>
         </div>
 
         {/* Search Bar Wrapper */}
@@ -91,27 +93,24 @@ const SearchPage = () => {
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.4, delay: 0.2 }}
-          className="relative max-w-2xl mx-auto mb-10"
+          className="relative max-w-2xl mx-auto mb-8"
         >
-          {/* Animated Glowing border wrapper */}
-          <div className="absolute -inset-[1px] bg-gradient-to-r from-[#2563eb]/30 via-[#60a5fa]/50 to-[#2563eb]/30 rounded-2xl blur-sm opacity-75 group-focus-within:opacity-100 transition-opacity duration-300" />
-          
-          <div className="relative bg-[#09090b]/90 backdrop-blur-xl border border-[#27272a] rounded-2xl flex items-center px-4 sm:px-5">
-            <SearchIcon size={22} className="text-[#71717a] mr-3 shrink-0" />
+          <div className="relative bg-white border border-slate-200 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/15 rounded-2xl flex items-center px-4 sm:px-5 shadow-sm transition-all">
+            <SearchIcon size={22} className="text-slate-400 mr-3 shrink-0" />
             <input
               ref={inputRef}
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search 50+ offline-first developer & file tools..."
-              className="w-full bg-transparent text-white text-base sm:text-lg h-14 sm:h-16 focus:outline-none placeholder:text-[#3f3f46]"
+              placeholder="Search 90+ tools by name, description, or keyword..."
+              className="w-full bg-transparent text-slate-900 text-base sm:text-lg h-14 sm:h-16 focus:outline-none placeholder:text-slate-400 font-medium"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="p-1 hover:bg-[#27272a] rounded-lg text-[#71717a] hover:text-white transition-colors cursor-pointer shrink-0"
+                className="p-1 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-700 transition-colors cursor-pointer shrink-0"
               >
-                <X size={16} />
+                <X size={18} />
               </button>
             )}
           </div>
@@ -122,9 +121,9 @@ const SearchPage = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.3 }}
-          className="flex flex-wrap items-center justify-center gap-2 max-w-2xl mx-auto mb-12 text-xs sm:text-sm"
+          className="flex flex-wrap items-center justify-center gap-2 max-w-2xl mx-auto mb-10 text-xs sm:text-sm"
         >
-          <span className="text-[#52525b] font-medium mr-1">Popular:</span>
+          <span className="text-slate-400 font-bold mr-1">Popular:</span>
           {popularSearches.map((item, idx) => (
             <Link
               key={idx}
@@ -135,7 +134,7 @@ const SearchPage = () => {
                   navigate('/?authGate=true');
                 }
               }}
-              className="px-3 py-1.5 rounded-full bg-[#111116] border border-[#27272a] hover:border-[#2563eb] hover:bg-[#2563eb]/5 text-[#a1a1aa] hover:text-white transition-all duration-200"
+              className="px-3.5 py-1.5 rounded-full bg-white border border-slate-200 hover:border-blue-400 hover:bg-blue-50 text-slate-600 hover:text-blue-600 font-semibold transition-all duration-200 shadow-2xs"
             >
               {item.name}
             </Link>
@@ -147,7 +146,7 @@ const SearchPage = () => {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.35 }}
-          className="flex items-center gap-1.5 overflow-x-auto pb-4 mb-8 border-b border-[#13131a] custom-scrollbar"
+          className="flex items-center gap-2 overflow-x-auto pb-4 mb-8 border-b border-slate-200 custom-scrollbar"
         >
           {['All', ...Object.keys(toolCategories)].map((category) => (
             <button
@@ -155,13 +154,13 @@ const SearchPage = () => {
               onClick={() => setActiveCategory(category)}
               className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all duration-200 cursor-pointer ${
                 activeCategory === category
-                  ? 'bg-[#2563eb] text-white shadow-lg shadow-[#2563eb]/20'
-                  : 'bg-[#111116] text-[#71717a] hover:text-white border border-[#27272a]'
+                  ? 'bg-blue-600 text-white shadow-sm shadow-blue-500/20'
+                  : 'bg-white text-slate-600 hover:text-slate-900 border border-slate-200/80 shadow-2xs hover:bg-slate-50'
               }`}
             >
               {category}
               {category !== 'All' && (
-                <span className="ml-1.5 text-[10px] opacity-60">
+                <span className={`ml-1.5 text-[10px] ${activeCategory === category ? 'opacity-80' : 'text-slate-400'}`}>
                   {toolCategories[category].length}
                 </span>
               )}
@@ -177,11 +176,11 @@ const SearchPage = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                className="py-16 text-center text-[#52525b] flex flex-col items-center justify-center bg-[#09090b]/50 border border-[#27272a]/50 rounded-2xl"
+                className="py-16 text-center text-slate-500 flex flex-col items-center justify-center bg-white border border-dashed border-slate-300 rounded-3xl shadow-xs"
               >
-                <SearchIcon size={44} className="mb-4 opacity-15 text-white" />
-                <p className="text-base font-bold text-white mb-1">No tools found matching "{searchQuery}"</p>
-                <p className="text-xs">Try searching for other keywords like "PDF", "Converter", or "Formatter".</p>
+                <SearchIcon size={44} className="mb-4 text-slate-300" />
+                <p className="text-base font-bold text-slate-900 mb-1">No tools found matching "{searchQuery}"</p>
+                <p className="text-xs text-slate-400">Try searching for keywords like "PDF", "Converter", "Compress", or "JSON".</p>
               </motion.div>
             ) : (
               <motion.div
@@ -208,18 +207,18 @@ const SearchPage = () => {
                             navigate('/?authGate=true');
                           }
                         }}
-                        className="block p-4.5 bg-[#09090b]/80 backdrop-blur-md border border-[#27272a] hover:border-[#2563eb]/40 rounded-2xl hover:bg-[#111118]/90 transition-all duration-300 relative overflow-hidden"
+                        className="block p-4.5 bg-white border border-slate-200/90 hover:border-blue-400 rounded-2xl hover:bg-blue-50/20 shadow-2xs hover:shadow-sm transition-all duration-200 relative overflow-hidden"
                       >
-                        <div className="flex items-start gap-4">
-                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${tool.color || 'bg-[#27272a] text-[#71717a]'}`}>
-                            <Icon size={18} />
+                        <div className="flex items-start gap-3.5">
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${tool.color || 'bg-slate-100 text-slate-600'}`}>
+                            <Icon size={19} />
                           </div>
                           <div className="min-w-0 flex-1">
-                            <h3 className="text-xs font-bold text-white group-hover:text-[#60a5fa] transition-colors flex items-center gap-1.5">
+                            <h3 className="text-xs font-bold text-slate-900 group-hover:text-blue-600 transition-colors flex items-center gap-1.5">
                               {tool.name}
-                              <ArrowRight size={10} className="opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+                              <ArrowRight size={12} className="opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all text-blue-600" />
                             </h3>
-                            <p className="text-[11px] text-[#71717a] mt-1 leading-relaxed line-clamp-2">
+                            <p className="text-[11px] text-slate-500 mt-1 leading-relaxed line-clamp-2">
                               {tool.description}
                             </p>
                           </div>
@@ -238,13 +237,13 @@ const SearchPage = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6 }}
-          className="mt-12 p-4 max-w-xl mx-auto rounded-2xl bg-[#09090b]/60 border border-[#27272a]/50 flex items-center gap-3"
+          className="mt-12 p-4 max-w-xl mx-auto rounded-2xl bg-white border border-slate-200 flex items-center gap-3 shadow-2xs"
         >
-          <div className="w-8 h-8 rounded-xl bg-[#2563eb]/10 flex items-center justify-center text-[#2563eb]">
-            <Shield size={14} />
+          <div className="w-8 h-8 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0">
+            <Shield size={16} />
           </div>
-          <div className="text-[11px] text-[#52525b] leading-relaxed">
-            <span className="text-white font-bold">100% Client-Side Search & Processing</span>. All tools execute directly in your browser's local sandbox environment. We never store or track your inputs.
+          <div className="text-xs text-slate-500 leading-relaxed">
+            <span className="text-slate-800 font-bold">100% Client-Side Privacy</span>. All searches and file operations run directly in your browser's local runtime. No server uploads or tracking.
           </div>
         </motion.div>
       </div>

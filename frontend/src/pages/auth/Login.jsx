@@ -58,7 +58,6 @@ const Login = () => {
   };
 
   const handleGoogleSubmit = async () => {
-    // Start popup immediately to prevent browser popup blockers from intercepting it
     const authPromise = loginWithGoogle();
     setIsGoogleLoading(true);
     try {
@@ -77,64 +76,60 @@ const Login = () => {
   };
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-[#070709] text-white">
-      {/* Left Column: Visual panel */}
-      <div className="hidden md:flex md:w-[42%] bg-[#070709] relative items-center justify-center p-12 overflow-hidden border-r border-[#18181b]">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,#1e1b4b_0%,transparent_60%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_85%,#0f172a_0%,transparent_60%)]" />
-        <div className="absolute top-[25%] left-[20%] w-80 h-80 bg-blue-600/10 rounded-full blur-[100px] animate-pulse" />
-        <div className="absolute bottom-[25%] right-[20%] w-80 h-80 bg-[#4f46e5]/10 rounded-full blur-[100px]" />
+    <div className="flex flex-col md:flex-row min-h-screen bg-slate-50 text-slate-900">
+      {/* Left Column: Visual panel in Light Theme */}
+      <div className="hidden md:flex md:w-[42%] bg-gradient-to-br from-blue-50/80 via-indigo-50/50 to-slate-100/90 relative items-center justify-center p-12 overflow-hidden border-r border-slate-200">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(37,99,235,0.06)_0%,transparent_60%)]" />
+        <div className="absolute top-[25%] left-[20%] w-80 h-80 bg-blue-500/10 rounded-full blur-[100px]" />
         
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#16161b_1px,transparent_1px),linear-gradient(to_bottom,#16161b_1px,transparent_1px)] bg-[size:3.5rem_3.5rem] opacity-40" />
-
         <div className="relative z-10 flex flex-col items-center max-w-sm text-center">
-          <div className="w-16 h-16 rounded-2xl bg-[#2563eb] flex items-center justify-center shadow-[0_0_30px_rgba(37,99,235,0.3)] mb-8 border border-white/10">
-            <svg className="w-9 h-9 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.8}>
+          <div className="w-16 h-16 rounded-2xl bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-600/25 mb-8 text-white">
+            <svg className="w-9 h-9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
               <polygon points="12 2 2 7 12 12 22 7 12 2" />
               <polyline points="2 17 12 22 22 17" />
               <polyline points="2 12 12 17 22 12" />
             </svg>
           </div>
-          <h1 className="text-3xl font-black tracking-tight mb-3 text-white">
+          <h1 className="text-3xl font-black tracking-tight mb-3 text-slate-900">
             Daily Utility Hub
           </h1>
-          <p className="text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-6">
-            Standard Utilities & AI Workspaces
+          <p className="text-blue-600 text-xs font-bold uppercase tracking-wider mb-5">
+            Offline-First Developer & File Utilities
           </p>
-          <p className="text-zinc-500 text-sm leading-relaxed font-medium">
-            Sign in to access your dashboard, securely upload and process document assets, and run cloud-assisted transcriptions.
+          <p className="text-slate-600 text-sm leading-relaxed font-medium">
+            Sign in to access your customized workspaces, sync favorite tools across devices, and manage usage analytics.
           </p>
         </div>
       </div>
 
-      {/* Right Column: Form panel */}
-      <PageTransition className="flex-1 flex flex-col justify-center items-center py-12 px-6 sm:px-12 lg:px-20 relative bg-[#09090b]">
-        <Link to="/" className="absolute top-6 left-6 flex items-center gap-2 text-zinc-400 hover:text-white transition-colors font-bold text-xs bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 px-3.5 py-1.5 rounded-none">
-          <ArrowLeft size={13} />
+      {/* Right Column: Form panel in Light Theme */}
+      <PageTransition className="flex-1 flex flex-col justify-center items-center py-12 px-6 sm:px-12 lg:px-20 relative bg-white">
+        <Link to="/" className="absolute top-6 left-6 flex items-center gap-2 text-slate-600 hover:text-slate-900 transition-colors font-bold text-xs bg-slate-100 border border-slate-200 hover:bg-slate-200 px-3.5 py-2 rounded-xl shadow-2xs">
+          <ArrowLeft size={14} />
           Back to Home
         </Link>
 
         <div className="w-full max-w-sm">
           {/* Mobile-only compact logo header */}
           <div className="flex md:hidden flex-col items-center mb-8">
-            <div className="w-12 h-12 rounded-xl bg-[#2563eb]/10 border border-[#2563eb]/20 flex items-center justify-center mb-3">
-              <svg className="w-7 h-7 text-[#2563eb]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.8}>
+            <div className="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center mb-3 text-white shadow-md shadow-blue-600/20">
+              <svg className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
                 <polygon points="12 2 2 7 12 12 22 7 12 2" />
                 <polyline points="2 17 12 22 22 17" />
                 <polyline points="2 12 12 17 22 12" />
               </svg>
             </div>
-            <span className="text-sm font-bold tracking-widest text-white uppercase">UtilityHub</span>
+            <span className="text-base font-black tracking-tight text-slate-900">UtilityHub</span>
           </div>
 
           {/* Form Header */}
           <div className="mb-8">
-            <h2 className="text-3xl font-black text-white tracking-tight">
-              Sign in
+            <h2 className="text-3xl font-black text-slate-900 tracking-tight">
+              Sign In
             </h2>
-            <p className="text-zinc-500 text-sm mt-1.5 font-medium">
+            <p className="text-slate-500 text-sm mt-1.5 font-medium">
               New to UtilityHub?{' '}
-              <Link to="/register" className="text-[#2563eb] font-bold hover:underline">
+              <Link to="/register" className="text-blue-600 font-bold hover:underline">
                 Create an account
               </Link>
             </p>
@@ -144,11 +139,11 @@ const Login = () => {
           <form className="space-y-5" onSubmit={handleSubmit}>
             <div className="space-y-4">
               <div>
-                <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 ml-0.5 mb-1.5 block">Email Address</label>
+                <label className="text-[11px] font-bold uppercase tracking-widest text-slate-600 ml-0.5 mb-1.5 block">Email Address</label>
                 <input
                   type="email" required
-                  className="appearance-none rounded-none relative block w-full px-4 py-3 border border-zinc-800 placeholder-zinc-600 text-white bg-zinc-900/40 focus:outline-none focus:ring-1 focus:ring-[#2563eb] focus:border-[#2563eb] text-sm transition-all"
-                  placeholder="Email Id"
+                  className="appearance-none rounded-xl relative block w-full px-4 py-3 border border-slate-200 placeholder-slate-400 text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/15 focus:border-blue-500 text-sm transition-all shadow-2xs"
+                  placeholder="name@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={isSubmitting || isGoogleLoading}
@@ -158,16 +153,16 @@ const Login = () => {
 
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 ml-0.5">Password</label>
-                  <Link to="/forgot-password" className="text-[10px] font-bold text-[#2563eb] hover:underline">
+                  <label className="text-[11px] font-bold uppercase tracking-widest text-slate-600 ml-0.5">Password</label>
+                  <Link to="/forgot-password" className="text-[11px] font-bold text-blue-600 hover:underline">
                     Forgot password?
                   </Link>
                 </div>
                 <div className="relative">
                   <input
                     type={showPassword ? "text" : "password"} required
-                    className="appearance-none rounded-none relative block w-full px-4 py-3 pr-12 border border-zinc-800 placeholder-zinc-600 text-white bg-zinc-900/40 focus:outline-none focus:ring-1 focus:ring-[#2563eb] focus:border-[#2563eb] text-sm transition-all"
-                    placeholder="Password"
+                    className="appearance-none rounded-xl relative block w-full px-4 py-3 pr-12 border border-slate-200 placeholder-slate-400 text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/15 focus:border-blue-500 text-sm transition-all shadow-2xs"
+                    placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     disabled={isSubmitting || isGoogleLoading}
@@ -176,7 +171,7 @@ const Login = () => {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white transition-colors"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 transition-colors"
                   >
                     {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
@@ -187,7 +182,7 @@ const Login = () => {
             <button
               type="submit"
               disabled={isSubmitting || isGoogleLoading}
-              className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-none text-white font-bold bg-[#2563eb] hover:bg-[#1d4ed8] focus:outline-none transition-colors disabled:opacity-50 cursor-pointer shadow-[0_4px_12px_rgba(37,99,235,0.2)] text-xs uppercase tracking-wider"
+              className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-white font-bold bg-blue-600 hover:bg-blue-700 focus:outline-none transition-all disabled:opacity-50 cursor-pointer shadow-md shadow-blue-500/20 text-xs uppercase tracking-wider active:scale-[0.98]"
             >
               {isSubmitting ? (
                 <Loader2 className="animate-spin" size={16} />
@@ -203,17 +198,17 @@ const Login = () => {
           {/* Social Login */}
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-zinc-800"></div>
+              <div className="w-full border-t border-slate-200"></div>
             </div>
             <div className="relative flex justify-center text-xs">
-              <span className="px-3 bg-[#09090b] text-zinc-500 text-[10px] uppercase tracking-widest font-bold">Or sign in with</span>
+              <span className="px-3 bg-white text-slate-400 text-[10px] uppercase tracking-widest font-bold">Or continue with</span>
             </div>
           </div>
 
           <button
             onClick={handleGoogleSubmit}
             disabled={isGoogleLoading || isSubmitting}
-            className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-zinc-800 rounded-none bg-zinc-900 hover:bg-zinc-800 text-white font-bold transition-all disabled:opacity-50 text-xs uppercase tracking-wider cursor-pointer"
+            className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-slate-200 rounded-xl bg-white hover:bg-slate-50 text-slate-700 font-bold transition-all disabled:opacity-50 text-xs uppercase tracking-wider cursor-pointer shadow-2xs active:scale-[0.98]"
           >
             {isGoogleLoading ? <Loader2 className="animate-spin" size={16} /> : (
               <svg width="16" height="16" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">

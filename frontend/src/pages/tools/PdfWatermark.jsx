@@ -243,7 +243,7 @@ const PdfWatermark = () => {
                   <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" /> Live Preview
                 </span>
               </div>
-              <div className={`flex-1 bg-[#09090b] rounded-xl border border-dashed border-border/80 flex relative overflow-hidden ${getPreviewAlignmentClass()}`}>
+              <div className={`flex-1 bg-slate-100/90 rounded-xl border border-dashed border-border/80 flex relative overflow-hidden ${getPreviewAlignmentClass()}`}>
                 <motion.span 
                   layout
                   className="font-black whitespace-nowrap select-none transition-all duration-100 drop-shadow-sm"
@@ -337,7 +337,7 @@ const PdfWatermark = () => {
                   value={watermarkText}
                   onChange={(e) => setWatermarkText(e.target.value)}
                   placeholder="e.g. CONFIDENTIAL or DRAFT"
-                  className="w-full bg-[#09090b] border border-border/80 rounded-xl pl-4 pr-16 py-3.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-base font-semibold shadow-inner"
+                  className="w-full bg-white border border-border/80 rounded-xl pl-4 pr-16 py-3.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-base font-semibold shadow-2xs"
                   maxLength={30}
                 />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-mono font-bold text-muted-foreground/60 bg-muted/30 px-2 py-1 rounded">
@@ -399,7 +399,7 @@ const PdfWatermark = () => {
                         className={`py-1.5 text-xs font-extrabold border rounded-lg transition-all uppercase ${
                           isSelected 
                             ? 'bg-primary border-primary text-white shadow-sm shadow-primary/20 scale-105' 
-                            : 'bg-[#09090b] hover:bg-neutral-800 text-muted-foreground border-border hover:border-muted-foreground/30'
+                            : 'bg-slate-50 hover:bg-slate-100 text-muted-foreground border-border hover:border-muted-foreground/30'
                         }`}
                         style={
                           pos === 'center' ? { gridColumn: '2', gridRow: '2' } :

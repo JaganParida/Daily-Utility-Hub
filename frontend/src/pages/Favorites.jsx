@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  ArrowRight, Shield, Heart, Pin, FileText, ImageIcon, Code2, Type, Table2, FileSpreadsheet, MonitorPlay, FolderArchive, Music
+  ArrowRight, Heart, Pin, FileText, ImageIcon, Code2, Type, Table2, FileSpreadsheet, MonitorPlay, FolderArchive, Music
 } from "lucide-react";
 import PageTransition from "../components/PageTransition";
 import { useAuth } from "../context/AuthContext";
@@ -165,18 +165,18 @@ const Favorites = () => {
 
   return (
     <PageTransition>
-      <div className="min-h-screen bg-[#060608] text-white pt-20 px-6 sm:px-12 lg:px-20 pb-16">
+      <div className="min-h-screen bg-transparent text-slate-900 pt-16 px-6 sm:px-12 lg:px-20 pb-16">
         <div className="max-w-[1200px] mx-auto space-y-8">
           
           {/* Header */}
-          <div className="flex flex-col gap-2 border-b border-zinc-800 pb-5 text-left">
+          <div className="flex flex-col gap-2 border-b border-slate-200 pb-6 text-left">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-500">
-                <Heart size={20} fill="currentColor" />
+              <div className="w-11 h-11 rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-500 shadow-2xs">
+                <Heart size={22} fill="currentColor" />
               </div>
               <div>
-                <h1 className="text-2xl font-black tracking-tight text-white">Favorite Workspaces</h1>
-                <p className="text-xs text-zinc-500 font-medium">Quick access to your most frequently used utilities</p>
+                <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900">Favorite Workspaces</h1>
+                <p className="text-xs sm:text-sm text-slate-500 font-medium mt-0.5">Quick access to your most frequently used utilities</p>
               </div>
             </div>
           </div>
@@ -186,18 +186,20 @@ const Favorites = () => {
             <motion.div
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              className="flex flex-col items-center justify-center p-12 border border-dashed border-zinc-800 bg-[#09090b] text-center"
+              className="flex flex-col items-center justify-center p-12 sm:p-16 border border-dashed border-slate-300 bg-white rounded-3xl text-center shadow-xs"
             >
-              <Heart className="text-zinc-700 w-12 h-12 mb-4" />
-              <h3 className="text-sm font-bold text-white uppercase tracking-wider">No favorites selected</h3>
-              <p className="text-xs text-zinc-500 mt-1.5 max-w-sm leading-relaxed">
-                Hover over any utility card on the main dashboard and click the heart icon to add it here.
+              <div className="w-16 h-16 rounded-2xl bg-rose-50 flex items-center justify-center mb-4 text-rose-400">
+                <Heart size={30} />
+              </div>
+              <h3 className="text-base font-bold text-slate-800">No favorites saved yet</h3>
+              <p className="text-xs text-slate-500 mt-2 max-w-sm leading-relaxed">
+                Click the heart icon on any utility card on the dashboard or search page to save it for one-click access.
               </p>
               <Link
                 to="/"
-                className="mt-6 px-4 py-2 text-xs font-bold text-white bg-[#2563eb] hover:bg-[#1d4ed8] uppercase tracking-wider transition-colors"
+                className="mt-6 px-6 py-2.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all shadow-md shadow-blue-500/20 active:scale-[0.98]"
               >
-                Go to Dashboard
+                Browse All Tools
               </Link>
             </motion.div>
           ) : (
@@ -208,50 +210,50 @@ const Favorites = () => {
                 const GroupIcon = group.icon;
                 return (
                   <div key={catKey} className="space-y-3">
-                    <div className="flex items-center gap-2 border-b border-zinc-800 pb-1">
-                      <GroupIcon size={12} className="text-[#52525b]" />
-                      <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">{group.label}</span>
+                    <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
+                      <GroupIcon size={14} className="text-slate-400" />
+                      <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest">{group.label}</span>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                       {group.tools.map((tool) => (
-                        <div key={tool.to} className="group relative flex items-center bg-[#111116] border border-[#27272a] hover:border-rose-500/30 hover:bg-rose-500/[0.02] transition-all rounded-xl overflow-hidden">
+                        <div key={tool.to} className="group relative flex items-center bg-white border border-slate-200/90 hover:border-rose-300 hover:bg-rose-50/20 transition-all rounded-2xl shadow-2xs overflow-hidden">
                           <Link
                             to={tool.to}
-                            className="flex-1 flex items-center gap-3 px-3.5 py-3"
+                            className="flex-1 flex items-center gap-3 px-4 py-3.5"
                           >
-                            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-zinc-800 group-hover:bg-rose-500/10 flex items-center justify-center transition-colors shrink-0">
-                              <ArrowRight size={11} className="text-zinc-500 group-hover:text-rose-500 transition-colors" />
+                            <div className="w-8 h-8 rounded-xl bg-slate-100 group-hover:bg-rose-500 group-hover:text-white flex items-center justify-center transition-colors shrink-0 text-slate-600">
+                              <ArrowRight size={13} className="transition-colors" />
                             </div>
                             <div className="min-w-0 flex-1">
-                              <p className="text-[11px] sm:text-xs font-bold text-zinc-200 group-hover:text-white transition-colors truncate">{tool.label}</p>
-                              <p className="text-[9px] text-[#3f3f46] group-hover:text-[#71717a] transition-colors truncate">{tool.result}</p>
+                              <p className="text-xs font-bold text-slate-800 group-hover:text-rose-600 transition-colors truncate">{tool.label}</p>
+                              <p className="text-[10px] text-slate-400 group-hover:text-slate-500 transition-colors truncate mt-0.5">{tool.result}</p>
                             </div>
                           </Link>
-                          {/* Heart/Pin toggles (visible only on hover) */}
-                          <div className="flex items-center gap-1.5 pr-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                          {/* Heart/Pin toggles */}
+                          <div className="flex items-center gap-1 pr-3">
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
                                 toggleFavorite(tool.to);
                               }}
-                              className="w-6 h-6 rounded flex items-center justify-center text-rose-500 hover:text-rose-400 cursor-pointer shrink-0"
-                              title="Remove Favorite"
+                              className="w-7 h-7 rounded-lg flex items-center justify-center text-rose-500 hover:bg-rose-50 cursor-pointer shrink-0"
+                              title="Remove from favorites"
                             >
-                              <Heart size={11} fill="currentColor" />
+                              <Heart size={13} fill="currentColor" />
                             </button>
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
                                 togglePin(tool.to);
                               }}
-                              className={`w-6 h-6 rounded flex items-center justify-center transition-colors cursor-pointer shrink-0 ${
+                              className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors cursor-pointer shrink-0 ${
                                 currentUser?.pinnedTools?.includes(tool.to)
-                                  ? 'text-[#2563eb] hover:text-[#1d4ed8]'
-                                  : 'text-[#3f3f46] hover:text-[#2563eb] hover:bg-[#ffffff04]'
+                                  ? 'text-blue-600 bg-blue-50'
+                                  : 'text-slate-400 hover:text-blue-600 hover:bg-slate-100'
                               }`}
                               title={currentUser?.pinnedTools?.includes(tool.to) ? "Unpin" : "Pin"}
                             >
-                              <Pin size={11} fill={currentUser?.pinnedTools?.includes(tool.to) ? "currentColor" : "none"} />
+                              <Pin size={13} fill={currentUser?.pinnedTools?.includes(tool.to) ? "currentColor" : "none"} />
                             </button>
                           </div>
                         </div>
