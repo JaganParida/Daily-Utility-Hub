@@ -8,178 +8,152 @@ import { useAuth } from "../context/AuthContext";
 
 const OPERATIONS_MAP = {
   pdf: [
-    { label: "Compress", result: "Smaller PDF", to: "/tools/pdf-compressor" },
+    { label: "Compress PDF", result: "Smaller PDF", to: "/tools/pdf-compressor" },
     { label: "Convert to Word (DOCX)", result: "Editable Word Doc", to: "/tools/pdf-to-word" },
     { label: "Convert to Images", result: "PNG / JPG Images", to: "/tools/pdf-converter" },
     { label: "Extract Text", result: "Plain Text", to: "/tools/pdf-to-text" },
-    { label: "Merge Files", result: "Combined PDF", to: "/tools/pdf-merge" },
-    { label: "Split Pages", result: "Individual PDFs", to: "/tools/pdf-split" },
-    { label: "Edit Content", result: "Edited PDF", to: "/tools/pdf-edit" },
+    { label: "Merge PDF Files", result: "Combined PDF", to: "/tools/pdf-merge" },
+    { label: "Split PDF Pages", result: "Individual PDFs", to: "/tools/pdf-split" },
+    { label: "Visual PDF Editor", result: "Edited PDF", to: "/tools/pdf-edit" },
     { label: "Add Watermark", result: "Stamped PDF", to: "/tools/pdf-watermark" },
     { label: "Lock & Encrypt", result: "Secured PDF", to: "/tools/pdf-lock" },
-    { label: "Unlock", result: "Open PDF", to: "/tools/pdf-unlock" },
+    { label: "Unlock PDF", result: "Open PDF", to: "/tools/pdf-unlock" },
     { label: "Edit Metadata", result: "Clean PDF Properties", to: "/tools/pdf-metadata" },
-    { label: "Organize PDF", result: "Visual Reorder", to: "/tools/pdf-organizer" },
-    { label: "Read Aloud", result: "Audio Stream", to: "/tools/pdf-audio-reader" },
-    { label: "AI → Markdown", result: "Markdown Doc", to: "/tools/ai-pdf-to-markdown" },
+    { label: "Organize & Reorder", result: "Reordered PDF", to: "/tools/pdf-organizer" },
+    { label: "Read Aloud Audio", result: "Voice Stream", to: "/tools/pdf-audio-reader" },
+    { label: "AI PDF → Markdown", result: "Markdown Doc", to: "/tools/ai-pdf-to-markdown" },
   ],
   image: [
-    { label: "Compress", result: "Optimized Image", to: "/tools/image-compressor" },
-    { label: "Resize", result: "Resized Image", to: "/tools/image-resizer" },
-    { label: "Crop", result: "Cropped Image", to: "/tools/image-cropper" },
-    { label: "Convert Format", result: "Converted File", to: "/tools/image-converter" },
-    { label: "Add Watermark", result: "Watermarked", to: "/tools/image-watermark" },
-    { label: "Make Collage", result: "Photo Collage", to: "/tools/image-collage" },
-    { label: "Extract Colors", result: "Color Palette", to: "/tools/image-color-extractor" },
+    { label: "Compress Image", result: "Optimized File", to: "/tools/image-compressor" },
+    { label: "Resize Dimensions", result: "Custom Resolution", to: "/tools/image-resizer" },
+    { label: "Crop & Rotate", result: "Cropped Image", to: "/tools/image-cropper" },
+    { label: "Format Converter", result: "WebP/PNG/JPG", to: "/tools/image-converter" },
+    { label: "Add Watermark", result: "Watermarked Image", to: "/tools/image-watermark" },
+    { label: "Collage Maker", result: "Photo Collage", to: "/tools/image-collage" },
+    { label: "Extract Color Palette", result: "HEX Swatches", to: "/tools/image-color-extractor" },
     { label: "Convert to PDF", result: "PDF Document", to: "/tools/image-to-pdf" },
-    { label: "OCR Text", result: "Extracted Text", to: "/tools/image-to-text" },
-    { label: "AI → Markdown", result: "Markdown Doc", to: "/tools/ai-image-to-markdown" },
+    { label: "OCR Text Extractor", result: "Extracted Text", to: "/tools/image-to-text" },
+    { label: "AI Image → Markdown", result: "Markdown Code", to: "/tools/ai-image-to-markdown" },
   ],
   spreadsheet: [
-    { label: "Merge / Split", result: "Processed Sheets", to: "/tools/excel-merge-split" },
-    { label: "Formula Helper", result: "Generated Formula", to: "/tools/formula-helper" },
-    { label: "Pivot Table", result: "Pivot View", to: "/tools/pivot-table-builder" },
-    { label: "Clean Data", result: "Clean File", to: "/tools/data-cleaner" },
-    { label: "SQL Query Runner", result: "SQL on Sheets", to: "/tools/csv-sql-runner" },
-    { label: "Mock Data Gen", result: "Test Dataset", to: "/tools/test-data-generator" },
-    { label: "Amortization", result: "Compounding Plan", to: "/tools/amortization-scheduler" },
+    { label: "Merge & Split Excel", result: "Processed Sheets", to: "/tools/excel-merge-split" },
+    { label: "Formula Assistant", result: "Excel Formula", to: "/tools/formula-helper" },
+    { label: "Pivot Table Generator", result: "Pivot View", to: "/tools/pivot-table-builder" },
+    { label: "Clean & Format Data", result: "Clean Dataset", to: "/tools/data-cleaner" },
+    { label: "SQL on CSV Runner", result: "Query Results", to: "/tools/csv-sql-runner" },
+    { label: "Mock Data Generator", result: "Test Dataset", to: "/tools/test-data-generator" },
+    { label: "Amortization Calculator", result: "Payment Schedule", to: "/tools/amortization-scheduler" },
   ],
   document: [
-    { label: "Convert to PDF / Image", result: "PDF / Image", to: "/tools/docx-converter" },
-    { label: "Build Template", result: "Doc Template", to: "/tools/doc-template-builder" },
-    { label: "Strip Metadata", result: "Clean Document", to: "/tools/doc-metadata-cleaner" },
-    { label: "Grammar Checker", result: "Spelling Correction", to: "/tools/grammar-checker" },
-    { label: "Compare Versions", result: "Similarity Score", to: "/tools/similarity-checker" },
-    { label: "Batch Find/Replace", result: "Multi-File Zip", to: "/tools/batch-find-replace" },
-    { label: "Layout Checker", result: "Academic Margins", to: "/tools/academic-format-checker" },
-    { label: "HTML to Word", result: "DOCX Export", to: "/tools/html-to-docx" },
-    { label: "README Gen", result: "Markdown File", to: "/tools/readme-generator" },
-    { label: "Citation Gen", result: "APA/MLA/Chicago", to: "/tools/citation-generator" },
-    { label: "Dev Link Tree", result: "Portfolio Card", to: "/tools/developer-profile" },
+    { label: "Convert DOCX to PDF", result: "PDF / Image", to: "/tools/docx-converter" },
+    { label: "Document Template Builder", result: "Doc Template", to: "/tools/doc-template-builder" },
+    { label: "Strip Document Metadata", result: "Clean Document", to: "/tools/doc-metadata-cleaner" },
+    { label: "Grammar & Spell Check", result: "Polished Copy", to: "/tools/grammar-checker" },
+    { label: "Compare Document Versions", result: "Similarity Diff", to: "/tools/similarity-checker" },
+    { label: "Batch Find & Replace", result: "Modified Archive", to: "/tools/batch-find-replace" },
+    { label: "Academic Margin Checker", result: "Compliant Doc", to: "/tools/academic-format-checker" },
+    { label: "HTML to Word Exporter", result: "DOCX File", to: "/tools/html-to-docx" },
+    { label: "README Generator", result: "Markdown File", to: "/tools/readme-generator" },
+    { label: "Citation Formatter", result: "APA/MLA/Chicago", to: "/tools/citation-generator" },
+    { label: "Developer Profile Tree", result: "Portfolio Card", to: "/tools/developer-profile" },
   ],
   code: [
-    { label: "Format JSON", result: "Pretty JSON", to: "/tools/json-formatter" },
-    { label: "Test Regex", result: "Regex Matches", to: "/tools/regex-tester" },
-    { label: "Decode JWT", result: "JWT Payload", to: "/tools/jwt-decoder" },
-    { label: "Generate UUID", result: "UUID Batch", to: "/tools/uuid-generator" },
-    { label: "Parse Cron", result: "Cron Schedule", to: "/tools/cron-parser" },
-    { label: "Preview HTML", result: "Rendered Page", to: "/tools/html-previewer" },
-    { label: "Code → Image", result: "Code Screenshot", to: "/tools/code-to-image" },
-    { label: "AI Optimize", result: "Refactored Code", to: "/tools/ai-code-playground" },
-    { label: "Generate Password", result: "Secure Password", to: "/tools/password-generator" },
-    { label: "Hash Generator", result: "MD5/SHA/HMAC", to: "/tools/hash-generator" },
-    { label: "Color Picker", result: "Contrast / Palette", to: "/tools/color-picker" },
-    { label: "Gradient Gen", result: "CSS Gradients", to: "/tools/gradient-generator" },
-    { label: "JWT Secret Gen", result: "Secure Secrets", to: "/tools/jwt-secret-generator" },
-    { label: "Base64 Converter", result: "Encode / Decode", to: "/tools/base64-converter" },
-    { label: "URL Converter", result: "Encode / Decode", to: "/tools/url-converter" },
-    { label: "Markdown Preview", result: "Compiled HTML", to: "/tools/markdown-previewer" },
-    { label: "JSON Type Convert", result: "TypeScript/Python", to: "/tools/type-converter" },
-    { label: "Google Dork Builder", result: "Search Queries", to: "/tools/google-search-builder" },
-    { label: "AI Image → MD", result: "Markdown Code", to: "/tools/ai-image-to-markdown" },
+    { label: "Format & Beautify JSON", result: "Formatted JSON", to: "/tools/json-formatter" },
+    { label: "Interactive Regex Tester", result: "Regex Matches", to: "/tools/regex-tester" },
+    { label: "Decode & Inspect JWT", result: "JWT Payload", to: "/tools/jwt-decoder" },
+    { label: "UUID / GUID Batch Gen", result: "Batch UUIDs", to: "/tools/uuid-generator" },
+    { label: "Cron Expression Parser", result: "Schedule Times", to: "/tools/cron-parser" },
+    { label: "Live HTML / CSS Sandbox", result: "Rendered View", to: "/tools/html-previewer" },
+    { label: "Code to Beautiful Image", result: "Syntax Card", to: "/tools/code-to-image" },
+    { label: "AI Code Optimizer", result: "Refactored Code", to: "/tools/ai-code-playground" },
+    { label: "Password Generator", result: "High-Entropy Key", to: "/tools/password-generator" },
+    { label: "Cryptographic Hash Gen", result: "SHA256/MD5", to: "/tools/hash-generator" },
+    { label: "Color Palette & Contrast", result: "WCAG Checker", to: "/tools/color-picker" },
+    { label: "CSS Gradient Generator", result: "CSS Rules", to: "/tools/gradient-generator" },
+    { label: "JWT Secret Key Generator", result: "256-bit Secret", to: "/tools/jwt-secret-generator" },
+    { label: "Base64 Encoder / Decoder", result: "Converted Text", to: "/tools/base64-converter" },
+    { label: "URL Encoder / Decoder", result: "Decoded URL", to: "/tools/url-converter" },
+    { label: "Markdown Live Previewer", result: "Rendered HTML", to: "/tools/markdown-previewer" },
+    { label: "JSON to TypeScript/Python", result: "Type Definitions", to: "/tools/type-converter" },
+    { label: "Google Dork Builder", result: "Search Query", to: "/tools/google-search-builder" },
   ],
   text: [
-    { label: "Edit Markdown", result: "Formatted MD", to: "/tools/markdown-editor" },
-    { label: "Compare Diff", result: "Diff Report", to: "/tools/text-diff" },
-    { label: "Count Words", result: "Word Stats", to: "/tools/word-counter" },
-    { label: "Find & Replace", result: "Modified Text", to: "/tools/find-replace" },
-    { label: "Generate Lorem", result: "Placeholder Text", to: "/tools/lorem-ipsum" },
-    { label: "Change Case", result: "Cased Text", to: "/tools/case-converter" },
-    { label: "Font Converter", result: "Stylish Fonts", to: "/tools/font-converter" },
-    { label: "Line Editor", result: "Deduplicated List", to: "/tools/text-line-editor" },
-    { label: "Analyze Text", result: "Readability Stats", to: "/tools/text-analyzer" },
+    { label: "Markdown Editor & Notes", result: "Formatted MD", to: "/tools/markdown-editor" },
+    { label: "Text Difference Checker", result: "Side-by-Side Diff", to: "/tools/text-diff" },
+    { label: "Word & Character Counter", result: "Text Stats", to: "/tools/word-counter" },
+    { label: "Find & Replace Engine", result: "Transformed Text", to: "/tools/find-replace" },
+    { label: "Lorem Ipsum Generator", result: "Dummy Copy", to: "/tools/lorem-ipsum" },
+    { label: "Case Converter", result: "camelCase/UPPER", to: "/tools/case-converter" },
+    { label: "Font & Unicode Styler", result: "Stylized Text", to: "/tools/font-converter" },
+    { label: "Line Deduplicator", result: "Sorted Lines", to: "/tools/text-line-editor" },
+    { label: "Readability Analyzer", result: "Grade Score", to: "/tools/text-analyzer" },
   ],
   presentation: [
-    { label: "Convert to PDF", result: "PDF Slides", to: "/tools/ppt-to-pdf" },
-    { label: "MD → Slides", result: "Slide Deck", to: "/tools/md-to-slides" },
-    { label: "Edit Metadata", result: "Clean PPTX", to: "/tools/pptx-metadata-editor" },
-    { label: "HTML Slides Sandbox", result: "Code Slides", to: "/tools/html-presentation" },
-    { label: "Notes Prompter", result: "Paced Prompter", to: "/tools/pptx-studio" },
-    { label: "Theme Swatches", result: "Projector Colors", to: "/tools/pptx-studio" },
-    { label: "Voice Remote", result: "Voice Nav Control", to: "/tools/pptx-studio" },
-    { label: "Slide Whiteboard", result: "Sketch Drafts", to: "/tools/pptx-studio" },
+    { label: "Convert PPTX to PDF", result: "PDF Deck", to: "/tools/ppt-to-pdf" },
+    { label: "Markdown to Slide Deck", result: "HTML Presentation", to: "/tools/md-to-slides" },
+    { label: "Edit PPTX Properties", result: "Clean Presentation", to: "/tools/pptx-metadata-editor" },
+    { label: "Interactive HTML Slides", result: "Slide Runner", to: "/tools/html-presentation" },
+    { label: "Notes & Prompter Studio", result: "Teleprompter", to: "/tools/pptx-studio" },
   ],
   archive: [
-    { label: "Create Archive", result: "ZIP File", to: "/tools/zip-archiver" },
-    { label: "Encrypt Vault", result: "Secured Vault", to: "/tools/file-vault" },
-    { label: "Temp Share", result: "Share Link", to: "/tools/temp-share" },
-    { label: "Batch Rename", result: "Renamed Files", to: "/tools/batch-renamer" },
+    { label: "Create ZIP Archive", result: "Compressed ZIP", to: "/tools/zip-archiver" },
+    { label: "Client Encrypted Vault", result: "Encrypted Locker", to: "/tools/file-vault" },
+    { label: "Temporary Local Share", result: "P2P Stream", to: "/tools/temp-share" },
+    { label: "Batch File Renamer", result: "Pattern Renamer", to: "/tools/batch-renamer" },
   ],
   media: [
-    { label: "Transcribe", result: "Text Transcript", to: "/tools/audio-video-transcriber" },
-    { label: "Voice Helper", result: "Voice Output", to: "/tools/voice-helper" },
-    { label: "Read Aloud", result: "Audio Stream", to: "/tools/pdf-audio-reader" },
-    { label: "EMI Calculator", result: "Monthly Installment", to: "/tools/emi-calculator" },
-    { label: "SIP Calculator", result: "Compound Growth", to: "/tools/sip-calculator" },
-    { label: "GST Calculator", result: "Tax Split SGST/CGST", to: "/tools/gst-calculator" },
-    { label: "Income Tax", result: "Old vs New Regimes", to: "/tools/tax-calculator" },
+    { label: "Transcribe Audio / Video", result: "Text Transcript", to: "/tools/audio-video-transcriber" },
+    { label: "Voice Synthesizer", result: "Speech Audio", to: "/tools/voice-helper" },
+    { label: "Read Aloud Audio Stream", result: "Audio Player", to: "/tools/pdf-audio-reader" },
+    { label: "EMI Loan Calculator", result: "Monthly Breakdown", to: "/tools/emi-calculator" },
+    { label: "SIP & Compound Growth", result: "Wealth Matrix", to: "/tools/sip-calculator" },
+    { label: "GST Tax Breakdown", result: "CGST & SGST", to: "/tools/gst-calculator" },
+    { label: "Income Tax Regime", result: "Old vs New Regimes", to: "/tools/tax-calculator" },
   ],
 };
 
-const CATEGORY_TABS = [
-  { id: "pdf", label: "PDF", icon: FileText },
-  { id: "image", label: "Image", icon: ImageIcon },
-  { id: "code", label: "Developer", icon: Code2 },
-  { id: "text", label: "Text", icon: Type },
-  { id: "spreadsheet", label: "Sheets", icon: Table2 },
-  { id: "document", label: "Docs", icon: FileSpreadsheet },
-  { id: "presentation", label: "Slides", icon: MonitorPlay },
-  { id: "archive", label: "Files", icon: FolderArchive },
-  { id: "media", label: "Media & Finance", icon: Music },
-];
-
 const Favorites = () => {
-  const { currentUser, togglePin, toggleFavorite } = useAuth();
-
-  const getToolCategoryAndDetails = (toPath) => {
-    for (const catKey of Object.keys(OPERATIONS_MAP)) {
-      const found = OPERATIONS_MAP[catKey].find(op => op.to === toPath);
-      if (found) {
-        const catTab = CATEGORY_TABS.find(tab => tab.id === catKey);
-        return {
-          ...found,
-          categoryKey: catKey,
-          categoryLabel: catTab?.label || catKey,
-          icon: catTab?.icon || ArrowRight
-        };
-      }
-    }
-    return null;
-  };
+  const { currentUser, toggleFavorite, togglePin } = useAuth();
 
   const favoriteResolved = (currentUser?.favoriteTools || [])
-    .map(path => getToolCategoryAndDetails(path))
+    .map((path) => {
+      for (const [catKey, catTools] of Object.entries(OPERATIONS_MAP)) {
+        const found = catTools.find((op) => op.to === path);
+        if (found) return { ...found, category: catKey };
+      }
+      return null;
+    })
     .filter(Boolean);
 
-  const favoriteGroups = favoriteResolved.reduce((groups, tool) => {
-    if (!groups[tool.categoryKey]) {
-      groups[tool.categoryKey] = {
-        label: tool.categoryLabel,
-        icon: tool.icon,
-        tools: []
+  const favoriteGroups = favoriteResolved.reduce((acc, tool) => {
+    if (!acc[tool.category]) {
+      acc[tool.category] = {
+        label: tool.category.toUpperCase(),
+        tools: [],
       };
     }
-    groups[tool.categoryKey].tools.push(tool);
-    return groups;
+    acc[tool.category].tools.push(tool);
+    return acc;
   }, {});
 
   return (
     <PageTransition>
-      <div className="w-full min-h-screen bg-[#0b141a] text-[#e9edef] pt-12 pb-24 px-4 sm:px-6 md:px-8">
-        <div className="max-w-[1100px] mx-auto">
+      <div className="w-full min-h-screen bg-[#08090d] text-[#f8fafc] pt-12 pb-24 px-4 sm:px-6 md:px-8">
+        <div className="max-w-6xl mx-auto space-y-8">
+          
           {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 border-b border-[#222d34] pb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#1e2235] pb-6">
             <div className="flex items-center gap-3.5">
-              <div className="w-12 h-12 rounded-2xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center text-rose-500 shadow-xs shrink-0">
+              <div className="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 shadow-lg">
                 <Heart size={24} fill="currentColor" />
               </div>
               <div>
-                <h1 className="text-2xl sm:text-3xl font-black text-[#e9edef] tracking-tight">Favorite Utilities</h1>
-                <p className="text-xs text-[#8696a0] mt-0.5 font-medium">Quick access to your preferred tools saved across all sessions</p>
+                <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">Favorite Utilities</h1>
+                <p className="text-xs text-slate-400 mt-0.5">Quick access to your preferred tools saved across all devices</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <div className="px-3 py-1.5 rounded-xl bg-[#111b21] border border-[#222d34] text-xs font-bold text-[#8696a0]">
+              <div className="px-3.5 py-1.5 rounded-xl bg-[#0f1118] border border-[#1e2235] text-xs font-mono text-slate-300">
                 {favoriteResolved.length} {favoriteResolved.length === 1 ? 'utility' : 'utilities'} saved
               </div>
             </div>
@@ -190,70 +164,62 @@ const Favorites = () => {
             <motion.div
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              className="flex flex-col items-center justify-center p-12 sm:p-16 border border-dashed border-[#2a3942] bg-[#111b21] rounded-3xl text-center shadow-xs"
+              className="flex flex-col items-center justify-center p-12 sm:p-16 border border-dashed border-[#23273c] bg-[#0f1118] rounded-3xl text-center shadow-xl"
             >
               <div className="w-16 h-16 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center mb-4 text-rose-400">
-                <Heart size={30} />
+                <Heart size={32} />
               </div>
-              <h3 className="text-base font-bold text-[#e9edef]">No favorites saved yet</h3>
-              <p className="text-xs text-[#8696a0] mt-2 max-w-sm leading-relaxed">
-                Click the heart icon on any utility card on the dashboard or search page to save it for one-click access.
+              <h3 className="text-base font-bold text-white">No favorites saved yet</h3>
+              <p className="text-xs text-slate-400 mt-2 max-w-sm leading-relaxed">
+                Click the heart icon on any utility card across the platform to save it to your personal favorites collection.
               </p>
               <Link
                 to="/"
-                className="mt-6 px-6 py-2.5 text-xs font-bold text-white bg-[#00a884] hover:bg-[#25d366] rounded-xl transition-all shadow-md shadow-[#00a884]/25 active:scale-[0.98]"
+                className="mt-6 px-6 py-2.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl transition-all shadow-md shadow-indigo-600/30 active:scale-95"
               >
-                Browse All Tools
+                Browse All Utilities
               </Link>
             </motion.div>
           ) : (
             /* Groups Deck */
-            <div className="space-y-8 text-left">
+            <div className="space-y-8">
               {Object.keys(favoriteGroups).map((catKey) => {
                 const group = favoriteGroups[catKey];
-                const GroupIcon = group.icon;
                 return (
                   <div key={catKey} className="space-y-3">
-                    <div className="flex items-center gap-2 border-b border-[#222d34] pb-2">
-                      <GroupIcon size={14} className="text-[#8696a0]" />
-                      <span className="text-[11px] font-black text-[#8696a0] uppercase tracking-widest">{group.label}</span>
+                    <div className="flex items-center gap-2 border-b border-[#1e2235] pb-2">
+                      <span className="text-[11px] font-mono uppercase tracking-widest text-indigo-400 font-bold">{group.label}</span>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5">
                       {group.tools.map((tool) => (
-                        <div key={tool.to} className="group relative flex items-center bg-[#111b21] border border-[#222d34] hover:border-rose-400/60 hover:bg-[#202c33] transition-all rounded-2xl shadow-xs overflow-hidden">
+                        <div key={tool.to} className="card-elevated p-3.5 flex items-center justify-between gap-3 group">
                           <Link
                             to={tool.to}
-                            className="flex-1 flex items-center gap-3 px-4 py-3.5 min-w-0"
+                            className="flex-1 flex items-center gap-3 min-w-0"
                           >
-                            <div className="w-8 h-8 rounded-xl bg-[#202c33] group-hover:bg-rose-500 group-hover:text-white flex items-center justify-center transition-colors shrink-0 text-[#8696a0]">
-                              <ArrowRight size={13} className="transition-colors" />
+                            <div className="w-9 h-9 rounded-xl bg-[#141722] group-hover:bg-rose-500 group-hover:text-white flex items-center justify-center transition-colors shrink-0 text-slate-400">
+                              <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
                             </div>
                             <div className="min-w-0 flex-1">
-                              <p className="text-xs font-bold text-[#e9edef] group-hover:text-rose-400 transition-colors truncate">{tool.label}</p>
-                              <p className="text-[10px] text-[#8696a0] group-hover:text-[#8696a0]/80 transition-colors truncate mt-0.5">{tool.result}</p>
+                              <p className="text-xs font-bold text-white group-hover:text-rose-400 transition-colors truncate">{tool.label}</p>
+                              <p className="text-[10px] text-slate-400 truncate mt-0.5">{tool.result}</p>
                             </div>
                           </Link>
-                          {/* Heart/Pin toggles */}
-                          <div className="flex items-center gap-1 pr-3">
+
+                          <div className="flex items-center gap-1">
                             <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                toggleFavorite(tool.to);
-                              }}
-                              className="w-7 h-7 rounded-lg flex items-center justify-center text-rose-500 hover:bg-rose-500/10 cursor-pointer shrink-0"
+                              onClick={() => toggleFavorite(tool.to)}
+                              className="p-1.5 rounded-lg text-rose-400 hover:bg-rose-500/15 cursor-pointer"
                               title="Remove from favorites"
                             >
                               <Heart size={13} fill="currentColor" />
                             </button>
                             <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                togglePin(tool.to);
-                              }}
-                              className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors cursor-pointer shrink-0 ${
+                              onClick={() => togglePin(tool.to)}
+                              className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
                                 currentUser?.pinnedTools?.includes(tool.to)
-                                  ? 'text-[#00a884] bg-[#00a884]/15'
-                                  : 'text-[#8696a0] hover:text-[#00a884] hover:bg-[#202c33]'
+                                  ? "text-indigo-400 bg-indigo-500/15"
+                                  : "text-slate-500 hover:text-indigo-400 hover:bg-[#181b28]"
                               }`}
                               title={currentUser?.pinnedTools?.includes(tool.to) ? "Unpin" : "Pin"}
                             >
@@ -268,6 +234,7 @@ const Favorites = () => {
               })}
             </div>
           )}
+
         </div>
       </div>
     </PageTransition>

@@ -6,6 +6,7 @@ import {
   Zap,
   Shield,
   Sparkles,
+  Cpu
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
@@ -13,35 +14,35 @@ const Footer = () => {
   const { currentUser } = useAuth();
 
   return (
-    <footer className="w-full relative z-10 mt-auto bg-[#0b141a] border-t border-[#222d34] overflow-hidden shrink-0">
-      {/* Subtle background ambient emerald light glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-[#00a884]/5 blur-[120px] rounded-full pointer-events-none" />
+    <footer className="w-full relative z-10 mt-auto bg-[#06070a] border-t border-[#1e2235] overflow-hidden shrink-0">
+      {/* Background ambient lighting */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-indigo-600/5 blur-[140px] rounded-full pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-5 sm:px-6 md:px-12 relative z-10">
         {/* Top CTA Section */}
-        <div className="py-12 md:py-16 border-b border-[#222d34] flex flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left">
+        <div className="py-12 md:py-16 border-b border-[#1e2235] flex flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left">
           <div className="max-w-xl">
-            <h2 className="text-2xl md:text-3xl font-black text-[#e9edef] tracking-tight mb-3 flex items-center justify-center md:justify-start gap-2">
+            <h2 className="text-2xl md:text-3xl font-black text-white tracking-tight mb-3 flex items-center justify-center md:justify-start gap-2">
               Ready to process files locally?{" "}
-              <Sparkles className="text-[#00a884]" size={24} />
+              <Sparkles className="text-indigo-400" size={24} />
             </h2>
-            <p className="text-[#8696a0] text-sm md:text-base leading-relaxed">
+            <p className="text-slate-400 text-sm md:text-base leading-relaxed">
               Join thousands of developers and creators using UtilityHub to process data
-              safely, entirely inside the browser. No servers. Zero telemetry.
+              safely, entirely inside the browser. No cloud uploads. Zero telemetry.
             </p>
           </div>
           <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 shrink-0 w-full md:w-auto mt-6 md:mt-0">
             {!currentUser && (
               <Link
                 to="/register"
-                className="w-full sm:w-auto whitespace-nowrap h-11 px-5 sm:px-6 rounded-xl bg-[#00a884] hover:bg-[#25d366] text-white font-bold text-sm flex items-center justify-center transition-all shadow-md shadow-[#00a884]/25 active:scale-[0.98]"
+                className="w-full sm:w-auto whitespace-nowrap h-11 px-6 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm flex items-center justify-center transition-all shadow-lg shadow-indigo-600/30 active:scale-[0.98]"
               >
                 Get Started Free
               </Link>
             )}
             <Link
               to="/search"
-              className="w-full sm:w-auto whitespace-nowrap h-11 px-5 sm:px-6 rounded-xl bg-[#202c33] hover:bg-[#222e35] text-[#e9edef] font-bold text-sm border border-[#2a3942] flex items-center justify-center transition-colors shadow-xs"
+              className="w-full sm:w-auto whitespace-nowrap h-11 px-6 rounded-xl bg-[#141722] hover:bg-[#181b28] text-white font-bold text-sm border border-[#1e2235] flex items-center justify-center transition-colors shadow-xs"
             >
               Explore 90+ Tools <ArrowRight className="ml-2" size={16} />
             </Link>
@@ -53,25 +54,14 @@ const Footer = () => {
           {/* Brand Col */}
           <div className="col-span-1 md:col-span-4 flex flex-col items-center md:items-start text-center md:text-left">
             <Link to="/" className="flex items-center gap-3 mb-4 group">
-              <div className="w-10 h-10 rounded-xl bg-[#00a884] flex items-center justify-center text-white shadow-md shadow-[#00a884]/25 transition-transform group-hover:scale-105">
-                <svg
-                  className="w-5 h-5"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2.5}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <polygon points="12 2 2 7 12 12 22 7 12 2" />
-                  <polyline points="2 17 12 22 22 17" />
-                </svg>
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-cyan-400 flex items-center justify-center text-white shadow-lg shadow-indigo-600/20 transition-transform group-hover:scale-105">
+                <Zap size={20} />
               </div>
-              <span className="font-black text-2xl tracking-tight text-[#e9edef]">
-                Utility<span className="text-[#00a884]">Hub</span>
+              <span className="font-black text-2xl tracking-tight text-white">
+                Utility<span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400">Hub</span>
               </span>
             </Link>
-            <p className="text-[#8696a0] text-xs leading-relaxed mb-6 max-w-[280px]">
+            <p className="text-slate-400 text-xs leading-relaxed mb-6 max-w-[280px]">
               A beautifully crafted, offline-first developer suite. Built with
               maximum performance, privacy, and client-side security in mind.
             </p>
@@ -80,7 +70,7 @@ const Footer = () => {
                 href="https://www.jaganparida.com/projects/daily-utility-hub"
                 target="_blank"
                 rel="noreferrer"
-                className="w-9 h-9 rounded-xl bg-[#202c33] border border-[#2a3942] flex items-center justify-center text-[#8696a0] hover:bg-[#00a884] hover:text-white hover:border-[#00a884] transition-all shadow-xs"
+                className="w-9 h-9 rounded-xl bg-[#141722] border border-[#1e2235] flex items-center justify-center text-slate-400 hover:bg-indigo-600 hover:text-white hover:border-indigo-600 transition-all shadow-xs"
                 title="Website"
               >
                 <Globe size={16} />
@@ -89,7 +79,7 @@ const Footer = () => {
                 href="https://github.com/JaganParida"
                 target="_blank"
                 rel="noreferrer"
-                className="w-9 h-9 rounded-xl bg-[#202c33] border border-[#2a3942] flex items-center justify-center text-[#8696a0] hover:bg-[#00a884] hover:text-white hover:border-[#00a884] transition-all shadow-xs"
+                className="w-9 h-9 rounded-xl bg-[#141722] border border-[#1e2235] flex items-center justify-center text-slate-400 hover:bg-indigo-600 hover:text-white hover:border-indigo-600 transition-all shadow-xs"
                 title="GitHub"
               >
                 <svg
@@ -109,7 +99,7 @@ const Footer = () => {
                 href="https://x.com/JaganParida0504"
                 target="_blank"
                 rel="noreferrer"
-                className="w-9 h-9 rounded-xl bg-[#202c33] border border-[#2a3942] flex items-center justify-center text-[#8696a0] hover:bg-[#00a884] hover:text-white hover:border-[#00a884] transition-all shadow-xs"
+                className="w-9 h-9 rounded-xl bg-[#141722] border border-[#1e2235] flex items-center justify-center text-slate-400 hover:bg-indigo-600 hover:text-white hover:border-indigo-600 transition-all shadow-xs"
                 title="Twitter"
               >
                 <svg
@@ -126,7 +116,7 @@ const Footer = () => {
               </a>
               <a
                 href="mailto:jaganparida39064@gmail.com"
-                className="w-9 h-9 rounded-xl bg-[#202c33] border border-[#2a3942] flex items-center justify-center text-[#8696a0] hover:bg-[#00a884] hover:text-white hover:border-[#00a884] transition-all shadow-xs"
+                className="w-9 h-9 rounded-xl bg-[#141722] border border-[#1e2235] flex items-center justify-center text-slate-400 hover:bg-indigo-600 hover:text-white hover:border-indigo-600 transition-all shadow-xs"
                 title="Contact"
               >
                 <Mail size={16} />
@@ -137,72 +127,72 @@ const Footer = () => {
           {/* Links Cols */}
           <div className="col-span-1 md:col-span-8 grid grid-cols-2 sm:grid-cols-4 gap-8 text-center sm:text-left">
             <div className="flex flex-col gap-3">
-              <h3 className="text-[#e9edef] text-xs font-bold tracking-widest uppercase mb-2">
+              <h3 className="text-white text-xs font-mono uppercase tracking-widest mb-2">
                 Product
               </h3>
               <Link
                 to="/"
-                className="text-sm text-[#8696a0] hover:text-[#00a884] transition-colors font-medium"
+                className="text-sm text-slate-400 hover:text-indigo-400 transition-colors"
               >
                 All Tools
               </Link>
               <Link
                 to="/pinned"
-                className="text-sm text-[#8696a0] hover:text-[#00a884] transition-colors font-medium"
+                className="text-sm text-slate-400 hover:text-indigo-400 transition-colors"
               >
                 Pinned Utilities
               </Link>
               <Link
                 to="/recent"
-                className="text-sm text-[#8696a0] hover:text-[#00a884] transition-colors font-medium"
+                className="text-sm text-slate-400 hover:text-indigo-400 transition-colors"
               >
                 Recent History
               </Link>
               <Link
                 to="/tools/developer-profile"
-                className="text-sm text-[#8696a0] hover:text-[#00a884] transition-colors font-medium"
+                className="text-sm text-slate-400 hover:text-indigo-400 transition-colors"
               >
                 Developer Profile
               </Link>
             </div>
 
             <div className="flex flex-col gap-3">
-              <h3 className="text-[#e9edef] text-xs font-bold tracking-widest uppercase mb-2">
+              <h3 className="text-white text-xs font-mono uppercase tracking-widest mb-2">
                 Solutions
               </h3>
               <Link
                 to="/tools/uuid-generator"
-                className="text-sm text-[#8696a0] hover:text-[#00a884] transition-colors font-medium"
+                className="text-sm text-slate-400 hover:text-indigo-400 transition-colors"
               >
                 For Developers
               </Link>
               <Link
                 to="/tools/readme-generator"
-                className="text-sm text-[#8696a0] hover:text-[#00a884] transition-colors font-medium"
+                className="text-sm text-slate-400 hover:text-indigo-400 transition-colors"
               >
                 For Students
               </Link>
               <Link
                 to="/privacy-policy"
-                className="text-sm text-[#8696a0] hover:text-[#00a884] transition-colors font-medium"
+                className="text-sm text-slate-400 hover:text-indigo-400 transition-colors"
               >
                 Offline Engine
               </Link>
               <Link
                 to="/tools/file-vault"
-                className="text-sm text-[#8696a0] hover:text-[#00a884] transition-colors font-medium"
+                className="text-sm text-slate-400 hover:text-indigo-400 transition-colors"
               >
                 Security Vault
               </Link>
             </div>
 
             <div className="flex flex-col gap-3">
-              <h3 className="text-[#e9edef] text-xs font-bold tracking-widest uppercase mb-2">
+              <h3 className="text-white text-xs font-mono uppercase tracking-widest mb-2">
                 Account
               </h3>
               <Link
                 to="/profile"
-                className="text-sm text-[#8696a0] hover:text-[#00a884] transition-colors font-medium"
+                className="text-sm text-slate-400 hover:text-indigo-400 transition-colors"
               >
                 User Profile
               </Link>
@@ -210,43 +200,43 @@ const Footer = () => {
                 <>
                   <Link
                     to="/login"
-                    className="text-sm text-[#8696a0] hover:text-[#00a884] transition-colors font-medium"
+                    className="text-sm text-slate-400 hover:text-indigo-400 transition-colors"
                   >
                     Sign In
                   </Link>
                   <Link
                     to="/register"
-                    className="text-sm text-[#8696a0] hover:text-[#00a884] transition-colors font-medium"
+                    className="text-sm text-slate-400 hover:text-indigo-400 transition-colors"
                   >
                     Register
                   </Link>
                 </>
               ) : (
-                <span className="text-[11px] text-[#00a884] font-bold">
+                <span className="text-[11px] font-mono text-emerald-400 font-bold">
                   ✓ Session Active
                 </span>
               )}
             </div>
 
             <div className="flex flex-col gap-3">
-              <h3 className="text-[#e9edef] text-xs font-bold tracking-widest uppercase mb-2">
+              <h3 className="text-white text-xs font-mono uppercase tracking-widest mb-2">
                 Legal
               </h3>
               <Link
                 to="/privacy-policy"
-                className="text-sm text-[#8696a0] hover:text-[#00a884] transition-colors font-medium"
+                className="text-sm text-slate-400 hover:text-indigo-400 transition-colors"
               >
                 Privacy Policy
               </Link>
               <Link
                 to="/terms-of-service"
-                className="text-sm text-[#8696a0] hover:text-[#00a884] transition-colors font-medium"
+                className="text-sm text-slate-400 hover:text-indigo-400 transition-colors"
               >
                 Terms of Service
               </Link>
               <Link
                 to="/cookie-policy"
-                className="text-sm text-[#8696a0] hover:text-[#00a884] transition-colors font-medium"
+                className="text-sm text-slate-400 hover:text-indigo-400 transition-colors"
               >
                 Cookie Settings
               </Link>
@@ -255,12 +245,12 @@ const Footer = () => {
         </div>
 
         {/* Bottom Bar */}
-        <div className="py-6 border-t border-[#222d34] flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-[#8696a0] font-medium text-center md:text-left flex items-center gap-1.5">
+        <div className="py-6 border-t border-[#1e2235] flex flex-col md:flex-row items-center justify-between gap-4">
+          <p className="text-xs text-slate-500 font-mono text-center md:text-left flex items-center gap-1.5">
             © {new Date().getFullYear()} UtilityHub. All operations executed client-side.
           </p>
-          <div className="flex items-center gap-1.5 text-xs text-[#8696a0]">
-            <Shield size={13} className="text-[#00a884]" />
+          <div className="flex items-center gap-1.5 text-xs font-mono text-slate-400">
+            <Shield size={13} className="text-emerald-400" />
             <span>100% Private & Offline-Capable</span>
           </div>
         </div>

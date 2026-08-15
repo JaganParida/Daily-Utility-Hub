@@ -33,25 +33,25 @@
 
 @layer base {
   :root {
-    /* WhatsApp Dark Mode Palette */
-    --background: #0b141a;
-    --foreground: #e9edef;
-    --card: #111b21;
-    --card-foreground: #e9edef;
-    --primary: #00a884;
+    /* Next-Gen Obsidian Dark Architecture */
+    --background: #08090d;
+    --foreground: #f8fafc;
+    --card: #0f1118;
+    --card-foreground: #f8fafc;
+    --primary: #6366f1;
     --primary-foreground: #ffffff;
-    --secondary: #202c33;
-    --secondary-foreground: #e9edef;
-    --muted: #182229;
-    --muted-foreground: #8696a0;
-    --accent: #202c33;
-    --accent-foreground: #00a884;
-    --border: #222d34;
-    --input: #202c33;
-    --ring: #00a884;
-    --destructive: #ef4444;
+    --secondary: #141722;
+    --secondary-foreground: #f8fafc;
+    --muted: #181b28;
+    --muted-foreground: #94a3b8;
+    --accent: #1e2235;
+    --accent-foreground: #6366f1;
+    --border: #1e2235;
+    --input: #141722;
+    --ring: #6366f1;
+    --destructive: #f43f5e;
     --destructive-foreground: #ffffff;
-    --radius: 0.875rem;
+    --radius: 1rem;
   }
 }
 
@@ -63,34 +63,63 @@
     @apply bg-background text-foreground;
     font-family: var(--font-sans);
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
-    background-color: #0b141a;
+    background-color: #08090d;
     background-image: 
-      radial-gradient(at 100% 0%, rgba(0, 168, 132, 0.06) 0px, transparent 50%),
-      radial-gradient(at 0% 0%, rgba(83, 189, 235, 0.04) 0px, transparent 45%),
-      radial-gradient(at 50% 100%, rgba(0, 168, 132, 0.03) 0px, transparent 50%);
+      radial-gradient(at 100% 0%, rgba(99, 102, 241, 0.08) 0px, transparent 40%),
+      radial-gradient(at 0% 20%, rgba(6, 182, 212, 0.06) 0px, transparent 45%),
+      radial-gradient(at 50% 100%, rgba(16, 185, 129, 0.05) 0px, transparent 50%);
     background-attachment: fixed;
-    color: #e9edef;
-    letter-spacing: -0.01em;
+    color: #f8fafc;
+    letter-spacing: -0.015em;
   }
 }
 
-/* WhatsApp Dark Glassmorphism Utilities */
-.glass {
-  @apply bg-[#111b21]/90 backdrop-blur-xl border border-[#222d34] shadow-[0_8px_32px_rgba(0,0,0,0.37)];
+/* ═══ Next-Gen Glass & Surface Utilities ═══ */
+.glass-panel {
+  background: rgba(15, 17, 24, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
 }
 
-.glass-header {
-  @apply bg-[#111b21]/90 backdrop-blur-xl border-b border-[#222d34] sticky top-0 z-40 shadow-[0_4px_20px_rgba(0,0,0,0.25)];
+.glass-floating-nav {
+  background: rgba(15, 17, 24, 0.85);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+.cockpit-surface {
+  background: linear-gradient(180deg, #111420 0%, #0c0e17 100%);
+  border: 1px solid #1e2235;
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 .card-elevated {
-  @apply bg-[#111b21] border border-[#222d34] rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.25)] hover:shadow-[0_8px_30px_rgba(0,168,132,0.15)] hover:border-[#00a884]/60 transition-all duration-200;
+  background: #0f1118;
+  border: 1px solid #1e2235;
+  border-radius: 1rem;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* WhatsApp Dark Scrollbar */
+.card-elevated:hover {
+  border-color: rgba(99, 102, 241, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5), 0 0 20px rgba(99, 102, 241, 0.12);
+}
+
+/* Subtle dot grid pattern */
+.bg-grid-dots {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* ═══ Custom Sleek Scrollbars ═══ */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
@@ -98,62 +127,67 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #2a3942;
-  border-radius: 99px;
+  background: #23273c;
+  border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #374248;
+  background: #383e5c;
 }
 
-.custom-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: #2a3942 transparent;
-}
 .custom-scrollbar::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
-}
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #2a3942;
-  border-radius: 99px;
-}
-.custom-scrollbar:hover::-webkit-scrollbar-thumb {
-  background: #374248;
+  width: 4px;
 }
 
-/* Hide scrollbar for elements with .no-scrollbar / .hide-scrollbar */
-.no-scrollbar::-webkit-scrollbar,
-.hide-scrollbar::-webkit-scrollbar {
-  display: none;
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #23273c;
+  border-radius: 9999px;
 }
-.no-scrollbar,
+
 .hide-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
-
-/* Dynamic Animation Utilities */
-@keyframes flow-pulse {
-  0% { transform: translateX(-100%); opacity: 0; }
-  50% { opacity: 1; }
-  100% { transform: translateX(200%); opacity: 0; }
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
-@keyframes pulse-emerald {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(0, 168, 132, 0.4); }
-  50% { box-shadow: 0 0 20px 6px rgba(0, 168, 132, 0.15); }
+/* ═══ Animation Keyframes ═══ */
+@keyframes radar-scan {
+  0% { transform: translateY(-100%); opacity: 0; }
+  50% { opacity: 0.8; }
+  100% { transform: translateY(200%); opacity: 0; }
 }
 
-@keyframes icon-drop {
-  0% { transform: translateY(-16px); opacity: 0; }
-  50% { transform: translateY(4px); }
-  100% { transform: translateY(0); opacity: 1; }
+@keyframes beam-pulse {
+  0%, 100% { opacity: 0.3; transform: scaleX(0.9); }
+  50% { opacity: 1; transform: scaleX(1); }
 }
 
-.animate-icon-drop {
-  animation: icon-drop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.9; }
+}
+
+.animate-radar {
+  animation: radar-scan 3s ease-in-out infinite;
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+
+/* Gradient text utility */
+.gradient-text-electric {
+  background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 50%, #94a3b8 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gradient-text-brand {
+  background: linear-gradient(135deg, #6366f1 0%, #06b6d4 50%, #10b981 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }

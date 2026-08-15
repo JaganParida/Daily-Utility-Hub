@@ -14,20 +14,20 @@ const PinnedTools = () => {
 
   return (
     <PageTransition>
-      <div className="max-w-[1400px] mx-auto w-full py-8 px-4 sm:px-6 md:px-12 bg-[#0b141a] text-[#e9edef] min-h-screen">
+      <div className="max-w-6xl mx-auto w-full py-12 px-4 sm:px-6 md:px-8 bg-[#08090d] text-[#f8fafc] min-h-screen">
         
         {/* Header */}
-        <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-[#222d34] pb-6">
+        <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-[#1e2235] pb-6">
           <div>
-            <h1 className="text-3xl md:text-5xl font-black tracking-tight text-[#e9edef] mb-2">
-              Pinned <span className="text-[#00a884]">Workspaces</span>
+            <h1 className="text-3xl md:text-5xl font-black tracking-tight text-white mb-2">
+              Pinned <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400">Workspaces</span>
             </h1>
-            <p className="text-sm text-[#8696a0] max-w-2xl font-medium">
-              Your personal workspace collection. Pin frequently used utilities from the dashboard for instantaneous access.
+            <p className="text-sm text-slate-400 max-w-2xl">
+              Your customized workspace shelf. Pin frequently used utilities from across the platform for rapid execution.
             </p>
           </div>
           <div className="shrink-0 flex items-center gap-2">
-            <span className="text-xs font-bold bg-[#111b21] border border-[#222d34] px-4 py-2 rounded-xl text-[#8696a0]">
+            <span className="text-xs font-mono bg-[#0f1118] border border-[#1e2235] px-4 py-2 rounded-xl text-slate-300">
               {pinnedToolObjects.length} / 8 Pinned
             </span>
           </div>
@@ -37,64 +37,60 @@ const PinnedTools = () => {
         {pinnedToolObjects.length === 0 ? (
           <motion.div 
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col items-center justify-center py-20 bg-[#111b21] border border-dashed border-[#2a3942] rounded-3xl shadow-xs text-center"
+            className="flex flex-col items-center justify-center py-20 bg-[#0f1118] border border-dashed border-[#23273c] rounded-3xl shadow-xl text-center"
           >
-            <div className="w-16 h-16 bg-[#00a884]/15 border border-[#00a884]/30 rounded-2xl flex items-center justify-center mb-5 text-[#00a884]">
+            <div className="w-16 h-16 bg-indigo-500/10 border border-indigo-500/20 rounded-2xl flex items-center justify-center mb-5 text-indigo-400">
               <Pin size={28} />
             </div>
-            <h2 className="text-xl font-bold text-[#e9edef] mb-2">No utilities pinned yet</h2>
-            <p className="text-[#8696a0] max-w-sm text-xs leading-relaxed">
-              Explore tools on the dashboard and click the Pin icon on any utility to add it to this workspace.
+            <h2 className="text-xl font-bold text-white mb-2">No utilities pinned yet</h2>
+            <p className="text-slate-400 max-w-sm text-xs leading-relaxed">
+              Explore the dashboard or search directory and click the Pin icon on any tool card to add it to this workspace.
             </p>
-            <Link to="/dashboard" className="mt-6 px-6 py-2.5 bg-[#00a884] text-white font-bold text-xs rounded-xl shadow-md shadow-[#00a884]/25 hover:bg-[#25d366] transition-all active:scale-[0.98]">
+            <Link to="/dashboard" className="mt-6 px-6 py-2.5 bg-indigo-600 text-white font-bold text-xs rounded-xl shadow-md shadow-indigo-600/30 hover:bg-indigo-500 transition-all active:scale-95">
               Browse Utilities
             </Link>
           </motion.div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {pinnedToolObjects.map((tool, index) => (
               <motion.div 
                 key={tool.name} 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.05 }}
-                whileHover={{ y: -4, transition: { type: "spring", stiffness: 180, damping: 18 } }}
+                transition={{ duration: 0.3, delay: index * 0.04 }}
                 className="group relative h-full"
               >
-                <Link 
-                  to={tool.to}
-                  className="relative flex flex-col justify-between h-full p-5 transition-all duration-300 bg-[#111b21] hover:bg-[#202c33] border border-[#222d34] hover:border-[#00a884]/80 rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.25)] overflow-hidden"
-                >
+                <div className="card-elevated p-5 flex flex-col justify-between h-full group">
                   <div>
                     <div className="flex items-start justify-between mb-4">
-                      <div className="w-11 h-11 rounded-xl bg-[#202c33] group-hover:bg-[#00a884] group-hover:text-white text-[#00a884] flex items-center justify-center transition-colors shrink-0">
-                        <tool.icon size={22} strokeWidth={1.75} />
+                      <div className="w-11 h-11 rounded-xl bg-[#141722] text-indigo-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                        <tool.icon size={22} />
                       </div>
                       <button
-                        onClick={(e) => {
-                          e.preventDefault(); 
-                          togglePin(tool.to);
-                        }}
-                        className="p-2 rounded-xl transition-all z-30 bg-[#00a884]/15 text-[#00a884] hover:bg-rose-500/10 hover:text-rose-500 cursor-pointer"
+                        onClick={() => togglePin(tool.to)}
+                        className="p-2 rounded-xl transition-all bg-indigo-500/15 text-indigo-400 hover:bg-rose-500/15 hover:text-rose-400 cursor-pointer"
                         title="Remove from pinned"
                       >
-                        <Pin size={15} className="fill-current" />
+                        <Pin size={14} className="fill-current" />
                       </button>
                     </div>
                     
-                    <h3 className="font-bold text-base text-[#e9edef] tracking-tight mb-1 group-hover:text-[#00a884] transition-colors">
+                    <h3 className="font-bold text-base text-white tracking-tight mb-1 group-hover:text-indigo-400 transition-colors">
                       {tool.name}
                     </h3>
-                    <p className="text-[#8696a0] text-xs leading-relaxed font-medium">
+                    <p className="text-slate-400 text-xs leading-relaxed">
                       {tool.description}
                     </p>
                   </div>
                   
-                  <div className="mt-5 pt-3 border-t border-[#222d34] flex items-center font-bold text-xs text-[#8696a0] group-hover:text-[#00a884] transition-colors">
-                    Launch Utility
-                    <ArrowRight size={13} className="ml-1.5 transition-transform group-hover:translate-x-1" />
-                  </div>
-                </Link>
+                  <Link 
+                    to={tool.to}
+                    className="mt-5 pt-3 border-t border-[#1e2235] flex items-center justify-between font-bold text-xs text-slate-400 group-hover:text-indigo-400 transition-colors"
+                  >
+                    <span>Launch Utility</span>
+                    <ArrowRight size={13} className="group-hover:translate-x-1 transition-transform" />
+                  </Link>
+                </div>
               </motion.div>
             ))}
           </div>
