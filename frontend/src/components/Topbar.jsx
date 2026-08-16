@@ -188,25 +188,35 @@ const Topbar = () => {
             </nav>
           </div>
 
-          {/* Center: Google Omnibox Search Bar */}
-          <div className="flex-1 max-w-lg mx-2 sm:mx-4">
+          {/* Center: Google Omnibox Search Bar (Desktop & Tablet) */}
+          <div className="hidden sm:flex flex-1 max-w-lg mx-3 lg:mx-6">
             <button
               onClick={() => setIsSearchOpen(true)}
-              className="w-full h-10 px-3.5 sm:px-4 rounded-full bg-[#f1f3f4] hover:bg-[#e8eaed] border border-transparent hover:border-[#dadce0] text-[#5f6368] hover:text-[#202124] flex items-center justify-between text-xs sm:text-sm font-normal transition-all group cursor-pointer"
+              className="w-full h-10 px-4 rounded-full bg-[#f1f3f4] hover:bg-[#e8eaed] border border-transparent hover:border-[#dadce0] text-[#5f6368] hover:text-[#202124] flex items-center justify-between text-xs sm:text-sm font-normal transition-all group cursor-pointer shadow-2xs"
             >
               <div className="flex items-center gap-2.5 min-w-0">
                 <Search size={16} className="text-[#5f6368] group-hover:text-[#1a73e8] transition-colors shrink-0" />
                 <span className="truncate text-xs sm:text-sm">Search 90+ client-side tools...</span>
               </div>
-              <div className="hidden sm:flex items-center gap-1 px-2 py-0.5 rounded bg-white border border-[#dadce0] text-[10px] font-mono text-[#5f6368] shadow-2xs shrink-0">
+              <div className="flex items-center gap-1 px-2 py-0.5 rounded bg-white border border-[#dadce0] text-[10px] font-mono text-[#5f6368] shadow-2xs shrink-0">
                 <Command size={10} /> K
               </div>
             </button>
           </div>
 
-          {/* Right: Google-Style App Grid Launcher, Privacy Tag & User Avatar */}
-          <div className="flex items-center gap-1.5 sm:gap-3">
+          {/* Right: Search (Mobile), Google-Style App Grid Launcher, Privacy Tag & User Avatar */}
+          <div className="flex items-center gap-1 sm:gap-2">
             
+            {/* Mobile Search Icon Button */}
+            <button
+              onClick={() => setIsSearchOpen(true)}
+              className="sm:hidden p-2 rounded-full text-[#5f6368] hover:text-[#202124] hover:bg-[#f1f3f4] transition-colors cursor-pointer"
+              title="Search tools"
+              aria-label="Search tools"
+            >
+              <Search size={20} />
+            </button>
+
             {/* Google Apps 9-Dot Launcher Button */}
             <div ref={appsMenuRef} className="relative">
               <button
