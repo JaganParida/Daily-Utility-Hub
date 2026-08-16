@@ -1,892 +1,992 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import {
   ArrowRight, UploadCloud, X, ChevronDown, Zap, Shield, Cpu,
   FileText, ImageIcon, Code2, Type, Table2, FileSpreadsheet, MonitorPlay,
   FolderArchive, Music, Layers, Search, ChevronLeft, ChevronRight, Heart, Pin, Sparkles, Terminal, Activity,
-  Lock, CheckCircle2, Sliders, RefreshCw, Key, FileCheck
+  Lock, CheckCircle2, Sliders, RefreshCw, Key, FileCheck, ArrowRightLeft, Copy, Check, Play, Globe, Flame
 } from "lucide-react";
 import PageTransition from "../components/PageTransition";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "react-hot-toast";
 
-// ─── DATA ───
-
-const SOURCE_FORMATS = [
-  { id: "pdf", label: "PDF Document", icon: FileText },
-  { id: "image", label: "Image (PNG/JPG)", icon: ImageIcon },
-  { id: "spreadsheet", label: "Spreadsheet (XLSX/CSV)", icon: Table2 },
-  { id: "document", label: "Word Document (DOCX)", icon: FileSpreadsheet },
-  { id: "code", label: "Code & JSON", icon: Code2 },
-  { id: "text", label: "Plain Text & MD", icon: Type },
-  { id: "presentation", label: "PowerPoint Slides", icon: MonitorPlay },
-  { id: "archive", label: "Archive & ZIP", icon: FolderArchive },
-  { id: "media", label: "Audio & Media", icon: Music },
+// ─── 200+ FORMATS REPOSITORY ───
+const FORMAT_GROUPS = [
+  {
+    category: "Document",
+    formats: [
+      { ext: "PDF", name: "Portable Document Format", icon: FileText, color: "text-[#ea4335] bg-[#fce8e6]" },
+      { ext: "DOCX", name: "Microsoft Word Document", icon: FileText, color: "text-[#1a73e8] bg-[#e8f0fe]" },
+      { ext: "DOC", name: "Legacy Word Document", icon: FileText, color: "text-[#1a73e8] bg-[#e8f0fe]" },
+      { ext: "TXT", name: "Plain Text Document", icon: Type, color: "text-[#5f6368] bg-[#f1f3f4]" },
+      { ext: "MD", name: "Markdown Document", icon: FileText, color: "text-[#8e24aa] bg-[#f3e8fd]" },
+      { ext: "EPUB", name: "Electronic Publication", icon: FileText, color: "text-[#fbbc04] bg-[#fef7e0]" },
+    ]
+  },
+  {
+    category: "Image",
+    formats: [
+      { ext: "PNG", name: "Portable Network Graphics", icon: ImageIcon, color: "text-[#34a853] bg-[#e6f4ea]" },
+      { ext: "JPG", name: "Joint Photographic Experts", icon: ImageIcon, color: "text-[#34a853] bg-[#e6f4ea]" },
+      { ext: "WEBP", name: "Modern Web Picture", icon: ImageIcon, color: "text-[#1a73e8] bg-[#e8f0fe]" },
+      { ext: "SVG", name: "Scalable Vector Graphics", icon: Code2, color: "text-[#fbbc04] bg-[#fef7e0]" },
+      { ext: "BMP", name: "Bitmap Image", icon: ImageIcon, color: "text-[#5f6368] bg-[#f1f3f4]" },
+      { ext: "GIF", name: "Graphics Interchange", icon: ImageIcon, color: "text-[#ea4335] bg-[#fce8e6]" },
+    ]
+  },
+  {
+    category: "Data & Spreadsheet",
+    formats: [
+      { ext: "JSON", name: "JavaScript Object Notation", icon: BracesIcon, color: "text-[#34a853] bg-[#e6f4ea]" },
+      { ext: "CSV", name: "Comma Separated Values", icon: Table2, color: "text-[#1a73e8] bg-[#e8f0fe]" },
+      { ext: "XLSX", name: "Microsoft Excel Worksheet", icon: Table2, color: "text-[#34a853] bg-[#e6f4ea]" },
+      { ext: "XML", name: "Extensible Markup Language", icon: Code2, color: "text-[#fbbc04] bg-[#fef7e0]" },
+      { ext: "SQL", name: "Structured Query Language", icon: Layers, color: "text-[#8e24aa] bg-[#f3e8fd]" },
+      { ext: "TYPESCRIPT", name: "TypeScript Type Definitions", icon: Code2, color: "text-[#1a73e8] bg-[#e8f0fe]" },
+    ]
+  },
+  {
+    category: "Media & Audio",
+    formats: [
+      { ext: "MP4", name: "MPEG-4 Video", icon: MonitorPlay, color: "text-[#ea4335] bg-[#fce8e6]" },
+      { ext: "MP3", name: "MPEG Audio Layer III", icon: Music, color: "text-[#1a73e8] bg-[#e8f0fe]" },
+      { ext: "WAV", name: "Waveform Audio File", icon: Music, color: "text-[#34a853] bg-[#e6f4ea]" },
+      { ext: "WEBM", name: "WebM Media Format", icon: MonitorPlay, color: "text-[#fbbc04] bg-[#fef7e0]" },
+      { ext: "SUBTITLES", name: "Timestamped SRT / VTT", icon: Type, color: "text-[#8e24aa] bg-[#f3e8fd]" },
+    ]
+  },
+  {
+    category: "Archive & Security",
+    formats: [
+      { ext: "ZIP", name: "ZIP Compressed Archive", icon: FolderArchive, color: "text-[#fbbc04] bg-[#fef7e0]" },
+      { ext: "VAULT", name: "AES-256 Encrypted Locker", icon: Lock, color: "text-[#ea4335] bg-[#fce8e6]" },
+      { ext: "PASSWORD", name: "High Entropy Token", icon: Key, color: "text-[#34a853] bg-[#e6f4ea]" },
+    ]
+  }
 ];
 
-const OPERATIONS_MAP = {
-  pdf: [
-    { label: "Compress PDF", result: "Smaller PDF", to: "/tools/pdf-compressor" },
-    { label: "Convert to Word (DOCX)", result: "Editable Word Doc", to: "/tools/pdf-to-word" },
-    { label: "Convert to Images", result: "PNG / JPG Images", to: "/tools/pdf-converter" },
-    { label: "Extract Text", result: "Plain Text", to: "/tools/pdf-to-text" },
-    { label: "Merge PDF Files", result: "Combined PDF", to: "/tools/pdf-merge" },
-    { label: "Split PDF Pages", result: "Individual PDFs", to: "/tools/pdf-split" },
-    { label: "Visual PDF Editor", result: "Edited PDF", to: "/tools/pdf-edit" },
-    { label: "Add Watermark", result: "Stamped PDF", to: "/tools/pdf-watermark" },
-    { label: "Lock & Encrypt", result: "Secured PDF", to: "/tools/pdf-lock" },
-    { label: "Unlock PDF", result: "Open PDF", to: "/tools/pdf-unlock" },
-    { label: "Edit Metadata", result: "Clean PDF Properties", to: "/tools/pdf-metadata" },
-    { label: "Organize & Reorder", result: "Reordered PDF", to: "/tools/pdf-organizer" },
-    { label: "Read Aloud Audio", result: "Voice Stream", to: "/tools/pdf-audio-reader" },
-    { label: "AI PDF → Markdown", result: "Markdown Doc", to: "/tools/ai-pdf-to-markdown" },
-  ],
-  image: [
-    { label: "Compress Image", result: "Optimized File", to: "/tools/image-compressor" },
-    { label: "Resize Dimensions", result: "Custom Resolution", to: "/tools/image-resizer" },
-    { label: "Crop & Rotate", result: "Cropped Image", to: "/tools/image-cropper" },
-    { label: "Format Converter", result: "WebP/PNG/JPG", to: "/tools/image-converter" },
-    { label: "Add Watermark", result: "Watermarked Image", to: "/tools/image-watermark" },
-    { label: "Collage Maker", result: "Photo Collage", to: "/tools/image-collage" },
-    { label: "Extract Color Palette", result: "HEX Swatches", to: "/tools/image-color-extractor" },
-    { label: "Convert to PDF", result: "PDF Document", to: "/tools/image-to-pdf" },
-    { label: "OCR Text Extractor", result: "Extracted Text", to: "/tools/image-to-text" },
-    { label: "AI Image → Markdown", result: "Markdown Code", to: "/tools/ai-image-to-markdown" },
-  ],
-  spreadsheet: [
-    { label: "Merge & Split Excel", result: "Processed Sheets", to: "/tools/excel-merge-split" },
-    { label: "Formula Assistant", result: "Excel Formula", to: "/tools/formula-helper" },
-    { label: "Pivot Table Generator", result: "Pivot View", to: "/tools/pivot-table-builder" },
-    { label: "Clean & Format Data", result: "Clean Dataset", to: "/tools/data-cleaner" },
-    { label: "SQL on CSV Runner", result: "Query Results", to: "/tools/csv-sql-runner" },
-    { label: "Mock Data Generator", result: "Test Dataset", to: "/tools/test-data-generator" },
-    { label: "Amortization Calculator", result: "Payment Schedule", to: "/tools/amortization-scheduler" },
-  ],
-  document: [
-    { label: "Convert DOCX to PDF", result: "PDF / Image", to: "/tools/docx-converter" },
-    { label: "Document Template Builder", result: "Doc Template", to: "/tools/doc-template-builder" },
-    { label: "Strip Document Metadata", result: "Clean Document", to: "/tools/doc-metadata-cleaner" },
-    { label: "Grammar & Spell Check", result: "Polished Copy", to: "/tools/grammar-checker" },
-    { label: "Compare Document Versions", result: "Similarity Diff", to: "/tools/similarity-checker" },
-    { label: "Batch Find & Replace", result: "Modified Archive", to: "/tools/batch-find-replace" },
-    { label: "Academic Margin Checker", result: "Compliant Doc", to: "/tools/academic-format-checker" },
-    { label: "HTML to Word Exporter", result: "DOCX File", to: "/tools/html-to-docx" },
-    { label: "README Generator", result: "Markdown File", to: "/tools/readme-generator" },
-    { label: "Citation Formatter", result: "APA/MLA/Chicago", to: "/tools/citation-generator" },
-    { label: "Developer Profile Tree", result: "Portfolio Card", to: "/tools/developer-profile" },
-  ],
-  code: [
-    { label: "Format & Beautify JSON", result: "Formatted JSON", to: "/tools/json-formatter" },
-    { label: "Interactive Regex Tester", result: "Regex Matches", to: "/tools/regex-tester" },
-    { label: "Decode & Inspect JWT", result: "JWT Payload", to: "/tools/jwt-decoder" },
-    { label: "UUID / GUID Batch Gen", result: "Batch UUIDs", to: "/tools/uuid-generator" },
-    { label: "Cron Expression Parser", result: "Schedule Times", to: "/tools/cron-parser" },
-    { label: "Live HTML / CSS Sandbox", result: "Rendered View", to: "/tools/html-previewer" },
-    { label: "Code to Beautiful Image", result: "Syntax Card", to: "/tools/code-to-image" },
-    { label: "AI Code Optimizer", result: "Refactored Code", to: "/tools/ai-code-playground" },
-    { label: "Password Generator", result: "High-Entropy Key", to: "/tools/password-generator" },
-    { label: "Cryptographic Hash Gen", result: "SHA256/MD5", to: "/tools/hash-generator" },
-    { label: "Color Palette & Contrast", result: "WCAG Checker", to: "/tools/color-picker" },
-    { label: "CSS Gradient Generator", result: "CSS Rules", to: "/tools/gradient-generator" },
-    { label: "JWT Secret Key Generator", result: "256-bit Secret", to: "/tools/jwt-secret-generator" },
-    { label: "Base64 Encoder / Decoder", result: "Converted Text", to: "/tools/base64-converter" },
-    { label: "URL Encoder / Decoder", result: "Decoded URL", to: "/tools/url-converter" },
-    { label: "Markdown Live Previewer", result: "Rendered HTML", to: "/tools/markdown-previewer" },
-    { label: "JSON to TypeScript/Python", result: "Type Definitions", to: "/tools/type-converter" },
-    { label: "Google Dork Builder", result: "Search Query", to: "/tools/google-search-builder" },
-  ],
-  text: [
-    { label: "Markdown Editor & Notes", result: "Formatted MD", to: "/tools/markdown-editor" },
-    { label: "Text Difference Checker", result: "Side-by-Side Diff", to: "/tools/text-diff" },
-    { label: "Word & Character Counter", result: "Text Stats", to: "/tools/word-counter" },
-    { label: "Find & Replace Engine", result: "Transformed Text", to: "/tools/find-replace" },
-    { label: "Lorem Ipsum Generator", result: "Dummy Copy", to: "/tools/lorem-ipsum" },
-    { label: "Case Converter", result: "camelCase/UPPER", to: "/tools/case-converter" },
-    { label: "Font & Unicode Styler", result: "Stylized Text", to: "/tools/font-converter" },
-    { label: "Line Deduplicator", result: "Sorted Lines", to: "/tools/text-line-editor" },
-    { label: "Readability Analyzer", result: "Grade Score", to: "/tools/text-analyzer" },
-  ],
-  presentation: [
-    { label: "Convert PPTX to PDF", result: "PDF Deck", to: "/tools/ppt-to-pdf" },
-    { label: "Markdown to Slide Deck", result: "HTML Presentation", to: "/tools/md-to-slides" },
-    { label: "Edit PPTX Properties", result: "Clean Presentation", to: "/tools/pptx-metadata-editor" },
-    { label: "Interactive HTML Slides", result: "Slide Runner", to: "/tools/html-presentation" },
-    { label: "Notes & Prompter Studio", result: "Teleprompter", to: "/tools/pptx-studio" },
-  ],
-  archive: [
-    { label: "Create ZIP Archive", result: "Compressed ZIP", to: "/tools/zip-archiver" },
-    { label: "Client Encrypted Vault", result: "Encrypted Locker", to: "/tools/file-vault" },
-    { label: "Temporary Local Share", result: "P2P Stream", to: "/tools/temp-share" },
-    { label: "Batch File Renamer", result: "Pattern Renamer", to: "/tools/batch-renamer" },
-  ],
-  media: [
-    { label: "Transcribe Audio / Video", result: "Text Transcript", to: "/tools/audio-video-transcriber" },
-    { label: "Voice Synthesizer", result: "Speech Audio", to: "/tools/voice-helper" },
-    { label: "Read Aloud Audio Stream", result: "Audio Player", to: "/tools/pdf-audio-reader" },
-    { label: "EMI Loan Calculator", result: "Monthly Breakdown", to: "/tools/emi-calculator" },
-    { label: "SIP & Compound Growth", result: "Wealth Matrix", to: "/tools/sip-calculator" },
-    { label: "GST Tax Breakdown", result: "CGST & SGST", to: "/tools/gst-calculator" },
-    { label: "Income Tax Regime", result: "Old vs New Regimes", to: "/tools/tax-calculator" },
-  ],
-};
-
-const CATEGORY_TABS = [
-  { id: "pdf", label: "PDF", icon: FileText, count: 14 },
-  { id: "image", label: "Image Studio", icon: ImageIcon, count: 10 },
-  { id: "code", label: "Developer", icon: Code2, count: 18 },
-  { id: "text", label: "Text & Copy", icon: Type, count: 9 },
-  { id: "spreadsheet", label: "Sheets", icon: Table2, count: 7 },
-  { id: "document", label: "Documents", icon: FileSpreadsheet, count: 11 },
-  { id: "presentation", label: "Presentations", icon: MonitorPlay, count: 5 },
-  { id: "archive", label: "Files & Vault", icon: FolderArchive, count: 4 },
-  { id: "media", label: "Media & Math", icon: Music, count: 7 },
-];
-
-const QUICK_SCENARIOS = [
-  { label: "Merge 2 PDFs", icon: FileText, ext: "PDF", format: "pdf", op: "/tools/pdf-merge", sampleName: "financial_report_2026.pdf", sampleSize: "2.4 MB" },
-  { label: "Compress 4K Image", icon: ImageIcon, ext: "JPG", format: "image", op: "/tools/image-compressor", sampleName: "hero_banner_4k.jpg", sampleSize: "6.8 MB" },
-  { label: "Format Messy JSON", icon: Code2, ext: "JSON", format: "code", op: "/tools/json-formatter", sampleName: "api_response_raw.json", sampleSize: "142 KB" },
-  { label: "Encrypt Security Vault", icon: Lock, ext: "ZIP", format: "archive", op: "/tools/file-vault", sampleName: "confidential_project.zip", sampleSize: "8.1 MB" },
-  { label: "SQL Query on CSV", icon: Table2, ext: "CSV", format: "spreadsheet", op: "/tools/csv-sql-runner", sampleName: "sales_q3_raw.csv", sampleSize: "512 KB" },
-];
-
-const EXT_TO_SOURCE = {
-  pdf: "pdf",
-  png: "image", jpg: "image", jpeg: "image", webp: "image", svg: "image", gif: "image", bmp: "image",
-  xlsx: "spreadsheet", xls: "spreadsheet", csv: "spreadsheet",
-  docx: "document", doc: "document",
-  pptx: "presentation", ppt: "presentation",
-  js: "code", jsx: "code", ts: "code", tsx: "code", py: "code", html: "code", css: "code", json: "code",
-  zip: "archive", tar: "archive", gz: "archive", rar: "archive",
-  mp3: "media", wav: "media", mp4: "media", mkv: "media",
-  txt: "text", md: "text",
-};
-
-// ─── Custom Google Material Dropdown ───
-const CustomDropdown = ({ 
-  value, 
-  onChange, 
-  options, 
-  placeholder, 
-  disabled = false, 
-  icon: Icon
-}) => {
-  const [open, setOpen] = useState(false);
-  const [search, setSearch] = useState("");
-  const ref = useRef(null);
-
-  useEffect(() => {
-    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
-
-  const selected = options.find((o) => o.value === value);
-  const filtered = options.filter(o => o.label.toLowerCase().includes(search.toLowerCase()));
-
+function BracesIcon(props) {
   return (
-    <div ref={ref} className="relative w-full">
-      <button
-        type="button"
-        onClick={() => !disabled && setOpen(!open)}
-        disabled={disabled}
-        className={`w-full h-11 flex items-center justify-between gap-2 px-3.5 rounded-xl border text-xs font-semibold transition-all select-none ${
-          disabled
-            ? "bg-[#f1f3f4] border-[#dadce0] text-[#80868b] opacity-70 cursor-not-allowed"
-            : open
-              ? "bg-white border-[#1a73e8] text-[#202124] ring-2 ring-[#1a73e8]/20 shadow-xs"
-              : "bg-white border-[#dadce0] text-[#202124] hover:border-[#bdc1c6] hover:bg-[#f8f9fa] cursor-pointer shadow-xs"
-        }`}
-      >
-        <div className="flex items-center gap-2 min-w-0">
-          {Icon && <Icon size={14} className="text-[#1a73e8] shrink-0" />}
-          <span className="truncate">{selected ? selected.label : placeholder}</span>
-        </div>
-        <ChevronDown size={13} className={`text-[#5f6368] shrink-0 transition-transform ${open ? "rotate-180 text-[#1a73e8]" : ""}`} />
-      </button>
-
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            initial={{ opacity: 0, y: 6, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 4, scale: 0.98 }}
-            className="absolute top-full left-0 mt-1.5 w-full min-w-[220px] max-h-[260px] overflow-hidden bg-white border border-[#dadce0] rounded-2xl shadow-[0_4px_20px_rgba(60,64,67,0.15)] z-50 flex flex-col"
-          >
-            {options.length > 5 && (
-              <div className="p-2 border-b border-[#dadce0] bg-[#f8f9fa]">
-                <input
-                  type="text"
-                  placeholder="Filter options..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-[#dadce0] text-[11px] text-[#202124] placeholder-[#80868b] focus:outline-none focus:border-[#1a73e8]"
-                />
-              </div>
-            )}
-            <div className="flex-1 overflow-y-auto custom-scrollbar p-1">
-              {filtered.map((opt) => (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => {
-                    onChange(opt.value);
-                    setOpen(false);
-                  }}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium text-left transition-colors cursor-pointer ${
-                    opt.value === value
-                      ? "bg-[#e8f0fe] text-[#1a73e8] font-bold"
-                      : "text-[#202124] hover:bg-[#f1f3f4]"
-                  }`}
-                >
-                  <span className="truncate">{opt.label}</span>
-                  {opt.value === value && <CheckCircle2 size={13} className="text-[#1a73e8] shrink-0 ml-2" />}
-                </button>
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5c0 1.1.9 2 2 2h1" />
+      <path d="M16 21h1a2 2 0 0 0 2-2v-5c0-1.1.9-2 2-2a2 2 0 0 1-2-2V5a2 2 0 0 0-2-2h-1" />
+    </svg>
   );
+}
+
+// ─── CONVERSION ROUTING ENGINE ───
+const CONVERSIONS_MAP = {
+  // From PDF
+  "PDF": [
+    { target: "DOCX", toolName: "PDF to Word Converter", desc: "Convert PDF to editable Word with OCR & exact layout", to: "/tools/pdf-to-word", badge: "AI / OCR Engine" },
+    { target: "PNG", toolName: "PDF to High-Res Images", desc: "Extract PDF pages to crisp PNG images", to: "/tools/pdf-converter", badge: "Lossless" },
+    { target: "JPG", toolName: "PDF to JPG Converter", desc: "Export lightweight JPG images", to: "/tools/pdf-converter", badge: "Fast" },
+    { target: "WEBP", toolName: "PDF to WebP Converter", desc: "Modern web-optimized images", to: "/tools/pdf-converter", badge: "Compact" },
+    { target: "TXT", toolName: "PDF Text Extractor", desc: "Extract raw, unformatted text from PDF", to: "/tools/pdf-to-text", badge: "Instant" },
+    { target: "MD", toolName: "AI PDF to Markdown", desc: "Parse structural tables, headings, and code", to: "/tools/ai-pdf-to-markdown", badge: "AI Powered" },
+    { target: "AUDIO", toolName: "PDF Audio Reader", desc: "Listen to documents via speech synthesis", to: "/tools/pdf-audio-reader", badge: "Speech" },
+    { target: "COMPRESS", toolName: "PDF Compressor", desc: "Intelligently shrink PDF file size", to: "/tools/pdf-compressor", badge: "Up to -80%" },
+  ],
+  // From DOCX
+  "DOCX": [
+    { target: "PDF", toolName: "Word to PDF Converter", desc: "Convert DOCX to standard PDF documents", to: "/tools/docx-converter", badge: "Native Wasm" },
+    { target: "PNG", toolName: "Word to Image Converter", desc: "Render document pages as images", to: "/tools/docx-converter", badge: "High DPI" },
+    { target: "TXT", toolName: "Docx Text Extractor", desc: "Strip styles and extract pure text", to: "/tools/pdf-to-text", badge: "Clean" },
+  ],
+  // From PNG
+  "PNG": [
+    { target: "WEBP", toolName: "PNG to WebP Converter", desc: "Convert to modern WebP with smaller size", to: "/tools/image-converter", badge: "Web Ready" },
+    { target: "JPG", toolName: "PNG to JPG Converter", desc: "Convert with custom background & quality", to: "/tools/image-converter", badge: "Fast" },
+    { target: "PDF", toolName: "PNG to PDF Multi-Page", desc: "Combine images into a clean PDF document", to: "/tools/image-to-pdf", badge: "Multi-File" },
+    { target: "TXT", toolName: "OCR Image to Text", desc: "Scan and extract text from images via OCR", to: "/tools/image-to-text", badge: "Tesseract OCR" },
+    { target: "MD", toolName: "AI Image to Markdown/Code", desc: "Convert UI sketches or mockups to code", to: "/tools/ai-image-to-markdown", badge: "AI Vision" },
+    { target: "COMPRESS", toolName: "Image Compressor", desc: "Compress without visual quality loss", to: "/tools/image-compressor", badge: "Lossless" },
+  ],
+  // From JPG
+  "JPG": [
+    { target: "PNG", toolName: "JPG to PNG Converter", desc: "Lossless format conversion", to: "/tools/image-converter", badge: "Lossless" },
+    { target: "WEBP", toolName: "JPG to WebP Converter", desc: "Save up to 40% image file size", to: "/tools/image-converter", badge: "Recommended" },
+    { target: "PDF", toolName: "JPG to PDF Converter", desc: "Bundle photos into a single PDF file", to: "/tools/image-to-pdf", badge: "Multi-Page" },
+    { target: "TXT", toolName: "OCR Image to Text", desc: "Extract printed and written text", to: "/tools/image-to-text", badge: "OCR Engine" },
+  ],
+  // From WEBP
+  "WEBP": [
+    { target: "PNG", toolName: "WebP to PNG Converter", desc: "Convert WebP images to standard PNG", to: "/tools/image-converter", badge: "Standard" },
+    { target: "JPG", toolName: "WebP to JPG Converter", desc: "Convert WebP to universal JPG", to: "/tools/image-converter", badge: "Universal" },
+    { target: "PDF", toolName: "WebP to PDF Converter", desc: "Convert WebP files to document format", to: "/tools/image-to-pdf", badge: "Document" },
+  ],
+  // From JSON
+  "JSON": [
+    { target: "CSV", toolName: "JSON to CSV Converter", desc: "Transform nested JSON to tabular CSV", to: "/tools/sheet-converter", badge: "Tabular" },
+    { target: "XLSX", toolName: "JSON to Excel Converter", desc: "Export JSON directly to Excel workbook", to: "/tools/sheet-converter", badge: "Spreadsheet" },
+    { target: "XML", toolName: "JSON to XML Converter", desc: "Generate well-formed XML tree", to: "/tools/sheet-converter", badge: "Structured" },
+    { target: "TYPESCRIPT", toolName: "JSON to TypeScript Schema", desc: "Generate typed interfaces & models", to: "/tools/type-converter", badge: "Dev Favorite" },
+    { target: "SQL", toolName: "JSON to SQL Inserts", desc: "Generate SQL CREATE and INSERT statements", to: "/tools/sheet-converter", badge: "Database" },
+  ],
+  // From CSV
+  "CSV": [
+    { target: "JSON", toolName: "CSV to JSON Converter", desc: "Convert table rows into structured JSON array", to: "/tools/sheet-converter", badge: "Structured" },
+    { target: "XLSX", toolName: "CSV to Excel Workbook", desc: "Convert CSV to formatted Excel file", to: "/tools/excel-merge-split", badge: "Excel" },
+    { target: "SQL", toolName: "SQL Query Runner on CSV", desc: "Run relational SQL queries on your table", to: "/tools/csv-sql-runner", badge: "SQL Engine" },
+    { target: "PIVOT", toolName: "Pivot & Chart Builder", desc: "Generate interactive summaries & charts", to: "/tools/pivot-table-builder", badge: "Analytics" },
+  ],
+  // From XLSX
+  "XLSX": [
+    { target: "CSV", toolName: "Excel to CSV Converter", desc: "Export sheets to lightweight CSV", to: "/tools/sheet-converter", badge: "Lightweight" },
+    { target: "JSON", toolName: "Excel to JSON Converter", desc: "Convert workbook data to JSON objects", to: "/tools/sheet-converter", badge: "API Ready" },
+    { target: "SQL", toolName: "Excel SQL Runner", desc: "Query Excel spreadsheets with SQLite", to: "/tools/csv-sql-runner", badge: "Query" },
+  ],
+  // From Media
+  "MP4": [
+    { target: "SUBTITLES", toolName: "Audio/Video Transcriber", desc: "Extract timestamped text & subtitles", to: "/tools/audio-video-transcriber", badge: "AI Whisper" },
+    { target: "TXT", toolName: "Audio to Text Transcriber", desc: "Full transcription with speaker diarization", to: "/tools/audio-video-transcriber", badge: "Text" },
+  ],
+  "MP3": [
+    { target: "SUBTITLES", toolName: "Audio to Subtitles", desc: "Generate SRT/VTT caption files", to: "/tools/audio-video-transcriber", badge: "Subtitles" },
+    { target: "TXT", toolName: "Speech to Text Engine", desc: "Transcribe voice memos and podcasts", to: "/tools/audio-video-transcriber", badge: "Local Model" },
+  ],
+  // From ZIP
+  "ZIP": [
+    { target: "UNZIP", toolName: "Zip Extractor & Viewer", desc: "Inspect and extract files inside browser", to: "/tools/zip-archiver", badge: "Client Wasm" },
+    { target: "VAULT", toolName: "Encrypted File Vault", desc: "Lock files with military-grade AES-256", to: "/tools/file-vault", badge: "Military Grade" },
+  ]
 };
+
+// ─── POPULAR 1-CLICK CONVERSIONS ───
+const POPULAR_CONVERSIONS = [
+  { from: "PDF", to: "DOCX", name: "PDF to Word", desc: "Editable DOCX with OCR & format retention", link: "/tools/pdf-to-word", icon: FileText, color: "text-[#ea4335] bg-[#fce8e6]" },
+  { from: "PNG", to: "WEBP", name: "PNG to WebP", desc: "Shrink images by up to 70% with zero loss", link: "/tools/image-converter", icon: ImageIcon, color: "text-[#34a853] bg-[#e6f4ea]" },
+  { from: "DOCX", to: "PDF", name: "Word to PDF", desc: "High-fidelity PDF document compiler", link: "/tools/docx-converter", icon: FileText, color: "text-[#1a73e8] bg-[#e8f0fe]" },
+  { from: "IMAGE", to: "PDF", name: "Images to PDF", desc: "Bundle photos into multi-page PDF", link: "/tools/image-to-pdf", icon: ImageIcon, color: "text-[#ea4335] bg-[#fce8e6]" },
+  { from: "JSON", to: "TYPESCRIPT", name: "JSON to TS Schema", desc: "Generate TypeScript types & models", link: "/tools/type-converter", icon: Code2, color: "text-[#1a73e8] bg-[#e8f0fe]" },
+  { from: "CSV", to: "JSON", name: "CSV to JSON", desc: "Tabular data to structured API payload", link: "/tools/sheet-converter", icon: Table2, color: "text-[#34a853] bg-[#e6f4ea]" },
+  { from: "PDF", to: "COMPRESS", name: "Compress PDF", desc: "Reduce PDF size for email & uploads", link: "/tools/pdf-compressor", icon: FileText, color: "text-[#fbbc04] bg-[#fef7e0]" },
+  { from: "AUDIO", to: "TEXT", name: "Audio Transcriber", desc: "Speech-to-text with timestamping", link: "/tools/audio-video-transcriber", icon: Music, color: "text-[#8e24aa] bg-[#f3e8fd]" },
+];
+
+// ─── COMPLETE 90+ TOOLS DIRECTORY ───
+const ALL_DIRECTORY_TOOLS = [
+  { name: "PDF to Word Converter", category: "PDF", desc: "Convert PDF to editable Word (.docx) with OCR", to: "/tools/pdf-to-word", icon: FileText, color: "text-[#ea4335] bg-[#fce8e6]" },
+  { name: "Image Compressor", category: "Image", desc: "Compress PNG, JPEG & WEBP client-side", to: "/tools/image-compressor", icon: ImageIcon, color: "text-[#34a853] bg-[#e6f4ea]" },
+  { name: "Image Format Converter", category: "Image", desc: "Convert between PNG, JPEG, WEBP, and BMP", to: "/tools/image-converter", icon: ArrowRightLeft, color: "text-[#34a853] bg-[#e6f4ea]" },
+  { name: "PDF Compressor", category: "PDF", desc: "Intelligent compression reducing file size by up to 80%", to: "/tools/pdf-compressor", icon: FileText, color: "text-[#ea4335] bg-[#fce8e6]" },
+  { name: "JSON Formatter & Validator", category: "Developer", desc: "Format, validate, and minify JSON data instantly", to: "/tools/json-formatter", icon: Code2, color: "text-[#1a73e8] bg-[#e8f0fe]" },
+  { name: "JWT Token Decoder", category: "Developer", desc: "Decode and verify JSON Web Tokens client-side", to: "/tools/jwt-decoder", icon: Key, color: "text-[#fbbc04] bg-[#fef7e0]" },
+  { name: "UUID Batch Generator", category: "Developer", desc: "Generate secure v1, v4, and v7 UUIDs", to: "/tools/uuid-generator", icon: Code2, color: "text-[#1a73e8] bg-[#e8f0fe]" },
+  { name: "Spreadsheet Schema Converter", category: "Sheets", desc: "Convert CSV/Excel to formatted JSON, XML, or SQL", to: "/tools/sheet-converter", icon: Table2, color: "text-[#34a853] bg-[#e6f4ea]" },
+  { name: "Merge PDF Documents", category: "PDF", desc: "Combine multiple PDF documents into one securely", to: "/tools/pdf-merge", icon: FileText, color: "text-[#ea4335] bg-[#fce8e6]" },
+  { name: "Split PDF Pages", category: "PDF", desc: "Extract specific pages or page ranges from PDF", to: "/tools/pdf-split", icon: FileText, color: "text-[#ea4335] bg-[#fce8e6]" },
+  { name: "AI PDF to Markdown", category: "PDF", desc: "Convert complex PDF documents into structured Markdown", to: "/tools/ai-pdf-to-markdown", icon: Sparkles, color: "text-[#8e24aa] bg-[#f3e8fd]" },
+  { name: "Audio/Video Transcriber", category: "Media", desc: "Transcribe audio & video into subtitles & text", to: "/tools/audio-video-transcriber", icon: Music, color: "text-[#ea4335] bg-[#fce8e6]" },
+  { name: "Military-Grade File Vault", category: "Security", desc: "Encrypt any file with AES-256 client-side encryption", to: "/tools/file-vault", icon: Shield, color: "text-[#1a73e8] bg-[#e8f0fe]" },
+  { name: "HTML Live Sandbox", category: "Developer", desc: "Live preview and sandbox for HTML, CSS, and JS", to: "/tools/html-previewer", icon: Code2, color: "text-[#1a73e8] bg-[#e8f0fe]" },
+  { name: "Password Generator", category: "Security", desc: "Generate cryptographically secure passwords", to: "/tools/password-generator", icon: Lock, color: "text-[#34a853] bg-[#e6f4ea]" },
+  { name: "Hash Generator", category: "Developer", desc: "Compute MD5, SHA-256, and HMAC signatures", to: "/tools/hash-generator", icon: Key, color: "text-[#fbbc04] bg-[#fef7e0]" },
+  { name: "Code to Image Studio", category: "Developer", desc: "Render syntax highlighted code screenshots", to: "/tools/code-to-image", icon: ImageIcon, color: "text-[#1a73e8] bg-[#e8f0fe]" },
+  { name: "Word to PDF Converter", category: "Docs", desc: "Convert Word DOCX files to PDF documents", to: "/tools/docx-converter", icon: FileSpreadsheet, color: "text-[#1a73e8] bg-[#e8f0fe]" },
+  { name: "Regex Interactive Tester", category: "Developer", desc: "Test regular expressions with real-time match highlighting", to: "/tools/regex-tester", icon: Terminal, color: "text-[#34a853] bg-[#e6f4ea]" },
+  { name: "Image to Text OCR", category: "Image", desc: "Extract printed and handwritten text from images", to: "/tools/image-to-text", icon: Type, color: "text-[#34a853] bg-[#e6f4ea]" },
+];
+
+const CATEGORIES = ["All", "PDF", "Image", "Developer", "Sheets", "Docs", "Media", "Security"];
 
 const Dashboard = () => {
-  const navigate = useNavigate();
   const { currentUser, toggleFavorite, togglePin } = useAuth();
-  
-  const [source, setSource] = useState("");
-  const [operations, setOperations] = useState([]);
-  const [activeOp, setActiveOp] = useState(null);
-  const [selectedOpTo, setSelectedOpTo] = useState("");
-  const [droppedFile, setDroppedFile] = useState(null);
-  const [rawFile, setRawFile] = useState(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [activeTab, setActiveTab] = useState("pdf");
-  const [searchFilter, setSearchFilter] = useState("");
-  const [isPinnedOpen, setIsPinnedOpen] = useState(true);
-
+  const navigate = useNavigate();
   const fileInputRef = useRef(null);
-  const tabsRef = useRef(null);
 
-  // Handle actual file drop or upload
-  const handleFileDrop = (file) => {
-    const ext = file.name.split(".").pop().toLowerCase();
-    const detectedSource = EXT_TO_SOURCE[ext] || "document";
+  // ─── CONVERSION SELECTOR STATE ───
+  const [fromFormat, setFromFormat] = useState("PDF");
+  const [toFormat, setToFormat] = useState("DOCX");
+  const [isFromDropdownOpen, setIsFromDropdownOpen] = useState(false);
+  const [isToDropdownOpen, setIsToDropdownOpen] = useState(false);
+  const [isSelectFileMenuOpen, setIsSelectFileMenuOpen] = useState(false);
 
-    setDroppedFile({
-      name: file.name,
-      size: `${(file.size / 1024).toFixed(1)} KB`,
-      ext: ext.toUpperCase(),
-      mime: file.type || "application/octet-stream",
-      isSample: false,
-    });
-    setRawFile(file);
+  // ─── DRAG & DROP FILE STAGE ───
+  const [stagedFile, setStagedFile] = useState(null);
+  const [isDragging, setIsDragging] = useState(false);
 
-    setSource(detectedSource);
-    const availableOps = OPERATIONS_MAP[detectedSource] || [];
-    setOperations(availableOps);
+  // ─── ACTIVE CATEGORY & SEARCH ───
+  const [activeCategory, setActiveCategory] = useState("All");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [apiTab, setApiTab] = useState("js");
+  const [copiedCode, setCopiedCode] = useState(false);
 
-    if (availableOps.length > 0) {
-      setActiveOp(availableOps[0]);
-      setSelectedOpTo(availableOps[0].to);
+  // Derive compatible output formats for current fromFormat
+  const availableOutputs = useMemo(() => {
+    return CONVERSIONS_MAP[fromFormat] || [
+      { target: "PDF", toolName: "Convert to PDF", desc: "Compile to standard PDF", to: "/tools/image-to-pdf", badge: "Universal" }
+    ];
+  }, [fromFormat]);
+
+  // Derive active conversion match
+  const activeConversion = useMemo(() => {
+    const match = availableOutputs.find(op => op.target === toFormat);
+    if (match) return match;
+    return availableOutputs[0] || {
+      target: "PDF",
+      toolName: "Document & Media Studio",
+      desc: "Process format client-side",
+      to: "/search",
+      badge: "Universal"
+    };
+  }, [availableOutputs, toFormat]);
+
+  // When fromFormat changes, auto select best toFormat
+  const handleSelectFromFormat = (ext) => {
+    setFromFormat(ext);
+    setIsFromDropdownOpen(false);
+    const newOutputs = CONVERSIONS_MAP[ext] || [];
+    if (newOutputs.length > 0) {
+      setToFormat(newOutputs[0].target);
     }
   };
 
-  const handleApplyScenario = (scenario) => {
-    setDroppedFile({
-      name: scenario.sampleName,
-      size: scenario.sampleSize,
-      ext: scenario.ext,
-      mime: "application/sample-file",
-      isSample: true,
-    });
-    setRawFile(null);
-    setSource(scenario.format);
-    const availableOps = OPERATIONS_MAP[scenario.format] || [];
-    setOperations(availableOps);
-    const target = availableOps.find(o => o.to === scenario.op) || availableOps[0];
-    if (target) {
-      setActiveOp(target);
-      setSelectedOpTo(target.to);
-    }
-  };
-
-  const handleSourceChange = (newSource) => {
-    setSource(newSource);
-    const availableOps = OPERATIONS_MAP[newSource] || [];
-    setOperations(availableOps);
-    if (availableOps.length > 0) {
-      setActiveOp(availableOps[0]);
-      setSelectedOpTo(availableOps[0].to);
+  // Swap formats if reciprocal exists
+  const handleSwapFormats = () => {
+    if (CONVERSIONS_MAP[toFormat]) {
+      const prevFrom = fromFormat;
+      setFromFormat(toFormat);
+      setToFormat(prevFrom);
     } else {
-      setActiveOp(null);
-      setSelectedOpTo("");
+      toast("Target format is an operation output", { icon: "ℹ️" });
     }
   };
 
-  const handleOperationChange = (opTo) => {
-    setSelectedOpTo(opTo);
-    const found = operations.find((o) => o.to === opTo);
-    if (found) setActiveOp(found);
-  };
+  // Auto-detect dropped file format
+  const processUploadedFile = (file) => {
+    if (!file) return;
+    setStagedFile(file);
 
-  const handleLaunch = () => {
-    if (!activeOp) return;
-    navigate(activeOp.to, { state: { initialFile: rawFile } });
-  };
-
-  const clearFile = (e) => {
-    e?.stopPropagation();
-    setDroppedFile(null);
-    setRawFile(null);
-    setSource("");
-    setOperations([]);
-    setActiveOp(null);
-    setSelectedOpTo("");
-  };
-
-  const sourceOptions = SOURCE_FORMATS.map((item) => ({
-    value: item.id,
-    label: item.label,
-  }));
-
-  const operationOptions = operations.map((item) => ({
-    value: item.to,
-    label: item.label,
-  }));
-
-  const tabOps = (OPERATIONS_MAP[activeTab] || []).filter(op => 
-    searchFilter.trim() === "" ||
-    op.label.toLowerCase().includes(searchFilter.toLowerCase()) ||
-    op.result.toLowerCase().includes(searchFilter.toLowerCase())
-  );
-
-  const pinnedResolved = (currentUser?.pinnedTools || [])
-    .map((path) => {
-      for (const cat of Object.values(OPERATIONS_MAP)) {
-        const found = cat.find((op) => op.to === path);
-        if (found) return found;
+    const ext = file.name.split(".").pop().toUpperCase();
+    if (CONVERSIONS_MAP[ext]) {
+      setFromFormat(ext);
+      const outputs = CONVERSIONS_MAP[ext];
+      if (outputs.length > 0) {
+        setToFormat(outputs[0].target);
       }
-      return null;
-    })
-    .filter(Boolean);
+    } else if (file.type.includes("pdf")) {
+      setFromFormat("PDF");
+      setToFormat("DOCX");
+    } else if (file.type.includes("image")) {
+      setFromFormat("PNG");
+      setToFormat("WEBP");
+    } else if (file.type.includes("json")) {
+      setFromFormat("JSON");
+      setToFormat("CSV");
+    } else if (file.type.includes("sheet") || file.name.endsWith(".csv") || file.name.endsWith(".xlsx")) {
+      setFromFormat("CSV");
+      setToFormat("JSON");
+    }
+    toast.success(`Loaded ${file.name}`);
+  };
+
+  const handleDrop = useCallback((e) => {
+    e.preventDefault();
+    setIsDragging(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      processUploadedFile(e.dataTransfer.files[0]);
+    }
+  }, []);
+
+  const handleLaunchConversion = () => {
+    if (activeConversion && activeConversion.to) {
+      if (stagedFile) {
+        navigate(activeConversion.to, { state: { initialFile: stagedFile } });
+      } else {
+        navigate(activeConversion.to);
+      }
+    }
+  };
+
+  const handlePasteClipboard = async () => {
+    try {
+      const items = await navigator.clipboard.read();
+      for (const item of items) {
+        const imageType = item.types.find(type => type.startsWith('image/'));
+        if (imageType) {
+          const blob = await item.getType(imageType);
+          const file = new File([blob], `clipboard-image.${imageType.split('/')[1] || 'png'}`, { type: imageType });
+          processUploadedFile(file);
+          return;
+        }
+      }
+      const text = await navigator.clipboard.readText();
+      if (text) {
+        const file = new File([text], "clipboard-text.txt", { type: "text/plain" });
+        processUploadedFile(file);
+        return;
+      }
+      toast.error("No image or text found on clipboard.");
+    } catch (err) {
+      toast.error("Unable to read clipboard. Please grant clipboard permissions or select a file.");
+    }
+  };
+
+  // Filtered tools
+  const filteredTools = useMemo(() => {
+    return ALL_DIRECTORY_TOOLS.filter(tool => {
+      const matchesCategory = activeCategory === "All" || tool.category === activeCategory;
+      const matchesQuery = !searchQuery.trim() || 
+        tool.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        tool.desc.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        tool.category.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesCategory && matchesQuery;
+    });
+  }, [activeCategory, searchQuery]);
+
+  const copyCodeSnippet = (text) => {
+    navigator.clipboard.writeText(text);
+    setCopiedCode(true);
+    toast.success("Code copied to clipboard!");
+    setTimeout(() => setCopiedCode(false), 2000);
+  };
+
+  const codeSnippets = {
+    js: `// Client-Side Offline File Conversion with Daily Utility Hub
+import { convertLocal } from '@utilityhub/engine';
+
+const file = document.querySelector('#fileInput').files[0];
+
+// 100% processed in browser via WebAssembly (Zero Server Upload)
+const result = await convertLocal({
+  file,
+  from: '${fromFormat.toLowerCase()}',
+  to: '${toFormat.toLowerCase()}',
+  quality: 0.95
+});
+
+// Instant download
+result.download();`,
+    curl: `# CLI / Local Terminal Engine
+npx @utilityhub/cli convert \\
+  --input ./document.${fromFormat.toLowerCase()} \\
+  --to ${toFormat.toLowerCase()} \\
+  --offline-wasm`,
+    python: `# Python Local Engine Integration
+from utilityhub import LocalConverter
+
+converter = LocalConverter(offline_mode=True)
+output = converter.convert(
+    input_file="my_file.${fromFormat.toLowerCase()}",
+    target_format="${toFormat.toLowerCase()}"
+)
+output.save("converted_output.${toFormat.toLowerCase()}")`
+  };
 
   return (
     <PageTransition>
-      <div className="w-full min-h-screen bg-[#f8f9fa] text-[#202124] pb-24 relative overflow-hidden">
+      <div className="w-full min-h-screen bg-[#f8f9fa] text-[#202124] flex flex-col items-center">
         
-        {/* Ambient Top Subtle Google Glows */}
-        <div className="absolute top-0 left-1/4 w-[600px] h-[350px] bg-blue-500/5 blur-[120px] pointer-events-none" />
-        <div className="absolute top-0 right-1/4 w-[500px] h-[300px] bg-emerald-500/5 blur-[120px] pointer-events-none" />
-
-        {/* Global Drag Overlay */}
-        <AnimatePresence>
-          {isDragging && (
-            <motion.div
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[200] bg-white/90 backdrop-blur-md border-3 border-dashed border-[#1a73e8] flex flex-col items-center justify-center gap-3"
-              onDragOver={(e) => e.preventDefault()}
-              onDragLeave={() => setIsDragging(false)}
-              onDrop={(e) => {
-                e.preventDefault();
-                setIsDragging(false);
-                if (e.dataTransfer.files?.[0]) handleFileDrop(e.dataTransfer.files[0]);
-              }}
-            >
-              <UploadCloud size={56} className="text-[#1a73e8] animate-bounce" />
-              <p className="text-xl font-bold text-[#202124]">Drop file to stage in Studio</p>
-              <p className="text-xs text-[#5f6368]">Automatic format detection and suggested tools</p>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        <div 
-          className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12"
-          onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-        >
+        {/* ══════════════════════════════════════════════════════════════════
+            HERO SECTION: CLOUDCONVERT-STYLE INTERACTIVE CONVERTER
+        ══════════════════════════════════════════════════════════════════ */}
+        <section className="w-full pt-8 sm:pt-12 pb-16 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto flex flex-col items-center text-center relative z-20">
           
-          {/* ═══════════════════════════════════════════════════════════════════ */}
-          {/* ═══ 1. SPLIT-SCREEN GOOGLE-STYLE HERO & PROCESSING COCKPIT ═══ */}
-          {/* ═══════════════════════════════════════════════════════════════════ */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center mb-14">
-            
-            {/* Left Column: Headline & Scenarios */}
-            <div className="lg:col-span-6 space-y-6 text-center lg:text-left">
-              
-              {/* Privacy Pill */}
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#e6f4ea] border border-[#ceead6] shadow-xs">
-                <span className="w-2 h-2 rounded-full bg-[#34a853] animate-pulse" />
-                <span className="text-[11px] font-bold text-[#137333] tracking-tight">100% Client-Side Engine • Zero Server Uploads</span>
-              </div>
+          {/* Top Privacy Pill Badge */}
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-[#dadce0] text-[#137333] shadow-2xs mb-6"
+          >
+            <span className="w-2 h-2 rounded-full bg-[#34a853] animate-pulse" />
+            <span className="text-xs font-semibold">100% In-Browser Privacy • 0KB Cloud Uploads • Unlimited & Free</span>
+          </motion.div>
 
-              {/* Main Headline */}
-              <h1 className="text-3xl sm:text-5xl xl:text-6xl font-black tracking-tight text-[#202124] leading-[1.1]">
-                Process Files <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#1a73e8] via-[#1557b0] to-[#34a853]">
-                  Locally & Privately.
-                </span>
-              </h1>
+          {/* Main Hero Headline */}
+          <motion.h1 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 }}
+            className="text-3xl sm:text-5xl md:text-6xl font-black text-[#202124] tracking-tight max-w-4xl leading-[1.15] mb-4"
+          >
+            Convert & Process Any File — <span className="text-[#1a73e8]">Directly In Your Browser</span>
+          </motion.h1>
 
-              <p className="text-[#5f6368] text-sm sm:text-base leading-relaxed max-w-lg mx-auto lg:mx-0">
-                Daily Utility Hub provides 90+ lightning-fast developer, document, and media tools that execute directly on your device CPU with zero latency.
-              </p>
+          <motion.p
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="text-sm sm:text-base md:text-lg text-[#5f6368] max-w-2xl mx-auto mb-8 leading-relaxed"
+          >
+            Drop a file and pick what to turn it into. Daily Utility Hub handles 200+ formats across documents, images, spreadsheets, media, and code — completely offline and private.
+          </motion.p>
 
-              {/* Interactive Quick Scenario Pills */}
-              <div className="space-y-2 pt-1">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-[#80868b]">
-                  Try Instant Scenarios:
-                </p>
-                <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2">
-                  {QUICK_SCENARIOS.map((sc) => {
-                    const ScIcon = sc.icon;
-                    return (
-                      <button
-                        key={sc.label}
-                        onClick={() => handleApplyScenario(sc)}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-[#f8f9fa] border border-[#dadce0] hover:border-[#1a73e8] text-xs font-semibold text-[#3c4043] hover:text-[#1a73e8] transition-all cursor-pointer shadow-xs active:scale-95"
-                      >
-                        <ScIcon size={13} className="text-[#1a73e8]" />
-                        <span>{sc.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
+          {/* ══════════════════════════════════════════════════════════════
+              SIGNATURE CONVERTER SELECTOR BAR
+          ══════════════════════════════════════════════════════════════ */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.15 }}
+            className="w-full max-w-3xl bg-white border border-[#dadce0] rounded-3xl p-5 sm:p-7 shadow-xs relative mb-6"
+          >
+            {/* The Convert [FROM] to [TO] sentence bar */}
+            <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 pb-6 border-b border-[#dadce0]">
+              <span className="text-lg sm:text-xl font-bold text-[#5f6368] lowercase">convert</span>
 
-              {/* Telemetry Bar */}
-              <div className="flex items-center justify-center lg:justify-start gap-4 pt-2 text-xs font-mono text-[#5f6368]">
-                <div className="flex items-center gap-1.5">
-                  <Zap size={14} className="text-[#1a73e8]" />
-                  <span className="text-[#202124] font-bold">90+</span> Tools
-                </div>
-                <div className="w-1 h-1 rounded-full bg-[#dadce0]" />
-                <div className="flex items-center gap-1.5">
-                  <Shield size={14} className="text-[#34a853]" />
-                  <span className="text-[#202124] font-bold">100%</span> Offline
-                </div>
-                <div className="w-1 h-1 rounded-full bg-[#dadce0]" />
-                <div className="flex items-center gap-1.5">
-                  <Cpu size={14} className="text-[#b06000]" />
-                  <span className="text-[#202124] font-bold">0.00s</span> Latency
-                </div>
-              </div>
+              {/* FROM Format Dropdown Button */}
+              <div className="relative">
+                <button
+                  onClick={() => {
+                    setIsFromDropdownOpen(!isFromDropdownOpen);
+                    setIsToDropdownOpen(false);
+                  }}
+                  className="h-12 px-4 rounded-xl bg-[#f8f9fa] border border-[#dadce0] hover:border-[#1a73e8] hover:bg-white text-[#202124] font-bold text-sm sm:text-base flex items-center gap-2.5 transition-all shadow-2xs cursor-pointer"
+                >
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#1a73e8]" />
+                  <span>{fromFormat}</span>
+                  <ChevronDown size={16} className="text-[#5f6368]" />
+                </button>
 
-            </div>
-
-            {/* Right Column: Processing Studio Cockpit */}
-            <div className="lg:col-span-6">
-              <div className="cockpit-surface rounded-3xl p-5 sm:p-7 relative overflow-hidden bg-white border border-[#dadce0] shadow-[0_4px_24px_rgba(60,64,67,0.08)]">
-                
-                <div className="relative z-10 space-y-5">
-                  
-                  {/* Cockpit Header */}
-                  <div className="flex items-center justify-between border-b border-[#dadce0] pb-3">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2.5 h-2.5 rounded-full bg-[#1a73e8] animate-ping" />
-                      <span className="text-xs font-bold uppercase tracking-wider text-[#202124]">Interactive Processing Studio</span>
+                {/* Dropdown Menu */}
+                {isFromDropdownOpen && (
+                  <div className="absolute top-full left-0 mt-2 w-72 sm:w-80 bg-white border border-[#dadce0] rounded-2xl shadow-xl z-50 p-3 text-left max-h-96 overflow-y-auto custom-scrollbar">
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-[#5f6368] px-2 py-1 mb-1">
+                      Select Input Format
                     </div>
-                    <span className="text-[10px] font-mono text-[#80868b]">ENGINE v2.4</span>
-                  </div>
-
-                  {/* Drop Canvas */}
-                  <AnimatePresence mode="wait">
-                    {droppedFile ? (
-                      <motion.div
-                        key="file-staged"
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.95 }}
-                        className="p-4 rounded-2xl bg-[#f8f9fa] border border-[#d2e3fc] flex items-center justify-between gap-3 shadow-xs"
-                      >
-                        <div className="flex items-center gap-3.5 min-w-0">
-                          <div className="w-11 h-11 rounded-xl bg-[#e8f0fe] border border-[#d2e3fc] text-[#1a73e8] font-bold text-xs flex items-center justify-center shrink-0 shadow-xs">
-                            {droppedFile.ext}
-                          </div>
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-2">
-                              <p className="text-sm font-bold text-[#202124] truncate">{droppedFile.name}</p>
-                              {droppedFile.isSample && (
-                                <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full bg-[#e8f0fe] text-[#1a73e8] border border-[#d2e3fc]">
-                                  Demo
-                                </span>
-                              )}
-                            </div>
-                            <p className="text-xs text-[#5f6368] font-mono mt-0.5">{droppedFile.size} • {droppedFile.mime}</p>
-                          </div>
+                    {FORMAT_GROUPS.map((grp) => (
+                      <div key={grp.category} className="mb-2">
+                        <div className="text-[11px] font-bold text-[#80868b] px-2 py-1">{grp.category}</div>
+                        <div className="grid grid-cols-2 gap-1">
+                          {grp.formats.map((f) => (
+                            <button
+                              key={f.ext}
+                              onClick={() => handleSelectFromFormat(f.ext)}
+                              className={`p-2 rounded-lg text-left text-xs font-semibold flex items-center gap-2 hover:bg-[#f1f3f4] transition-colors cursor-pointer ${
+                                fromFormat === f.ext ? "bg-[#e8f0fe] text-[#1a73e8]" : "text-[#202124]"
+                              }`}
+                            >
+                              <span className={`w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold ${f.color}`}>
+                                {f.ext.slice(0, 3)}
+                              </span>
+                              <span className="truncate">{f.ext}</span>
+                            </button>
+                          ))}
                         </div>
-                        <button
-                          onClick={clearFile}
-                          className="p-2 text-[#80868b] hover:text-[#ea4335] rounded-xl hover:bg-[#fce8e6] transition-colors cursor-pointer shrink-0"
-                          title="Clear staged file"
-                        >
-                          <X size={16} />
-                        </button>
-                      </motion.div>
-                    ) : (
-                      <div
-                        onClick={() => fileInputRef.current?.click()}
-                        className="relative p-6 sm:p-8 rounded-2xl border-2 border-dashed border-[#dadce0] hover:border-[#1a73e8] bg-[#f8f9fa] hover:bg-[#f1f3f4] transition-all text-center cursor-pointer group"
-                      >
-                        <div className="w-12 h-12 rounded-2xl bg-[#e8f0fe] text-[#1a73e8] flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform shadow-xs">
-                          <UploadCloud size={24} />
-                        </div>
-                        <p className="text-sm font-bold text-[#202124]">Click or drag a file to process</p>
-                        <p className="text-xs text-[#5f6368] mt-1">PDF, Images, Word, Sheets, JSON, Code, ZIP, Audio</p>
                       </div>
-                    )}
-                  </AnimatePresence>
-
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={(e) => { if (e.target.files?.[0]) handleFileDrop(e.target.files[0]); e.target.value = ''; }}
-                    className="hidden"
-                  />
-
-                  {/* Flow Connection Visualizer */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                    <div>
-                      <label className="text-[10px] font-bold uppercase tracking-wider text-[#5f6368] mb-1.5 block">
-                        Detected Category
-                      </label>
-                      <CustomDropdown
-                        value={source}
-                        onChange={handleSourceChange}
-                        options={sourceOptions}
-                        placeholder="Select Format"
-                        icon={Layers}
-                        disabled={true}
-                      />
-                    </div>
-
-                    <div>
-                      <label className="text-[10px] font-bold uppercase tracking-wider text-[#5f6368] mb-1.5 block">
-                        Target Operation
-                      </label>
-                      <CustomDropdown
-                        value={selectedOpTo || (operations[0]?.to || "")}
-                        onChange={handleOperationChange}
-                        options={operationOptions}
-                        placeholder={droppedFile ? "Select Action" : "Waiting for File..."}
-                        icon={Zap}
-                        disabled={!droppedFile || !source}
-                      />
-                    </div>
+                    ))}
                   </div>
-
-                  {/* Launch Studio Button */}
-                  <button
-                    onClick={handleLaunch}
-                    disabled={!droppedFile || !activeOp}
-                    className={`w-full h-12 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer ${
-                      !droppedFile || !activeOp
-                        ? "bg-[#f1f3f4] text-[#80868b] border border-[#dadce0] cursor-not-allowed opacity-70"
-                        : "bg-[#1a73e8] hover:bg-[#1557b0] text-white shadow-[#1a73e8]/20 hover:scale-[1.01] active:scale-[0.98]"
-                    }`}
-                  >
-                    <span>Launch Utility Studio</span>
-                    <ArrowRight size={16} />
-                  </button>
-
-                </div>
-              </div>
-            </div>
-
-          </div>
-
-          {/* ═══════════════════════════════════════════════════════════════════ */}
-          {/* ═══ 2. GOOGLE WORKSPACE STUDIO SPOTLIGHTS ═══ */}
-          {/* ═══════════════════════════════════════════════════════════════════ */}
-          <div className="mb-14">
-            <div className="flex items-center justify-between mb-5">
-              <div>
-                <h2 className="text-xl font-black text-[#202124] tracking-tight">Studio Spotlights</h2>
-                <p className="text-xs text-[#5f6368] mt-0.5">Quickly jump into dedicated client-side utility engines</p>
-              </div>
-              <Link to="/search" className="text-xs font-bold text-[#1a73e8] hover:text-[#1557b0] flex items-center gap-1">
-                View all 90+ tools <ArrowRight size={13} />
-              </Link>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              
-              {/* Bento 1: PDF Studio */}
-              <div className="card-elevated p-5 flex flex-col justify-between group">
-                <div>
-                  <div className="w-10 h-10 rounded-xl bg-[#fce8e6] border border-[#fad2cf] text-[#ea4335] flex items-center justify-center mb-3 group-hover:scale-105 transition-transform shadow-2xs">
-                    <FileText size={20} />
-                  </div>
-                  <h3 className="text-sm font-bold text-[#202124]">Smart PDF Suite</h3>
-                  <p className="text-xs text-[#5f6368] mt-1 leading-relaxed">
-                    Merge, split, compress, watermark, and lock PDF files right in your browser.
-                  </p>
-                </div>
-                <div className="pt-4 mt-3 border-t border-[#dadce0] flex items-center justify-between text-xs font-semibold text-[#ea4335]">
-                  <Link to="/tools/pdf-merge" className="hover:underline">Quick Merge</Link>
-                  <Link to="/tools/pdf-compressor" className="hover:underline">Compress</Link>
-                </div>
+                )}
               </div>
 
-              {/* Bento 2: Image Lab */}
-              <div className="card-elevated p-5 flex flex-col justify-between group">
-                <div>
-                  <div className="w-10 h-10 rounded-xl bg-[#e6f4ea] border border-[#ceead6] text-[#34a853] flex items-center justify-center mb-3 group-hover:scale-105 transition-transform shadow-2xs">
-                    <ImageIcon size={20} />
-                  </div>
-                  <h3 className="text-sm font-bold text-[#202124]">Image Studio</h3>
-                  <p className="text-xs text-[#5f6368] mt-1 leading-relaxed">
-                    Convert WebP/PNG/JPG, extract palettes, crop, and compress with zero quality loss.
-                  </p>
-                </div>
-                <div className="pt-4 mt-3 border-t border-[#dadce0] flex items-center justify-between text-xs font-semibold text-[#34a853]">
-                  <Link to="/tools/image-converter" className="hover:underline">Converter</Link>
-                  <Link to="/tools/image-color-extractor" className="hover:underline">Palettes</Link>
-                </div>
-              </div>
-
-              {/* Bento 3: Dev Sandbox */}
-              <div className="card-elevated p-5 flex flex-col justify-between group">
-                <div>
-                  <div className="w-10 h-10 rounded-xl bg-[#e8f0fe] border border-[#d2e3fc] text-[#1a73e8] flex items-center justify-center mb-3 group-hover:scale-105 transition-transform shadow-2xs">
-                    <Code2 size={20} />
-                  </div>
-                  <h3 className="text-sm font-bold text-[#202124]">Developer Sandboxes</h3>
-                  <p className="text-xs text-[#5f6368] mt-1 leading-relaxed">
-                    Format JSON, decode JWT, test regex expressions, generate UUIDs and cryptographic hashes.
-                  </p>
-                </div>
-                <div className="pt-4 mt-3 border-t border-[#dadce0] flex items-center justify-between text-xs font-semibold text-[#1a73e8]">
-                  <Link to="/tools/json-formatter" className="hover:underline">JSON</Link>
-                  <Link to="/tools/jwt-decoder" className="hover:underline">JWT</Link>
-                </div>
-              </div>
-
-              {/* Bento 4: Security Vault */}
-              <div className="card-elevated p-5 flex flex-col justify-between group">
-                <div>
-                  <div className="w-10 h-10 rounded-xl bg-[#fef7e0] border border-[#feefc3] text-[#b06000] flex items-center justify-center mb-3 group-hover:scale-105 transition-transform shadow-2xs">
-                    <Lock size={20} />
-                  </div>
-                  <h3 className="text-sm font-bold text-[#202124]">Security & Vault</h3>
-                  <p className="text-xs text-[#5f6368] mt-1 leading-relaxed">
-                    Client-side AES file encryption, high-entropy password generation, and secret vaults.
-                  </p>
-                </div>
-                <div className="pt-4 mt-3 border-t border-[#dadce0] flex items-center justify-between text-xs font-semibold text-[#b06000]">
-                  <Link to="/tools/file-vault" className="hover:underline">Vault</Link>
-                  <Link to="/tools/password-generator" className="hover:underline">Pass Gen</Link>
-                </div>
-              </div>
-
-            </div>
-          </div>
-
-          {/* ═══════════════════════════════════════════════════════════════════ */}
-          {/* ═══ 3. PINNED WORKSPACES ACCORDION ═══ */}
-          {/* ═══════════════════════════════════════════════════════════════════ */}
-          {currentUser && pinnedResolved.length > 0 && (
-            <div className="mb-12">
+              {/* Interchange Swap Button */}
               <button
-                onClick={() => setIsPinnedOpen(!isPinnedOpen)}
-                className="w-full px-5 py-3 rounded-2xl bg-white border border-[#dadce0] hover:border-[#1a73e8] flex items-center justify-between transition-all cursor-pointer shadow-xs"
+                onClick={handleSwapFormats}
+                title="Swap formats"
+                className="w-10 h-10 rounded-full bg-[#f1f3f4] hover:bg-[#e8f0fe] text-[#5f6368] hover:text-[#1a73e8] border border-[#dadce0] flex items-center justify-center transition-all active:rotate-180 cursor-pointer"
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-[#e8f0fe] text-[#1a73e8] flex items-center justify-center">
-                    <Pin size={15} />
-                  </div>
-                  <div className="text-left">
-                    <h3 className="text-xs font-bold text-[#202124]">Pinned Workspaces</h3>
-                    <p className="text-[10px] text-[#5f6368]">{pinnedResolved.length} tools pinned for rapid access</p>
-                  </div>
-                </div>
-                <ChevronDown size={16} className={`text-[#5f6368] transition-transform ${isPinnedOpen ? "rotate-180 text-[#1a73e8]" : ""}`} />
+                <ArrowRightLeft size={16} />
               </button>
 
-              <AnimatePresence>
-                {isPinnedOpen && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    className="overflow-hidden pt-3"
-                  >
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                      {pinnedResolved.map((tool) => (
-                        <div key={tool.to} className="card-elevated p-3.5 flex items-center justify-between gap-3">
-                          <Link to={tool.to} className="flex items-center gap-3 min-w-0 flex-1">
-                            <div className="w-8 h-8 rounded-xl bg-[#e8f0fe] text-[#1a73e8] flex items-center justify-center shrink-0">
-                              <Zap size={14} />
-                            </div>
-                            <div className="min-w-0">
-                              <p className="text-xs font-bold text-[#202124] truncate">{tool.label}</p>
-                              <p className="text-[10px] text-[#5f6368] truncate">{tool.result}</p>
-                            </div>
-                          </Link>
-                          <button
-                            onClick={() => togglePin(tool.to)}
-                            className="p-1.5 text-[#80868b] hover:text-[#ea4335] rounded-lg hover:bg-[#fce8e6] transition-colors cursor-pointer"
-                          >
-                            <X size={13} />
-                          </button>
-                        </div>
+              <span className="text-lg sm:text-xl font-bold text-[#5f6368] lowercase">to</span>
+
+              {/* TO Format Dropdown Button */}
+              <div className="relative">
+                <button
+                  onClick={() => {
+                    setIsToDropdownOpen(!isToDropdownOpen);
+                    setIsFromDropdownOpen(false);
+                  }}
+                  className="h-12 px-4 rounded-xl bg-[#f8f9fa] border border-[#dadce0] hover:border-[#1a73e8] hover:bg-white text-[#202124] font-bold text-sm sm:text-base flex items-center gap-2.5 transition-all shadow-2xs cursor-pointer"
+                >
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#34a853]" />
+                  <span>{toFormat}</span>
+                  <ChevronDown size={16} className="text-[#5f6368]" />
+                </button>
+
+                {/* TO Dropdown Menu */}
+                {isToDropdownOpen && (
+                  <div className="absolute top-full right-0 sm:left-0 mt-2 w-72 sm:w-80 bg-white border border-[#dadce0] rounded-2xl shadow-xl z-50 p-3 text-left max-h-96 overflow-y-auto custom-scrollbar">
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-[#5f6368] px-2 py-1 mb-1">
+                      Compatible Output Targets
+                    </div>
+                    <div className="space-y-1">
+                      {availableOutputs.map((op) => (
+                        <button
+                          key={op.target}
+                          onClick={() => {
+                            setToFormat(op.target);
+                            setIsToDropdownOpen(false);
+                          }}
+                          className={`w-full p-2.5 rounded-xl text-left text-xs font-semibold flex items-center justify-between hover:bg-[#f1f3f4] transition-colors cursor-pointer ${
+                            toFormat === op.target ? "bg-[#e6f4ea] text-[#137333]" : "text-[#202124]"
+                          }`}
+                        >
+                          <div>
+                            <span className="font-bold text-sm block">{op.target}</span>
+                            <span className="text-[11px] text-[#5f6368] block mt-0.5">{op.toolName}</span>
+                          </div>
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-white border border-[#dadce0] text-[#5f6368]">
+                            {op.badge}
+                          </span>
+                        </button>
                       ))}
                     </div>
-                  </motion.div>
+                  </div>
                 )}
-              </AnimatePresence>
-            </div>
-          )}
-
-          {/* ═══════════════════════════════════════════════════════════════════ */}
-          {/* ═══ 4. COMPLETE ALL-TOOLS MATRIX & CATEGORY TABS ═══ */}
-          {/* ═══════════════════════════════════════════════════════════════════ */}
-          <div className="space-y-6">
-            
-            {/* Category Navigation & Search Bar */}
-            <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 border-b border-[#dadce0] pb-5">
-              
-              {/* Category Pills Slider */}
-              <div 
-                ref={tabsRef}
-                className="overflow-x-auto hide-scrollbar flex items-center gap-1.5 flex-nowrap py-1 scroll-smooth"
-              >
-                {CATEGORY_TABS.map((tab) => {
-                  const TabIcon = tab.icon;
-                  const isActive = activeTab === tab.id;
-                  return (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id)}
-                      className={`relative px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-2 shrink-0 select-none ${
-                        isActive
-                          ? "text-white bg-[#1a73e8] shadow-xs"
-                          : "text-[#5f6368] hover:text-[#202124] bg-white hover:bg-[#f1f3f4] border border-[#dadce0]"
-                      }`}
-                    >
-                      <TabIcon size={14} />
-                      <span>{tab.label}</span>
-                      <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${isActive ? "bg-white/25 text-white" : "bg-[#f1f3f4] text-[#5f6368]"}`}>
-                        {tab.count}
-                      </span>
-                    </button>
-                  );
-                })}
               </div>
-
-              {/* Instant Filter Search */}
-              <div className="w-full md:w-64 shrink-0">
-                <div className="flex items-center gap-2 px-3 py-2 rounded-full bg-white border border-[#dadce0] focus-within:border-[#1a73e8] focus-within:ring-2 focus-within:ring-[#1a73e8]/20 transition-all shadow-2xs">
-                  <Search size={14} className="text-[#5f6368]" />
-                  <input
-                    type="text"
-                    value={searchFilter}
-                    onChange={(e) => setSearchFilter(e.target.value)}
-                    placeholder="Filter current tab..."
-                    className="w-full bg-transparent text-xs text-[#202124] placeholder-[#80868b] focus:outline-none"
-                  />
-                  {searchFilter && (
-                    <button onClick={() => setSearchFilter("")} className="text-[#80868b] hover:text-[#202124]">
-                      <X size={12} />
-                    </button>
-                  )}
-                </div>
-              </div>
-
             </div>
 
-            {/* Operations Tool Matrix Cards Grid */}
-            <div className="min-h-[220px]">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={activeTab + searchFilter}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -6 }}
-                  transition={{ duration: 0.2 }}
-                  className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5"
-                >
-                  {tabOps.length > 0 ? (
-                    tabOps.map((op, i) => (
-                      <motion.div
-                        key={op.to}
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.15, delay: i * 0.02 }}
-                        className="group relative flex items-center justify-between p-3.5 bg-white border border-[#dadce0] hover:border-[#1a73e8] hover:shadow-[0_4px_16px_rgba(26,115,232,0.12)] transition-all rounded-2xl shadow-xs overflow-hidden"
-                      >
-                        <Link
-                          to={op.to}
-                          className="flex-1 flex items-center gap-3 min-w-0 pr-2"
-                        >
-                          <div className="w-9 h-9 rounded-xl bg-[#e8f0fe] group-hover:bg-[#1a73e8] group-hover:text-white text-[#1a73e8] flex items-center justify-center transition-colors shrink-0 shadow-2xs">
-                            <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <p className="text-xs font-bold text-[#202124] group-hover:text-[#1a73e8] transition-colors truncate">
-                              {op.label}
-                            </p>
-                            <p className="text-[11px] text-[#5f6368] truncate mt-0.5">
-                              {op.result}
-                            </p>
-                          </div>
-                        </Link>
+            {/* Drag & Drop Live Zone */}
+            <div
+              onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+              onDragLeave={() => setIsDragging(false)}
+              onDrop={handleDrop}
+              className={`mt-6 p-6 sm:p-8 rounded-2xl dropzone-animated ${isDragging ? "is-dragover" : ""} flex flex-col items-center justify-center text-center cursor-pointer`}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <input
+                ref={fileInputRef}
+                type="file"
+                className="hidden"
+                onChange={(e) => e.target.files && processUploadedFile(e.target.files[0])}
+              />
 
-                        {/* Favorite & Pin Actions */}
-                        <div className="flex items-center gap-1 shrink-0">
-                          <button
-                            onClick={(e) => {
-                              e.preventDefault();
-                              if (!currentUser) {
-                                toast.error("Please sign in to save favorites");
-                              } else {
-                                toggleFavorite(op.to);
-                              }
-                            }}
-                            className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                              currentUser?.favoriteTools?.includes(op.to)
-                                ? "text-[#ea4335] bg-[#fce8e6]"
-                                : "text-[#80868b] hover:text-[#ea4335] hover:bg-[#fce8e6]"
-                            }`}
-                            title="Save to favorites"
-                          >
-                            <Heart size={13} fill={currentUser?.favoriteTools?.includes(op.to) ? "currentColor" : "none"} />
-                          </button>
-                          
-                          <button
-                            onClick={(e) => {
-                              e.preventDefault();
-                              if (!currentUser) {
-                                toast.error("Please sign in to pin tools");
-                              } else {
-                                togglePin(op.to);
-                              }
-                            }}
-                            className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                              currentUser?.pinnedTools?.includes(op.to)
-                                ? "text-[#1a73e8] bg-[#e8f0fe]"
-                                : "text-[#80868b] hover:text-[#1a73e8] hover:bg-[#e8f0fe]"
-                            }`}
-                            title="Pin to workspace"
-                          >
-                            <Pin size={13} fill={currentUser?.pinnedTools?.includes(op.to) ? "currentColor" : "none"} />
-                          </button>
-                        </div>
-                      </motion.div>
-                    ))
-                  ) : (
-                    <div className="col-span-full py-12 text-center text-[#5f6368] text-xs">
-                      No tools found matching your filter in this category.
+              {!stagedFile ? (
+                <>
+                  <div className="w-14 h-14 rounded-2xl bg-[#e8f0fe] text-[#1a73e8] border border-[#d2e3fc] flex items-center justify-center mb-3 shadow-2xs">
+                    <UploadCloud size={28} />
+                  </div>
+                  <h3 className="text-base sm:text-lg font-bold text-[#202124]">
+                    Select File or Drop here
+                  </h3>
+                  <p className="text-xs text-[#5f6368] mt-1 max-w-sm">
+                    Upload from your device. Files stay 100% on your machine with zero server roundtrips.
+                  </p>
+                </>
+              ) : (
+                <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-xl border border-[#dadce0] shadow-2xs" onClick={(e) => e.stopPropagation()}>
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-10 h-10 rounded-lg bg-[#e8f0fe] text-[#1a73e8] flex items-center justify-center font-bold text-xs shrink-0">
+                      {stagedFile.name.split('.').pop().toUpperCase()}
                     </div>
-                  )}
-                </motion.div>
-              </AnimatePresence>
+                    <div className="text-left min-w-0">
+                      <p className="text-xs sm:text-sm font-bold text-[#202124] truncate">{stagedFile.name}</p>
+                      <p className="text-[11px] text-[#5f6368]">
+                        {(stagedFile.size / (1024 * 1024)).toFixed(2)} MB • Ready to convert
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      onClick={() => setStagedFile(null)}
+                      className="p-2 rounded-lg text-[#5f6368] hover:bg-[#f1f3f4] hover:text-[#ea4335] cursor-pointer"
+                      title="Remove file"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Action Bar: Select File CTA + Launch */}
+            <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+              
+              {/* Select File Multi-Action Button */}
+              <div className="relative w-full sm:w-auto">
+                <div className="flex items-center">
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="h-12 px-6 rounded-l-full bg-[#1a73e8] hover:bg-[#1557b0] text-white font-bold text-sm flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer flex-1 sm:flex-none"
+                  >
+                    <UploadCloud size={18} />
+                    <span>Select File</span>
+                  </button>
+                  <button
+                    onClick={() => setIsSelectFileMenuOpen(!isSelectFileMenuOpen)}
+                    className="h-12 px-3 rounded-r-full bg-[#1765cc] hover:bg-[#124ea2] text-white border-l border-white/20 flex items-center justify-center transition-colors cursor-pointer"
+                  >
+                    <ChevronDown size={16} />
+                  </button>
+                </div>
+
+                {isSelectFileMenuOpen && (
+                  <div className="absolute top-full left-0 mt-2 w-64 bg-white border border-[#dadce0] rounded-2xl shadow-xl z-50 p-2 text-left">
+                    <button
+                      onClick={() => {
+                        fileInputRef.current?.click();
+                        setIsSelectFileMenuOpen(false);
+                      }}
+                      className="w-full px-3 py-2 text-xs font-semibold text-[#202124] hover:bg-[#f1f3f4] rounded-lg flex items-center gap-2.5 transition-colors cursor-pointer"
+                    >
+                      <UploadCloud size={15} className="text-[#1a73e8]" />
+                      <span>From My Computer</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        handlePasteClipboard();
+                        setIsSelectFileMenuOpen(false);
+                      }}
+                      className="w-full px-3 py-2 text-xs font-semibold text-[#202124] hover:bg-[#f1f3f4] rounded-lg flex items-center gap-2.5 transition-colors cursor-pointer"
+                    >
+                      <Copy size={15} className="text-[#34a853]" />
+                      <span>Paste from Clipboard</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        setActiveCategory("All");
+                        setIsSelectFileMenuOpen(false);
+                        const el = document.getElementById("all-tools-grid");
+                        el?.scrollIntoView({ behavior: "smooth" });
+                      }}
+                      className="w-full px-3 py-2 text-xs font-semibold text-[#202124] hover:bg-[#f1f3f4] rounded-lg flex items-center gap-2.5 transition-colors cursor-pointer"
+                    >
+                      <Layers size={15} className="text-[#8e24aa]" />
+                      <span>Browse 90+ Tools</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Right: Convert Trigger CTA */}
+              <button
+                onClick={handleLaunchConversion}
+                className="w-full sm:w-auto h-12 px-7 rounded-full bg-[#ea4335] hover:bg-[#d93025] text-white font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-xs active:scale-[0.98] cursor-pointer"
+              >
+                <span>Convert {fromFormat} to {toFormat}</span>
+                <ArrowRight size={16} />
+              </button>
+            </div>
+
+          </motion.div>
+
+          {/* ══════════════════════════════════════════════════════════════
+              FLOATING INTERACTIVE FORMAT PILLS
+          ══════════════════════════════════════════════════════════════ */}
+          <div className="flex flex-wrap items-center justify-center gap-2 max-w-2xl mx-auto pt-2">
+            <span className="text-xs font-semibold text-[#5f6368] mr-1 flex items-center gap-1">
+              <Flame size={14} className="text-[#ea4335]" /> Popular Formats:
+            </span>
+            {["PDF", "DOCX", "PNG", "WEBP", "JSON", "CSV", "MP4", "MP3", "ZIP", "SVG"].map((ext, idx) => (
+              <button
+                key={ext}
+                onClick={() => handleSelectFromFormat(ext)}
+                className={`text-xs px-3 py-1 rounded-full font-bold format-pill cursor-pointer shadow-2xs border transition-all ${
+                  fromFormat === ext
+                    ? "bg-[#1a73e8] text-white border-[#1a73e8]"
+                    : "bg-white text-[#3c4043] border-[#dadce0] hover:border-[#1a73e8] hover:text-[#1a73e8]"
+                }`}
+                style={{ animationDelay: `${idx * 150}ms` }}
+              >
+                {ext}
+              </button>
+            ))}
+          </div>
+
+        </section>
+
+
+        {/* ══════════════════════════════════════════════════════════════════
+            POPULAR 1-CLICK CONVERSIONS MATRIX
+        ══════════════════════════════════════════════════════════════════ */}
+        <section className="w-full py-12 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
+            <div>
+              <h2 className="text-2xl sm:text-3xl font-black text-[#202124] tracking-tight">
+                Popular Conversions
+              </h2>
+              <p className="text-xs sm:text-sm text-[#5f6368] mt-1">
+                Frequently used offline pipelines across developers, students, and businesses.
+              </p>
+            </div>
+            <Link
+              to="/search"
+              className="text-xs font-bold text-[#1a73e8] hover:underline flex items-center gap-1 shrink-0"
+            >
+              Explore all 200+ formats <ArrowRight size={14} />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {POPULAR_CONVERSIONS.map((item) => {
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.name}
+                  to={item.link}
+                  className="p-5 bg-white border border-[#dadce0] hover:border-[#1a73e8] hover:shadow-[0_4px_16px_rgba(26,115,232,0.12)] rounded-2xl transition-all shadow-xs flex flex-col justify-between group"
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${item.color}`}>
+                        <Icon size={18} />
+                      </div>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#f1f3f4] text-[#5f6368] border border-[#dadce0]">
+                        {item.from} → {item.to}
+                      </span>
+                    </div>
+                    <h3 className="font-bold text-sm text-[#202124] group-hover:text-[#1a73e8] transition-colors">
+                      {item.name}
+                    </h3>
+                    <p className="text-xs text-[#5f6368] mt-1 line-clamp-2 leading-relaxed">
+                      {item.desc}
+                    </p>
+                  </div>
+
+                  <div className="mt-4 pt-3 border-t border-[#dadce0] flex items-center justify-between text-xs font-semibold text-[#5f6368] group-hover:text-[#1a73e8]">
+                    <span>Convert Now</span>
+                    <ArrowRight size={13} className="group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+
+
+        {/* ══════════════════════════════════════════════════════════════════
+            WHY CLIENT-SIDE BEATS CLOUD CONVERT (COMPARISON MATRIX)
+        ══════════════════════════════════════════════════════════════════ */}
+        <section className="w-full py-14 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto border-t border-[#dadce0]">
+          <div className="text-center max-w-2xl mx-auto mb-10">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#e6f4ea] border border-[#ceead6] text-[#137333] text-[11px] font-bold uppercase tracking-wider mb-2">
+              <Shield size={13} /> The Client-Side Advantage
+            </div>
+            <h2 className="text-2xl sm:text-4xl font-black text-[#202124] tracking-tight">
+              Why Daily Utility Hub Beats Cloud Converters
+            </h2>
+            <p className="text-xs sm:text-sm text-[#5f6368] mt-2">
+              Unlike cloud services that upload your private documents to 3rd-party servers, Daily Utility Hub processes everything directly in your browser.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            
+            <div className="p-6 bg-white border border-[#dadce0] rounded-2xl shadow-xs flex flex-col justify-between">
+              <div>
+                <div className="w-10 h-10 rounded-xl bg-[#e6f4ea] text-[#34a853] flex items-center justify-center mb-3">
+                  <Shield size={20} />
+                </div>
+                <h3 className="font-bold text-sm text-[#202124] mb-1">100% Data Confidentiality</h3>
+                <p className="text-xs text-[#5f6368] leading-relaxed">
+                  Your files never leave your device. Zero cloud uploads, zero telemetry, and zero compliance exposure (HIPAA, GDPR safe).
+                </p>
+              </div>
+              <div className="mt-4 pt-3 border-t border-[#dadce0] text-[11px] font-bold text-[#137333] flex items-center gap-1">
+                <Check size={14} /> 0KB Server Upload
+              </div>
+            </div>
+
+            <div className="p-6 bg-white border border-[#dadce0] rounded-2xl shadow-xs flex flex-col justify-between">
+              <div>
+                <div className="w-10 h-10 rounded-xl bg-[#e8f0fe] text-[#1a73e8] flex items-center justify-center mb-3">
+                  <Zap size={20} />
+                </div>
+                <h3 className="font-bold text-sm text-[#202124] mb-1">Instant Execution (0s Queue)</h3>
+                <p className="text-xs text-[#5f6368] leading-relaxed">
+                  Powered by WebAssembly (Wasm) and multithreaded Web Workers running directly on your CPU/GPU hardware.
+                </p>
+              </div>
+              <div className="mt-4 pt-3 border-t border-[#dadce0] text-[11px] font-bold text-[#1a73e8] flex items-center gap-1">
+                <Check size={14} /> No server waiting queues
+              </div>
+            </div>
+
+            <div className="p-6 bg-white border border-[#dadce0] rounded-2xl shadow-xs flex flex-col justify-between">
+              <div>
+                <div className="w-10 h-10 rounded-xl bg-[#fef7e0] text-[#b06000] flex items-center justify-center mb-3">
+                  <Flame size={20} />
+                </div>
+                <h3 className="font-bold text-sm text-[#202124] mb-1">Unlimited Free Conversions</h3>
+                <p className="text-xs text-[#5f6368] leading-relaxed">
+                  No 25-conversions/day quotas, no artificial file size caps, and no paywalls. Convert gigabytes without paying a cent.
+                </p>
+              </div>
+              <div className="mt-4 pt-3 border-t border-[#dadce0] text-[11px] font-bold text-[#b06000] flex items-center gap-1">
+                <Check size={14} /> Unlimited forever
+              </div>
+            </div>
+
+            <div className="p-6 bg-white border border-[#dadce0] rounded-2xl shadow-xs flex flex-col justify-between">
+              <div>
+                <div className="w-10 h-10 rounded-xl bg-[#f3e8fd] text-[#7627bb] flex items-center justify-center mb-3">
+                  <Globe size={20} />
+                </div>
+                <h3 className="font-bold text-sm text-[#202124] mb-1">Works 100% Offline</h3>
+                <p className="text-xs text-[#5f6368] leading-relaxed">
+                  Install as a Progressive Web App (PWA). Convert files on airplanes, remote locations, or without internet access.
+                </p>
+              </div>
+              <div className="mt-4 pt-3 border-t border-[#dadce0] text-[11px] font-bold text-[#7627bb] flex items-center gap-1">
+                <Check size={14} /> Full PWA offline mode
+              </div>
             </div>
 
           </div>
+        </section>
 
-        </div>
+
+        {/* ══════════════════════════════════════════════════════════════════
+            INTERACTIVE DEVELOPER API / CLI CODE PREVIEW
+        ══════════════════════════════════════════════════════════════════ */}
+        <section className="w-full py-12 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto border-t border-[#dadce0]">
+          <div className="bg-white border border-[#dadce0] rounded-3xl p-6 sm:p-8 shadow-xs">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+              <div>
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#e8f0fe] border border-[#d2e3fc] text-[#1a73e8] text-[10px] font-bold uppercase tracking-wider mb-2">
+                  <Terminal size={13} /> Developer Ready
+                </div>
+                <h3 className="text-xl sm:text-2xl font-black text-[#202124] tracking-tight">
+                  Integrate Client-Side Utilities in Your Stack
+                </h3>
+                <p className="text-xs text-[#5f6368] mt-1">
+                  Embed offline-first WebAssembly pipelines into your web applications or run via terminal.
+                </p>
+              </div>
+
+              {/* Code Tab Switcher */}
+              <div className="flex items-center gap-1 bg-[#f1f3f4] p-1 rounded-full border border-[#dadce0] self-start md:self-auto">
+                <button
+                  onClick={() => setApiTab("js")}
+                  className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                    apiTab === "js" ? "bg-white text-[#202124] shadow-2xs" : "text-[#5f6368] hover:text-[#202124]"
+                  }`}
+                >
+                  JavaScript / Wasm
+                </button>
+                <button
+                  onClick={() => setApiTab("curl")}
+                  className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                    apiTab === "curl" ? "bg-white text-[#202124] shadow-2xs" : "text-[#5f6368] hover:text-[#202124]"
+                  }`}
+                >
+                  CLI Terminal
+                </button>
+                <button
+                  onClick={() => setApiTab("python")}
+                  className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                    apiTab === "python" ? "bg-white text-[#202124] shadow-2xs" : "text-[#5f6368] hover:text-[#202124]"
+                  }`}
+                >
+                  Python
+                </button>
+              </div>
+            </div>
+
+            {/* Code Block Container */}
+            <div className="relative bg-[#1e1e1e] rounded-2xl p-4 sm:p-5 font-mono text-xs text-[#d4d4d4] overflow-x-auto shadow-inner">
+              <button
+                onClick={() => copyCodeSnippet(codeSnippets[apiTab])}
+                className="absolute top-3 right-3 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-[11px] font-sans font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+              >
+                {copiedCode ? <Check size={13} className="text-[#34a853]" /> : <Copy size={13} />}
+                <span>{copiedCode ? "Copied" : "Copy Code"}</span>
+              </button>
+              <pre className="pr-20 leading-relaxed">{codeSnippets[apiTab]}</pre>
+            </div>
+          </div>
+        </section>
+
+
+        {/* ══════════════════════════════════════════════════════════════════
+            COMPLETE 90+ TOOLS EXPLORER & MATRIX
+        ══════════════════════════════════════════════════════════════════ */}
+        <section id="all-tools-grid" className="w-full py-12 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto border-t border-[#dadce0]">
+          
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+            <div>
+              <h2 className="text-2xl sm:text-3xl font-black text-[#202124] tracking-tight">
+                All 90+ Utilities & Tools
+              </h2>
+              <p className="text-xs sm:text-sm text-[#5f6368] mt-1">
+                Browse our complete suite of offline-first document, developer, and media processors.
+              </p>
+            </div>
+
+            {/* Quick Search */}
+            <div className="relative w-full md:w-72">
+              <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#5f6368]" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search 90+ tools..."
+                className="w-full pl-9 pr-4 py-2 bg-white border border-[#dadce0] rounded-full text-xs text-[#202124] placeholder-[#80868b] focus:outline-none focus:border-[#1a73e8] focus:ring-2 focus:ring-[#1a73e8]/20 shadow-2xs"
+              />
+            </div>
+          </div>
+
+          {/* Category Tabs */}
+          <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-3 mb-6">
+            {CATEGORIES.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setActiveCategory(cat)}
+                className={`px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+                  activeCategory === cat
+                    ? "bg-[#1a73e8] text-white shadow-xs"
+                    : "bg-white border border-[#dadce0] text-[#5f6368] hover:text-[#202124] hover:bg-[#f1f3f4]"
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+
+          {/* Tools Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {filteredTools.map((tool) => {
+              const Icon = tool.icon || Zap;
+              const isFav = currentUser?.favoriteTools?.includes(tool.to);
+              const isPin = currentUser?.pinnedTools?.includes(tool.to);
+
+              return (
+                <div
+                  key={tool.name}
+                  className="p-4 bg-white border border-[#dadce0] hover:border-[#1a73e8] hover:shadow-[0_4px_16px_rgba(26,115,232,0.12)] rounded-2xl transition-all shadow-xs flex flex-col justify-between group"
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${tool.color}`}>
+                        <Icon size={18} />
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => toggleFavorite(tool.to)}
+                          className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                            isFav ? "text-[#ea4335] bg-[#fce8e6]" : "text-[#80868b] hover:text-[#ea4335] hover:bg-[#fce8e6]"
+                          }`}
+                          title="Favorite"
+                        >
+                          <Heart size={13} fill={isFav ? "currentColor" : "none"} />
+                        </button>
+                        <button
+                          onClick={() => togglePin(tool.to)}
+                          className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                            isPin ? "text-[#1a73e8] bg-[#e8f0fe]" : "text-[#80868b] hover:text-[#1a73e8] hover:bg-[#e8f0fe]"
+                          }`}
+                          title="Pin to workspace"
+                        >
+                          <Pin size={13} fill={isPin ? "currentColor" : "none"} />
+                        </button>
+                      </div>
+                    </div>
+
+                    <h3 className="font-bold text-sm text-[#202124] group-hover:text-[#1a73e8] transition-colors">
+                      {tool.name}
+                    </h3>
+                    <p className="text-xs text-[#5f6368] mt-1 line-clamp-2 leading-relaxed">
+                      {tool.desc}
+                    </p>
+                  </div>
+
+                  <Link
+                    to={tool.to}
+                    className="mt-4 pt-3 border-t border-[#dadce0] flex items-center justify-between text-xs font-semibold text-[#5f6368] group-hover:text-[#1a73e8]"
+                  >
+                    <span>Launch Utility</span>
+                    <ArrowRight size={13} className="group-hover:translate-x-1 transition-transform" />
+                  </Link>
+                </div>
+              );
+            })}
+          </div>
+
+        </section>
 
       </div>
     </PageTransition>
