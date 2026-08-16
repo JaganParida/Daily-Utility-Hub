@@ -138,22 +138,22 @@ const Favorites = () => {
 
   return (
     <PageTransition>
-      <div className="w-full min-h-screen bg-[#08090d] text-[#f8fafc] pt-12 pb-24 px-4 sm:px-6 md:px-8">
+      <div className="w-full min-h-screen bg-[#f8f9fa] text-[#202124] pt-8 pb-24 px-4 sm:px-6 md:px-8">
         <div className="max-w-6xl mx-auto space-y-8">
           
           {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#1e2235] pb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#dadce0] pb-6">
             <div className="flex items-center gap-3.5">
-              <div className="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 shadow-lg">
+              <div className="w-12 h-12 rounded-2xl bg-[#fce8e6] border border-[#fad2cf] flex items-center justify-center text-[#ea4335] shadow-2xs">
                 <Heart size={24} fill="currentColor" />
               </div>
               <div>
-                <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">Favorite Utilities</h1>
-                <p className="text-xs text-slate-400 mt-0.5">Quick access to your preferred tools saved across all devices</p>
+                <h1 className="text-2xl sm:text-3xl font-black text-[#202124] tracking-tight">Favorite Utilities</h1>
+                <p className="text-xs text-[#5f6368] mt-0.5">Quick access to your preferred tools saved across all devices</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <div className="px-3.5 py-1.5 rounded-xl bg-[#0f1118] border border-[#1e2235] text-xs font-mono text-slate-300">
+              <div className="px-3.5 py-1.5 rounded-full bg-white border border-[#dadce0] text-xs font-semibold text-[#5f6368] shadow-2xs">
                 {favoriteResolved.length} {favoriteResolved.length === 1 ? 'utility' : 'utilities'} saved
               </div>
             </div>
@@ -164,18 +164,18 @@ const Favorites = () => {
             <motion.div
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              className="flex flex-col items-center justify-center p-12 sm:p-16 border border-dashed border-[#23273c] bg-[#0f1118] rounded-3xl text-center shadow-xl"
+              className="flex flex-col items-center justify-center p-12 sm:p-16 border border-dashed border-[#dadce0] bg-white rounded-3xl text-center shadow-xs"
             >
-              <div className="w-16 h-16 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center mb-4 text-rose-400">
+              <div className="w-16 h-16 rounded-2xl bg-[#fce8e6] border border-[#fad2cf] flex items-center justify-center mb-4 text-[#ea4335]">
                 <Heart size={32} />
               </div>
-              <h3 className="text-base font-bold text-white">No favorites saved yet</h3>
-              <p className="text-xs text-slate-400 mt-2 max-w-sm leading-relaxed">
+              <h3 className="text-base font-bold text-[#202124]">No favorites saved yet</h3>
+              <p className="text-xs text-[#5f6368] mt-2 max-w-sm leading-relaxed">
                 Click the heart icon on any utility card across the platform to save it to your personal favorites collection.
               </p>
               <Link
                 to="/"
-                className="mt-6 px-6 py-2.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl transition-all shadow-md shadow-indigo-600/30 active:scale-95"
+                className="mt-6 px-6 py-2.5 text-xs font-bold text-white bg-[#1a73e8] hover:bg-[#1557b0] rounded-full transition-all shadow-xs active:scale-95"
               >
                 Browse All Utilities
               </Link>
@@ -187,29 +187,29 @@ const Favorites = () => {
                 const group = favoriteGroups[catKey];
                 return (
                   <div key={catKey} className="space-y-3">
-                    <div className="flex items-center gap-2 border-b border-[#1e2235] pb-2">
-                      <span className="text-[11px] font-mono uppercase tracking-widest text-indigo-400 font-bold">{group.label}</span>
+                    <div className="flex items-center gap-2 border-b border-[#dadce0] pb-2">
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-[#1a73e8]">{group.label}</span>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5">
                       {group.tools.map((tool) => (
-                        <div key={tool.to} className="card-elevated p-3.5 flex items-center justify-between gap-3 group">
+                        <div key={tool.to} className="card-elevated p-3.5 flex items-center justify-between gap-3 bg-white border border-[#dadce0] hover:border-[#ea4335] rounded-2xl shadow-xs group">
                           <Link
                             to={tool.to}
                             className="flex-1 flex items-center gap-3 min-w-0"
                           >
-                            <div className="w-9 h-9 rounded-xl bg-[#141722] group-hover:bg-rose-500 group-hover:text-white flex items-center justify-center transition-colors shrink-0 text-slate-400">
+                            <div className="w-9 h-9 rounded-xl bg-[#fce8e6] group-hover:bg-[#ea4335] group-hover:text-white flex items-center justify-center transition-colors shrink-0 text-[#ea4335]">
                               <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
                             </div>
                             <div className="min-w-0 flex-1">
-                              <p className="text-xs font-bold text-white group-hover:text-rose-400 transition-colors truncate">{tool.label}</p>
-                              <p className="text-[10px] text-slate-400 truncate mt-0.5">{tool.result}</p>
+                              <p className="text-xs font-bold text-[#202124] group-hover:text-[#ea4335] transition-colors truncate">{tool.label}</p>
+                              <p className="text-[11px] text-[#5f6368] truncate mt-0.5">{tool.result}</p>
                             </div>
                           </Link>
 
                           <div className="flex items-center gap-1">
                             <button
                               onClick={() => toggleFavorite(tool.to)}
-                              className="p-1.5 rounded-lg text-rose-400 hover:bg-rose-500/15 cursor-pointer"
+                              className="p-1.5 rounded-lg text-[#ea4335] hover:bg-[#fce8e6] cursor-pointer"
                               title="Remove from favorites"
                             >
                               <Heart size={13} fill="currentColor" />
@@ -218,8 +218,8 @@ const Favorites = () => {
                               onClick={() => togglePin(tool.to)}
                               className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
                                 currentUser?.pinnedTools?.includes(tool.to)
-                                  ? "text-indigo-400 bg-indigo-500/15"
-                                  : "text-slate-500 hover:text-indigo-400 hover:bg-[#181b28]"
+                                  ? "text-[#1a73e8] bg-[#e8f0fe]"
+                                  : "text-[#80868b] hover:text-[#1a73e8] hover:bg-[#e8f0fe]"
                               }`}
                               title={currentUser?.pinnedTools?.includes(tool.to) ? "Unpin" : "Pin"}
                             >

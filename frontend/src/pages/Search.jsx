@@ -47,42 +47,39 @@ const SearchPage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#08090d] text-[#f8fafc] pt-12 pb-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-      {/* Ambient background glows */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] bg-indigo-600/10 rounded-full blur-[140px] pointer-events-none" />
-
+    <div className="min-h-screen bg-[#f8f9fa] text-[#202124] pt-8 pb-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
       <div className="max-w-6xl mx-auto relative z-10 space-y-8">
         
         {/* Header */}
         <div className="text-center max-w-2xl mx-auto">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 mb-3 shadow-xs">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#e8f0fe] border border-[#d2e3fc] text-[#1a73e8] mb-3 shadow-2xs">
             <Sparkles size={13} />
-            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Command Directory</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider">Command Directory</span>
           </div>
-          <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight">
+          <h1 className="text-3xl sm:text-5xl font-black text-[#202124] tracking-tight">
             Explore All 90+ Tools
           </h1>
-          <p className="text-slate-400 text-xs sm:text-sm mt-2">
+          <p className="text-[#5f6368] text-xs sm:text-sm mt-2">
             Instant search and category filtering across our complete client-side processing suite.
           </p>
         </div>
 
-        {/* Command Search Bar */}
+        {/* Google-Style Omnibox Search Bar */}
         <div className="max-w-2xl mx-auto space-y-3">
-          <div className="relative bg-[#0f1118] border border-[#1e2235] focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20 rounded-2xl flex items-center px-4 shadow-xl transition-all">
-            <SearchIcon size={20} className="text-slate-400 mr-3 shrink-0" />
+          <div className="relative bg-white border border-[#dadce0] focus-within:border-[#1a73e8] focus-within:ring-2 focus-within:ring-[#1a73e8]/20 rounded-full flex items-center px-5 shadow-xs transition-all">
+            <SearchIcon size={20} className="text-[#5f6368] mr-3 shrink-0" />
             <input
               ref={inputRef}
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search by tool name, format (PDF, PNG, JSON), or action..."
-              className="w-full py-4 text-sm bg-transparent border-none text-white placeholder-slate-500 focus:outline-none"
+              className="w-full py-4 text-sm bg-transparent border-none text-[#202124] placeholder-[#80868b] focus:outline-none"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-[#181b28] transition-colors ml-2 cursor-pointer"
+                className="p-1 rounded-full text-[#80868b] hover:text-[#202124] hover:bg-[#f1f3f4] transition-colors ml-2 cursor-pointer"
               >
                 <X size={16} />
               </button>
@@ -91,12 +88,12 @@ const SearchPage = () => {
 
           {/* Quick tags */}
           <div className="flex flex-wrap items-center justify-center gap-2">
-            <span className="text-xs text-slate-500 font-medium mr-1">Suggested:</span>
+            <span className="text-xs text-[#5f6368] font-medium mr-1">Suggested:</span>
             {popularSearches.map((item) => (
               <Link
                 key={item.name}
                 to={item.to}
-                className="text-xs px-2.5 py-1 rounded-lg bg-[#141722] border border-[#1e2235] text-slate-300 hover:text-white hover:border-indigo-500/40 transition-all font-medium"
+                className="text-xs px-3 py-1 rounded-full bg-white border border-[#dadce0] text-[#3c4043] hover:text-[#1a73e8] hover:border-[#1a73e8] transition-all font-medium shadow-2xs"
               >
                 {item.name}
               </Link>
@@ -108,10 +105,10 @@ const SearchPage = () => {
         <div className="flex items-center justify-center gap-2 flex-wrap">
           <button
             onClick={() => setActiveCategory('All')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
               activeCategory === 'All'
-                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                : 'bg-[#141722] border border-[#1e2235] text-slate-300 hover:text-white hover:bg-[#181b28]'
+                ? 'bg-[#1a73e8] text-white shadow-xs'
+                : 'bg-white border border-[#dadce0] text-[#5f6368] hover:text-[#202124] hover:bg-[#f1f3f4]'
             }`}
           >
             All Utilities ({allTools.length})
@@ -120,10 +117,10 @@ const SearchPage = () => {
             <button
               key={category}
               onClick={() => setActiveCategory(category)}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
                 activeCategory === category
-                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                  : 'bg-[#141722] border border-[#1e2235] text-slate-300 hover:text-white hover:bg-[#181b28]'
+                  ? 'bg-[#1a73e8] text-white shadow-xs'
+                  : 'bg-white border border-[#dadce0] text-[#5f6368] hover:text-[#202124] hover:bg-[#f1f3f4]'
               }`}
             >
               {category} ({toolCategories[category].length})
@@ -134,7 +131,7 @@ const SearchPage = () => {
         {/* Results Matrix */}
         <div>
           <div className="flex items-center justify-between mb-4 px-1">
-            <span className="text-xs font-mono uppercase tracking-wider text-slate-400">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#5f6368]">
               Showing {filteredTools.length} {filteredTools.length === 1 ? 'utility' : 'utilities'}
             </span>
           </div>
@@ -155,26 +152,26 @@ const SearchPage = () => {
                     >
                       <Link
                         to={tool.to}
-                        className="group flex flex-col justify-between p-4 bg-[#0f1118] border border-[#1e2235] hover:border-indigo-500/50 hover:bg-[#141722] transition-all rounded-2xl shadow-md h-full"
+                        className="group flex flex-col justify-between p-4 bg-white border border-[#dadce0] hover:border-[#1a73e8] hover:shadow-[0_4px_16px_rgba(26,115,232,0.12)] transition-all rounded-2xl shadow-xs h-full"
                       >
                         <div>
                           <div className="flex items-center justify-between gap-2 mb-3">
-                            <div className="w-10 h-10 rounded-xl bg-[#141722] group-hover:bg-indigo-600 group-hover:text-white text-indigo-400 flex items-center justify-center transition-colors shrink-0 shadow-xs">
+                            <div className="w-10 h-10 rounded-xl bg-[#e8f0fe] group-hover:bg-[#1a73e8] group-hover:text-white text-[#1a73e8] flex items-center justify-center transition-colors shrink-0 shadow-2xs">
                               <ToolIcon size={20} />
                             </div>
-                            <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-[#181b28] text-slate-400 border border-[#262b40]">
+                            <span className="text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-[#f1f3f4] text-[#5f6368] border border-[#dadce0]">
                               {tool.category || 'Utility'}
                             </span>
                           </div>
-                          <h3 className="text-sm font-bold text-white group-hover:text-indigo-400 transition-colors truncate">
+                          <h3 className="text-sm font-bold text-[#202124] group-hover:text-[#1a73e8] transition-colors truncate">
                             {tool.name}
                           </h3>
-                          <p className="text-xs text-slate-400 line-clamp-2 mt-1 leading-relaxed">
+                          <p className="text-xs text-[#5f6368] line-clamp-2 mt-1 leading-relaxed">
                             {tool.description}
                           </p>
                         </div>
                         
-                        <div className="flex items-center justify-between pt-4 mt-3 border-t border-[#1e2235] text-xs font-semibold text-slate-400 group-hover:text-indigo-400 transition-colors">
+                        <div className="flex items-center justify-between pt-4 mt-3 border-t border-[#dadce0] text-xs font-semibold text-[#5f6368] group-hover:text-[#1a73e8] transition-colors">
                           <span>Launch Utility</span>
                           <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
                         </div>
@@ -185,10 +182,10 @@ const SearchPage = () => {
               </AnimatePresence>
             </div>
           ) : (
-            <div className="text-center py-16 bg-[#0f1118] border border-[#1e2235] rounded-3xl p-8 shadow-xl">
-              <SearchIcon size={40} className="mx-auto text-slate-500 mb-3 opacity-50" />
-              <h3 className="text-base font-bold text-white">No tools matching "{searchQuery}"</h3>
-              <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
+            <div className="text-center py-16 bg-white border border-[#dadce0] rounded-3xl p-8 shadow-xs">
+              <SearchIcon size={40} className="mx-auto text-[#80868b] mb-3 opacity-60" />
+              <h3 className="text-base font-bold text-[#202124]">No tools matching "{searchQuery}"</h3>
+              <p className="text-xs text-[#5f6368] mt-1 max-w-sm mx-auto">
                 Try searching for general keywords like "pdf", "image", "json", "code", or "excel".
               </p>
               <button
@@ -196,7 +193,7 @@ const SearchPage = () => {
                   setSearchQuery('');
                   setActiveCategory('All');
                 }}
-                className="mt-4 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-indigo-600/25 cursor-pointer"
+                className="mt-4 px-5 py-2 bg-[#1a73e8] hover:bg-[#1557b0] text-white text-xs font-bold rounded-full transition-all shadow-xs cursor-pointer"
               >
                 Reset Search Filters
               </button>

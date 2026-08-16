@@ -14,35 +14,33 @@ const Footer = () => {
   const { currentUser } = useAuth();
 
   return (
-    <footer className="w-full relative z-10 mt-auto bg-[#06070a] border-t border-[#1e2235] overflow-hidden shrink-0">
-      {/* Background ambient lighting */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-indigo-600/5 blur-[140px] rounded-full pointer-events-none" />
-
+    <footer className="w-full relative z-10 mt-auto bg-white border-t border-[#dadce0] overflow-hidden shrink-0">
       <div className="max-w-7xl mx-auto px-5 sm:px-6 md:px-12 relative z-10">
+        
         {/* Top CTA Section */}
-        <div className="py-12 md:py-16 border-b border-[#1e2235] flex flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left">
+        <div className="py-10 md:py-14 border-b border-[#dadce0] flex flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left">
           <div className="max-w-xl">
-            <h2 className="text-2xl md:text-3xl font-black text-white tracking-tight mb-3 flex items-center justify-center md:justify-start gap-2">
+            <h2 className="text-2xl md:text-3xl font-black text-[#202124] tracking-tight mb-2 flex items-center justify-center md:justify-start gap-2">
               Ready to process files locally?{" "}
-              <Sparkles className="text-indigo-400" size={24} />
+              <Sparkles className="text-[#1a73e8]" size={24} />
             </h2>
-            <p className="text-slate-400 text-sm md:text-base leading-relaxed">
+            <p className="text-[#5f6368] text-sm md:text-base leading-relaxed">
               Join thousands of developers and creators using UtilityHub to process data
               safely, entirely inside the browser. No cloud uploads. Zero telemetry.
             </p>
           </div>
-          <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 shrink-0 w-full md:w-auto mt-6 md:mt-0">
+          <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 shrink-0 w-full md:w-auto mt-4 md:mt-0">
             {!currentUser && (
               <Link
                 to="/register"
-                className="w-full sm:w-auto whitespace-nowrap h-11 px-6 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm flex items-center justify-center transition-all shadow-lg shadow-indigo-600/30 active:scale-[0.98]"
+                className="w-full sm:w-auto whitespace-nowrap h-11 px-6 rounded-full bg-[#1a73e8] hover:bg-[#1557b0] text-white font-bold text-sm flex items-center justify-center transition-all shadow-xs active:scale-[0.98]"
               >
                 Get Started Free
               </Link>
             )}
             <Link
               to="/search"
-              className="w-full sm:w-auto whitespace-nowrap h-11 px-6 rounded-xl bg-[#141722] hover:bg-[#181b28] text-white font-bold text-sm border border-[#1e2235] flex items-center justify-center transition-colors shadow-xs"
+              className="w-full sm:w-auto whitespace-nowrap h-11 px-6 rounded-full bg-white hover:bg-[#f8f9fa] text-[#202124] font-bold text-sm border border-[#dadce0] hover:border-[#bdc1c6] flex items-center justify-center transition-colors shadow-2xs"
             >
               Explore 90+ Tools <ArrowRight className="ml-2" size={16} />
             </Link>
@@ -53,15 +51,15 @@ const Footer = () => {
         <div className="py-12 grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-12">
           {/* Brand Col */}
           <div className="col-span-1 md:col-span-4 flex flex-col items-center md:items-start text-center md:text-left">
-            <Link to="/" className="flex items-center gap-3 mb-4 group">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-cyan-400 flex items-center justify-center text-white shadow-lg shadow-indigo-600/20 transition-transform group-hover:scale-105">
-                <Zap size={20} />
+            <Link to="/" className="flex items-center gap-2.5 mb-4 group">
+              <div className="w-9 h-9 rounded-xl bg-[#e8f0fe] border border-[#d2e3fc] flex items-center justify-center text-[#1a73e8] shadow-2xs transition-transform group-hover:scale-105">
+                <Zap size={18} />
               </div>
-              <span className="font-black text-2xl tracking-tight text-white">
-                Utility<span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400">Hub</span>
+              <span className="font-bold text-xl tracking-tight text-[#202124]">
+                Utility<span className="text-[#1a73e8]">Hub</span>
               </span>
             </Link>
-            <p className="text-slate-400 text-xs leading-relaxed mb-6 max-w-[280px]">
+            <p className="text-[#5f6368] text-xs leading-relaxed mb-6 max-w-[280px]">
               A beautifully crafted, offline-first developer suite. Built with
               maximum performance, privacy, and client-side security in mind.
             </p>
@@ -70,16 +68,16 @@ const Footer = () => {
                 href="https://www.jaganparida.com/projects/daily-utility-hub"
                 target="_blank"
                 rel="noreferrer"
-                className="w-9 h-9 rounded-xl bg-[#141722] border border-[#1e2235] flex items-center justify-center text-slate-400 hover:bg-indigo-600 hover:text-white hover:border-indigo-600 transition-all shadow-xs"
+                className="w-9 h-9 rounded-full bg-[#f8f9fa] border border-[#dadce0] flex items-center justify-center text-[#5f6368] hover:bg-[#e8f0fe] hover:text-[#1a73e8] hover:border-[#d2e3fc] transition-all shadow-2xs"
                 title="Website"
               >
-                <Globe size={16} />
+                <Globe size={15} />
               </a>
               <a
                 href="https://github.com/JaganParida"
                 target="_blank"
                 rel="noreferrer"
-                className="w-9 h-9 rounded-xl bg-[#141722] border border-[#1e2235] flex items-center justify-center text-slate-400 hover:bg-indigo-600 hover:text-white hover:border-indigo-600 transition-all shadow-xs"
+                className="w-9 h-9 rounded-full bg-[#f8f9fa] border border-[#dadce0] flex items-center justify-center text-[#5f6368] hover:bg-[#e8f0fe] hover:text-[#1a73e8] hover:border-[#d2e3fc] transition-all shadow-2xs"
                 title="GitHub"
               >
                 <svg
@@ -99,7 +97,7 @@ const Footer = () => {
                 href="https://x.com/JaganParida0504"
                 target="_blank"
                 rel="noreferrer"
-                className="w-9 h-9 rounded-xl bg-[#141722] border border-[#1e2235] flex items-center justify-center text-slate-400 hover:bg-indigo-600 hover:text-white hover:border-indigo-600 transition-all shadow-xs"
+                className="w-9 h-9 rounded-full bg-[#f8f9fa] border border-[#dadce0] flex items-center justify-center text-[#5f6368] hover:bg-[#e8f0fe] hover:text-[#1a73e8] hover:border-[#d2e3fc] transition-all shadow-2xs"
                 title="Twitter"
               >
                 <svg
@@ -116,83 +114,83 @@ const Footer = () => {
               </a>
               <a
                 href="mailto:jaganparida39064@gmail.com"
-                className="w-9 h-9 rounded-xl bg-[#141722] border border-[#1e2235] flex items-center justify-center text-slate-400 hover:bg-indigo-600 hover:text-white hover:border-indigo-600 transition-all shadow-xs"
+                className="w-9 h-9 rounded-full bg-[#f8f9fa] border border-[#dadce0] flex items-center justify-center text-[#5f6368] hover:bg-[#e8f0fe] hover:text-[#1a73e8] hover:border-[#d2e3fc] transition-all shadow-2xs"
                 title="Contact"
               >
-                <Mail size={16} />
+                <Mail size={15} />
               </a>
             </div>
           </div>
 
           {/* Links Cols */}
           <div className="col-span-1 md:col-span-8 grid grid-cols-2 sm:grid-cols-4 gap-8 text-center sm:text-left">
-            <div className="flex flex-col gap-3">
-              <h3 className="text-white text-xs font-mono uppercase tracking-widest mb-2">
+            <div className="flex flex-col gap-2.5">
+              <h3 className="text-[#202124] text-xs font-bold uppercase tracking-wider mb-1">
                 Product
               </h3>
               <Link
                 to="/"
-                className="text-sm text-slate-400 hover:text-indigo-400 transition-colors"
+                className="text-xs text-[#5f6368] hover:text-[#1a73e8] transition-colors"
               >
                 All Tools
               </Link>
               <Link
                 to="/pinned"
-                className="text-sm text-slate-400 hover:text-indigo-400 transition-colors"
+                className="text-xs text-[#5f6368] hover:text-[#1a73e8] transition-colors"
               >
                 Pinned Utilities
               </Link>
               <Link
                 to="/recent"
-                className="text-sm text-slate-400 hover:text-indigo-400 transition-colors"
+                className="text-xs text-[#5f6368] hover:text-[#1a73e8] transition-colors"
               >
                 Recent History
               </Link>
               <Link
                 to="/tools/developer-profile"
-                className="text-sm text-slate-400 hover:text-indigo-400 transition-colors"
+                className="text-xs text-[#5f6368] hover:text-[#1a73e8] transition-colors"
               >
                 Developer Profile
               </Link>
             </div>
 
-            <div className="flex flex-col gap-3">
-              <h3 className="text-white text-xs font-mono uppercase tracking-widest mb-2">
+            <div className="flex flex-col gap-2.5">
+              <h3 className="text-[#202124] text-xs font-bold uppercase tracking-wider mb-1">
                 Solutions
               </h3>
               <Link
                 to="/tools/uuid-generator"
-                className="text-sm text-slate-400 hover:text-indigo-400 transition-colors"
+                className="text-xs text-[#5f6368] hover:text-[#1a73e8] transition-colors"
               >
                 For Developers
               </Link>
               <Link
                 to="/tools/readme-generator"
-                className="text-sm text-slate-400 hover:text-indigo-400 transition-colors"
+                className="text-xs text-[#5f6368] hover:text-[#1a73e8] transition-colors"
               >
                 For Students
               </Link>
               <Link
                 to="/privacy-policy"
-                className="text-sm text-slate-400 hover:text-indigo-400 transition-colors"
+                className="text-xs text-[#5f6368] hover:text-[#1a73e8] transition-colors"
               >
                 Offline Engine
               </Link>
               <Link
                 to="/tools/file-vault"
-                className="text-sm text-slate-400 hover:text-indigo-400 transition-colors"
+                className="text-xs text-[#5f6368] hover:text-[#1a73e8] transition-colors"
               >
                 Security Vault
               </Link>
             </div>
 
-            <div className="flex flex-col gap-3">
-              <h3 className="text-white text-xs font-mono uppercase tracking-widest mb-2">
+            <div className="flex flex-col gap-2.5">
+              <h3 className="text-[#202124] text-xs font-bold uppercase tracking-wider mb-1">
                 Account
               </h3>
               <Link
                 to="/profile"
-                className="text-sm text-slate-400 hover:text-indigo-400 transition-colors"
+                className="text-xs text-[#5f6368] hover:text-[#1a73e8] transition-colors"
               >
                 User Profile
               </Link>
@@ -200,43 +198,44 @@ const Footer = () => {
                 <>
                   <Link
                     to="/login"
-                    className="text-sm text-slate-400 hover:text-indigo-400 transition-colors"
+                    className="text-xs text-[#5f6368] hover:text-[#1a73e8] transition-colors"
                   >
                     Sign In
                   </Link>
                   <Link
                     to="/register"
-                    className="text-sm text-slate-400 hover:text-indigo-400 transition-colors"
+                    className="text-xs text-[#5f6368] hover:text-[#1a73e8] transition-colors"
                   >
                     Register
                   </Link>
                 </>
               ) : (
-                <span className="text-[11px] font-mono text-emerald-400 font-bold">
-                  ✓ Session Active
+                <span className="text-[11px] font-semibold text-[#137333] flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#34a853]" />
+                  Active Session
                 </span>
               )}
             </div>
 
-            <div className="flex flex-col gap-3">
-              <h3 className="text-white text-xs font-mono uppercase tracking-widest mb-2">
+            <div className="flex flex-col gap-2.5">
+              <h3 className="text-[#202124] text-xs font-bold uppercase tracking-wider mb-1">
                 Legal
               </h3>
               <Link
                 to="/privacy-policy"
-                className="text-sm text-slate-400 hover:text-indigo-400 transition-colors"
+                className="text-xs text-[#5f6368] hover:text-[#1a73e8] transition-colors"
               >
                 Privacy Policy
               </Link>
               <Link
                 to="/terms-of-service"
-                className="text-sm text-slate-400 hover:text-indigo-400 transition-colors"
+                className="text-xs text-[#5f6368] hover:text-[#1a73e8] transition-colors"
               >
                 Terms of Service
               </Link>
               <Link
                 to="/cookie-policy"
-                className="text-sm text-slate-400 hover:text-indigo-400 transition-colors"
+                className="text-xs text-[#5f6368] hover:text-[#1a73e8] transition-colors"
               >
                 Cookie Settings
               </Link>
@@ -245,13 +244,13 @@ const Footer = () => {
         </div>
 
         {/* Bottom Bar */}
-        <div className="py-6 border-t border-[#1e2235] flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-slate-500 font-mono text-center md:text-left flex items-center gap-1.5">
-            © {new Date().getFullYear()} UtilityHub. All operations executed client-side.
+        <div className="py-6 border-t border-[#dadce0] flex flex-col md:flex-row items-center justify-between gap-4">
+          <p className="text-xs text-[#5f6368] text-center md:text-left">
+            © {new Date().getFullYear()} Daily Utility Hub. All operations executed client-side in your browser.
           </p>
-          <div className="flex items-center gap-1.5 text-xs font-mono text-slate-400">
-            <Shield size={13} className="text-emerald-400" />
-            <span>100% Private & Offline-Capable</span>
+          <div className="flex items-center gap-1.5 text-xs text-[#5f6368]">
+            <Shield size={14} className="text-[#34a853]" />
+            <span className="font-medium text-[#137333]">100% Private & Offline-Capable</span>
           </div>
         </div>
       </div>
