@@ -44,26 +44,25 @@ const ToolHeader = ({
   };
 
   return (
-    <div className="w-full mb-5 sm:mb-7">
+    <div className="w-full mb-5 sm:mb-6">
       {/* Top Breadcrumb & Badges Container */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3 sm:mb-4">
-        <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-[#5f6368] font-medium overflow-x-auto custom-scrollbar py-0.5 max-w-full">
+      <div className="flex flex-wrap items-center justify-between gap-2.5 mb-3 sm:mb-4">
+        <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-[#5f6368] font-medium flex-wrap min-w-0">
           <Link 
             to="/" 
-            className="hover:text-[#1a73e8] transition-colors flex items-center gap-1 shrink-0"
+            className="hover:text-[#1a73e8] transition-colors flex items-center gap-1 shrink-0 font-semibold text-[#5f6368]"
           >
-            <ArrowLeft size={13} className="inline sm:hidden mr-0.5" />
             <span>Dashboard</span>
           </Link>
           <ChevronRight size={12} className="text-[#9aa0a6] shrink-0" />
           <Link 
             to={categoryPath} 
-            className="hover:text-[#1a73e8] transition-colors shrink-0"
+            className="hover:text-[#1a73e8] transition-colors shrink-0 font-semibold text-[#5f6368]"
           >
             {category}
           </Link>
           <ChevronRight size={12} className="text-[#9aa0a6] shrink-0" />
-          <span className="text-[#202124] font-semibold truncate max-w-[200px] sm:max-w-xs md:max-w-none">
+          <span className="text-[#202124] font-bold truncate max-w-[200px] sm:max-w-xs md:max-w-md">
             {title}
           </span>
         </nav>
@@ -72,12 +71,12 @@ const ToolHeader = ({
         <div className="flex items-center gap-2 shrink-0 flex-wrap">
           <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#e6f4ea] border border-[#ceead6] text-[11px] font-semibold text-[#137333] shadow-2xs">
             <ShieldCheck size={13} className="text-[#34a853] shrink-0" />
-            <span className="truncate">{badge}</span>
+            <span>{badge}</span>
           </div>
           {extraBadge && (
             <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#fef7e0] border border-[#feefc3] text-[11px] font-bold text-[#b06000] shadow-2xs">
               <Sparkles size={11} className="shrink-0" />
-              <span className="truncate">{extraBadge}</span>
+              <span>{extraBadge}</span>
             </div>
           )}
         </div>
