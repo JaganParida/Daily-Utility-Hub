@@ -1,497 +1,491 @@
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import ToolHeader from '../../components/ToolHeader';
-import { UploadCloud, FileText, CheckCircle2, Droplets, Eye, EyeOff, ExternalLink, Loader2, X, Settings2, Sparkles, Check } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  FileText, UploadCloud, Download, Loader2, X, 
+  CheckCircle2, Sparkles, Sliders, Type, RotateCw, 
+  Grid, Palette, Eye, Check
+} from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import api from '../../lib/api';
-import DropzoneComponent from '../../components/DropzoneComponent';
+import { motion, AnimatePresence } from 'framer-motion';
 import { PDFDocument, rgb, degrees, StandardFonts } from 'pdf-lib';
+import * as pdfjsLib from 'pdfjs-dist';
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+
+const COLOR_PALETTE = [
+  { name: 'Red', hex: '#ea4335' },
+  { name: 'Blue', hex: '#1a73e8' },
+  { name: 'Green', hex: '#34a853' },
+  { name: 'Yellow', hex: '#fbbc04' },
+  { name: 'Charcoal', hex: '#3c4043' },
+  { name: 'Gray', hex: '#80868b' }
+];
+
+const PRESET_TEXTS = ['CONFIDENTIAL', 'DRAFT', 'SAMPLE', 'APPROVED', 'DO NOT COPY'];
+
+const POSITIONS = [
+  { id: 'top-left',     label: 'Top Left',     gridClass: 'justify-start items-start' },
+  { id: 'top-center',   label: 'Top Center',   gridClass: 'justify-center items-start' },
+  { id: 'top-right',    label: 'Top Right',    gridClass: 'justify-end items-start' },
+  { id: 'center-left',  label: 'Middle Left',  gridClass: 'justify-start items-center' },
+  { id: 'center',       label: 'Center',       gridClass: 'justify-center items-center' },
+  { id: 'center-right', label: 'Middle Right', gridClass: 'justify-end items-center' },
+  { id: 'bottom-left',  label: 'Bottom Left',  gridClass: 'justify-start items-end' },
+  { id: 'bottom-center',label: 'Bottom Center',gridClass: 'justify-center items-end' },
+  { id: 'bottom-right', label: 'Bottom Right', gridClass: 'justify-end items-end' },
+];
 
 const PdfWatermark = () => {
   const [file, setFile] = useState(null);
+  const [totalPages, setTotalPages] = useState(0);
+  const [firstPageUrl, setFirstPageUrl] = useState(null);
+
+  // Watermark Settings
   const [watermarkText, setWatermarkText] = useState('CONFIDENTIAL');
-  const [color, setColor] = useState('#e61a1a'); // default red
-  const [opacity, setOpacity] = useState(0.3);
+  const [color, setColor] = useState('#ea4335');
+  const [opacity, setOpacity] = useState(0.35);
   const [fontSize, setFontSize] = useState(48);
   const [rotation, setRotation] = useState(-45);
-  const [position, setPosition] = useState('center'); // center, top-left, top-right, bottom-left, bottom-right
-  const [previewUrl, setPreviewUrl] = useState(null);
-  const [showPreview, setShowPreview] = useState(false);
-  
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [position, setPosition] = useState('center');
 
-  const colors = [
-    { name: 'Red', value: '#e61a1a' },
-    { name: 'Blue', value: '#1a56e6' },
-    { name: 'Grey', value: '#6b7280' },
-    { name: 'Green', value: '#16a34a' },
-    { name: 'Black', value: '#0f172a' }
-  ];
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [downloadUrl, setDownloadUrl] = useState(null);
+  const [downloadFileName, setDownloadFileName] = useState('');
+
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     return () => {
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
+      if (downloadUrl) URL.revokeObjectURL(downloadUrl);
+      if (firstPageUrl) URL.revokeObjectURL(firstPageUrl);
     };
-  }, [previewUrl]);
+  }, [downloadUrl, firstPageUrl]);
 
-  const handleClear = () => {
-    setFile(null);
-    setShowPreview(false);
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl);
-      setPreviewUrl(null);
+  const handleDragOver = (e) => { e.preventDefault(); setIsDragging(true); };
+  const handleDragLeave = (e) => { e.preventDefault(); setIsDragging(false); };
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const dropped = e.dataTransfer.files[0];
+    if (dropped?.type === 'application/pdf') {
+      loadFile(dropped);
+    } else {
+      toast.error('Only PDF documents are supported.');
     }
-    document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleWatermark = async () => {
-    if (!file) {
-      toast.error('Please select a PDF file');
-      return;
+  const handleFileSelect = (e) => {
+    const selected = e.target.files[0];
+    if (selected?.type === 'application/pdf') {
+      loadFile(selected);
     }
-    if (!watermarkText.trim()) {
-      toast.error('Please enter watermark text');
-      return;
-    }
+  };
 
-    let toastId = toast.loading('Applying watermark locally in browser...');
+  const loadFile = async (f) => {
+    setIsProcessing(true);
+    setDownloadUrl(null);
+    const toastId = toast.loading('Reading PDF document...');
+
     try {
-      setIsProcessing(true);
-      
-      const fileBytes = new Uint8Array(await file.arrayBuffer());
-      const pdfDoc = await PDFDocument.load(fileBytes);
-      const pages = pdfDoc.getPages();
-      
-      const helveticaFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
-      
-      const hexToRgbFloat = (hex) => {
-        const cleanHex = hex.replace('#', '');
-        const r = parseInt(cleanHex.substring(0, 2), 16) / 255;
-        const g = parseInt(cleanHex.substring(2, 4), 16) / 255;
-        const b = parseInt(cleanHex.substring(4, 6), 16) / 255;
-        return rgb(r, g, b);
-      };
-      
-      const watermarkColor = hexToRgbFloat(color);
-      const textWidth = helveticaFont.widthOfTextAtSize(watermarkText, fontSize);
-      const textHeight = helveticaFont.heightAtSize(fontSize);
-      
-      pages.forEach(page => {
-        const { width, height } = page.getSize();
-        
-        let x = 0;
-        let y = 0;
-        
-        if (position === 'center') {
-          x = (width - textWidth) / 2;
-          y = (height - textHeight) / 2;
-        } else if (position === 'top-left') {
-          x = 40;
-          y = height - 40 - textHeight;
-        } else if (position === 'top-right') {
-          x = width - 40 - textWidth;
-          y = height - 40 - textHeight;
-        } else if (position === 'bottom-left') {
-          x = 40;
-          y = 40;
-        } else if (position === 'bottom-right') {
-          x = width - 40 - textWidth;
-          y = 40;
-        }
-        
-        page.drawText(watermarkText, {
-          x,
-          y,
-          size: fontSize,
-          font: helveticaFont,
-          color: watermarkColor,
-          opacity: parseFloat(opacity),
-          rotate: degrees(parseFloat(rotation)),
-        });
-      });
-      
-      const watermarkedBytes = await pdfDoc.save({ useObjectStreams: false });
-      
-      const url = window.URL.createObjectURL(new Blob([watermarkedBytes], { type: 'application/pdf' }));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `${file.name.replace('.pdf', '')}_watermarked.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-      
-      toast.success('Watermark applied successfully!', { id: toastId });
-      document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
-    } catch (error) {
-      console.error(error);
-      toast.error('Failed to apply watermark. The file might be encrypted.', { id: toastId });
+      const buffer = await f.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
+      setTotalPages(pdf.numPages);
+      setFile(f);
+
+      // Render page 1
+      const page1 = await pdf.getPage(1);
+      const viewport = page1.getViewport({ scale: 0.8 });
+      const canvas = document.createElement('canvas');
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+      const ctx = canvas.getContext('2d');
+      await page1.render({ canvasContext: ctx, viewport }).promise;
+      setFirstPageUrl(canvas.toDataURL());
+
+      toast.success(`PDF Loaded (${pdf.numPages} pages)`, { id: toastId });
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to load PDF file.', { id: toastId });
     } finally {
       setIsProcessing(false);
     }
   };
 
-  // Helper to determine CSS placement for the Live Preview
-  const getPreviewAlignmentClass = () => {
-    if (position === 'top-left') return 'items-start justify-start p-4';
-    if (position === 'top-right') return 'items-start justify-end p-4';
-    if (position === 'bottom-left') return 'items-end justify-start p-4';
-    if (position === 'bottom-right') return 'items-end justify-end p-4';
-    return 'items-center justify-center';
+  const handleApplyWatermark = async () => {
+    if (!file || !watermarkText.trim()) return;
+    setIsProcessing(true);
+    const toastId = toast.loading('Stamping watermark across PDF pages...');
+
+    try {
+      const buffer = await file.arrayBuffer();
+      const pdfDoc = await PDFDocument.load(buffer, { ignoreEncryption: true });
+      const pages = pdfDoc.getPages();
+      const font = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+
+      const hexClean = color.replace('#', '');
+      const r = parseInt(hexClean.substring(0, 2), 16) / 255;
+      const g = parseInt(hexClean.substring(2, 4), 16) / 255;
+      const b = parseInt(hexClean.substring(4, 6), 16) / 255;
+      const stampColor = rgb(r, g, b);
+
+      const textW = font.widthOfTextAtSize(watermarkText, fontSize);
+      const textH = font.heightAtSize(fontSize);
+
+      pages.forEach((page) => {
+        const { width, height } = page.getSize();
+        let x = (width - textW) / 2;
+        let y = (height - textH) / 2;
+
+        if (position === 'top-left') { x = 50; y = height - 50 - textH; }
+        else if (position === 'top-center') { x = (width - textW) / 2; y = height - 50 - textH; }
+        else if (position === 'top-right') { x = width - 50 - textW; y = height - 50 - textH; }
+        else if (position === 'center-left') { x = 50; y = (height - textH) / 2; }
+        else if (position === 'center-right') { x = width - 50 - textW; y = (height - textH) / 2; }
+        else if (position === 'bottom-left') { x = 50; y = 50; }
+        else if (position === 'bottom-center') { x = (width - textW) / 2; y = 50; }
+        else if (position === 'bottom-right') { x = width - 50 - textW; y = 50; }
+
+        page.drawText(watermarkText, {
+          x,
+          y,
+          size: fontSize,
+          font,
+          color: stampColor,
+          opacity,
+          rotate: degrees(rotation)
+        });
+      });
+
+      const pdfBytes = await pdfDoc.save();
+      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      const filename = `${file.name.replace('.pdf', '')}_watermarked.pdf`;
+
+      setDownloadUrl(url);
+      setDownloadFileName(filename);
+      toast.success('Watermark applied to all pages!', { id: toastId });
+
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to apply watermark.', { id: toastId });
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
-  const getSliderBackground = (val, min, max) => {
-    const pct = ((val - min) / (max - min)) * 100;
-    return `linear-gradient(to right, #4f46e5 ${pct}%, #1c1c21 ${pct}%)`;
+  const handleClear = () => {
+    setFile(null);
+    setTotalPages(0);
+    setFirstPageUrl(null);
+    setDownloadUrl(null);
   };
+
+  const currentPosObj = POSITIONS.find(p => p.id === position) || POSITIONS[4];
 
   return (
     <div className="tool-page-container">
-      {/* Header Container */}
       <ToolHeader
-        title="Advanced PDF Watermark"
-        description="Stamp documents with customized text, positioning, colors, and opacity."
+        title="PDF Watermark Studio"
+        description="Stamp custom text watermarks, security markings, or copyright seals across all pages with live visual preview."
         category="PDF Tools"
         categoryPath="/search"
         icon={FileText}
-        iconColor="text-[#8e24aa] bg-[#f3e8fd] border-[#e9d2fd]"
-        badge="Stamp & Watermark"
-        extraBadge="Opacity & Angle Controls"
+        iconColor="text-[#1a73e8] bg-[#e8f0fe] border-[#d2e3fc]"
+        badge="Real-Time Visual Stamping"
+        extraBadge="Custom Angle & Opacity"
       />
 
-      {/* Main Grid */}
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         
-        {/* Workspace */}
-        <motion.div 
-          layout
-          className={`flex-1 w-full bg-card border border-border p-4 md:p-6 rounded-2xl shadow-sm flex flex-col relative transition-all duration-500 ease-out ${!file ? 'min-h-[50vh]' : 'min-h-0'}`}
-        >
-          <AnimatePresence mode="popLayout" initial={false}>
-            {!file ? (
-              <motion.div
-                key="dropzone"
-                layout
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.3 }}
-                className="flex-1 h-full w-full flex flex-col justify-center"
-              >
-                  <DropzoneComponent 
-                    className="flex-1 h-full w-full justify-center"
-                    onFilesAccepted={(files) => {
-                      if (files.length === 0) return;
-                      const selectedFile = files[0];
-                      if (selectedFile.type !== 'application/pdf') {
-                        toast.error('Only PDF files are allowed');
-                        return;
-                      }
-                      setFile(selectedFile);
-                      setPreviewUrl(URL.createObjectURL(selectedFile));
-                    }} 
-                    accept={{ 'application/pdf': ['.pdf'] }} 
-                    maxFiles={1}
-                    title="Drag & drop a PDF here"
-                    subtitle="or click to browse"
-                  />
-                </motion.div>
-            ) : (
-              <motion.div
-                key="workspace"
-                layout
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.3 }}
-                className="flex flex-col min-h-0 w-full space-y-6"
-              >
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-auto md:h-64 shrink-0">
-                  <motion.div
-                    key="file-box"
-                    className="bg-[#f8f9fa] border border-[#dadce0] rounded-2xl p-5 flex flex-col h-64 md:h-full relative min-w-0"
-                  >
-                    <div className="flex items-center gap-3.5 mb-4">
-                      <div className="p-3 bg-[#e8f0fe] text-[#1a73e8] rounded-xl shrink-0 border border-[#d2e3fc]">
-                        <FileText size={26} />
-                      </div>
-                      <div className="overflow-hidden min-w-0 flex-1">
-                        <h3 className="font-bold text-[#202124] truncate text-sm sm:text-base" title={file.name}>{file.name}</h3>
-                        <p className="text-[#5f6368] text-xs mt-0.5">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex flex-wrap gap-2 justify-end border-t border-[#dadce0] pt-4 mt-auto">
-                      <button
-                        onClick={() => setShowPreview(!showPreview)}
-                        className="btn-google-secondary text-xs py-2 px-3"
-                      >
-                        {showPreview ? <EyeOff size={13} /> : <Eye size={13} />}
-                        {showPreview ? 'Hide Preview' : 'Preview Document'}
-                      </button>
-                      <button 
-                        onClick={handleClear} 
-                        className="btn-google-danger text-xs py-2 px-3"
-                      >
-                        <X size={13} /> Remove
-                      </button>
-                    </div>
-                  </motion.div>
-
-                  {/* Box 2: Visual Live Preview */}
-                  <div className="bg-white rounded-2xl border border-[#dadce0] p-4 relative overflow-hidden h-64 md:h-full flex flex-col shadow-2xs">
-                    <div className="flex justify-between items-center mb-2.5">
-                      <span className="text-xs font-bold uppercase tracking-wider text-[#5f6368] flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#1a73e8] animate-pulse" /> Live Stamp Preview
-                      </span>
-                    </div>
-                    <div className={`flex-1 bg-[#f8f9fa] rounded-xl border border-dashed border-[#dadce0] flex relative overflow-hidden ${getPreviewAlignmentClass()}`}>
-                      <motion.span 
-                        layout
-                        className="font-black whitespace-nowrap select-none transition-all duration-100 drop-shadow-2xs"
-                        style={{ 
-                          color: color, 
-                          opacity: opacity, 
-                          fontSize: `${fontSize * 0.4}px`,
-                          transform: `rotate(${rotation}deg)` 
-                        }}
-                      >
-                        {watermarkText || 'PREVIEW'}
-                      </motion.span>
-                      
-                      {/* Background paper lines */}
-                      <div className="absolute inset-x-4 top-1/4 h-2 bg-[#dadce0]/40 rounded pointer-events-none z-0" />
-                      <div className="absolute inset-x-4 top-1/2 h-2 bg-[#dadce0]/40 rounded pointer-events-none z-0" />
-                      <div className="absolute inset-x-4 top-3/4 h-2 bg-[#dadce0]/40 rounded pointer-events-none z-0" />
-                    </div>
+        {/* Main Work Area */}
+        <div className="flex-1 w-full flex flex-col gap-4">
+          
+          {!file ? (
+            /* Upload Dropzone */
+            <div
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              onClick={() => fileInputRef.current?.click()}
+              className={`tool-card p-8 sm:p-12 border-2 border-dashed flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-300 min-h-[380px] group ${
+                isDragging 
+                  ? 'border-[#1a73e8] bg-[#e8f0fe]/50 scale-[0.99] shadow-inner' 
+                  : 'border-[#c2d7fb] hover:border-[#1a73e8] hover:bg-[#f8fbff]'
+              }`}
+            >
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handleFileSelect} 
+                className="hidden" 
+                accept=".pdf,application/pdf" 
+              />
+              <div className="w-20 h-20 bg-[#e8f0fe] border border-[#d2e3fc] rounded-3xl flex items-center justify-center text-[#1a73e8] mb-5 shadow-2xs group-hover:scale-110 transition-transform">
+                <UploadCloud size={40} />
+              </div>
+              <h3 className="text-xl sm:text-2xl font-extrabold text-[#202124] mb-2">
+                Select PDF to Watermark
+              </h3>
+              <p className="text-xs sm:text-sm text-[#5f6368] max-w-md leading-relaxed mb-6">
+                Drag & drop your PDF file here, or <span className="text-[#1a73e8] font-bold underline">browse files</span>. Real-time watermark simulation.
+              </p>
+              
+              <div className="flex items-center gap-2 flex-wrap justify-center">
+                <span className="px-3 py-1 bg-[#e6f4ea] text-[#137333] text-xs font-semibold rounded-full border border-[#ceead6]">
+                  Live Visual Stamp Canvas
+                </span>
+                <span className="px-3 py-1 bg-[#fef7e0] text-[#b06000] text-xs font-semibold rounded-full border border-[#feefc3]">
+                  100% In-Browser
+                </span>
+              </div>
+            </div>
+          ) : (
+            /* Live Interactive Watermark Preview Studio */
+            <div className="tool-card p-4 sm:p-6 space-y-4">
+              
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#dadce0] pb-3">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 bg-[#e8f0fe] text-[#1a73e8] rounded-xl font-bold text-xs flex items-center gap-1.5">
+                    <Eye size={16} />
+                    <span>Live Page 1 Simulation</span>
                   </div>
+                  <span className="text-xs text-[#5f6368] hidden sm:inline">&bull; {totalPages} Total Pages</span>
                 </div>
 
-                {/* Interactive Document Preview */}
-                <AnimatePresence>
-                  {showPreview && previewUrl && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      transition={{ duration: 0.3 }}
-                      className="bg-white border border-[#dadce0] p-5 rounded-2xl shadow-2xs flex flex-col gap-3 shrink-0 overflow-hidden"
-                    >
-                      <div className="flex items-center justify-between">
-                        <h4 className="text-xs font-bold uppercase tracking-wider text-[#5f6368]">Interactive Document Preview</h4>
-                        <a 
-                          href={previewUrl} target="_blank" rel="noreferrer"
-                          className="text-xs text-[#1a73e8] hover:underline flex items-center gap-1 font-semibold"
-                        >
-                          Open in New Tab <ExternalLink size={12} />
-                        </a>
-                      </div>
-                      <div className="w-full h-[360px] md:h-[450px] border border-[#dadce0] rounded-xl overflow-hidden bg-[#f8f9fa] relative">
-                        <object 
-                          data={previewUrl} 
-                          type="application/pdf" 
-                          className="w-full h-full"
-                        >
-                          <iframe src={previewUrl} className="w-full h-full border-none" title="PDF Preview">
-                            <div className="p-6 text-center text-sm text-[#5f6368]">
-                              Your browser doesn't support inline PDF previews. Please click "Open in New Tab" to view it.
-                            </div>
-                          </iframe>
-                        </object>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-                {/* Watermark Configuration Options */}
-                <motion.div 
-                  layout
-                  className="bg-white border border-[#dadce0] p-5 sm:p-6 rounded-2xl shadow-2xs space-y-5"
+                <button
+                  onClick={handleClear}
+                  disabled={isProcessing}
+                  className="btn-google-secondary text-xs py-1 px-2.5"
                 >
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-[#5f6368] border-b border-[#dadce0] pb-3 flex items-center gap-2">
-                    <Settings2 size={15} className="text-[#1a73e8]" /> Customize Watermark
-                  </h3>
+                  <X size={13} /> Change PDF
+                </button>
+              </div>
 
-                  {/* Text Input */}
-                  <div>
-                    <label className="text-xs font-bold uppercase tracking-wider text-[#5f6368] block mb-2">Watermark Text</label>
-                    <div className="relative">
-                      <input
-                        type="text"
-                        value={watermarkText}
-                        onChange={(e) => setWatermarkText(e.target.value)}
-                        placeholder="e.g. CONFIDENTIAL or DRAFT"
-                        className="google-input w-full pr-16 text-sm font-semibold"
-                        maxLength={30}
-                      />
-                      <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-mono font-bold text-[#5f6368] bg-[#f1f3f4] px-2 py-0.5 rounded">
-                        {watermarkText.length}/30
-                      </span>
+              {/* Realistic A4 Page Canvas with Watermark Overlay */}
+              <div className="w-full bg-[#f1f3f4] p-4 sm:p-8 rounded-2xl flex items-center justify-center min-h-[440px] overflow-hidden">
+                <div className="relative w-full max-w-[340px] sm:max-w-[400px] aspect-[1/1.414] bg-white rounded-xl shadow-lg border border-[#dadce0] overflow-hidden flex flex-col p-6 select-none">
+                  
+                  {/* Underneath: Fake Document Lines or Real Rendered First Page */}
+                  {firstPageUrl ? (
+                    <img 
+                      src={firstPageUrl} 
+                      alt="First Page"
+                      className="absolute inset-0 w-full h-full object-contain pointer-events-none opacity-85"
+                    />
+                  ) : (
+                    <div className="space-y-3 opacity-25">
+                      <div className="h-4 bg-[#202124] rounded-sm w-3/4 mb-6" />
+                      <div className="h-2.5 bg-[#5f6368] rounded-sm w-full" />
+                      <div className="h-2.5 bg-[#5f6368] rounded-sm w-5/6" />
+                      <div className="h-2.5 bg-[#5f6368] rounded-sm w-full" />
+                      <div className="h-2.5 bg-[#5f6368] rounded-sm w-4/5" />
+                      <div className="h-2.5 bg-[#5f6368] rounded-sm w-full mt-4" />
+                      <div className="h-2.5 bg-[#5f6368] rounded-sm w-2/3" />
+                    </div>
+                  )}
+
+                  {/* Watermark Overlay Element */}
+                  <div className={`absolute inset-0 p-6 flex pointer-events-none ${currentPosObj.gridClass}`}>
+                    <div
+                      style={{
+                        transform: `rotate(${rotation}deg)`,
+                        color: color,
+                        opacity: opacity,
+                        fontSize: `${Math.max(14, Math.round(fontSize * 0.45))}px`,
+                        fontWeight: '800',
+                        letterSpacing: '0.05em',
+                        whiteSpace: 'nowrap',
+                        transition: 'all 0.15s ease'
+                      }}
+                      className="drop-shadow-xs"
+                    >
+                      {watermarkText || 'WATERMARK'}
                     </div>
                   </div>
 
-                  <div className="grid md:grid-cols-2 gap-6 pt-2">
-                    {/* Color Selector */}
-                    <div>
-                      <label className="text-xs font-bold uppercase tracking-wider text-[#5f6368] block mb-2.5">Stamp Color</label>
-                      <div className="flex flex-wrap gap-2.5 items-center">
-                        {colors.map(c => {
-                          const isSelected = color === c.value;
-                          return (
-                            <motion.button 
-                              key={c.value} 
-                              onClick={() => setColor(c.value)}
-                              whileHover={{ scale: 1.1 }}
-                              whileTap={{ scale: 0.95 }}
-                              className={`w-7 h-7 rounded-full border-2 transition-all relative flex items-center justify-center cursor-pointer ${
-                                isSelected ? 'border-[#1a73e8] ring-2 ring-[#1a73e8]/20 scale-105 shadow-2xs' : 'border-transparent'
-                              }`}
-                              style={{ backgroundColor: c.value }}
-                              title={c.name}
-                            >
-                              {isSelected && (
-                                <Check size={13} className={c.value === '#0f172a' ? 'text-white' : 'text-neutral-900 invert font-bold'} />
-                              )}
-                            </motion.button>
-                          );
-                        })}
-                        
-                        {/* Custom color picker */}
-                        <div className="relative w-7 h-7 rounded-full border border-[#dadce0] overflow-hidden cursor-pointer hover:scale-105 transition-transform flex items-center justify-center bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500" title="Custom Color">
-                          <input 
-                            type="color" 
-                            value={color} 
-                            onChange={(e) => setColor(e.target.value)}
-                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" 
-                          />
-                        </div>
-                      </div>
-                    </div>
+                </div>
+              </div>
 
-                    {/* Position Selector */}
-                    <div>
-                      <label className="text-xs font-bold uppercase tracking-wider text-[#5f6368] block mb-2">Stamp Position</label>
-                      <div className="grid grid-cols-3 gap-1.5 w-44">
-                        {['top-left', 'top-right', 'center', 'bottom-left', 'bottom-right'].map(pos => {
-                          const isSelected = position === pos;
-                          let label = pos.split('-').map(w => w[0]).join('').toUpperCase() || 'C';
-                          if (pos === 'center') label = 'C';
-                          return (
-                            <button
-                              key={pos}
-                              type="button"
-                              onClick={() => setPosition(pos)}
-                              className={`py-1.5 text-xs font-extrabold border rounded-lg transition-all uppercase cursor-pointer ${
-                                isSelected 
-                                  ? 'bg-[#1a73e8] border-[#1a73e8] text-white shadow-2xs' 
-                                  : 'bg-[#f8f9fa] hover:bg-[#f1f3f4] text-[#5f6368] border-[#dadce0]'
-                              }`}
-                              style={
-                                pos === 'center' ? { gridColumn: '2', gridRow: '2' } :
-                                pos === 'bottom-left' ? { gridColumn: '1', gridRow: '3' } :
-                                pos === 'bottom-right' ? { gridColumn: '3', gridRow: '3' } :
-                                pos === 'top-left' ? { gridColumn: '1', gridRow: '1' } :
-                                { gridColumn: '3', gridRow: '1' }
-                              }
-                              title={pos.replace('-', ' ')}
-                            >
-                              {label}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
+            </div>
+          )}
 
-                  {/* Sliders Block */}
-                  <div className="grid md:grid-cols-3 gap-4 pt-4 border-t border-[#dadce0]">
-                    {/* Opacity */}
-                    <div>
-                      <div className="flex justify-between items-center mb-1.5">
-                        <label className="text-xs font-bold uppercase tracking-wider text-[#5f6368]">Opacity</label>
-                        <span className="text-xs font-extrabold bg-[#e8f0fe] text-[#1a73e8] px-2 py-0.5 rounded-md">{Math.round(opacity * 100)}%</span>
-                      </div>
-                      <input 
-                        type="range" min="0.1" max="1.0" step="0.05"
-                        value={opacity} onChange={(e) => setOpacity(parseFloat(e.target.value))}
-                        className="w-full h-1.5 rounded-full appearance-none cursor-pointer outline-none transition-all bg-[#e8eaed]" 
-                      />
-                    </div>
+        </div>
 
-                    {/* Font Size */}
-                    <div>
-                      <div className="flex justify-between items-center mb-1.5">
-                        <label className="text-xs font-bold uppercase tracking-wider text-[#5f6368]">Font Size</label>
-                        <span className="text-xs font-extrabold bg-[#e8f0fe] text-[#1a73e8] px-2 py-0.5 rounded-md">{fontSize}px</span>
-                      </div>
-                      <input 
-                        type="range" min="14" max="96" step="2"
-                        value={fontSize} onChange={(e) => setFontSize(parseInt(e.target.value))}
-                        className="w-full h-1.5 rounded-full appearance-none cursor-pointer outline-none transition-all bg-[#e8eaed]" 
-                      />
-                    </div>
-
-                    {/* Rotation */}
-                    <div>
-                      <div className="flex justify-between items-center mb-1.5">
-                        <label className="text-xs font-bold uppercase tracking-wider text-[#5f6368]">Rotation</label>
-                        <span className="text-xs font-extrabold bg-[#e8f0fe] text-[#1a73e8] px-2 py-0.5 rounded-md">{rotation}°</span>
-                      </div>
-                      <input 
-                        type="range" min="-90" max="90" step="5"
-                        value={rotation} onChange={(e) => setRotation(parseInt(e.target.value))}
-                        className="w-full h-1.5 rounded-full appearance-none cursor-pointer outline-none transition-all bg-[#e8eaed]" 
-                      />
-                    </div>
-                  </div>
-                </motion.div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
-
-        {/* Action Panel / Sidebar */}
-        <div className="w-full lg:w-[360px] xl:w-[400px] shrink-0 space-y-6">
+        {/* Right Settings Studio Panel */}
+        <div className={`w-full lg:w-[360px] xl:w-[380px] shrink-0 space-y-5 transition-all duration-300 ${!file ? 'opacity-50 pointer-events-none' : ''}`}>
+          
           <div className="tool-sidebar p-5 sm:p-6 space-y-5">
             <h3 className="text-xs font-bold uppercase tracking-wider text-[#5f6368] border-b border-[#dadce0] pb-3 flex items-center gap-2">
-              <Sparkles size={15} className="text-[#1a73e8]" /> Watermark Summary
+              <Sliders size={15} className="text-[#1a73e8]" /> Watermark Settings
             </h3>
-            
-            <div className="space-y-3 text-xs text-[#5f6368]">
-              <div className="flex items-start gap-2.5">
-                <CheckCircle2 size={15} className="text-[#34a853] mt-0.5 shrink-0" />
-                <p>Applies vector watermark stamping cleanly across every page.</p>
-              </div>
-              <div className="flex items-start gap-2.5">
-                <CheckCircle2 size={15} className="text-[#34a853] mt-0.5 shrink-0" />
-                <p>Adjustable opacity prevents obscuring underlying text.</p>
-              </div>
-              <div className="flex items-start gap-2.5">
-                <CheckCircle2 size={15} className="text-[#34a853] mt-0.5 shrink-0" />
-                <p>100% private in-browser document processing.</p>
+
+            {/* 1. Watermark Text Input + Presets */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-[#5f6368] uppercase tracking-wider block">Stamp Text</label>
+              <input 
+                type="text"
+                value={watermarkText}
+                onChange={(e) => setWatermarkText(e.target.value)}
+                className="google-input w-full text-xs font-bold"
+                placeholder="Enter watermark text"
+              />
+
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {PRESET_TEXTS.map(txt => (
+                  <button
+                    key={txt}
+                    type="button"
+                    onClick={() => setWatermarkText(txt)}
+                    className="px-2 py-0.5 text-[10px] font-bold bg-[#f1f3f4] hover:bg-[#e8f0fe] hover:text-[#1a73e8] rounded-md border border-[#dadce0] transition-colors"
+                  >
+                    {txt}
+                  </button>
+                ))}
               </div>
             </div>
 
-            <div className="pt-3 border-t border-[#dadce0]">
-              <button 
-                onClick={handleWatermark}
-                disabled={!file || !watermarkText.trim() || isProcessing}
-                className="w-full btn-google-primary text-sm py-3 shadow-sm justify-center disabled:opacity-50"
+            {/* 2. Color Palette */}
+            <div className="space-y-2 pt-2 border-t border-[#dadce0]">
+              <label className="text-xs font-bold text-[#5f6368] uppercase tracking-wider block">Stamp Color</label>
+              <div className="flex items-center gap-2">
+                {COLOR_PALETTE.map(c => (
+                  <button
+                    key={c.hex}
+                    type="button"
+                    onClick={() => setColor(c.hex)}
+                    style={{ backgroundColor: c.hex }}
+                    className={`w-7 h-7 rounded-full border-2 transition-transform cursor-pointer flex items-center justify-center text-white ${
+                      color === c.hex ? 'scale-110 border-[#202124] shadow-xs' : 'border-white hover:scale-105'
+                    }`}
+                  >
+                    {color === c.hex && <Check size={14} />}
+                  </button>
+                ))}
+                <input 
+                  type="color"
+                  value={color}
+                  onChange={(e) => setColor(e.target.value)}
+                  className="w-7 h-7 rounded-full cursor-pointer p-0 border border-[#dadce0]"
+                  title="Custom color"
+                />
+              </div>
+            </div>
+
+            {/* 3. 3x3 Position Picker */}
+            <div className="space-y-2 pt-2 border-t border-[#dadce0]">
+              <label className="text-xs font-bold text-[#5f6368] uppercase tracking-wider block">Stamp Position</label>
+              <div className="grid grid-cols-3 gap-1.5 max-w-[180px]">
+                {POSITIONS.map(p => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => setPosition(p.id)}
+                    title={p.label}
+                    className={`h-8 rounded-lg border text-center font-bold text-[10px] transition-all cursor-pointer ${
+                      position === p.id 
+                        ? 'bg-[#1a73e8] text-white border-[#1a73e8] shadow-xs' 
+                        : 'bg-white text-[#5f6368] border-[#dadce0] hover:border-[#1a73e8]'
+                    }`}
+                  >
+                    &bull;
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* 4. Opacity & Font Size Sliders */}
+            <div className="space-y-3 pt-2 border-t border-[#dadce0]">
+              <div>
+                <div className="flex justify-between text-xs font-bold text-[#5f6368] mb-1">
+                  <span>Opacity</span>
+                  <span className="text-[#1a73e8]">{Math.round(opacity * 100)}%</span>
+                </div>
+                <input 
+                  type="range" 
+                  min="0.1" 
+                  max="1.0" 
+                  step="0.05"
+                  value={opacity}
+                  onChange={(e) => setOpacity(parseFloat(e.target.value))}
+                  className="w-full h-1.5 bg-[#e8eaed] accent-[#1a73e8] rounded-full appearance-none cursor-pointer"
+                />
+              </div>
+
+              <div>
+                <div className="flex justify-between text-xs font-bold text-[#5f6368] mb-1">
+                  <span>Font Size</span>
+                  <span className="text-[#1a73e8]">{fontSize} pt</span>
+                </div>
+                <input 
+                  type="range" 
+                  min="20" 
+                  max="90" 
+                  step="2"
+                  value={fontSize}
+                  onChange={(e) => setFontSize(parseInt(e.target.value))}
+                  className="w-full h-1.5 bg-[#e8eaed] accent-[#1a73e8] rounded-full appearance-none cursor-pointer"
+                />
+              </div>
+
+              <div>
+                <div className="flex justify-between text-xs font-bold text-[#5f6368] mb-1">
+                  <span>Rotation Angle</span>
+                  <span className="text-[#1a73e8]">{rotation}°</span>
+                </div>
+                <input 
+                  type="range" 
+                  min="-90" 
+                  max="90" 
+                  step="5"
+                  value={rotation}
+                  onChange={(e) => setRotation(parseInt(e.target.value))}
+                  className="w-full h-1.5 bg-[#e8eaed] accent-[#1a73e8] rounded-full appearance-none cursor-pointer"
+                />
+              </div>
+            </div>
+
+            {/* Apply Action */}
+            <div className="pt-2 border-t border-[#dadce0] space-y-2">
+              <button
+                onClick={handleApplyWatermark}
+                disabled={isProcessing || !file || !watermarkText.trim()}
+                className="w-full btn-google-primary text-sm py-3.5 shadow-md justify-center disabled:opacity-50"
               >
                 {isProcessing ? (
                   <>
-                    <Loader2 size={16} className="animate-spin" /> Stamping PDF...
+                    <Loader2 size={18} className="animate-spin" />
+                    <span>Applying Watermark...</span>
                   </>
                 ) : (
                   <>
-                    <Droplets size={16} />
-                    <span>Apply Watermark & Download</span>
+                    <Download size={18} />
+                    <span>Apply Watermark to PDF</span>
                   </>
                 )}
               </button>
+
+              {downloadUrl && !isProcessing && (
+                <a
+                  href={downloadUrl}
+                  download={downloadFileName}
+                  className="w-full btn-google-secondary text-xs py-2 justify-center border-[#34a853] text-[#137333] bg-[#e6f4ea] hover:bg-[#ceead6]"
+                >
+                  <CheckCircle2 size={14} className="text-[#34a853]" /> Download Again
+                </a>
+              )}
             </div>
+
           </div>
+
         </div>
+
       </div>
     </div>
   );
