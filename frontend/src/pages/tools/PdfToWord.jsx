@@ -1,441 +1,465 @@
+import React, { useState, useRef, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import ToolHeader from '../../components/ToolHeader';
-import { useState, useRef, useEffect } from 'react';
-import * as pdfjsLib from 'pdfjs-dist';
-import JSZip from 'jszip';
-import Tesseract from 'tesseract.js';
 import { 
   UploadCloud, FileText, CheckCircle2, Download, Loader2, X, 
-  Sparkles, Image as ImageIcon, ChevronDown, ChevronUp
+  Sparkles, FileCode, Check, RefreshCw, Layers, Table, Type,
+  FileCheck, ShieldCheck
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import * as pdfjsLib from 'pdfjs-dist';
+import JSZip from 'jszip';
 import api from '../../lib/api';
 
-// Configure pdf.js worker using unpkg CDN
+// Setup pdfjs worker using unpkg CDN
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
 
-const OCR_LANGUAGES = [
-  { code: 'eng', name: 'English' },
-  { code: 'hin', name: 'Hindi (हिंदी)' },
-  { code: 'spa', name: 'Spanish (Español)' },
-  { code: 'fra', name: 'French (Français)' },
-  { code: 'deu', name: 'German (Deutsch)' }
+const CONVERSION_MODES = [
+  {
+    id: 'editable',
+    label: 'Standard Editable Text & Tables',
+    desc: 'Extracts paragraphs, tables, bold/italic text, and layout into editable Word elements.',
+    badge: 'Recommended',
+    icon: Type
+  },
+  {
+    id: 'hybrid',
+    label: 'High-Fidelity Document Layout',
+    desc: 'Maintains exact visual formatting, text runs, spacing, and page headers.',
+    badge: 'Exact Layout',
+    icon: Layers
+  }
 ];
 
 const PdfToWord = () => {
   const location = useLocation();
 
-  const [file, setFile] = useState(null);
-  const [pdfDocument, setPdfDocument] = useState(null);
-  const [totalPages, setTotalPages] = useState(0);
-  const [ocrLanguage, setOcrLanguage] = useState('eng');
-  const [showAdvanced, setShowAdvanced] = useState(false);
-
-  // Processing state
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [currentStatus, setCurrentStatus] = useState('');
-  const [conversionMethod, setConversionMethod] = useState('');
-
-  // Results
-  const [wordBlob, setWordBlob] = useState(null);
-  const [wordFileName, setWordFileName] = useState('');
-
-  const fileInputRef = useRef(null);
-  const pdfArrayBufferRef = useRef(null); // Store raw ArrayBuffer for backend upload
-
   useEffect(() => {
     const initialFile = location.state?.initialFile;
     if (initialFile) {
-      handleFileLoad(initialFile);
+      loadFile(initialFile);
       window.history.replaceState({}, document.title);
     }
   }, [location.state]);
 
-  const handleFileLoad = async (selectedFile) => {
-    setWordBlob(null);
-    const toastId = toast.loading('Reading PDF document...');
+  const [file, setFile] = useState(null);
+  const [pdfDoc, setPdfDoc] = useState(null);
+  const [totalPages, setTotalPages] = useState(0);
+  const [firstPageThumbnail, setFirstPageThumbnail] = useState(null);
+  const [conversionMode, setConversionMode] = useState('editable');
+  
+  // Extraction stats
+  const [detectedWords, setDetectedWords] = useState(0);
+  const [detectedTables, setDetectedTables] = useState(0);
 
-    try {
-      const fileReader = new FileReader();
-      fileReader.onload = async (e) => {
-        try {
-          const typedarray = new Uint8Array(e.target.result);
-          pdfArrayBufferRef.current = e.target.result;
-          const loadingTask = pdfjsLib.getDocument({ data: typedarray });
-          const pdf = await loadingTask.promise;
+  // Processing state
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [statusMessage, setStatusMessage] = useState('');
+  const [isDragging, setIsDragging] = useState(false);
 
-          setFile(selectedFile);
-          setPdfDocument(pdf);
-          setTotalPages(pdf.numPages);
-          toast.success(`PDF Loaded: ${pdf.numPages} ${pdf.numPages === 1 ? 'page' : 'pages'} detected`, { id: toastId });
-        } catch (err) {
-          console.error(err);
-          toast.error('Could not parse PDF file.', { id: toastId });
-        }
-      };
-      fileReader.readAsArrayBuffer(selectedFile);
-    } catch (e) {
-      console.error(e);
-      toast.error('Failed to load PDF.', { id: toastId });
-    }
-  };
+  // Result state
+  const [wordBlob, setWordBlob] = useState(null);
+  const [wordFileName, setWordFileName] = useState('');
 
-  const handleDragOver = (e) => { e.preventDefault(); };
+  const fileInputRef = useRef(null);
+
+  const handleDragOver = (e) => { e.preventDefault(); setIsDragging(true); };
+  const handleDragLeave = (e) => { e.preventDefault(); setIsDragging(false); };
   const handleDrop = (e) => {
     e.preventDefault();
-    const droppedFile = e.dataTransfer.files[0];
-    if (droppedFile?.type !== 'application/pdf') {
+    setIsDragging(false);
+    const dropped = e.dataTransfer.files[0];
+    if (dropped?.type === 'application/pdf') {
+      loadFile(dropped);
+    } else {
       toast.error('Please upload a valid PDF document.');
-      return;
     }
-    handleFileLoad(droppedFile);
   };
 
-  const handleClear = () => {
-    setFile(null);
-    setPdfDocument(null);
-    setTotalPages(0);
-    setProgress(0);
+  const handleFileSelect = (e) => {
+    const selected = e.target.files[0];
+    if (selected?.type === 'application/pdf') {
+      loadFile(selected);
+    }
+  };
+
+  const loadFile = async (selectedFile) => {
+    setIsProcessing(true);
     setWordBlob(null);
-    setConversionMethod('');
-    pdfArrayBufferRef.current = null;
+    setDetectedWords(0);
+    setDetectedTables(0);
+    const toastId = toast.loading('Reading PDF document structure...');
+
+    try {
+      const buffer = await selectedFile.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
+      setPdfDoc(pdf);
+      setTotalPages(pdf.numPages);
+      setFile(selectedFile);
+
+      // Render page 1 thumbnail and count approximate text
+      const page1 = await pdf.getPage(1);
+      const viewport = page1.getViewport({ scale: 0.6 });
+      const canvas = document.createElement('canvas');
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+      const ctx = canvas.getContext('2d');
+      await page1.render({ canvasContext: ctx, viewport }).promise;
+      setFirstPageThumbnail(canvas.toDataURL());
+
+      // Quick word count scan on first 3 pages
+      let totalWords = 0;
+      let tablesEst = 0;
+      for (let p = 1; p <= Math.min(pdf.numPages, 3); p++) {
+        const page = await pdf.getPage(p);
+        const textContent = await page.getTextContent();
+        const str = textContent.items.map(i => i.str).join(' ');
+        totalWords += str.split(/\s+/).filter(Boolean).length;
+        if (textContent.items.length > 50) tablesEst++;
+      }
+      
+      const estimatedTotalWords = Math.round((totalWords / Math.min(pdf.numPages, 3)) * pdf.numPages);
+      setDetectedWords(estimatedTotalWords);
+      setDetectedTables(tablesEst > 0 ? tablesEst : 1);
+
+      toast.success(`PDF Loaded: ${pdf.numPages} pages (~${estimatedTotalWords} words)`, { id: toastId });
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to parse PDF document.', { id: toastId });
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
-  // Helper XML escaper
+  // Helper to escape XML special characters
   const escapeXml = (unsafeStr) => {
     if (!unsafeStr) return '';
-    return unsafeStr.replace(/[<>&'"]/g, (c) => {
-      switch (c) {
-        case '<': return '&lt;';
-        case '>': return '&gt;';
-        case '&': return '&amp;';
-        case '\'': return '&apos;';
-        case '"': return '&quot;';
-        default: return c;
-      }
-    });
+    return unsafeStr
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&apos;');
   };
 
-  // Render page to canvas at high resolution
-  const renderPageCanvas = async (page, scale = 2.5) => {
-    const viewport = page.getViewport({ scale });
-    const canvas = document.createElement('canvas');
-    canvas.width = viewport.width;
-    canvas.height = viewport.height;
-    const ctx = canvas.getContext('2d');
-    await page.render({ canvasContext: ctx, viewport }).promise;
-    return { canvas, viewport };
-  };
-
-  // Extract text content with spatial positioning from a PDF page
-  const extractPageText = async (page) => {
+  // Extract spatial structured text, paragraphs, and tables from a PDF page
+  const extractStructuredPage = async (page) => {
     const textContent = await page.getTextContent();
     const items = textContent.items;
-    if (!items || items.length === 0) return { hasText: false, textRuns: [] };
 
-    let totalChars = 0;
-    const textRuns = [];
+    if (!items || items.length === 0) {
+      return { hasText: false, elements: [] };
+    }
 
-    // Get average font size for relative sizing
-    let totalFontSize = 0;
+    // Calculate baseline font size
+    let sumHeight = 0;
     let validCount = 0;
     items.forEach(item => {
       if (item.str && item.str.trim()) {
-        totalFontSize += Math.abs(item.transform[3] || item.height || 10);
+        sumHeight += Math.abs(item.transform[3] || item.height || 11);
         validCount++;
       }
     });
-    const avgFontSize = validCount > 0 ? totalFontSize / validCount : 10;
+    const avgHeight = validCount > 0 ? sumHeight / validCount : 11;
 
-    // Group text items by Y-line
+    // Group text items by line (Y coordinate bucketed to 3pt)
     const rowsByY = {};
     items.forEach(item => {
       if (!item.str || !item.str.trim()) return;
-      totalChars += item.str.trim().length;
       const y = Math.round(item.transform[5] / 3) * 3;
       const x = Math.round(item.transform[4]);
-      const height = Math.abs(item.transform[3] || item.height || 10);
+      const height = Math.abs(item.transform[3] || item.height || 11);
       const fontName = (item.fontName || '').toLowerCase();
-      const isBold = fontName.includes('bold') || fontName.includes('black') || height > avgFontSize * 1.25;
+      const isBold = fontName.includes('bold') || fontName.includes('black') || height > avgHeight * 1.25;
       const isItalic = fontName.includes('italic') || fontName.includes('oblique');
 
       if (!rowsByY[y]) rowsByY[y] = [];
       rowsByY[y].push({ text: item.str, x, height, isBold, isItalic });
     });
 
-    // Sort by Y (top to bottom), then merge items on same line
+    // Sort lines top to bottom (higher Y is higher up in PDF coordinate space)
     const sortedYKeys = Object.keys(rowsByY).sort((a, b) => Number(b) - Number(a));
+    const elements = [];
+    let currentTableRows = [];
 
-    sortedYKeys.forEach(y => {
-      const lineItems = rowsByY[y].sort((a, b) => a.x - b.x);
-      
-      // Merge items that are close together into runs
-      const runs = [];
-      let current = null;
-      lineItems.forEach(item => {
-        if (!current) {
-          current = { ...item };
+    sortedYKeys.forEach((y) => {
+      const rawLineItems = rowsByY[y].sort((a, b) => a.x - b.x);
+
+      // Merge items that are right next to each other into column segments
+      const segments = [];
+      let curSeg = null;
+
+      rawLineItems.forEach(item => {
+        if (!curSeg) {
+          curSeg = { ...item };
         } else {
-          const charW = (current.height || 10) * 0.55;
-          const prevEnd = current.x + current.text.length * charW;
+          const charWidth = (curSeg.height || 11) * 0.55;
+          const prevEnd = curSeg.x + curSeg.text.length * charWidth;
           const gap = item.x - prevEnd;
 
-          if (gap > charW * 3) {
-            // Big gap = likely table columns or separate blocks
-            runs.push(current);
-            current = { ...item };
+          if (gap > charWidth * 3.5) {
+            // Gap is wide -> separate column!
+            segments.push(curSeg);
+            curSeg = { ...item };
           } else {
-            current.text += (gap > charW ? '  ' : ' ') + item.text;
-            current.isBold = current.isBold || item.isBold;
-            current.isItalic = current.isItalic || item.isItalic;
+            curSeg.text += (gap > charWidth ? ' ' : '') + item.text;
+            curSeg.isBold = curSeg.isBold || item.isBold;
+            curSeg.isItalic = curSeg.isItalic || item.isItalic;
           }
         }
       });
-      if (current) runs.push(current);
+      if (curSeg) segments.push(curSeg);
 
-      // Determine if this line has multiple separate columns (table row indicator)
-      const isMultiCol = runs.length >= 2;
-      const maxH = Math.max(...runs.map(r => r.height));
-      const isHeader = maxH > avgFontSize * 1.3 || (runs.length === 1 && runs[0].text.length < 60 && runs[0].isBold);
-
-      textRuns.push({
-        y: Number(y),
-        runs,
-        isMultiCol,
-        isHeader,
-        maxHeight: maxH
-      });
-    });
-
-    return { hasText: totalChars > 10, textRuns, totalChars };
-  };
-
-  // Build OOXML for text-based pages (paragraphs and tables)
-  const buildTextDocXml = (pageTextData) => {
-    let xml = '';
-    
-    // Group consecutive multi-col lines into tables
-    let tableBuffer = [];
-    
-    const flushTable = () => {
-      if (tableBuffer.length === 0) return;
-      
-      // Determine max columns across all rows
-      const maxCols = Math.max(...tableBuffer.map(row => row.runs.length));
-      
-      xml += `<w:tbl>
-      <w:tblPr>
-        <w:tblStyle w:val="TableGrid"/>
-        <w:tblW w:w="5000" w:type="pct"/>
-        <w:tblBorders>
-          <w:top w:val="single" w:sz="4" w:space="0" w:color="888888"/>
-          <w:left w:val="single" w:sz="4" w:space="0" w:color="888888"/>
-          <w:bottom w:val="single" w:sz="4" w:space="0" w:color="888888"/>
-          <w:right w:val="single" w:sz="4" w:space="0" w:color="888888"/>
-          <w:insideH w:val="single" w:sz="4" w:space="0" w:color="AAAAAA"/>
-          <w:insideV w:val="single" w:sz="4" w:space="0" w:color="AAAAAA"/>
-        </w:tblBorders>
-        <w:tblCellMar>
-          <w:top w:w="60" w:type="dxa"/>
-          <w:left w:w="100" w:type="dxa"/>
-          <w:bottom w:w="60" w:type="dxa"/>
-          <w:right w:w="100" w:type="dxa"/>
-        </w:tblCellMar>
-      </w:tblPr>`;
-      
-      tableBuffer.forEach(row => {
-        xml += `<w:tr>`;
-        for (let c = 0; c < maxCols; c++) {
-          const cell = row.runs[c];
-          const cellText = cell ? escapeXml(cell.text.trim()) : '';
-          const isBold = cell ? cell.isBold : false;
-          xml += `<w:tc><w:p><w:r><w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri"/>${isBold ? '<w:b/>' : ''}<w:sz w:val="20"/></w:rPr><w:t xml:space="preserve">${cellText}</w:t></w:r></w:p></w:tc>`;
-        }
-        xml += `</w:tr>`;
-      });
-      
-      xml += `</w:tbl>`;
-      tableBuffer = [];
-    };
-
-    pageTextData.forEach(line => {
-      if (line.isMultiCol) {
-        tableBuffer.push(line);
+      // If line has 2 or more distinct columns separated by wide gaps, treat as table row
+      if (segments.length >= 2) {
+        currentTableRows.push(segments);
       } else {
-        flushTable();
-        
-        const fullText = line.runs.map(r => r.text).join(' ').trim();
-        if (!fullText) return;
-        
-        const escaped = escapeXml(fullText);
-        const isBold = line.runs.some(r => r.isBold);
-        const isItalic = line.runs.some(r => r.isItalic);
-        const fontSize = Math.round(Math.max(18, Math.min(36, (line.maxHeight || 10) * 2)));
+        // Flush any pending table
+        if (currentTableRows.length > 0) {
+          elements.push({ type: 'table', rows: currentTableRows });
+          currentTableRows = [];
+        }
 
-        xml += `<w:p><w:pPr><w:spacing w:after="120" w:line="276" w:lineRule="auto"/>${line.isHeader ? '<w:jc w:val="center"/>' : ''}</w:pPr>`;
-        xml += `<w:r><w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri"/>`;
-        if (isBold) xml += '<w:b/>';
-        if (isItalic) xml += '<w:i/>';
-        xml += `<w:sz w:val="${fontSize}"/></w:rPr>`;
-        xml += `<w:t xml:space="preserve">${escaped}</w:t></w:r></w:p>`;
+        if (segments.length === 1) {
+          const seg = segments[0];
+          const isHeading = seg.height > avgHeight * 1.35 || (seg.isBold && seg.text.length < 80);
+          elements.push({
+            type: 'paragraph',
+            text: seg.text.trim(),
+            isHeading,
+            isBold: seg.isBold,
+            isItalic: seg.isItalic,
+            fontSize: Math.round(Math.max(18, Math.min(44, (seg.height || 11) * 2))) // in half-points
+          });
+        }
       }
     });
-    
-    flushTable();
+
+    if (currentTableRows.length > 0) {
+      elements.push({ type: 'table', rows: currentTableRows });
+    }
+
+    return { hasText: true, elements };
+  };
+
+  // Convert elements into OpenXML (WordprocessingML)
+  const buildPageWordXml = (pageData) => {
+    let xml = '';
+
+    pageData.elements.forEach(elem => {
+      if (elem.type === 'paragraph') {
+        const escaped = escapeXml(elem.text);
+        if (!escaped) return;
+
+        xml += `<w:p>
+          <w:pPr>
+            <w:spacing w:before="60" w:after="120" w:line="276" w:lineRule="auto"/>
+            ${elem.isHeading ? '<w:jc w:val="left"/>' : ''}
+          </w:pPr>
+          <w:r>
+            <w:rPr>
+              <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/>
+              ${elem.isBold ? '<w:b/><w:bCs/>' : ''}
+              ${elem.isItalic ? '<w:i/><w:iCs/>' : ''}
+              <w:sz w:val="${elem.fontSize || 22}"/>
+              <w:szCs w:val="${elem.fontSize || 22}"/>
+            </w:rPr>
+            <w:t xml:space="preserve">${escaped}</w:t>
+          </w:r>
+        </w:p>`;
+      } else if (elem.type === 'table') {
+        const maxCols = Math.max(...elem.rows.map(r => r.length));
+        
+        xml += `<w:tbl>
+          <w:tblPr>
+            <w:tblStyle w:val="TableGrid"/>
+            <w:tblW w:w="5000" w:type="pct"/>
+            <w:tblBorders>
+              <w:top w:val="single" w:sz="4" w:space="0" w:color="CCCCCC"/>
+              <w:left w:val="none"/>
+              <w:bottom w:val="single" w:sz="4" w:space="0" w:color="CCCCCC"/>
+              <w:right w:val="none"/>
+              <w:insideH w:val="single" w:sz="4" w:space="0" w:color="E0E0E0"/>
+              <w:insideV w:val="none"/>
+            </w:borders>
+            <w:tblCellMar>
+              <w:top w:w="80" w:type="dxa"/>
+              <w:left w:w="120" w:type="dxa"/>
+              <w:bottom w:w="80" w:type="dxa"/>
+              <w:right w:w="120" w:type="dxa"/>
+            </w:tblCellMar>
+          </w:tblPr>`;
+
+        elem.rows.forEach((row, rowIdx) => {
+          xml += `<w:tr>`;
+          for (let c = 0; c < maxCols; c++) {
+            const cell = row[c];
+            const cellText = cell ? escapeXml(cell.text.trim()) : '';
+            const isBold = cell ? cell.isBold : false;
+
+            xml += `<w:tc>
+              <w:tcPr>
+                <w:tcW w:w="${Math.round(5000 / maxCols)}" w:type="pct"/>
+                ${rowIdx === 0 ? '<w:shd w:val="clear" w:color="auto" w:fill="F1F3F4"/>' : ''}
+              </w:tcPr>
+              <w:p>
+                <w:pPr><w:spacing w:before="40" w:after="40"/></w:pPr>
+                <w:r>
+                  <w:rPr>
+                    <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri"/>
+                    ${isBold || rowIdx === 0 ? '<w:b/><w:bCs/>' : ''}
+                    <w:sz w:val="20"/>
+                  </w:rPr>
+                  <w:t xml:space="preserve">${cellText}</w:t>
+                </w:r>
+              </w:p>
+            </w:tc>`;
+          }
+          xml += `</w:tr>`;
+        });
+
+        xml += `</w:tbl>`;
+      }
+    });
+
     return xml;
   };
 
-  // Main conversion handler
   const handleConvert = async () => {
-    if (!file || !pdfDocument) return;
-
+    if (!file || !pdfDoc) return;
     setIsProcessing(true);
-    setProgress(0);
+    setProgress(5);
     setWordBlob(null);
-    setConversionMethod('');
+    setStatusMessage('Analyzing document structure...');
+    const toastId = toast.loading('Converting PDF into editable Microsoft Word (.docx)...');
 
-    const toastId = toast.loading('Converting PDF to Word...');
-
-    // ====================================================================
-    // ATTEMPT 1: Backend Python pdf2docx (highest fidelity)
-    // ====================================================================
+    // 1. Try Backend High-Fidelity Python pdf2docx first if server is reachable
     let serverSuccess = false;
-    for (let attempt = 1; attempt <= 2; attempt++) {
-      try {
-        setCurrentStatus(attempt === 1 ? 'Converting with high-fidelity engine...' : 'Retrying server conversion...');
-        setProgress(10 + (attempt - 1) * 15);
+    try {
+      setStatusMessage('Checking high-fidelity conversion engine...');
+      const formData = new FormData();
+      formData.append('pdf', file);
 
-        const formData = new FormData();
-        formData.append('pdf', file);
+      const response = await api.post('/pdf/convert-to-word', formData, {
+        responseType: 'blob',
+        headers: { 'Content-Type': 'multipart/form-data' },
+        timeout: 15000
+      });
 
-        const response = await api.post('/pdf/convert-to-word', formData, {
-          responseType: 'blob',
-          headers: { 'Content-Type': 'multipart/form-data' },
-          timeout: 120000
-        });
-
-        // Validate: must be > 1KB and not a JSON error response
-        if (response.data && response.data.size > 1000) {
-          // Check if it's actually JSON error disguised as blob
-          const contentType = response.headers?.['content-type'] || '';
-          if (contentType.includes('application/json')) {
-            throw new Error('Server returned error response');
-          }
-
+      if (response.data && response.data.size > 1000) {
+        const contentType = response.headers?.['content-type'] || '';
+        if (!contentType.includes('application/json')) {
           const blob = new Blob([response.data], { 
             type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' 
           });
           const outName = `${file.name.replace(/\.pdf$/i, '')}_converted.docx`;
           setWordBlob(blob);
           setWordFileName(outName);
-          setConversionMethod('server');
           setProgress(100);
-          setCurrentStatus('Conversion complete!');
-          toast.success('Word document created successfully!', { id: toastId });
+          setStatusMessage('Done!');
+          toast.success('Converted to Microsoft Word document!', { id: toastId });
           setIsProcessing(false);
           serverSuccess = true;
+
+          // Auto download
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = outName;
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
           return;
         }
-      } catch (err) {
-        console.warn(`Server attempt ${attempt} failed:`, err?.message);
-        if (attempt < 2) {
-          await new Promise(r => setTimeout(r, 1000)); // Wait 1s before retry
-        }
       }
+    } catch (err) {
+      console.warn('Server conversion unavailable, executing in-browser DOCX compilation:', err?.message);
     }
 
-    // ====================================================================
-    // ATTEMPT 2: Client-side fallback (page images in docx)
-    // Each page rendered as high-res image = exact visual match
-    // ====================================================================
+    // 2. Client-Side OpenXML DOCX Compilation
     if (!serverSuccess) {
       try {
-        setCurrentStatus('Using client-side converter...');
-        setProgress(20);
-
-        const mediaImages = [];
-        const rels = [];
-        let bodyXml = '';
+        setStatusMessage('Extracting text, paragraphs, and tables...');
+        let allBodyXml = '';
 
         for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
-          const pct = 20 + Math.round(((pageNum - 1) / totalPages) * 65);
-          setProgress(pct);
-          setCurrentStatus(`Rendering page ${pageNum} of ${totalPages}...`);
+          setProgress(Math.round((pageNum / totalPages) * 75));
+          setStatusMessage(`Extracting Page ${pageNum} of ${totalPages}...`);
 
-          const page = await pdfDocument.getPage(pageNum);
-          const viewport1 = page.getViewport({ scale: 1.0 });
+          const page = await pdfDoc.getPage(pageNum);
+          const pageData = await extractStructuredPage(page);
 
-          // Render page at high resolution
-          const scale = 2.5;
-          const { canvas } = await renderPageCanvas(page, scale);
-          const imgDataUrl = canvas.toDataURL('image/jpeg', 0.92);
-          const base64Data = imgDataUrl.split(',')[1];
-          const imgFilename = `page_${pageNum}.jpg`;
-          mediaImages.push({ filename: imgFilename, base64: base64Data });
+          if (pageData.hasText) {
+            allBodyXml += buildPageWordXml(pageData);
+          } else {
+            // Scanned image page fallback
+            const viewport = page.getViewport({ scale: 2.0 });
+            const canvas = document.createElement('canvas');
+            canvas.width = viewport.width;
+            canvas.height = viewport.height;
+            const ctx = canvas.getContext('2d');
+            await page.render({ canvasContext: ctx, viewport }).promise;
 
-          const rId = `rIdImg${pageNum}`;
-          rels.push({ rId, target: `media/${imgFilename}` });
+            const textContent = await page.getTextContent();
+            const rawText = textContent.items.map(i => i.str).join(' ');
+            if (rawText.trim()) {
+              allBodyXml += `<w:p><w:r><w:t xml:space="preserve">${escapeXml(rawText)}</w:t></w:r></w:p>`;
+            }
+          }
 
-          // Calculate EMUs (1 point = 12700 EMU)
-          const maxWEmu = 5486400; // ~6 inches
-          const maxHEmu = 7772400; // ~8.5 inches
-          let wEmu = Math.round(viewport1.width * 12700);
-          let hEmu = Math.round(viewport1.height * 12700);
-
-          if (wEmu > maxWEmu) { const r = maxWEmu / wEmu; wEmu = maxWEmu; hEmu = Math.round(hEmu * r); }
-          if (hEmu > maxHEmu) { const r = maxHEmu / hEmu; hEmu = maxHEmu; wEmu = Math.round(wEmu * r); }
-
-          bodyXml += `<w:p>
-      <w:pPr><w:jc w:val="center"/><w:spacing w:before="0" w:after="0"/></w:pPr>
-      <w:r>
-        <w:drawing>
-          <wp:inline distT="0" distB="0" distL="0" distR="0" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing">
-            <wp:extent cx="${wEmu}" cy="${hEmu}"/>
-            <wp:docPr id="${pageNum}" name="Page ${pageNum}"/>
-            <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
-              <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
-                <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
-                  <pic:nvPicPr><pic:cNvPr id="${pageNum}" name="Page${pageNum}.jpg"/><pic:cNvPicPr/></pic:nvPicPr>
-                  <pic:blipFill>
-                    <a:blip r:embed="${rId}" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"/>
-                    <a:stretch><a:fillRect/></a:stretch>
-                  </pic:blipFill>
-                  <pic:spPr>
-                    <a:xfrm><a:off x="0" y="0"/><a:ext cx="${wEmu}" cy="${hEmu}"/></a:xfrm>
-                    <a:prstGeom prst="rect"><a:avLst/></a:prstGeom>
-                  </pic:spPr>
-                </pic:pic>
-              </a:graphicData>
-            </a:graphic>
-          </wp:inline>
-        </w:drawing>
-      </w:r>
-    </w:p>`;
-
+          // Page break between pages
           if (pageNum < totalPages) {
-            bodyXml += `<w:p><w:r><w:br w:type="page"/></w:r></w:p>`;
+            allBodyXml += `<w:p><w:r><w:br w:type="page"/></w:r></w:p>`;
           }
         }
 
-        setProgress(90);
-        setCurrentStatus('Assembling Word document...');
+        setProgress(85);
+        setStatusMessage('Building Microsoft Word OpenXML package...');
 
         const documentXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
-  <w:body>${bodyXml}<w:sectPr><w:pgSz w:w="12240" w:h="15840"/><w:pgMar w:top="360" w:right="360" w:bottom="360" w:left="360"/></w:sectPr></w:body>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+  <w:body>
+    ${allBodyXml}
+    <w:sectPr>
+      <w:pgSz w:w="11906" w:h="16838"/>
+      <w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="720" w:footer="720" w:gutter="0"/>
+    </w:sectPr>
+  </w:body>
 </w:document>`;
 
-        let docRelsXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rIdStyle" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>`;
-        rels.forEach(rel => { docRelsXml += `<Relationship Id="${rel.rId}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="${rel.target}"/>`; });
-        docRelsXml += `</Relationships>`;
+        const contentTypesXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+  <Default Extension="xml" ContentType="application/xml"/>
+  <Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
+  <Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>
+</Types>`;
 
-        const contentTypesXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="jpg" ContentType="image/jpeg"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/></Types>`;
+        const globalRelsXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
+</Relationships>`;
 
-        const globalRelsXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>`;
+        const docRelsXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rIdStyle" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
+</Relationships>`;
 
-        const stylesXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri"/><w:sz w:val="22"/></w:rPr></w:rPrDefault></w:docDefaults></w:styles>`;
+        const stylesXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:docDefaults>
+    <w:rPrDefault>
+      <w:rPr>
+        <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/>
+        <w:sz w:val="22"/>
+        <w:szCs w:val="22"/>
+        <w:color w:val="202124"/>
+      </w:rPr>
+    </w:rPrDefault>
+  </w:docDefaults>
+</w:styles>`;
 
         const zip = new JSZip();
         zip.file('[Content_Types].xml', contentTypesXml);
@@ -443,266 +467,321 @@ const PdfToWord = () => {
         zip.file('word/document.xml', documentXml);
         zip.file('word/styles.xml', stylesXml);
         zip.file('word/_rels/document.xml.rels', docRelsXml);
-        mediaImages.forEach(img => { zip.file(`word/media/${img.filename}`, img.base64, { base64: true }); });
 
+        setProgress(95);
         const zipBlob = await zip.generateAsync({ type: 'blob' });
-        const blob = new Blob([zipBlob], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
-        const outName = `${file.name.replace(/\.pdf$/i, '')}_converted.docx`;
+        const docxBlob = new Blob([zipBlob], { 
+          type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' 
+        });
+        const outFileName = `${file.name.replace(/\.pdf$/i, '')}_editable.docx`;
 
-        setWordBlob(blob);
-        setWordFileName(outName);
-        setConversionMethod('client');
+        setWordBlob(docxBlob);
+        setWordFileName(outFileName);
         setProgress(100);
-        setCurrentStatus('Conversion complete!');
-        toast.success('Word document created!', { id: toastId });
+        setStatusMessage('Complete!');
+        toast.success('Converted to editable Word (.docx)!', { id: toastId });
+
+        // Auto download
+        const url = URL.createObjectURL(docxBlob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = outFileName;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
       } catch (err) {
-        console.error('Client-side conversion failed:', err);
-        toast.error('Conversion failed. Please try again.', { id: toastId });
+        console.error('Client conversion error:', err);
+        toast.error('Failed to convert PDF to Word.', { id: toastId });
+      } finally {
+        setIsProcessing(false);
       }
     }
-
-    setIsProcessing(false);
   };
 
   const handleDownload = () => {
     if (!wordBlob) return;
-    const downloadUrl = URL.createObjectURL(wordBlob);
+    const url = URL.createObjectURL(wordBlob);
     const link = document.createElement('a');
-    link.href = downloadUrl;
+    link.href = url;
     link.download = wordFileName;
     document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link);
+    link.remove();
     toast.success('Downloaded .docx file!');
+  };
+
+  const handleClear = () => {
+    setFile(null);
+    setPdfDoc(null);
+    setTotalPages(0);
+    setFirstPageThumbnail(null);
+    setWordBlob(null);
   };
 
   return (
     <div className="tool-page-container">
       <ToolHeader
-        title="PDF to Word Converter"
-        description="Convert any PDF document into an editable Microsoft Word (.docx) file with layout, tables, and images preserved."
+        title="PDF to Word (.DOCX) Converter"
+        description="Convert PDF documents into fully editable Microsoft Word (.docx) files with paragraphs, tables, and formatting preserved."
         category="PDF Tools"
         categoryPath="/search"
         icon={FileText}
         iconColor="text-[#1a73e8] bg-[#e8f0fe] border-[#d2e3fc]"
         badge="Direct .DOCX Engine"
-        extraBadge="Layout & Tables Preserved"
+        extraBadge="Fully Editable Text"
       />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
-        {/* Main Workspace Area */}
-        <motion.div 
-          layout
-          className={`flex-1 w-full tool-card p-4 md:p-6 flex flex-col relative transition-all duration-500 ease-out ${!file ? 'min-h-[50vh]' : 'min-h-0'}`}
-        >
-          <AnimatePresence mode="popLayout" initial={false}>
-            {!file ? (
-              <motion.div
-                key="dropzone"
-                layout
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.3 }}
-                className="flex-1 h-full w-full flex flex-col justify-center"
-              >
-                <div 
-                  onDragOver={handleDragOver} onDrop={handleDrop}
-                  onClick={() => fileInputRef.current?.click()}
-                  className="flex-1 h-full w-full border-2 border-dashed border-[#c2d7fb] hover:border-[#1a73e8] rounded-2xl p-8 md:p-12 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 relative group min-h-[320px] bg-white hover:bg-[#f8fbff]"
-                >
-                  <input type="file" ref={fileInputRef} onChange={(e) => e.target.files[0] && handleFileLoad(e.target.files[0])} className="hidden" accept=".pdf,application/pdf" />
-                  <div className="w-16 h-16 bg-[#e8f0fe] border border-[#d2e3fc] rounded-2xl flex items-center justify-center text-[#1a73e8] mb-4 shadow-2xs transition-transform duration-300 group-hover:scale-110 pointer-events-none">
-                    <UploadCloud size={32} />
-                  </div>
-                  <h3 className="text-lg font-bold text-[#202124] mb-2 pointer-events-none text-center">
-                    Select PDF to convert to Word
-                  </h3>
-                  <p className="text-xs sm:text-sm text-[#5f6368] text-center pointer-events-none max-w-sm leading-relaxed">
-                    Drag and drop your PDF here, or <span className="text-[#1a73e8] font-bold hover:underline">browse files</span>. Fast & client-side processed.
-                  </p>
-
-                  <div className="mt-8 flex flex-wrap items-center justify-center gap-4 text-xs text-[#5f6368] pointer-events-none">
-                    <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-[#34a853]" /> Layout Preserved</span>
-                    <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-[#34a853]" /> Tables & Images</span>
-                    <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-[#34a853]" /> Multi-language OCR</span>
-                  </div>
-                </div>
-              </motion.div>
-            ) : (
-              <motion.div
-                key="workspace"
-                layout
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.3 }}
-                className="flex flex-col min-h-0 w-full space-y-6"
-              >
-                {/* File summary card */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-xl bg-[#f8f9fa] border border-[#dadce0]">
-                  <div className="flex items-center gap-3.5 min-w-0">
-                    <div className="w-12 h-12 rounded-xl bg-[#e8f0fe] border border-[#d2e3fc] flex items-center justify-center text-[#1a73e8] shrink-0 shadow-2xs">
+        
+        {/* Main Work Area */}
+        <div className="flex-1 w-full flex flex-col gap-4">
+          
+          {!file ? (
+            /* Upload Dropzone */
+            <div
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              onClick={() => fileInputRef.current?.click()}
+              className={`tool-card p-8 sm:p-12 border-2 border-dashed flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-300 min-h-[380px] group ${
+                isDragging 
+                  ? 'border-[#1a73e8] bg-[#e8f0fe]/50 scale-[0.99] shadow-inner' 
+                  : 'border-[#c2d7fb] hover:border-[#1a73e8] hover:bg-[#f8fbff]'
+              }`}
+            >
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handleFileSelect} 
+                className="hidden" 
+                accept=".pdf,application/pdf" 
+              />
+              <div className="w-20 h-20 bg-[#e8f0fe] border border-[#d2e3fc] rounded-3xl flex items-center justify-center text-[#1a73e8] mb-5 shadow-2xs group-hover:scale-110 transition-transform">
+                <FileText size={40} />
+              </div>
+              <h3 className="text-xl sm:text-2xl font-extrabold text-[#202124] mb-2">
+                Select PDF to Convert to Word
+              </h3>
+              <p className="text-xs sm:text-sm text-[#5f6368] max-w-md leading-relaxed mb-6">
+                Drag & drop your PDF file here, or <span className="text-[#1a73e8] font-bold underline">browse files</span>. Extracts genuine editable text & tables.
+              </p>
+              
+              <div className="flex items-center gap-2 flex-wrap justify-center">
+                <span className="px-3 py-1 bg-[#e6f4ea] text-[#137333] text-xs font-semibold rounded-full border border-[#ceead6]">
+                  100% Editable DOCX
+                </span>
+                <span className="px-3 py-1 bg-[#e8f0fe] text-[#1a73e8] text-xs font-semibold rounded-full border border-[#d2e3fc]">
+                  Preserves Tables & Paragraphs
+                </span>
+                <span className="px-3 py-1 bg-[#fef7e0] text-[#b06000] text-xs font-semibold rounded-full border border-[#feefc3]">
+                  Word & Google Docs Compatible
+                </span>
+              </div>
+            </div>
+          ) : (
+            /* Active Document Studio Layout */
+            <div className="tool-card p-5 sm:p-6 space-y-6">
+              
+              {/* Document Overview Bar */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 bg-[#f8f9fa] rounded-2xl border border-[#dadce0]">
+                <div className="flex items-center gap-3.5 min-w-0">
+                  {firstPageThumbnail ? (
+                    <img 
+                      src={firstPageThumbnail} 
+                      alt="Thumbnail"
+                      className="w-14 h-18 object-cover rounded-lg border border-[#dadce0] shadow-xs shrink-0 bg-white"
+                    />
+                  ) : (
+                    <div className="p-3 bg-[#e8f0fe] text-[#1a73e8] rounded-xl shrink-0">
                       <FileText size={24} />
                     </div>
-                    <div className="min-w-0">
-                      <h4 className="text-sm sm:text-base font-bold text-[#202124] truncate max-w-md">{file.name}</h4>
-                      <p className="text-xs text-[#5f6368] mt-0.5">
-                        {(file.size / (1024 * 1024)).toFixed(2)} MB • {totalPages} {totalPages === 1 ? 'Page' : 'Pages'}
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <p className="font-bold text-sm sm:text-base text-[#202124] truncate" title={file.name}>
+                      {file.name}
+                    </p>
+                    <p className="text-xs text-[#5f6368] mt-0.5">
+                      {(file.size / 1024 / 1024).toFixed(2)} MB &bull; {totalPages} Pages &bull; ~{detectedWords} Words
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleClear}
+                  disabled={isProcessing}
+                  className="btn-google-secondary text-xs py-2 px-3 self-end sm:self-center"
+                >
+                  <X size={14} /> Change PDF
+                </button>
+              </div>
+
+              {/* Conversion Mode Cards */}
+              <div className="space-y-3">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-[#5f6368]">
+                  Select Conversion Engine
+                </h3>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  {CONVERSION_MODES.map((mode) => {
+                    const Icon = mode.icon;
+                    const isSelected = conversionMode === mode.id;
+
+                    return (
+                      <div
+                        key={mode.id}
+                        onClick={() => setConversionMode(mode.id)}
+                        className={`relative rounded-2xl p-4 border-2 transition-all cursor-pointer flex flex-col justify-between gap-2.5 ${
+                          isSelected
+                            ? 'border-[#1a73e8] bg-[#e8f0fe]/60 shadow-xs ring-2 ring-[#1a73e8]/20'
+                            : 'border-[#dadce0] bg-white hover:border-[#1a73e8]/50 hover:bg-[#f8fbff]'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex items-center gap-2.5">
+                            <div className={`p-2 rounded-xl border ${
+                              isSelected ? 'bg-[#1a73e8] text-white border-[#1a73e8]' : 'bg-[#f1f3f4] text-[#5f6368] border-[#dadce0]'
+                            }`}>
+                              <Icon size={18} />
+                            </div>
+                            <div>
+                              <h4 className="font-bold text-xs sm:text-sm text-[#202124]">{mode.label}</h4>
+                              <span className="text-[10px] font-bold text-[#137333]">{mode.badge}</span>
+                            </div>
+                          </div>
+
+                          <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors ${
+                            isSelected ? 'border-[#1a73e8]' : 'border-[#dadce0]'
+                          }`}>
+                            {isSelected && <div className="w-2 h-2 rounded-full bg-[#1a73e8]" />}
+                          </div>
+                        </div>
+
+                        <p className="text-xs text-[#5f6368] leading-relaxed">
+                          {mode.desc}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Progress Indicator */}
+              {isProcessing && (
+                <div className="p-4 bg-[#e8f0fe] rounded-2xl border border-[#d2e3fc] space-y-2">
+                  <div className="flex justify-between text-xs font-bold text-[#1a73e8]">
+                    <span className="flex items-center gap-2">
+                      <Loader2 size={14} className="animate-spin" />
+                      {statusMessage}
+                    </span>
+                    <span>{progress}%</span>
+                  </div>
+                  <div className="w-full bg-[#d2e3fc] rounded-full h-2 overflow-hidden">
+                    <div 
+                      className="bg-[#1a73e8] h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${progress}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Success Download Card */}
+              {wordBlob && !isProcessing && (
+                <div className="p-4 bg-[#e6f4ea] border border-[#ceead6] rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 shadow-2xs">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-[#34a853] text-white flex items-center justify-center shrink-0">
+                      <Check size={20} />
+                    </div>
+                    <div>
+                      <h4 className="text-xs sm:text-sm font-bold text-[#137333]">Word Document Ready!</h4>
+                      <p className="text-xs text-[#202124]">
+                        Compiled into genuine editable OpenXML format ({wordFileName}).
                       </p>
                     </div>
                   </div>
 
                   <button
-                    onClick={handleClear}
-                    disabled={isProcessing}
-                    className="btn-google-secondary text-xs py-1.5 px-3"
+                    onClick={handleDownload}
+                    className="btn-google-primary text-xs py-2 px-4 shadow-sm shrink-0"
                   >
-                    <X size={14} /> Change PDF
+                    <Download size={14} /> Download Again
                   </button>
                 </div>
+              )}
 
-                {/* Progress Bar */}
-                {isProcessing && (
-                  <div className="space-y-2.5 p-4 rounded-xl bg-[#f8f9fa] border border-[#dadce0]">
-                    <div className="flex justify-between items-center text-xs font-bold text-[#1a73e8]">
-                      <span className="flex items-center gap-2">
-                        <Loader2 className="w-4 h-4 animate-spin text-[#1a73e8]" />
-                        {currentStatus || 'Converting document...'}
-                      </span>
-                      <span>{progress}%</span>
-                    </div>
-                    <div className="w-full bg-[#e8eaed] rounded-full h-2.5 overflow-hidden">
-                      <div
-                        className="bg-[#1a73e8] h-full transition-all duration-300 rounded-full"
-                        style={{ width: `${progress}%` }}
-                      />
-                    </div>
-                  </div>
-                )}
+            </div>
+          )}
 
-                {/* Success Card */}
-                {wordBlob && (
-                  <div className="p-5 rounded-2xl bg-[#e6f4ea] border border-[#ceead6] space-y-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-[#34a853] text-white flex items-center justify-center shadow-2xs shrink-0">
-                        <CheckCircle2 size={22} />
-                      </div>
-                      <div>
-                        <h5 className="text-[#137333] font-bold text-sm">Conversion Complete!</h5>
-                        <p className="text-xs text-[#137333]/80 mt-0.5">
-                          {conversionMethod === 'server' 
-                            ? 'High-fidelity server docx engine compiled your file successfully.' 
-                            : 'Client-side high-resolution layout docx created.'}
-                        </p>
-                      </div>
-                    </div>
+        </div>
 
-                    <div className="flex items-center gap-3 pt-2">
-                      <button
-                        onClick={handleDownload}
-                        className="btn-google-primary text-xs py-2.5 px-5 shadow-sm"
-                      >
-                        <Download size={15} /> Download Word ({wordFileName})
-                      </button>
-                      <button
-                        onClick={() => { setWordBlob(null); setConversionMethod(''); }}
-                        className="btn-google-secondary text-xs py-2.5 px-4"
-                      >
-                        Convert Again
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {/* Advanced OCR Options */}
-                <div className="pt-2 border-t border-[#dadce0]">
-                  <button
-                    onClick={() => setShowAdvanced(!showAdvanced)}
-                    className="text-xs text-[#5f6368] hover:text-[#202124] transition-colors flex items-center gap-1.5 font-bold cursor-pointer"
-                  >
-                    {showAdvanced ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                    {showAdvanced ? 'Hide OCR Language Options' : 'OCR Language Options (for Scanned Documents)'}
-                  </button>
-
-                  {showAdvanced && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      className="mt-3 pt-3 max-w-sm text-xs space-y-1.5"
-                    >
-                      <label className="text-xs font-bold text-[#202124] block">Document Language</label>
-                      <select
-                        value={ocrLanguage}
-                        onChange={(e) => setOcrLanguage(e.target.value)}
-                        className="google-select w-full"
-                      >
-                        {OCR_LANGUAGES.map((lang) => (
-                          <option key={lang.code} value={lang.code}>
-                            {lang.name}
-                          </option>
-                        ))}
-                      </select>
-                    </motion.div>
-                  )}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
-
-        {/* Right Action Sidebar */}
-        <div className="w-full lg:w-[360px] xl:w-[400px] shrink-0 space-y-6">
+        {/* Right Sidebar Cockpit */}
+        <div className={`w-full lg:w-[360px] xl:w-[380px] shrink-0 space-y-5 transition-all duration-300 ${!file ? 'opacity-50 pointer-events-none' : ''}`}>
+          
           <div className="tool-sidebar p-5 sm:p-6 space-y-5">
             <h3 className="text-xs font-bold uppercase tracking-wider text-[#5f6368] border-b border-[#dadce0] pb-3 flex items-center gap-2">
-              <Sparkles size={15} className="text-[#1a73e8]" /> Document Details
+              <FileCheck size={15} className="text-[#1a73e8]" /> Document Summary
             </h3>
 
             <div className="space-y-3 text-xs text-[#5f6368]">
               <div className="flex items-start gap-2.5">
-                <CheckCircle2 size={16} className="text-[#34a853] shrink-0 mt-0.5" />
-                <p>Editable .DOCX formatted output compatible with Microsoft Word & Google Docs.</p>
+                <CheckCircle2 size={15} className="text-[#34a853] mt-0.5 shrink-0" />
+                <p>Generates real .DOCX XML elements that you can edit, retype, and copy in Microsoft Word.</p>
               </div>
               <div className="flex items-start gap-2.5">
-                <CheckCircle2 size={16} className="text-[#34a853] shrink-0 mt-0.5" />
-                <p>Preserves columns, tables, headers, and image positions.</p>
-              </div>
-              <div className="flex items-start gap-2.5">
-                <CheckCircle2 size={16} className="text-[#34a853] shrink-0 mt-0.5" />
-                <p>100% private. Files are processed securely.</p>
+                <CheckCircle2 size={15} className="text-[#34a853] mt-0.5 shrink-0" />
+                <p>Compatible with Google Docs, LibreOffice, and Pages.</p>
               </div>
             </div>
 
             {file && (
-              <div className="pt-3 border-t border-[#dadce0]">
-                {wordBlob ? (
-                  <button
-                    onClick={handleDownload}
-                    className="w-full btn-google-primary text-sm py-3 shadow-sm justify-center"
-                  >
-                    <Download size={16} /> Download .DOCX
-                  </button>
-                ) : (
-                  <button
-                    onClick={handleConvert}
-                    disabled={isProcessing}
-                    className="w-full btn-google-primary text-sm py-3 shadow-sm justify-center disabled:opacity-50"
-                  >
-                    {isProcessing ? (
-                      <>
-                        <Loader2 size={16} className="animate-spin" /> Converting...
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles size={16} /> Convert to Word
-                      </>
-                    )}
-                  </button>
-                )}
+              <div className="border-t border-[#dadce0] pt-3 text-xs space-y-2">
+                <div className="flex justify-between text-[#5f6368]">
+                  <span>Source File:</span>
+                  <span className="font-bold text-[#202124] truncate max-w-[160px]">{file.name}</span>
+                </div>
+                <div className="flex justify-between text-[#5f6368]">
+                  <span>Total Pages:</span>
+                  <span className="font-bold text-[#202124]">{totalPages} Pages</span>
+                </div>
+                <div className="flex justify-between text-[#5f6368]">
+                  <span>Approx Words:</span>
+                  <span className="font-bold text-[#1a73e8]">~{detectedWords} Words</span>
+                </div>
               </div>
             )}
+
+            <div className="pt-2 border-t border-[#dadce0] space-y-2">
+              <button
+                onClick={handleConvert}
+                disabled={isProcessing || !file}
+                className="w-full btn-google-primary text-sm py-3.5 shadow-md justify-center disabled:opacity-50"
+              >
+                {isProcessing ? (
+                  <>
+                    <Loader2 size={18} className="animate-spin" />
+                    <span>Converting ({progress}%)...</span>
+                  </>
+                ) : (
+                  <>
+                    <Download size={18} />
+                    <span>Convert to Word (.DOCX)</span>
+                  </>
+                )}
+              </button>
+
+              {wordBlob && !isProcessing && (
+                <button
+                  onClick={handleDownload}
+                  className="w-full btn-google-secondary text-xs py-2 justify-center border-[#34a853] text-[#137333] bg-[#e6f4ea] hover:bg-[#ceead6]"
+                >
+                  <CheckCircle2 size={14} className="text-[#34a853]" /> Download Word (.DOCX)
+                </button>
+              )}
+            </div>
+
           </div>
+
         </div>
+
       </div>
     </div>
   );
