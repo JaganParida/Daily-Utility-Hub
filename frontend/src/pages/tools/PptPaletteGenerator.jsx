@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Palette, Copy, CheckCircle2, RefreshCw } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import ToolHeader from '../../components/ToolHeader';
 
 const CONTRAST_THEMES = [
   { id: 'dark-blue', name: 'Deep Midnight (Projector Safe)', bg: '#0b1329', cardBg: '#1c2541', text: '#ffffff', accent: '#5bc0be' },
@@ -21,23 +22,26 @@ const PptPaletteGenerator = () => {
   };
 
   return (
-    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
-      <div className="mb-6 flex items-start gap-4 shrink-0">
-        <div className="p-2 bg-primary/10 text-primary rounded-md shadow-sm">
-          <Palette size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Projector Palette Swatches</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Generate high-contrast color schemes calibrated specifically to preserve readability on light/dark digital projectors.</p>
-        </div>
-      </div>
+    <div className="tool-page-container">
+      <ToolHeader
+        title="Projector Color & Contrast Swatches"
+        description="Generate high-contrast color schemes calibrated specifically to preserve readability on light/dark digital projectors."
+        category="Slides & Presentation Tools"
+        categoryPath="/search"
+        icon={Palette}
+        iconColor="text-[#8e24aa] bg-[#f3e8fd] border-[#e9d2fd]"
+        badge="Projector-Safe Palette"
+        extraBadge="High Contrast WCAG"
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         
         {/* Color presets list */}
-        <div className="w-full lg:w-[420px] shrink-0 space-y-6">
-          <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-4">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Contrast Themes</h3>
+        <div className="w-full lg:w-[380px] shrink-0 space-y-6">
+          <div className="tool-sidebar p-5 sm:p-6 space-y-4">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#5f6368] border-b border-[#dadce0] pb-3">
+              Contrast Themes
+            </h3>
             
             <div className="space-y-3">
               {CONTRAST_THEMES.map(theme => (

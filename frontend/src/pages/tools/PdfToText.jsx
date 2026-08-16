@@ -1,4 +1,5 @@
 import { useLocation } from 'react-router-dom';
+import ToolHeader from '../../components/ToolHeader';
 import { useState, useRef, useEffect } from 'react';
 import { Type, UploadCloud, FileText, CheckCircle2, Copy, Check, Download, Eye, EyeOff, ExternalLink, X, Loader2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
@@ -152,16 +153,17 @@ const PdfToText = () => {
   };
 
   return (
-    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
-      <div className="mb-6 flex items-start gap-4 shrink-0">
-        <div className="p-2 bg-primary/10 text-primary rounded-md shadow-sm">
-          <Type size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Extract Text from PDF</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Convert your PDF documents into editable raw text plain files.</p>
-        </div>
-      </div>
+    <div className="tool-page-container">
+      <ToolHeader
+        title="Extract Text from PDF"
+        description="Convert your PDF documents into editable raw text plain files."
+        category="PDF Tools"
+        categoryPath="/search"
+        icon={FileText}
+        iconColor="text-[#ea4335] bg-[#fce8e6] border-[#fad2cf]"
+        badge="Text Extractor"
+        extraBadge="Raw TXT & Layout"
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         

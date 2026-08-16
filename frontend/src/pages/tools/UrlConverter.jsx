@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import ToolHeader from '../../components/ToolHeader';
 import { 
   Link2, ArrowRightLeft, Copy, Check, Settings2, 
   Trash2, Plus, AlertTriangle, ShieldCheck 
@@ -154,18 +155,19 @@ const UrlConverter = () => {
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: 'easeOut' }}
-      className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8"
+      className="tool-page-container"
     >
       {/* Header */}
-      <div className="mb-6 flex items-center gap-3">
-        <div className="p-2.5 bg-primary/10 text-primary rounded-xl shadow-sm shrink-0">
-          <Link2 size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">URL Encoder & Decoder</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Safely encode URLs and query strings, or parse and manage query parameters visually.</p>
-        </div>
-      </div>
+      <ToolHeader
+        title="URL Encoder & Decoder"
+        description="Safely encode URLs and query strings, or parse and manage query parameters visually."
+        category="Developer Tools"
+        categoryPath="/search"
+        icon={Type}
+        iconColor="text-[#ea4335] bg-[#fce8e6] border-[#fad2cf]"
+        badge="URI & Query Encoder"
+        extraBadge="RFC 3986 Compliant"
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         {/* Left Workspace */}

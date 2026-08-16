@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import ToolHeader from '../../components/ToolHeader';
 import { Lock, Unlock, Shield, File, Download, Key, CheckCircle2, AlertCircle, X, Eye, EyeOff, FileArchive } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
@@ -137,16 +138,17 @@ const FileVault = () => {
   };
 
   return (
-    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
-      <div className="mb-6 flex items-start gap-4 shrink-0">
-        <div className="p-2 bg-primary/10 text-primary rounded-md shadow-sm">
-          <Shield size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Secure File Vault</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Military-grade AES-256 client-side encryption. Lock files before sharing them.</p>
-        </div>
-      </div>
+    <div className="tool-page-container">
+      <ToolHeader
+        title="Secure File Vault"
+        description="Military-grade AES-256 client-side encryption. Lock files before sharing them."
+        category="File & Storage Tools"
+        categoryPath="/search"
+        icon={Shield}
+        iconColor="text-[#137333] bg-[#e6f4ea] border-[#ceead6]"
+        badge="AES-256 Client Encryption"
+        extraBadge="Zero Server Storage"
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         

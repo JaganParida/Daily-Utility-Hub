@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import ToolHeader from '../../components/ToolHeader';
 import { Code2, Download, Settings, RefreshCw, Layers } from 'lucide-react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
@@ -61,16 +62,17 @@ const CodeToImage = () => {
   };
 
   return (
-    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
-      <div className="mb-6 flex items-start gap-4 shrink-0">
-        <div className="p-2 bg-indigo-500/10 text-indigo-500 rounded-md shadow-sm">
-          <Code2 size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Code to Image</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Create beautiful, high-res, shareable images of your code snippets.</p>
-        </div>
-      </div>
+    <div className="tool-page-container">
+      <ToolHeader
+        title="Code to Image"
+        description="Create beautiful, high-res, shareable images of your code snippets."
+        category="Student & Docs"
+        categoryPath="/search"
+        icon={ImageIcon}
+        iconColor="text-[#1a73e8] bg-[#e8f0fe] border-[#d2e3fc]"
+        badge="Syntax Screenshot Studio"
+        extraBadge="High-Res PNG & SVG Export"
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         

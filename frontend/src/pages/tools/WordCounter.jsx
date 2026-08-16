@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import ToolHeader from '../../components/ToolHeader';
 import { Type, Clock, Hash, CheckCircle, Copy, Trash2, Info, FileText } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
@@ -94,17 +95,18 @@ const WordCounter = () => {
   const hasText = text.trim().length > 0;
 
   return (
-    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
+    <div className="tool-page-container">
       {/* Header */}
-      <div className="mb-6 flex items-center gap-3">
-        <div className="p-2 bg-primary/10 text-primary rounded-lg shadow-sm">
-          <Type size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Advanced Word Counter</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Inspect paragraph counts, keyword density charts, reading metrics, and character stats.</p>
-        </div>
-      </div>
+      <ToolHeader
+        title="Advanced Word Counter"
+        description="Inspect paragraph counts, keyword density charts, reading metrics, and character stats."
+        category="Text Tools"
+        categoryPath="/search"
+        icon={Type}
+        iconColor="text-[#1a73e8] bg-[#e8f0fe] border-[#d2e3fc]"
+        badge="Live Word Count"
+        extraBadge="Readability Score"
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         {/* Left: Input Text Editor */}

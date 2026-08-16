@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { UploadCloud, Download, Image as ImageIcon, RefreshCw, Loader2, Check, ArrowRightLeft, Settings2, ChevronDown, CheckCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DropzoneComponent from '../../components/DropzoneComponent';
+import ToolHeader from '../../components/ToolHeader';
 import imageCompression from 'browser-image-compression';
 import { toast } from 'react-hot-toast';
 
@@ -145,23 +146,24 @@ const ImageCompressor = () => {
   };
 
   return (
-    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
-      <div className="mb-6 flex items-center gap-3">
-        <div className="p-2 bg-emerald-500/10 text-emerald-500 rounded-md shadow-sm">
-          <ImageIcon size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Advanced Image Compressor</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Real-time compression targeting exact file sizes or quality.</p>
-        </div>
-      </div>
+    <div className="tool-page-container">
+      <ToolHeader
+        title="Smart Image Compressor & Optimizer"
+        description="Compress JPEG, PNG, and WebP images to exact target file sizes or quality levels without visible degradation."
+        category="Image Tools"
+        categoryPath="/search"
+        icon={ImageIcon}
+        iconColor="text-[#137333] bg-[#e6f4ea] border-[#ceead6]"
+        badge="Multi-format Wasm Compression"
+        extraBadge="Zero Quality Loss Mode"
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         
         {/* Upload Area / Workspace */}
         <motion.div 
           layout 
-          className={`flex-1 w-full bg-card border border-border p-4 md:p-6 rounded-2xl shadow-sm flex flex-col relative transition-all duration-500 ease-out ${!originalFile ? 'min-h-[50vh]' : 'min-h-0'}`}
+          className={`flex-1 w-full tool-card p-4 md:p-6 flex flex-col relative transition-all duration-500 ease-out ${!originalFile ? 'min-h-[50vh]' : 'min-h-0'}`}
         >
           <AnimatePresence mode="popLayout" initial={false}>
             {!originalFile ? (

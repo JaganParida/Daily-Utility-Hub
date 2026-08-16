@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import ToolHeader from '../../components/ToolHeader';
 import { FileText, Download, Loader2, Trash2, ArrowUp, ArrowDown, Settings2, ChevronDown, CheckCircle, Layers } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DropzoneComponent from '../../components/DropzoneComponent';
@@ -180,18 +181,19 @@ const ImageToPdf = () => {
   const hasImages = images.length > 0;
 
   return (
-    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
+    <div className="tool-page-container">
 
       {/* Header */}
-      <div className="mb-6 flex items-start gap-4 shrink-0">
-        <div className="p-2 bg-primary/10 text-primary rounded-md shadow-sm">
-          <FileText size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Advanced Image to PDF</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Convert photos to printable PDF documents — A4, Letter, and more.</p>
-        </div>
-      </div>
+      <ToolHeader
+        title="Advanced Image to PDF"
+        description="Convert photos to printable PDF documents — A4, Letter, and more."
+        category="Image Tools"
+        categoryPath="/search"
+        icon={FileText}
+        iconColor="text-[#ea4335] bg-[#fce8e6] border-[#fad2cf]"
+        badge="Images to PDF Document"
+        extraBadge="Page Margin Controls"
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
 

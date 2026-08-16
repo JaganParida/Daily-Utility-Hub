@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import ToolHeader from '../../components/ToolHeader';
 import { Search, Copy, Trash2, CheckCircle, HelpCircle, RefreshCw } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
@@ -123,17 +124,18 @@ const FindAndReplace = () => {
   const hasText = text.trim().length > 0;
 
   return (
-    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
+    <div className="tool-page-container">
       {/* Header */}
-      <div className="mb-6 flex items-center gap-3">
-        <div className="p-2 bg-primary/10 text-primary rounded-lg shadow-sm">
-          <Search size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Advanced Find & Replace</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Find and replace patterns in real-time, supporting Case Sensitivity, Whole Words, and Regular Expressions (Regex).</p>
-        </div>
-      </div>
+      <ToolHeader
+        title="Advanced Find & Replace"
+        description="Find and replace patterns in real-time, supporting Case Sensitivity, Whole Words, and Regular Expressions (Regex)."
+        category="Text Tools"
+        categoryPath="/search"
+        icon={Type}
+        iconColor="text-[#1a73e8] bg-[#e8f0fe] border-[#d2e3fc]"
+        badge="Regex Support"
+        extraBadge="Real-time Match Highlighting"
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         

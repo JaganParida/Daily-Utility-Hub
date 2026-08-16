@@ -1,4 +1,5 @@
 import { useLocation } from 'react-router-dom';
+import ToolHeader from '../../components/ToolHeader';
 import { useState, useRef, useEffect } from 'react';
 import { FolderArchive, File, Download, UploadCloud, FileArchive, CheckCircle2, FileText, FileImage, FileCode, Search, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -163,16 +164,17 @@ const ZipArchiver = () => {
   };
 
   return (
-    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
-      <div className="mb-6 flex items-start gap-4 shrink-0">
-        <div className="p-2 bg-primary/10 text-primary rounded-md shadow-sm">
-          <FolderArchive size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Advanced Zip Archiver</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Compress multiple files into a single ZIP, or extract and preview contents of existing ZIPs.</p>
-        </div>
-      </div>
+    <div className="tool-page-container">
+      <ToolHeader
+        title="Advanced Zip Archiver"
+        description="Compress multiple files into a single ZIP, or extract and preview contents of existing ZIPs."
+        category="File & Storage Tools"
+        categoryPath="/search"
+        icon={FolderArchive}
+        iconColor="text-[#1a73e8] bg-[#e8f0fe] border-[#d2e3fc]"
+        badge="ZIP Archive Studio"
+        extraBadge="Compress & Extract In-Browser"
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         

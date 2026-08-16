@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import ToolHeader from '../../components/ToolHeader';
 import { LayoutGrid, Download, RefreshCw, Settings2, Trash2, Plus, Loader2, CheckCircle, Image as ImageIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toJpeg } from 'html-to-image';
@@ -216,19 +217,20 @@ const ImageCollage = () => {
   };
 
   return (
-    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
+    <div className="tool-page-container">
       <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" className="hidden" />
 
       {/* Header */}
-      <div className="mb-6 flex items-center gap-3">
-        <div className="p-2 bg-primary/10 text-primary rounded-lg shadow-sm">
-          <LayoutGrid size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Ultimate Collage Maker</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Choose a layout, click slots to add photos, drag to pan, scroll to zoom.</p>
-        </div>
-      </div>
+      <ToolHeader
+        title="Ultimate Collage Maker"
+        description="Choose a layout, click slots to add photos, drag to pan, scroll to zoom."
+        category="Image Tools"
+        categoryPath="/search"
+        icon={LayoutGrid}
+        iconColor="text-[#f29900] bg-[#fef7e0] border-[#feefc3]"
+        badge="Grid Collage Maker"
+        extraBadge="Custom Spacing & Layout"
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
 

@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import ToolHeader from '../../components/ToolHeader';
 import { ScanText, Download, Globe, FileText, Loader2, ArrowRightLeft, Copy, CheckCircle2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import Tesseract from 'tesseract.js';
@@ -162,16 +163,17 @@ const ImageToText = () => {
   };
 
   return (
-    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
-      <div className="mb-6 flex items-start gap-4 shrink-0">
-        <div className="p-2 bg-primary/10 text-primary rounded-md shadow-sm">
-          <ScanText size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Image to Text (OCR)</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Extract text from photos instantly with advanced multi-language OCR.</p>
-        </div>
-      </div>
+    <div className="tool-page-container">
+      <ToolHeader
+        title="Image to Text (OCR)"
+        description="Extract text from photos instantly with advanced multi-language OCR."
+        category="Student & Docs"
+        categoryPath="/search"
+        icon={Type}
+        iconColor="text-[#f29900] bg-[#fef7e0] border-[#feefc3]"
+        badge="OCR Scanner"
+        extraBadge="Extract Text from Photos"
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         

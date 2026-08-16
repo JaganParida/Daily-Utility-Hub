@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
+import ToolHeader from '../../components/ToolHeader';
 
 const STANDARD_WORDS = [
   "apple", "river", "mountain", "eagle", "forest", "ocean", "desert", "storm", "winter", "summer",
@@ -243,50 +244,51 @@ const PasswordGenerator = () => {
   const sliderFill = (val, min, max) => `linear-gradient(to right, var(--primary) ${((val - min) / (max - min)) * 100}%, color-mix(in srgb, var(--muted) 60%, transparent) ${((val - min) / (max - min)) * 100}%)`;
 
   return (
-    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
-      {/* Header */}
-      <div className="mb-6 flex items-center gap-3">
-        <div className="p-2 bg-primary/10 text-primary rounded-lg shadow-sm">
-          <Key size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Advanced Password Generator</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Generate customizable passwords, cryptographic PINs, or memorable xkcd-style passphrases.</p>
-        </div>
-      </div>
+    <div className="tool-page-container">
+      <ToolHeader
+        title="High-Entropy Password Generator"
+        description="Generate cryptographically secure passwords, PINs, or memorable passphrases with entropy diagnostics."
+        category="Developer Tools"
+        categoryPath="/search"
+        icon={Key}
+        iconColor="text-[#137333] bg-[#e6f4ea] border-[#ceead6]"
+        badge="Zero Knowledge / Local"
+        extraBadge="Entropy Meter"
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
 
         {/* Left Card: Password Output & Diagnostics */}
-        <div className="flex-1 w-full bg-card border border-border p-4 md:p-5 rounded-2xl shadow-sm space-y-6">
+        <div className="flex-1 w-full tool-card p-5 sm:p-6 space-y-6">
 
           {batchCount === 1 ? (
             <>
               {/* Single Password Display */}
-              <div className="bg-muted/15 border border-border/40 p-6 rounded-2xl flex flex-col items-center justify-center relative">
+              <div className="bg-[#f8f9fa] border border-[#dadce0] p-6 rounded-2xl flex flex-col items-center justify-center relative shadow-2xs">
                 <div className="absolute top-3 left-4 flex items-center gap-1">
-                  <span className={`text-[10px] font-extrabold uppercase tracking-wider ${stats.color}`}>
+                  <span className={`text-[11px] font-extrabold uppercase tracking-wider ${stats.color}`}>
                     {stats.label}
                   </span>
                 </div>
                 <button
                   onClick={handleGenerate}
-                  className="absolute top-3 right-4 text-muted-foreground hover:text-primary transition-all p-1 active:rotate-45"
+                  className="absolute top-3 right-4 text-[#5f6368] hover:text-[#1a73e8] hover:bg-[#e8f0fe] transition-all p-1.5 rounded-lg active:rotate-45 cursor-pointer"
                   title="Regenerate"
                 >
-                  <RefreshCw size={14} />
+                  <RefreshCw size={15} />
                 </button>
 
-                <div className="w-full flex items-center gap-4 mt-2.5">
+                <div className="w-full flex items-center gap-3 mt-3">
                   <input
                     type="text"
                     readOnly
                     value={primaryPassword}
-                    className="w-full bg-transparent text-center text-lg sm:text-2xl md:text-3xl font-mono text-foreground focus:outline-none select-all truncate font-bold"
+                    className="w-full bg-transparent text-center text-lg sm:text-2xl md:text-3xl font-mono text-[#202124] focus:outline-none select-all truncate font-bold"
                   />
                   <button
                     onClick={() => copyToClipboard(primaryPassword)}
-                    className="bg-primary text-primary-foreground p-2.5 rounded-xl transition-all hover:scale-105 active:scale-95 shrink-0"
+                    className="btn-google-primary p-3 rounded-xl shrink-0"
+                    title="Copy Password"
                   >
                     <Copy size={18} />
                   </button>
@@ -294,17 +296,17 @@ const PasswordGenerator = () => {
               </div>
 
               {/* Cryptographic Diagnostics */}
-              <div className="bg-muted/5 border border-border/40 p-4 rounded-xl space-y-4">
-                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">Cryptographic Diagnostics</span>
+              <div className="bg-white border border-[#dadce0] p-4 sm:p-5 rounded-xl space-y-4 shadow-2xs">
+                <span className="text-[11px] font-bold text-[#5f6368] uppercase tracking-wider block">Cryptographic Diagnostics</span>
 
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-card border border-border/30 p-3 rounded-lg text-center shadow-sm">
-                    <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-wider">Entropy strength</span>
-                    <p className="text-lg font-black text-foreground mt-0.5">{stats.entropy} <span className="text-xs font-normal">bits</span></p>
+                  <div className="bg-[#f8f9fa] border border-[#dadce0] p-3 rounded-xl text-center">
+                    <span className="text-[10px] text-[#5f6368] uppercase font-bold tracking-wider">Entropy Strength</span>
+                    <p className="text-lg font-black text-[#202124] mt-0.5">{stats.entropy} <span className="text-xs font-normal text-[#5f6368]">bits</span></p>
                   </div>
-                  <div className="bg-card border border-border/30 p-3 rounded-lg text-center shadow-sm">
-                    <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-wider">Estimated crack time</span>
-                    <p className="text-xs font-bold text-foreground mt-1.5 truncate leading-none">{stats.crackTime}</p>
+                  <div className="bg-[#f8f9fa] border border-[#dadce0] p-3 rounded-xl text-center">
+                    <span className="text-[10px] text-[#5f6368] uppercase font-bold tracking-wider">Estimated Crack Time</span>
+                    <p className="text-xs sm:text-sm font-bold text-[#202124] mt-1.5 truncate leading-none">{stats.crackTime}</p>
                   </div>
                 </div>
 
@@ -406,42 +408,40 @@ const PasswordGenerator = () => {
         </div>
 
         {/* Right: Settings Sidebar */}
-        <div className="w-full lg:w-[350px] xl:w-[400px] shrink-0 space-y-6">
-          <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6">
+        <div className="w-full lg:w-[360px] xl:w-[400px] shrink-0 space-y-6">
+          <div className="tool-sidebar p-5 sm:p-6 space-y-5">
 
-            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground border-b border-border pb-3 flex items-center gap-2">
-              <Settings2 size={16} /> Generator Settings
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#5f6368] border-b border-[#dadce0] pb-3 flex items-center gap-2">
+              <Settings2 size={16} className="text-[#1a73e8]" /> Generator Settings
             </h3>
 
             {/* Security Preset */}
-            <div className="space-y-3">
-              <label className="text-sm font-semibold text-foreground">Security Preset</label>
-              <div className="relative group">
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-[#202124]">Security Preset</label>
+              <div className="relative">
                 <select
                   value={preset}
                   onChange={(e) => applyRecipe(e.target.value)}
-                  className="w-full appearance-none bg-muted/20 border border-border/50 group-hover:border-border p-3 pl-4 pr-10 rounded-xl text-sm font-semibold text-foreground focus:ring-2 focus:ring-primary/50 outline-none transition-all cursor-pointer shadow-sm"
+                  className="w-full google-select"
                 >
-                  <option value="none" className="bg-background text-foreground">Custom Parameters</option>
-                  <option value="database" className="bg-background text-foreground">Database Safe (Alphanumeric)</option>
-                  <option value="ad" className="bg-background text-foreground">Active Directory standard</option>
-                  <option value="wordpress" className="bg-background text-foreground">WordPress standard (Long)</option>
-                  <option value="easy" className="bg-background text-foreground">Easy to type (No Lookalikes)</option>
+                  <option value="none">Custom Parameters</option>
+                  <option value="database">Database Safe (Alphanumeric)</option>
+                  <option value="ad">Active Directory Standard</option>
+                  <option value="wordpress">WordPress Standard (Long)</option>
+                  <option value="easy">Easy to Type (No Lookalikes)</option>
                 </select>
-                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground group-hover:text-foreground transition-colors">
-                  <ChevronDown size={18} />
-                </div>
+                <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[#5f6368]" />
               </div>
             </div>
 
             {/* Mode Selector */}
-            <div className="space-y-3 pt-4 border-t border-border/50">
-              <label className="text-sm font-semibold text-foreground">Generation Mode</label>
-              <div className="grid grid-cols-3 gap-1.5 p-1 bg-muted/30 rounded-xl">
+            <div className="space-y-2 pt-3 border-t border-[#dadce0]">
+              <label className="text-xs font-bold text-[#202124]">Generation Mode</label>
+              <div className="google-tab-group">
                 {[
                   { id: 'random', label: 'Random' },
-                  { id: 'passphrase', label: 'xkcd' },
-                  { id: 'pin', label: 'PIN' }
+                  { id: 'passphrase', label: 'xkcd Passphrase' },
+                  { id: 'pin', label: 'PIN Code' }
                 ].map(item => (
                   <button
                     key={item.id}
@@ -451,11 +451,7 @@ const PasswordGenerator = () => {
                       if (item.id === 'pin') setLength(6);
                       else if (item.id === 'random') setLength(16);
                     }}
-                    className={`py-2 text-xs font-bold rounded-lg transition-all ${
-                      mode === item.id
-                        ? 'bg-background shadow-sm text-foreground'
-                        : 'text-muted-foreground hover:text-foreground'
-                    }`}
+                    className={`flex-1 google-tab-item py-2 text-xs ${mode === item.id ? 'active' : ''}`}
                   >
                     {item.label}
                   </button>

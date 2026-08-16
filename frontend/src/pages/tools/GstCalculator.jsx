@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import ToolHeader from '../../components/ToolHeader';
 import { Percent, Receipt, Plus, Trash2, IndianRupee, FileText, CheckCircle2, Copy } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
@@ -96,16 +97,17 @@ const GstCalculator = () => {
   };
 
   return (
-    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
-      <div className="mb-6 flex items-start gap-4 shrink-0">
-        <div className="p-2 bg-primary/10 text-primary rounded-md shadow-sm">
-          <Percent size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Advanced GST Calculator</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Build multi-item invoices, extract inclusive taxes, and view detailed CGST/SGST breakdowns.</p>
-        </div>
-      </div>
+    <div className="tool-page-container">
+      <ToolHeader
+        title="Advanced GST Calculator"
+        description="Build multi-item invoices, extract inclusive taxes, and view detailed CGST/SGST breakdowns."
+        category="Finance & Productivity"
+        categoryPath="/search"
+        icon={Percent}
+        iconColor="text-[#1a73e8] bg-[#e8f0fe] border-[#d2e3fc]"
+        badge="GST Calculation Engine"
+        extraBadge="CGST, SGST & IGST Split"
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         

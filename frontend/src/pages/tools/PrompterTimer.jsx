@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Clock, Play, Pause, RefreshCw, LayoutTemplate } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import ToolHeader from '../../components/ToolHeader';
 
 const PrompterTimer = () => {
   const [notes, setNotes] = useState(`[Slide 1] Hello everyone, welcome to the presentation. Today we will discuss client-side web utility architectures.\n\n[Slide 2] Moving on to performance, our goal is sub-second compilation and high-DPI canvas exporting.\n\n[Slide 3] To conclude, local sandbox applications guarantee complete data safety and privacy.`);
@@ -74,16 +75,17 @@ const PrompterTimer = () => {
   };
 
   return (
-    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
-      <div className="mb-6 flex items-start gap-4 shrink-0">
-        <div className="p-2 bg-primary/10 text-primary rounded-md shadow-sm">
-          <Clock size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Speaker Prompter & Timer</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Rehearse presentations, pace your slide transitions, track timings, and read prompter notes dynamically.</p>
-        </div>
-      </div>
+    <div className="tool-page-container">
+      <ToolHeader
+        title="Speaker Teleprompter & Presentation Timer"
+        description="Rehearse slide transitions, track timings, pace speeches, and view active prompter notes dynamically."
+        category="Slides & Presentation Tools"
+        categoryPath="/search"
+        icon={Clock}
+        iconColor="text-[#1a73e8] bg-[#e8f0fe] border-[#d2e3fc]"
+        badge="Live Teleprompter"
+        extraBadge="Pacing & Timing Meter"
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import ToolHeader from '../../components/ToolHeader';
 import {
   Copy, Hash, Check, Key, Upload, File, AlertCircle, CheckCircle,
   ChevronDown, RefreshCw, X, Settings2, ShieldCheck, Lock, Unlock, Zap, AlertTriangle
@@ -289,18 +290,19 @@ const HashGenerator = () => {
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: 'easeOut' }}
-      className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8"
+      className="tool-page-container"
     >
       {/* Header */}
-      <div className="mb-6 flex items-start gap-4 shrink-0">
-        <div className="p-2.5 bg-primary/10 text-primary rounded-xl shadow-sm shrink-0">
-          <Hash size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Advanced Hash Generator</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Generate MD5, SHA-1, SHA-256, SHA-512, SHA-3, RIPEMD-160 and secure Bcrypt hashes client-side.</p>
-        </div>
-      </div>
+      <ToolHeader
+        title="Advanced Hash Generator"
+        description="Generate MD5, SHA-1, SHA-256, SHA-512, SHA-3, RIPEMD-160 and secure Bcrypt hashes client-side."
+        category="Developer Tools"
+        categoryPath="/search"
+        icon={Hash}
+        iconColor="text-[#137333] bg-[#e6f4ea] border-[#ceead6]"
+        badge="MD5, SHA-256, SHA-512"
+        extraBadge="HMAC Signing"
+      />
 
       {/* Mode Switcher */}
       <div className="flex p-1 bg-muted/40 rounded-xl border border-border/50 self-start gap-1 shrink-0 mb-6 max-w-sm">

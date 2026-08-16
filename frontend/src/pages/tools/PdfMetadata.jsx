@@ -1,4 +1,5 @@
 import { useLocation } from 'react-router-dom';
+import ToolHeader from '../../components/ToolHeader';
 import { useState, useRef, useEffect } from 'react';
 import { Settings, UploadCloud, FileText, CheckCircle2, Loader2, Eye, ExternalLink, Info, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -167,17 +168,18 @@ const PdfMetadata = () => {
   };
 
   return (
-    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
+    <div className="tool-page-container">
       {/* Responsive Header Layout */}
-      <div className="mb-6 flex items-center gap-3">
-        <div className="p-2 bg-primary/10 text-primary rounded-md shadow-sm">
-          <Settings size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Edit PDF Metadata</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Modify hidden document properties like Author, Title, Creator, and Keywords.</p>
-        </div>
-      </div>
+      <ToolHeader
+        title="Edit PDF Metadata"
+        description="Modify hidden document properties like Author, Title, Creator, and Keywords."
+        category="PDF Tools"
+        categoryPath="/search"
+        icon={FileText}
+        iconColor="text-[#1a73e8] bg-[#e8f0fe] border-[#d2e3fc]"
+        badge="Metadata Editor"
+        extraBadge="Author, Title, Tags"
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         

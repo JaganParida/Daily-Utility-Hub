@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import ToolHeader from '../../components/ToolHeader';
 import { 
   Clock, HelpCircle, Settings2, Sparkles, 
   Calendar, Check, ChevronDown, BookOpen 
@@ -103,18 +104,19 @@ const CronParser = () => {
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: 'easeOut' }}
-      className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8"
+      className="tool-page-container"
     >
       {/* Header */}
-      <div className="mb-6 flex items-center gap-3">
-        <div className="p-2.5 bg-primary/10 text-primary rounded-xl shadow-sm shrink-0">
-          <Clock size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Cron Expression Parser & Builder</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Translate cron schedules into plain English, see future execution runs, or build expressions visually.</p>
-        </div>
-      </div>
+      <ToolHeader
+        title="Cron Expression Parser & Builder"
+        description="Translate cron schedules into plain English, see future execution runs, or build expressions visually."
+        category="Developer Tools"
+        categoryPath="/search"
+        icon={Layers}
+        iconColor="text-[#8e24aa] bg-[#f3e8fd] border-[#e9d2fd]"
+        badge="Human-Readable Cron"
+        extraBadge="Next Runs Visualizer"
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         {/* Left Workspace */}

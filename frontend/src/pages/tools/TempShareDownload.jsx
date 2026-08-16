@@ -102,30 +102,28 @@ const TempShareDownload = () => {
 
   // Fallback view after starting download
   return (
-    <div className="min-h-[70vh] w-full flex items-center justify-center bg-background px-4">
-      <div className="w-full max-w-md bg-card border border-emerald-500/20 p-8 rounded-3xl shadow-xl shadow-emerald-500/5 text-center relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-1.5 bg-emerald-500" />
-        
-        <div className="w-16 h-16 mx-auto bg-emerald-500/15 rounded-2xl flex items-center justify-center mb-6 text-emerald-500 shadow-inner">
-          <Download size={32} />
+    <div className="min-h-[70vh] w-full flex items-center justify-center px-4">
+      <div className="w-full max-w-md bg-white border border-[#dadce0] p-8 rounded-3xl shadow-sm text-center relative overflow-hidden">
+        <div className="w-16 h-16 mx-auto bg-[#e6f4ea] border border-[#ceead6] rounded-2xl flex items-center justify-center mb-6 text-[#137333] shadow-2xs">
+          <Download size={30} />
         </div>
         
-        <h2 className="text-2xl font-black text-foreground tracking-tight mb-2">Downloading File</h2>
-        <p className="text-muted-foreground text-sm font-semibold mb-6">
+        <h2 className="text-xl font-bold text-[#202124] tracking-tight mb-2">Downloading File</h2>
+        <p className="text-[#5f6368] text-xs sm:text-sm font-medium mb-6 leading-relaxed">
           Your download has started. If it didn't start automatically, click the button below to retry.
         </p>
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           <a 
             href={`${api.defaults.baseURL.replace(/\/api$/, '')}/api/share/download/${id}`}
-            className="inline-flex w-full items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-bold bg-primary hover:bg-primary/95 text-white transition-all active:scale-95 shadow-md shadow-primary/15 text-sm"
+            className="w-full btn-google-primary text-sm py-3 justify-center shadow-sm"
           >
-            <Download size={18} /> Restart Download
+            <Download size={16} /> Restart Download
           </a>
           
           <Link 
             to="/tools/temp-share"
-            className="inline-flex w-full items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold bg-muted hover:bg-muted/80 text-foreground transition-all active:scale-95 text-sm"
+            className="w-full btn-google-secondary text-sm py-2.5 justify-center"
           >
             Upload/Share Another
           </Link>

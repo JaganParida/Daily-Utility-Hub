@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import ToolHeader from '../../components/ToolHeader';
 import { Type, Copy, Trash2, CheckCircle, Terminal, Sparkles, Sliders } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
@@ -89,17 +90,18 @@ const CaseConverter = () => {
   const hasText = text.trim().length > 0;
 
   return (
-    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
+    <div className="tool-page-container">
       {/* Header */}
-      <div className="mb-6 flex items-center gap-3">
-        <div className="p-2 bg-primary/10 text-primary rounded-lg shadow-sm">
-          <Type size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Advanced Case Converter</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Transform blocks of text instantly between standard, developer, and fun cases.</p>
-        </div>
-      </div>
+      <ToolHeader
+        title="Advanced Case Converter"
+        description="Transform blocks of text instantly between standard, developer, and fun cases."
+        category="Text Tools"
+        categoryPath="/search"
+        icon={Type}
+        iconColor="text-[#1a73e8] bg-[#e8f0fe] border-[#d2e3fc]"
+        badge="1-Click Transform"
+        extraBadge="Title / Camel / Snake"
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         {/* Left: Editor Area */}

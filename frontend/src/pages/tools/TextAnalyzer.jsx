@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import ToolHeader from '../../components/ToolHeader';
 import { FileText, Copy, Type, BookOpen, Clock, AlignLeft, Hash, WholeWord, Activity, Settings2, Scissors, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
@@ -112,16 +113,17 @@ const TextAnalyzer = () => {
   const readInfo = getReadabilityLabel(stats.readability);
 
   return (
-    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
-      <div className="mb-6 flex items-start gap-4 shrink-0">
-        <div className="p-2 bg-primary/10 text-primary rounded-md shadow-sm">
-          <Activity size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Advanced Text Analyzer</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Real-time word counts, reading time, readability scores, and quick formatting.</p>
-        </div>
-      </div>
+    <div className="tool-page-container">
+      <ToolHeader
+        title="Advanced Text Analyzer"
+        description="Real-time word counts, reading time, readability scores, and quick formatting."
+        category="Student & Docs"
+        categoryPath="/search"
+        icon={Activity}
+        iconColor="text-[#8e24aa] bg-[#f3e8fd] border-[#e9d2fd]"
+        badge="Readability & Stats"
+        extraBadge="Keyword Density & Reading Time"
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         

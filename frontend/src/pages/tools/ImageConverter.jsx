@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import ToolHeader from '../../components/ToolHeader';
 import { FileImage, Download, RefreshCw, Trash2, Layers, DownloadCloud, Settings2, ChevronDown, CheckCircle, FileCode2, ArrowRightLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DropzoneComponent from '../../components/DropzoneComponent';
@@ -136,16 +137,17 @@ const ImageConverter = () => {
   };
 
   return (
-    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
-      <div className="mb-6 flex items-center gap-3">
-        <div className="p-2 bg-primary/10 text-primary rounded-lg shadow-sm">
-          <ArrowRightLeft size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Advanced Image Converter</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Batch convert images to WebP, JPEG, PNG, or BMP instantly.</p>
-        </div>
-      </div>
+    <div className="tool-page-container">
+      <ToolHeader
+        title="Advanced Image Converter"
+        description="Batch convert images to WebP, JPEG, PNG, or BMP instantly."
+        category="Image Tools"
+        categoryPath="/search"
+        icon={ArrowRightLeft}
+        iconColor="text-[#f29900] bg-[#fef7e0] border-[#feefc3]"
+        badge="Universal Image Converter"
+        extraBadge="PNG, JPG, WEBP, BMP"
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         

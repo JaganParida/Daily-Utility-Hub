@@ -1,4 +1,5 @@
 import { useLocation } from 'react-router-dom';
+import ToolHeader from '../../components/ToolHeader';
 import { useState, useRef, useEffect } from 'react';
 import * as pdfjsLib from 'pdfjs-dist';
 import JSZip from 'jszip';

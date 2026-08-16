@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import ToolHeader from '../../components/ToolHeader';
 import { AlignLeft, CheckCircle2, Download, RefreshCw, AlertCircle, Play } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { motion } from 'framer-motion';
@@ -99,16 +100,17 @@ const GrammarChecker = () => {
   };
 
   return (
-    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
-      <div className="mb-6 flex items-start gap-4 shrink-0">
-        <div className="p-2 bg-primary/10 text-primary rounded-md shadow-sm">
-          <AlignLeft size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Smart Spell & Grammar Checker</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Scan documents client-side to pinpoint grammatical flaws, fix spellings, and generate PDF correction sheets.</p>
-        </div>
-      </div>
+    <div className="tool-page-container">
+      <ToolHeader
+        title="Smart Spell & Grammar Checker"
+        description="Scan documents client-side to pinpoint grammatical flaws, fix spellings, and generate PDF correction sheets."
+        category="Word & Docs Tools"
+        categoryPath="/search"
+        icon={AlignLeft}
+        iconColor="text-[#137333] bg-[#e6f4ea] border-[#ceead6]"
+        badge="Grammar & Spell Checker"
+        extraBadge="Client-Side Language Model"
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         

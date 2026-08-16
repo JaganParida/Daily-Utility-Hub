@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
+import ToolHeader from '../../components/ToolHeader';
 
 // ────────────────────────────────────────────
 // Helper: compute JSON statistics recursively
@@ -353,7 +354,7 @@ const JsonFormatter = () => {
         parts.push(<span key={key++}>{remaining.slice(0, idx)}</span>);
       }
       parts.push(
-        <mark key={key++} className="bg-amber-500/30 text-amber-200 rounded px-0.5 animate-none">
+        <mark key={key++} className="bg-amber-500/30 text-amber-900 font-bold rounded px-0.5 animate-none">
           {remaining.slice(idx, idx + search.length)}
         </mark>
       );
@@ -367,41 +368,32 @@ const JsonFormatter = () => {
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: 'easeOut' }}
-      className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8"
+      className="tool-page-container"
     >
-      {/* Header */}
-      <div className="mb-6 flex items-center gap-3">
-        <div className="p-2.5 bg-primary/10 text-primary rounded-xl shadow-sm shrink-0">
-          <Braces size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">JSON Formatter & Validator</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Beautify, validate, structure, and explore JSON data instantly.</p>
-        </div>
-      </div>
+      <ToolHeader
+        title="JSON Formatter & Validator"
+        description="Beautify, validate, structure, minify, and interactively explore JSON data in your browser."
+        category="Developer Tools"
+        categoryPath="/search"
+        icon={Braces}
+        iconColor="text-[#137333] bg-[#e6f4ea] border-[#ceead6]"
+        badge="Zero Server Upload"
+        extraBadge="Tree Visualizer"
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         {/* Left: Main Workspace */}
-        <div className="flex-1 w-full bg-card border border-border/80 p-6 rounded-2xl shadow-sm flex flex-col">
+        <div className="flex-1 w-full tool-card p-5 sm:p-6 flex flex-col">
           {/* Mode Switcher */}
-          <div className="flex overflow-x-auto md:grid md:grid-cols-3 scrollbar-none whitespace-nowrap p-1 bg-muted/30 rounded-xl border border-border/50 shadow-inner relative mb-6">
+          <div className="google-tab-group mb-6 w-full">
             {MODES.map(({ key, label, icon: Icon }) => (
               <button
                 key={key}
                 onClick={() => setMode(key)}
-                className={`flex-1 md:flex-none relative z-10 py-2.5 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer shrink-0 px-4 md:px-0 ${
-                  mode === key ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
-                }`}
+                className={`flex-1 google-tab-item py-2.5 ${mode === key ? 'active' : ''}`}
               >
-                {mode === key && (
-                  <motion.div
-                    layoutId="mode-active"
-                    className="absolute inset-0 bg-background border border-border rounded-lg shadow-sm -z-10 animate-none"
-                    transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                  />
-                )}
                 <Icon size={14} className="shrink-0" />
-                {label}
+                <span>{label}</span>
               </button>
             ))}
           </div>
@@ -409,26 +401,26 @@ const JsonFormatter = () => {
           {/* Editors / Visualizer */}
           <div className="flex flex-col flex-1">
             {(mode === 'format' || mode === 'minify') && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1 min-h-[440px]">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 flex-1 min-h-[440px]">
                 {/* Input Panel */}
-                <div className="flex flex-col rounded-xl border border-border/80 overflow-hidden bg-background/30">
-                  <div className="p-3.5 border-b border-border/80 bg-muted/20 flex justify-between items-center">
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                      <FileJson size={14} /> Input JSON
+                <div className="flex flex-col rounded-xl border border-[#dadce0] overflow-hidden bg-white shadow-2xs">
+                  <div className="p-3 border-b border-[#dadce0] bg-[#f8f9fa] flex justify-between items-center">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-[#5f6368] flex items-center gap-1.5">
+                      <FileJson size={14} className="text-[#1a73e8]" /> Input JSON
                     </h3>
                     <div className="flex gap-2">
                       <button
                         onClick={loadSample}
-                        className="text-xs px-2.5 py-1 bg-muted/20 hover:bg-muted/40 border border-border/50 text-foreground rounded-lg transition-colors font-semibold cursor-pointer"
+                        className="btn-google-secondary text-xs py-1 px-2.5 font-semibold"
                       >
                         Sample
                       </button>
                       <button
                         onClick={clearAll}
                         disabled={!input.trim()}
-                        className="text-xs px-2.5 py-1 bg-red-500/10 disabled:bg-muted/10 text-red-500 disabled:text-muted-foreground hover:bg-red-500/20 border border-red-500/20 disabled:border-border/50 rounded-lg transition-colors flex items-center gap-1 font-semibold cursor-pointer disabled:cursor-not-allowed disabled:opacity-40"
+                        className="btn-google-danger text-xs py-1 px-2.5 disabled:opacity-40"
                       >
-                        <Trash2 size={11} /> Clear
+                        <Trash2 size={12} /> Clear
                       </button>
                     </div>
                   </div>
@@ -436,7 +428,7 @@ const JsonFormatter = () => {
                     <textarea
                       value={input}
                       onChange={(e) => setInput(e.target.value)}
-                      className="w-full flex-1 p-4 bg-transparent border-none outline-none font-mono text-sm text-foreground resize-none custom-scrollbar min-h-[350px] leading-relaxed"
+                      className="w-full flex-1 p-4 bg-transparent border-none outline-none font-mono text-xs sm:text-sm text-[#202124] resize-none custom-scrollbar min-h-[360px] leading-relaxed"
                       spellCheck="false"
                       placeholder="Paste your JSON here..."
                     />
@@ -444,40 +436,40 @@ const JsonFormatter = () => {
                 </div>
 
                 {/* Output Panel */}
-                <div className="flex flex-col rounded-xl border border-border/80 overflow-hidden bg-background/30">
-                  <div className="p-3.5 border-b border-border/80 bg-muted/20 flex justify-between items-center">
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                      {mode === 'minify' ? <Minimize2 size={14} /> : <Braces size={14} />} Output
-                      {!error && output && <Check size={13} className="text-primary" />}
+                <div className="flex flex-col rounded-xl border border-[#dadce0] overflow-hidden bg-white shadow-2xs">
+                  <div className="p-3 border-b border-[#dadce0] bg-[#f8f9fa] flex justify-between items-center">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-[#5f6368] flex items-center gap-1.5">
+                      {mode === 'minify' ? <Minimize2 size={14} className="text-[#1a73e8]" /> : <Braces size={14} className="text-[#1a73e8]" />} Output
+                      {!error && output && <Check size={13} className="text-[#137333]" />}
                     </h3>
                     <div className="flex gap-2">
                       <button
                         onClick={copyToClipboard}
                         disabled={!output}
-                        className="text-xs bg-muted/20 hover:bg-muted/40 text-foreground px-2.5 py-1 border border-border/50 rounded-lg transition-colors flex items-center gap-1.5 disabled:opacity-40 font-semibold cursor-pointer"
+                        className="btn-google-secondary text-xs py-1 px-2.5 disabled:opacity-40"
                       >
-                        {copied ? <Check size={12} className="text-primary" /> : <Copy size={12} />}
+                        {copied ? <Check size={12} className="text-[#137333]" /> : <Copy size={12} />}
                         Copy
                       </button>
                       <button
                         onClick={downloadJson}
                         disabled={!output}
-                        className="text-xs bg-primary/10 hover:bg-primary/20 text-primary px-2.5 py-1 border border-primary/20 rounded-lg transition-colors flex items-center gap-1.5 disabled:opacity-40 font-semibold cursor-pointer"
+                        className="btn-google-secondary text-xs py-1 px-2.5 disabled:opacity-40"
                       >
                         <Download size={12} /> Save
                       </button>
                     </div>
                   </div>
-                  <div className="flex-1 relative overflow-auto custom-scrollbar min-h-[350px] bg-background/10">
+                  <div className="flex-1 relative overflow-auto custom-scrollbar min-h-[360px] bg-white">
                     {searchTerm && highlightedOutput ? (
-                      <pre className="w-full h-full p-4 text-sm text-primary font-mono whitespace-pre-wrap break-words leading-relaxed">
+                      <pre className="w-full h-full p-4 text-xs sm:text-sm text-[#1a73e8] font-mono whitespace-pre-wrap break-words leading-relaxed font-medium">
                         {highlightedOutput}
                       </pre>
                     ) : (
                       <textarea
                         readOnly
                         value={output}
-                        className="w-full h-full bg-transparent p-4 text-sm text-primary focus:outline-none font-mono resize-none custom-scrollbar min-h-[350px] leading-relaxed"
+                        className="w-full h-full bg-transparent p-4 text-xs sm:text-sm text-[#1a73e8] focus:outline-none font-mono resize-none custom-scrollbar min-h-[360px] leading-relaxed font-medium"
                         spellCheck="false"
                         placeholder="Formatted/minified JSON will appear here..."
                       />
@@ -584,34 +576,25 @@ const JsonFormatter = () => {
         </div>
 
         {/* Right Settings Sidebar */}
-        <div className="w-full lg:w-[380px] xl:w-[460px] shrink-0 space-y-6">
-          <div className="bg-card border border-border/80 p-6 rounded-2xl shadow-sm space-y-6">
-            <div className="flex items-center justify-between border-b border-border/80 pb-3">
-              <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                <Settings2 size={16} /> settings
+        <div className="w-full lg:w-[360px] xl:w-[400px] shrink-0 space-y-6">
+          <div className="tool-sidebar p-5 sm:p-6 space-y-5">
+            <div className="flex items-center justify-between border-b border-[#dadce0] pb-3">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-[#5f6368] flex items-center gap-2">
+                <Settings2 size={16} className="text-[#1a73e8]" /> Settings
               </h3>
             </div>
 
             {/* Indent sizes */}
             {mode === 'format' && (
-              <div className="space-y-3">
-                <label className="text-sm font-semibold text-foreground">Indentation Tab Size</label>
-                <div className="flex p-1 bg-muted/30 rounded-xl border border-border/50 shadow-inner relative">
+              <div className="space-y-2.5">
+                <label className="text-xs font-bold text-[#202124]">Indentation Tab Size</label>
+                <div className="google-tab-group">
                   {[2, 4, 8].map((size) => (
                     <button
                       key={size}
                       onClick={() => setTabSize(size)}
-                      className={`flex-1 relative z-10 py-2 text-xs font-bold rounded-lg transition-colors cursor-pointer ${
-                        tabSize === size ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
-                      }`}
+                      className={`flex-1 google-tab-item ${tabSize === size ? 'active' : ''}`}
                     >
-                      {tabSize === size && (
-                        <motion.div
-                          layoutId="tabsize-active"
-                          className="absolute inset-0 bg-background border border-border rounded-lg shadow-sm -z-10 animate-none"
-                          transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                        />
-                      )}
                       {size} Spaces
                     </button>
                   ))}
@@ -621,26 +604,26 @@ const JsonFormatter = () => {
 
             {/* Search Box */}
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-foreground">Search Keys / Values</label>
+              <label className="text-xs font-bold text-[#202124]">Search Keys / Values</label>
               <div className="relative">
                 <input
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Type to search..."
-                  className="w-full p-3 pl-10 bg-background/40 border border-border/80 rounded-xl text-sm font-mono focus:ring-2 focus:ring-primary/40 focus:border-primary/50 outline-none transition-all shadow-inner"
+                  placeholder="Type to search in JSON..."
+                  className="w-full google-input pl-9 text-xs font-mono"
                 />
-                <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60" />
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#5f6368]" />
               </div>
             </div>
 
             {/* Sorting Toggles */}
-            <div className="space-y-3.5 pt-2 border-t border-border/50">
+            <div className="space-y-3.5 pt-3 border-t border-[#dadce0]">
               {/* Sort Keys */}
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="text-sm font-semibold block text-foreground">Sort Object Keys</span>
-                  <span className="text-xs text-muted-foreground block">Sort keys alphabetically</span>
+                  <span className="text-xs font-bold text-[#202124] block">Sort Object Keys</span>
+                  <span className="text-[11px] text-[#5f6368] block">Sort keys alphabetically A-Z</span>
                 </div>
                 <button
                   onClick={() => setSortKeys(!sortKeys)}

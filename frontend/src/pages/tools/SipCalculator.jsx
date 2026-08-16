@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { TrendingUp, PieChart, Info, BarChart3, ChevronRight, HelpCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import ToolHeader from '../../components/ToolHeader';
 
 const SipCalculator = () => {
   const [mode, setMode] = useState('SIP'); // 'SIP' or 'LUMPSUM'
@@ -107,48 +108,49 @@ const SipCalculator = () => {
   const strokeDasharray = `${(investedPct / 100) * circumference} ${circumference}`;
 
   return (
-    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
-      <div className="mb-6 flex items-start gap-4 shrink-0">
-        <div className="p-2 bg-primary/10 text-primary rounded-md shadow-sm">
-          <TrendingUp size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Advanced Wealth Calculator</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Calculate SIPs or Lumpsum growth with Step-up and Inflation adjustments.</p>
-        </div>
-      </div>
+    <div className="tool-page-container">
+      <ToolHeader
+        title="SIP & Lumpsum Wealth Calculator"
+        description="Calculate compounding SIP or lumpsum returns with yearly step-up plans and inflation-adjusted future value."
+        category="Finance & Productivity"
+        categoryPath="/search"
+        icon={TrendingUp}
+        iconColor="text-[#137333] bg-[#e6f4ea] border-[#ceead6]"
+        badge="Compound Interest Engine"
+        extraBadge="Step-up & Inflation"
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         
         {/* Left: Input Dashboard */}
-        <div className="w-full lg:w-[450px] shrink-0 space-y-6 lg:sticky lg:top-6">
-          <div className="bg-card border border-border p-6 rounded-2xl shadow-sm flex flex-col gap-6">
+        <div className="w-full lg:w-[440px] shrink-0 space-y-6 lg:sticky lg:top-6">
+          <div className="tool-sidebar p-5 sm:p-6 flex flex-col gap-5">
             
             {/* Mode Switcher */}
-            <div className="flex bg-background border border-border rounded-xl p-1 shadow-inner">
-              <button onClick={() => handleModeSwitch('SIP')} className={`flex-1 text-sm py-2 rounded-lg font-bold transition-all ${mode === 'SIP' ? 'bg-primary text-primary-foreground shadow-md' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'}`}>Monthly SIP</button>
-              <button onClick={() => handleModeSwitch('LUMPSUM')} className={`flex-1 text-sm py-2 rounded-lg font-bold transition-all ${mode === 'LUMPSUM' ? 'bg-primary text-primary-foreground shadow-md' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'}`}>Lumpsum</button>
+            <div className="google-tab-group">
+              <button onClick={() => handleModeSwitch('SIP')} className={`flex-1 google-tab-item py-2 text-xs ${mode === 'SIP' ? 'active' : ''}`}>Monthly SIP</button>
+              <button onClick={() => handleModeSwitch('LUMPSUM')} className={`flex-1 google-tab-item py-2 text-xs ${mode === 'LUMPSUM' ? 'active' : ''}`}>Lumpsum Investment</button>
             </div>
 
-            <div className="space-y-6 pt-2">
+            <div className="space-y-5 pt-1">
               
-              <div className="space-y-3">
+              <div className="space-y-2.5">
                 <div className="flex justify-between items-center">
-                  <label className="text-sm font-semibold text-foreground">{mode === 'SIP' ? 'Monthly Investment' : 'Total Investment'}</label>
+                  <label className="text-xs font-bold text-[#202124]">{mode === 'SIP' ? 'Monthly Investment' : 'Total Investment'}</label>
                   <div className="relative">
-                    <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-xs font-bold">₹</span>
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#5f6368] text-xs font-bold">₹</span>
                     <input 
                       type="number"
                       value={investment || ''}
                       onChange={(e) => setInvestment(Number(e.target.value))}
-                      className="bg-background border border-border rounded-xl pl-6 pr-3 py-1.5 text-sm font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 w-32 text-right"
+                      className="google-input pl-6 pr-3 py-1.5 text-xs sm:text-sm font-bold text-right w-36"
                     />
                   </div>
                 </div>
                 <input 
                   type="range" min={mode === 'SIP' ? 500 : 5000} max={mode === 'SIP' ? 1000000 : 50000000} step={mode === 'SIP' ? 500 : 5000}
                   value={investment} onChange={(e) => setInvestment(Number(e.target.value))}
-                  className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+                  className="w-full h-2 bg-[#f1f3f4] rounded-lg appearance-none cursor-pointer accent-[#1a73e8]"
                 />
               </div>
 

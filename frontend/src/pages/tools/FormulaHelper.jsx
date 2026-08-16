@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import ToolHeader from '../../components/ToolHeader';
 import { Calculator, Copy, CheckCircle2, Play, Sparkles, RefreshCw } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { motion } from 'framer-motion';
@@ -69,16 +70,17 @@ const FormulaHelper = () => {
   };
 
   return (
-    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
-      <div className="mb-6 flex items-start gap-4 shrink-0">
-        <div className="p-2 bg-primary/10 text-primary rounded-md shadow-sm">
-          <Calculator size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Formula Generator & Explainer</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Generate advanced Excel & Google Sheets formulas using plain English, or explain complex sheet formulas line-by-line.</p>
-        </div>
-      </div>
+    <div className="tool-page-container">
+      <ToolHeader
+        title="Formula Generator & Explainer"
+        description="Generate advanced Excel & Google Sheets formulas using plain English, or explain complex sheet formulas line-by-line."
+        category="Excel & Sheets Tools"
+        categoryPath="/search"
+        icon={Calculator}
+        iconColor="text-[#137333] bg-[#e6f4ea] border-[#ceead6]"
+        badge="Formula Generator & Explainer"
+        extraBadge="Excel & Google Sheets Functions"
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         

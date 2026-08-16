@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
+import ToolHeader from '../../components/ToolHeader';
 import { 
   Layers, Copy, Check, Plus, Trash2, Shuffle, 
   Settings2, ChevronDown, Monitor, Sparkles, Code2
@@ -151,18 +152,19 @@ const GradientGenerator = () => {
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: 'easeOut' }}
-      className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8"
+      className="tool-page-container"
     >
       {/* Header */}
-      <div className="mb-6 flex items-center gap-3">
-        <div className="p-2.5 bg-primary/10 text-primary rounded-xl shadow-sm shrink-0">
-          <Layers size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Advanced Gradient Generator</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Create and export multi-stop CSS, SVG, and Tailwind gradients with interactive controls.</p>
-        </div>
-      </div>
+      <ToolHeader
+        title="Advanced Gradient Generator"
+        description="Create and export multi-stop CSS, SVG, and Tailwind gradients with interactive controls."
+        category="Developer Tools"
+        categoryPath="/search"
+        icon={Layers}
+        iconColor="text-[#8e24aa] bg-[#f3e8fd] border-[#e9d2fd]"
+        badge="CSS Gradient Studio"
+        extraBadge="Linear / Radial / Conic"
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         {/* Left Workspace */}

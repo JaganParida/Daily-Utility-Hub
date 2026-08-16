@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import ToolHeader from '../../components/ToolHeader';
 import { Landmark, IndianRupee, ShieldCheck, Scale, Info, CheckCircle2, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -124,16 +125,17 @@ const TaxCalculator = () => {
   const results = useMemo(() => calculateTax(), [grossIncome, otherIncome, sec80C, sec80D, hra, otherDeductions]);
 
   return (
-    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
-      <div className="mb-6 flex items-start gap-4 shrink-0">
-        <div className="p-2 bg-primary/10 text-primary rounded-md shadow-sm">
-          <Landmark size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Income Tax Planner (FY 2024-25)</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Compare Old vs New tax regimes to maximize your savings. Includes Rebate 87A and Cess.</p>
-        </div>
-      </div>
+    <div className="tool-page-container">
+      <ToolHeader
+        title="Income Tax Planner (FY 2024-25)"
+        description="Compare Old vs New tax regimes to maximize your savings. Includes Rebate 87A and Cess."
+        category="Finance & Productivity"
+        categoryPath="/search"
+        icon={Landmark}
+        iconColor="text-[#f29900] bg-[#fef7e0] border-[#feefc3]"
+        badge="Income Tax Regime Comparison"
+        extraBadge="Old vs New Tax Slabs"
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         

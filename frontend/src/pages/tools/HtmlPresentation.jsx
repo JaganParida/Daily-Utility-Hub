@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import ToolHeader from '../../components/ToolHeader';
 import { Code2, Download, Copy, CheckCircle2, Eye } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { motion } from 'framer-motion';
@@ -67,16 +68,17 @@ const HtmlPresentation = () => {
   };
 
   return (
-    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
-      <div className="mb-6 flex items-start gap-4 shrink-0">
-        <div className="p-2 bg-primary/10 text-primary rounded-md shadow-sm">
-          <Code2 size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">HTML Presentation Sandbox</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Write, preview, and sandbox fully interactive presentation slide codes client-side and export them as standalone HTML files.</p>
-        </div>
-      </div>
+    <div className="tool-page-container">
+      <ToolHeader
+        title="Interactive HTML Presentation"
+        description="Create stunning slide decks client-side with native HTML/CSS styling tags."
+        category="Slides & Presentation Tools"
+        categoryPath="/search"
+        icon={Code2}
+        iconColor="text-[#ea4335] bg-[#fce8e6] border-[#fad2cf]"
+        badge="HTML Slide Deck Builder"
+        extraBadge="Interactive Presentation Viewer"
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         

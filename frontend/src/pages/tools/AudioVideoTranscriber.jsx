@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import ToolHeader from '../../components/ToolHeader';
 import { FileAudio, Video, FileText, Download, Copy, Play, Pause, Trash2, Globe, Sliders, RefreshCw, Upload, CheckCircle, Edit, List, AlertCircle, ChevronDown } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
@@ -672,17 +673,18 @@ Example: [{"start":0,"end":3.5,"text":"Hello everyone"},{"start":3.5,"end":7,"te
   const hasTranscribed = segments.length > 0;
 
   return (
-    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
+    <div className="tool-page-container">
       {/* Header */}
-      <div className="mb-6 flex items-center gap-3">
-        <div className="p-2 bg-primary/10 text-primary rounded-lg shadow-sm">
-          <FileAudio size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground font-sans">AI Audio & Video Captioner</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Extract timestamped text & subtitles from audio and video files offline using browser-based AI.</p>
-        </div>
-      </div>
+      <ToolHeader
+        title="AI Audio & Video Captioner"
+        description="Extract timestamped text & subtitles from audio and video files offline using browser-based AI."
+        category="Text Tools"
+        categoryPath="/search"
+        icon={FileAudio}
+        iconColor="text-[#8e24aa] bg-[#f3e8fd] border-[#e9d2fd]"
+        badge="Local Audio Extraction"
+        extraBadge="SRT & Subtitles"
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         

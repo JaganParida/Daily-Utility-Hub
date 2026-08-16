@@ -1,4 +1,5 @@
 import { useLocation } from 'react-router-dom';
+import ToolHeader from '../../components/ToolHeader';
 import { useState, useRef, useEffect } from 'react';
 import { UploadCloud, File, CheckCircle2, Clipboard, Globe, X, QrCode, Share2, Timer, Code, Link } from 'lucide-react';
 import { toast } from 'react-hot-toast';
@@ -187,16 +188,17 @@ const TempShare = () => {
   };
 
   return (
-    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
-      <div className="mb-6 flex items-start gap-4 shrink-0">
-        <div className="p-2 bg-primary/10 text-primary rounded-md shadow-sm">
-          <UploadCloud size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Secure Temp Share</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Upload files or share URLs and code instantly with automatic expiration.</p>
-        </div>
-      </div>
+    <div className="tool-page-container">
+      <ToolHeader
+        title="Secure Temp Share"
+        description="Upload files or share URLs and code instantly with automatic expiration."
+        category="File & Storage Tools"
+        categoryPath="/search"
+        icon={FolderArchive}
+        iconColor="text-[#1a73e8] bg-[#e8f0fe] border-[#d2e3fc]"
+        badge="Direct Temporary Sharing"
+        extraBadge="Expiring Download Links"
+      />
 
       {/* Tabs */}
       {!sharedLink && (

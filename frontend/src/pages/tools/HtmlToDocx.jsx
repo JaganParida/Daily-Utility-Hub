@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import ToolHeader from '../../components/ToolHeader';
 import { Code2, Download, Copy, CheckCircle2, Eye, FileText } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { motion } from 'framer-motion';
@@ -65,16 +66,17 @@ const HtmlToDocx = () => {
   };
 
   return (
-    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
-      <div className="mb-6 flex items-start gap-4 shrink-0">
-        <div className="p-2 bg-primary/10 text-primary rounded-md shadow-sm">
-          <Code2 size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">HTML to Word Converter</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Convert HTML markup tags and paragraphs into native Microsoft Word (.doc/.docx compatible) files client-side.</p>
-        </div>
-      </div>
+    <div className="tool-page-container">
+      <ToolHeader
+        title="Project Charter"
+        description="Convert HTML markup tags and paragraphs into native Microsoft Word (.doc/.docx compatible) files client-side."
+        category="Word & Docs Tools"
+        categoryPath="/search"
+        icon={Code2}
+        iconColor="text-[#8e24aa] bg-[#f3e8fd] border-[#e9d2fd]"
+        badge="HTML to DOCX Converter"
+        extraBadge="Formatted Document Export"
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         

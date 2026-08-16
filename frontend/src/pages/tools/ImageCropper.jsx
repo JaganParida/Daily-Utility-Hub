@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import ToolHeader from '../../components/ToolHeader';
 import { Crop, Download, RefreshCw, RotateCw, FlipHorizontal, FlipVertical, Circle, Loader2, CheckCircle, Settings2, Image as ImageIcon } from 'lucide-react';
 import ReactCrop, { centerCrop, makeAspectCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
@@ -252,16 +253,17 @@ const ImageCropper = () => {
   };
 
   return (
-    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
-      <div className="mb-6 flex items-center gap-3">
-        <div className="p-2 bg-purple-500/10 text-purple-500 rounded-lg shadow-sm">
-          <Crop size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Advanced Image Cropper</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Visually crop, rotate, flip, or create circular avatars instantly.</p>
-        </div>
-      </div>
+    <div className="tool-page-container">
+      <ToolHeader
+        title="Advanced Image Cropper"
+        description="Visually crop, rotate, flip, or create circular avatars instantly."
+        category="Image Tools"
+        categoryPath="/search"
+        icon={Crop}
+        iconColor="text-[#8e24aa] bg-[#f3e8fd] border-[#e9d2fd]"
+        badge="Precision Image Crop"
+        extraBadge="Preset Social Ratios"
+      />
 
       <canvas ref={canvasRef} className="hidden" />
 

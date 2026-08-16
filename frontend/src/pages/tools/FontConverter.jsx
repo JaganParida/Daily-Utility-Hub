@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
+import ToolHeader from '../../components/ToolHeader';
 import { Type, Copy, CheckCircle, Search, Settings, Sparkles, Smile, Star, ShieldAlert } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
@@ -146,17 +147,18 @@ const FontConverter = () => {
   const hasText = text.trim().length > 0;
 
   return (
-    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
+    <div className="tool-page-container">
       {/* Header */}
-      <div className="mb-6 flex items-center gap-3">
-        <div className="p-2 bg-primary/10 text-primary rounded-lg shadow-sm">
-          <Type size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">100+ Stylish Font Swatches</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Transform plain text into aesthetic social media styles with custom symbols & sparkles.</p>
-        </div>
-      </div>
+      <ToolHeader
+        title="100+ Stylish Font Swatches"
+        description="Transform plain text into aesthetic social media styles with custom symbols & sparkles."
+        category="Text Tools"
+        categoryPath="/search"
+        icon={Type}
+        iconColor="text-[#ea4335] bg-[#fce8e6] border-[#fad2cf]"
+        badge="Unicode Fonts"
+        extraBadge="Instagram & Bio Ready"
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         {/* Left: Input & Font Grid Area */}

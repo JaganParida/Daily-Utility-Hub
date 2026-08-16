@@ -6,6 +6,7 @@ import {
 import { toast } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import CryptoJS from 'crypto-js';
+import ToolHeader from '../../components/ToolHeader';
 
 const NAMESPACES = {
   dns: '6ba7b810-9dad-11d1-80b4-00c04fd430c8',
@@ -196,58 +197,59 @@ const UuidGenerator = () => {
     setCopiedAll(false);
   };
 
-  const hasUuids = uuids.length > 0;
-
   return (
-    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
-      {/* Header */}
-      <div className="mb-6 flex items-center gap-3">
-        <div className="p-2 bg-primary/10 text-primary rounded-lg shadow-sm">
-          <Hash size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Advanced Key & UUID Generator</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Generate UUID v1–v8 or ULID keys in batches with developer-focused formatting.</p>
-        </div>
-      </div>
+    <div className="tool-page-container">
+      <ToolHeader
+        title="UUID & Unique Key Generator"
+        description="Generate cryptographically secure v1–v8 UUIDs or sortable ULIDs in batches with customizable output formats."
+        category="Developer Tools"
+        categoryPath="/search"
+        icon={Hash}
+        iconColor="text-[#1a73e8] bg-[#e8f0fe] border-[#d2e3fc]"
+        badge="RFC 9562 Standard"
+        extraBadge="v1, v4, v7 & ULID"
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
 
         {/* Left: Results */}
         <motion.div 
           layout
-          className={`flex-1 w-full bg-card border border-border rounded-2xl shadow-sm flex flex-col relative transition-all duration-500 ease-out ${
-            hasUuids ? 'min-h-0 p-4 md:p-6 space-y-4' : 'min-h-[50vh] items-stretch p-4 md:p-5'
+          className={`flex-1 w-full tool-card flex flex-col relative transition-all duration-500 ease-out ${
+            hasUuids ? 'min-h-0 p-4 md:p-6 space-y-4' : 'min-h-[420px] items-stretch p-6'
           }`}
         >
           {hasUuids ? (
             <>
-              <div className="flex items-center justify-between px-1">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                  Generated Keys ({uuids.length})
+              <div className="flex items-center justify-between px-1 border-b border-[#dadce0] pb-3">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-[#5f6368] flex items-center gap-2">
+                  <span>Generated Keys</span>
+                  <span className="px-2 py-0.5 rounded-full bg-[#e8f0fe] text-[#1a73e8] text-[11px] font-bold border border-[#d2e3fc]">
+                    {uuids.length}
+                  </span>
                 </h3>
-                <div className="flex items-center gap-3">
-                  <div className="relative group">
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="relative">
                     <select 
                       value={copyFormat}
                       onChange={(e) => setCopyFormat(e.target.value)}
-                      className="appearance-none bg-muted/20 border border-border/50 group-hover:border-border py-1.5 pl-2.5 pr-7 rounded-lg text-xs font-semibold text-foreground outline-none cursor-pointer transition-colors"
+                      className="google-select text-xs py-1.5 pl-3 pr-7"
                     >
-                      <option value="raw" className="bg-background text-foreground">Raw</option>
-                      <option value="json" className="bg-background text-foreground">JSON</option>
-                      <option value="csv" className="bg-background text-foreground">CSV</option>
-                      <option value="sql" className="bg-background text-foreground">SQL</option>
-                      <option value="javascript" className="bg-background text-foreground">JS</option>
+                      <option value="raw">Raw Text</option>
+                      <option value="json">JSON Array</option>
+                      <option value="csv">CSV Format</option>
+                      <option value="sql">SQL IN (...)</option>
+                      <option value="javascript">JS Array</option>
                     </select>
-                    <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground" />
+                    <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-[#5f6368]" />
                   </div>
-                  <button onClick={handleCopyAll} className="text-xs text-primary font-semibold hover:underline flex items-center gap-1">
-                    {copiedAll ? <CheckCircle size={13} /> : <Copy size={13} />} Copy
+                  <button onClick={handleCopyAll} className="btn-google-secondary text-xs py-1.5 px-3">
+                    {copiedAll ? <CheckCircle size={13} className="text-[#34a853]" /> : <Copy size={13} />} Copy All
                   </button>
-                  <button onClick={handleDownload} className="text-xs text-primary font-semibold hover:underline flex items-center gap-1">
-                    <Download size={13} /> Save
+                  <button onClick={handleDownload} className="btn-google-secondary text-xs py-1.5 px-3">
+                    <Download size={13} /> Export
                   </button>
-                  <button onClick={clearAll} className="text-xs text-red-500 font-semibold hover:underline">Clear</button>
+                  <button onClick={clearAll} className="btn-google-danger text-xs py-1.5 px-3">Clear</button>
                 </div>
               </div>
 
@@ -261,18 +263,19 @@ const UuidGenerator = () => {
                       animate={{ opacity: 1, scale: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
                       transition={{ delay: Math.min(index * 0.015, 0.25) }}
-                      className="flex items-center gap-4 bg-muted/30 p-2.5 rounded-xl border border-border/50 group hover:border-primary/40 transition-colors duration-200 shadow-sm"
+                      className="flex items-center gap-3 bg-[#f8f9fa] p-3 rounded-xl border border-[#dadce0] group hover:border-[#1a73e8] hover:bg-white transition-all shadow-2xs"
                     >
-                      <code className="flex-1 text-sm font-mono text-foreground break-all">{uuid}</code>
+                      <span className="text-[11px] font-mono text-[#9aa0a6] select-none w-6 text-right">{index + 1}.</span>
+                      <code className="flex-1 text-xs sm:text-sm font-mono text-[#202124] break-all font-semibold">{uuid}</code>
                       <button 
                         onClick={() => copyToClipboard(uuid, index)}
-                        className={`p-2 rounded-lg transition-colors shrink-0 ${
+                        className={`p-1.5 rounded-lg transition-colors shrink-0 cursor-pointer ${
                           copiedIndex === index 
-                            ? 'text-green-500 bg-green-500/10' 
-                            : 'text-muted-foreground hover:text-foreground hover:bg-muted opacity-0 group-hover:opacity-100'
+                            ? 'text-[#137333] bg-[#e6f4ea]' 
+                            : 'text-[#5f6368] hover:text-[#1a73e8] hover:bg-[#e8f0fe] opacity-80 group-hover:opacity-100'
                         }`}
                       >
-                        {copiedIndex === index ? <CheckCircle size={16} /> : <Copy size={16} />}
+                        {copiedIndex === index ? <CheckCircle size={15} /> : <Copy size={15} />}
                       </button>
                     </motion.div>
                   ))}
@@ -281,21 +284,23 @@ const UuidGenerator = () => {
             </>
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center text-center p-8">
-              <div className="mx-auto w-16 h-16 mb-4 flex items-center justify-center rounded-full bg-muted text-muted-foreground">
-                <Hash size={32} />
+              <div className="w-16 h-16 mb-4 flex items-center justify-center rounded-2xl bg-[#e8f0fe] text-[#1a73e8] border border-[#d2e3fc] shadow-2xs">
+                <Hash size={30} />
               </div>
-              <h3 className="text-xl font-semibold text-foreground mb-2">Generate UUID & ID Keys</h3>
-              <p className="text-sm text-muted-foreground">Configure your settings and click Generate Keys to create a batch.</p>
+              <h3 className="text-lg font-bold text-[#202124] mb-1">Ready to Generate Unique Keys</h3>
+              <p className="text-xs sm:text-sm text-[#5f6368] max-w-sm leading-relaxed">
+                Choose your UUID version or ULID options on the right, specify quantity, and click Generate.
+              </p>
             </div>
           )}
         </motion.div>
 
         {/* Right: Settings Sidebar */}
-        <div className="w-full lg:w-[350px] xl:w-[400px] shrink-0 space-y-6">
+        <div className="w-full lg:w-[360px] xl:w-[400px] shrink-0 space-y-6">
           
-          <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground border-b border-border pb-3 flex items-center gap-2">
-              <Settings2 size={16} /> Generation Settings
+          <div className="tool-sidebar p-5 sm:p-6 space-y-5">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#5f6368] border-b border-[#dadce0] pb-3 flex items-center gap-2">
+              <Settings2 size={16} className="text-[#1a73e8]" /> Generation Settings
             </h3>
 
             {/* Version Selector */}

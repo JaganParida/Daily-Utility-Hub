@@ -1,4 +1,5 @@
 import { useLocation } from 'react-router-dom';
+import ToolHeader from '../../components/ToolHeader';
 import { useState, useRef, useEffect } from 'react';
 import { FileText, Download, Upload, Copy, CheckCircle2, FileImage, Sparkles } from 'lucide-react';
 import { toast } from 'react-hot-toast';
@@ -195,16 +196,17 @@ const PptToPdf = () => {
   };
 
   return (
-    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
-      <div className="mb-6 flex items-start gap-4 shrink-0">
-        <div className="p-2 bg-primary/10 text-primary rounded-md shadow-sm">
-          <FileText size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">PowerPoint to PDF / Image Converter</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Convert Microsoft PowerPoint slides (.pptx) client-side into structured PDF documents or individual PNG images.</p>
-        </div>
-      </div>
+    <div className="tool-page-container">
+      <ToolHeader
+        title="PowerPoint to PDF / Image Converter"
+        description="Convert Microsoft PowerPoint slides (.pptx) client-side into structured PDF documents or individual PNG images."
+        category="Slides & Presentation Tools"
+        categoryPath="/search"
+        icon={FileText}
+        iconColor="text-[#ea4335] bg-[#fce8e6] border-[#fad2cf]"
+        badge="PowerPoint to PDF"
+        extraBadge="PPTX Document Converter"
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         

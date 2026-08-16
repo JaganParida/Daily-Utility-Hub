@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
+import ToolHeader from '../../components/ToolHeader';
 
 // Basic color list for name detection
 const NAMED_COLORS = [
@@ -274,22 +275,22 @@ const ColorPicker = () => {
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: 'easeOut' }}
-      className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8"
+      className="tool-page-container"
     >
-      {/* Header */}
-      <div className="mb-6 flex items-center gap-3">
-        <div className="p-2.5 bg-primary/10 text-primary rounded-xl shadow-sm shrink-0">
-          <Palette size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Advanced Color Picker</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Inspect and select color values, create shade scales, and test contrast ratios.</p>
-        </div>
-      </div>
+      <ToolHeader
+        title="Advanced Color Picker & Palette Studio"
+        description="Inspect and select color values, create harmonized shade/tint scales, and test WCAG contrast ratios."
+        category="Developer Tools"
+        categoryPath="/search"
+        icon={Palette}
+        iconColor="text-[#8e24aa] bg-[#f3e8fd] border-[#e9d2fd]"
+        badge="WCAG 2.1 Compliant"
+        extraBadge="HEX / RGB / HSL"
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         {/* Left Workspace */}
-        <div className="flex-1 w-full bg-card border border-border/80 p-6 rounded-2xl shadow-sm space-y-6">
+        <div className="flex-1 w-full tool-card p-5 sm:p-6 space-y-6">
           
           {/* Main Visualizer Swatch */}
           <div 
@@ -462,18 +463,18 @@ const ColorPicker = () => {
         </div>
 
         {/* Right Settings Sidebar */}
-        <div className="w-full lg:w-[380px] xl:w-[460px] shrink-0 space-y-6">
-          <div className="bg-card border border-border/80 p-6 rounded-2xl shadow-sm space-y-6">
-            <div className="flex items-center justify-between border-b border-border/80 pb-3">
-              <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                <Settings2 size={16} /> Color Values
+        <div className="w-full lg:w-[360px] xl:w-[400px] shrink-0 space-y-6">
+          <div className="tool-sidebar p-5 sm:p-6 space-y-5">
+            <div className="flex items-center justify-between border-b border-[#dadce0] pb-3">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-[#5f6368] flex items-center gap-2">
+                <Settings2 size={16} className="text-[#1a73e8]" /> Color Values & Codes
               </h3>
             </div>
 
             {/* Inputs & Picker */}
             <div className="space-y-4">
               <div className="flex gap-3">
-                <div className="w-12 h-12 rounded-xl border border-border/80 overflow-hidden shrink-0 relative cursor-pointer group shadow-sm">
+                <div className="w-12 h-11 rounded-xl border border-[#dadce0] overflow-hidden shrink-0 relative cursor-pointer group shadow-2xs">
                   <input
                     type="color"
                     value={color}
@@ -485,7 +486,7 @@ const ColorPicker = () => {
                   type="text"
                   value={color.toUpperCase()}
                   onChange={(e) => setColor(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-background border border-border/80 rounded-xl text-sm font-mono focus:ring-2 focus:ring-primary/40 focus:border-primary/50 outline-none text-foreground"
+                  className="w-full google-input font-mono font-bold"
                   placeholder="#000000"
                 />
               </div>
@@ -493,83 +494,83 @@ const ColorPicker = () => {
               {/* Value Fields List */}
               <div className="space-y-2">
                 {/* HEX */}
-                <div className="flex items-center justify-between p-2.5 bg-muted/20 border border-border/50 rounded-xl">
-                  <div className="text-xs font-semibold text-muted-foreground">HEX</div>
+                <div className="flex items-center justify-between p-2.5 bg-[#f8f9fa] border border-[#dadce0] rounded-xl shadow-2xs">
+                  <div className="text-xs font-bold text-[#5f6368]">HEX</div>
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-sm font-bold text-foreground">{color.toUpperCase()}</span>
+                    <span className="font-mono text-xs sm:text-sm font-bold text-[#202124]">{color.toUpperCase()}</span>
                     <button 
                       onClick={() => handleCopy(color.toUpperCase(), 'hex')} 
-                      className="p-1 hover:bg-muted/50 text-muted-foreground hover:text-foreground rounded transition-colors cursor-pointer"
+                      className="p-1 hover:bg-[#e8f0fe] text-[#5f6368] hover:text-[#1a73e8] rounded-lg transition-colors cursor-pointer"
                     >
-                      {copied === 'hex' ? <Check size={14} className="text-primary" /> : <Copy size={14} />}
+                      {copied === 'hex' ? <Check size={14} className="text-[#34a853]" /> : <Copy size={14} />}
                     </button>
                   </div>
                 </div>
 
                 {/* RGB */}
-                <div className="flex items-center justify-between p-2.5 bg-muted/20 border border-border/50 rounded-xl">
-                  <div className="text-xs font-semibold text-muted-foreground">RGB</div>
+                <div className="flex items-center justify-between p-2.5 bg-[#f8f9fa] border border-[#dadce0] rounded-xl shadow-2xs">
+                  <div className="text-xs font-bold text-[#5f6368]">RGB</div>
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-sm font-bold text-foreground">{`rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`}</span>
+                    <span className="font-mono text-xs sm:text-sm font-bold text-[#202124]">{`rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`}</span>
                     <button 
                       onClick={() => handleCopy(`rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`, 'rgb')} 
-                      className="p-1 hover:bg-muted/50 text-muted-foreground hover:text-foreground rounded transition-colors cursor-pointer"
+                      className="p-1 hover:bg-[#e8f0fe] text-[#5f6368] hover:text-[#1a73e8] rounded-lg transition-colors cursor-pointer"
                     >
-                      {copied === 'rgb' ? <Check size={14} className="text-primary" /> : <Copy size={14} />}
+                      {copied === 'rgb' ? <Check size={14} className="text-[#34a853]" /> : <Copy size={14} />}
                     </button>
                   </div>
                 </div>
 
                 {/* HSL */}
-                <div className="flex items-center justify-between p-2.5 bg-muted/20 border border-border/50 rounded-xl">
-                  <div className="text-xs font-semibold text-muted-foreground">HSL</div>
+                <div className="flex items-center justify-between p-2.5 bg-[#f8f9fa] border border-[#dadce0] rounded-xl shadow-2xs">
+                  <div className="text-xs font-bold text-[#5f6368]">HSL</div>
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-sm font-bold text-foreground">{`hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`}</span>
+                    <span className="font-mono text-xs sm:text-sm font-bold text-[#202124]">{`hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`}</span>
                     <button 
                       onClick={() => handleCopy(`hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`, 'hsl')} 
-                      className="p-1 hover:bg-muted/50 text-muted-foreground hover:text-foreground rounded transition-colors cursor-pointer"
+                      className="p-1 hover:bg-[#e8f0fe] text-[#5f6368] hover:text-[#1a73e8] rounded-lg transition-colors cursor-pointer"
                     >
-                      {copied === 'hsl' ? <Check size={14} className="text-primary" /> : <Copy size={14} />}
+                      {copied === 'hsl' ? <Check size={14} className="text-[#34a853]" /> : <Copy size={14} />}
                     </button>
                   </div>
                 </div>
 
                 {/* CMYK */}
-                <div className="flex items-center justify-between p-2.5 bg-muted/20 border border-border/50 rounded-xl">
-                  <div className="text-xs font-semibold text-muted-foreground">CMYK</div>
+                <div className="flex items-center justify-between p-2.5 bg-[#f8f9fa] border border-[#dadce0] rounded-xl shadow-2xs">
+                  <div className="text-xs font-bold text-[#5f6368]">CMYK</div>
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-sm font-bold text-foreground">{`cmyk(${cmyk.c}%, ${cmyk.m}%, ${cmyk.y}%, ${cmyk.k}%)`}</span>
+                    <span className="font-mono text-xs sm:text-sm font-bold text-[#202124]">{`cmyk(${cmyk.c}%, ${cmyk.m}%, ${cmyk.y}%, ${cmyk.k}%)`}</span>
                     <button 
                       onClick={() => handleCopy(`cmyk(${cmyk.c}%, ${cmyk.m}%, ${cmyk.y}%, ${cmyk.k}%)`, 'cmyk')} 
-                      className="p-1 hover:bg-muted/50 text-muted-foreground hover:text-foreground rounded transition-colors cursor-pointer"
+                      className="p-1 hover:bg-[#e8f0fe] text-[#5f6368] hover:text-[#1a73e8] rounded-lg transition-colors cursor-pointer"
                     >
-                      {copied === 'cmyk' ? <Check size={14} className="text-primary" /> : <Copy size={14} />}
+                      {copied === 'cmyk' ? <Check size={14} className="text-[#34a853]" /> : <Copy size={14} />}
                     </button>
                   </div>
                 </div>
               </div>
 
               {/* CSS Variable Block */}
-              <div className="pt-4 border-t border-border/50 space-y-2">
+              <div className="pt-3 border-t border-[#dadce0] space-y-2">
                 <div className="flex justify-between items-center">
-                  <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                  <label className="text-xs font-bold uppercase tracking-wider text-[#5f6368] flex items-center gap-1">
                     <Code2 size={13} /> CSS Export
                   </label>
                   <button 
                     onClick={() => handleCopy(cssDeclaration, 'css-decl')}
-                    className="text-[11px] font-bold text-primary hover:underline cursor-pointer"
+                    className="text-xs font-bold text-[#1a73e8] hover:underline cursor-pointer"
                   >
                     Copy
                   </button>
                 </div>
-                <pre className="p-3.5 bg-muted/50 border border-border rounded-xl font-mono text-[11px] text-foreground overflow-x-auto custom-scrollbar leading-relaxed">
+                <pre className="p-3 bg-[#f8f9fa] border border-[#dadce0] rounded-xl font-mono text-xs text-[#202124] overflow-x-auto custom-scrollbar leading-relaxed">
                   {cssDeclaration}
                 </pre>
               </div>
 
               {/* History Swatches */}
-              <div className="pt-4 border-t border-border/50 space-y-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+              <div className="pt-3 border-t border-[#dadce0] space-y-2">
+                <label className="text-xs font-bold uppercase tracking-wider text-[#5f6368] flex items-center gap-1.5">
                   <History size={13} /> Color History
                 </label>
                 <div className="grid grid-cols-6 gap-2">
@@ -577,7 +578,7 @@ const ColorPicker = () => {
                     <div 
                       key={idx}
                       onClick={() => selectFromSwatch(hCode)}
-                      className="aspect-square rounded-lg border border-border/80 cursor-pointer hover:scale-[1.15] transition-transform shadow-sm"
+                      className="aspect-square rounded-lg border border-[#dadce0] cursor-pointer hover:scale-[1.15] transition-transform shadow-2xs"
                       style={{ backgroundColor: hCode }}
                       title={hCode}
                     />
@@ -586,12 +587,12 @@ const ColorPicker = () => {
               </div>
 
               {/* Random button */}
-              <div className="pt-4 border-t border-border/50">
+              <div className="pt-3 border-t border-[#dadce0]">
                 <button
                   onClick={generateRandom}
-                  className="w-full py-3.5 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl shadow-sm transition-colors flex items-center justify-center gap-2 active:scale-[0.98] cursor-pointer text-sm"
+                  className="w-full btn-google-primary text-sm shadow-sm"
                 >
-                  <Shuffle size={15} /> Random Color
+                  <Shuffle size={15} /> Randomize Color
                 </button>
               </div>
             </div>

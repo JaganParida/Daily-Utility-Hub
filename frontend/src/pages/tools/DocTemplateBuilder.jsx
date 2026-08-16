@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import ToolHeader from '../../components/ToolHeader';
 import { Layers, Download, Plus, Trash2, Eye, FileText, CheckCircle2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { motion } from 'framer-motion';
@@ -92,16 +93,17 @@ const DocTemplateBuilder = () => {
   };
 
   return (
-    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
-      <div className="mb-6 flex items-start gap-4 shrink-0">
-        <div className="p-2 bg-primary/10 text-primary rounded-md shadow-sm">
-          <Layers size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Interactive Document Builder</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Compile formal legal documents, proposals, and portfolios, with live previews and high-res PDF downloads.</p>
-        </div>
-      </div>
+    <div className="tool-page-container">
+      <ToolHeader
+        title="Interactive Document Builder"
+        description="Compile formal legal documents, proposals, and portfolios, with live previews and high-res PDF downloads."
+        category="Word & Docs Tools"
+        categoryPath="/search"
+        icon={Layers}
+        iconColor="text-[#1a73e8] bg-[#e8f0fe] border-[#d2e3fc]"
+        badge="Formal Document Builder"
+        extraBadge="Proposals, Resumes, NDAs"
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         

@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Calculator, CheckCircle2, TrendingDown, PiggyBank, Calendar, IndianRupee, PieChart, Activity, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import ToolHeader from '../../components/ToolHeader';
 
 const EmiCalculator = () => {
   const [loanAmount, setLoanAmount] = useState(5000000); // 50 Lakhs
@@ -98,44 +99,47 @@ const EmiCalculator = () => {
   const strokeDasharray = `${(principalPct / 100) * circumference} ${circumference}`;
 
   return (
-    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
-      <div className="mb-6 flex items-start gap-4 shrink-0">
-        <div className="p-2 bg-primary/10 text-primary rounded-md shadow-sm">
-          <Calculator size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Advanced EMI Calculator</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Calculate EMI, map amortization, and plan early prepayments to save massive interest.</p>
-        </div>
-      </div>
+    <div className="tool-page-container">
+      <ToolHeader
+        title="Advanced EMI & Prepayment Calculator"
+        description="Calculate monthly EMI, view complete amortization schedule breakdown, and plan early prepayments to save massive interest."
+        category="Finance & Productivity"
+        categoryPath="/search"
+        icon={Calculator}
+        iconColor="text-[#1a73e8] bg-[#e8f0fe] border-[#d2e3fc]"
+        badge="Zero Server Calculation"
+        extraBadge="Prepayment Optimizer"
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         
         {/* Left: Input Dashboard */}
-        <div className="w-full lg:w-[450px] shrink-0 space-y-6 lg:sticky lg:top-6">
-          <div className="bg-card border border-border p-6 rounded-2xl shadow-sm flex flex-col gap-6">
+        <div className="w-full lg:w-[440px] shrink-0 space-y-6 lg:sticky lg:top-6">
+          <div className="tool-sidebar p-5 sm:p-6 flex flex-col gap-6">
             
             {/* Core Loan Details */}
-            <div className="space-y-6">
-              <h3 className="font-bold uppercase tracking-wider text-muted-foreground text-xs flex items-center gap-2"><IndianRupee size={14}/> Core Loan Details</h3>
+            <div className="space-y-5">
+              <h3 className="font-bold uppercase tracking-wider text-[#5f6368] text-xs flex items-center gap-2">
+                <IndianRupee size={14} className="text-[#1a73e8]" /> Core Loan Details
+              </h3>
               
-              <div className="space-y-3">
+              <div className="space-y-2.5">
                 <div className="flex justify-between items-center">
-                  <label className="text-sm font-semibold text-foreground">Loan Amount</label>
+                  <label className="text-xs font-bold text-[#202124]">Loan Amount</label>
                   <div className="relative">
-                    <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-xs font-bold">₹</span>
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#5f6368] text-xs font-bold">₹</span>
                     <input 
                       type="number"
                       value={loanAmount || ''}
                       onChange={(e) => setLoanAmount(Number(e.target.value))}
-                      className="bg-background border border-border rounded-xl pl-6 pr-3 py-1.5 text-sm font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 w-36 text-right"
+                      className="google-input pl-6 pr-3 py-1.5 text-xs sm:text-sm font-bold text-right w-36"
                     />
                   </div>
                 </div>
                 <input 
                   type="range" min="10000" max="50000000" step="50000"
                   value={loanAmount} onChange={(e) => setLoanAmount(Number(e.target.value))}
-                  className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+                  className="w-full h-2 bg-[#f1f3f4] rounded-lg appearance-none cursor-pointer accent-[#1a73e8]"
                 />
               </div>
 

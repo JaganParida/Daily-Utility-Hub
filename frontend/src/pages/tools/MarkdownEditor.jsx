@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import ToolHeader from '../../components/ToolHeader';
 import { 
   BookOpen, Download, Copy, CheckCircle2, Bold, Italic, Link as LinkIcon, 
   Code, List, Table, Settings, HelpCircle, Eye, EyeOff, LayoutTemplate, AlignLeft 
@@ -89,7 +90,7 @@ const MarkdownEditor = () => {
   const readTime = Math.ceil(wordCount / 200);
 
   return (
-    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
+    <div className="tool-page-container">
       <div className="mb-6 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-primary/10 text-primary rounded-md shadow-sm">

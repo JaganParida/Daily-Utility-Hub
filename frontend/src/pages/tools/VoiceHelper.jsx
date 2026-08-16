@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import ToolHeader from '../../components/ToolHeader';
 import { Mic, MicOff, Volume2, VolumeX, Download, Trash2, Copy, Play, Pause, RefreshCw, ChevronDown, CheckCircle, Award, Sliders } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
@@ -181,17 +182,18 @@ const VoiceHelper = () => {
   };
 
   return (
-    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
+    <div className="tool-page-container">
       {/* Header */}
-      <div className="mb-6 flex items-center gap-3">
-        <div className="p-2 bg-primary/10 text-primary rounded-lg shadow-sm">
-          <Volume2 size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Voice Assistant & Reader</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Transcribe your voice into text in real-time, or listen to written documents using neural speech synthesis.</p>
-        </div>
-      </div>
+      <ToolHeader
+        title="Voice Assistant & Reader"
+        description="Transcribe your voice into text in real-time, or listen to written documents using neural speech synthesis."
+        category="Text Tools"
+        categoryPath="/search"
+        icon={Volume2}
+        iconColor="text-[#137333] bg-[#e6f4ea] border-[#ceead6]"
+        badge="Web Speech API"
+        extraBadge="Text-to-Speech & Mic"
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         {/* Left: Text Input / Dictation Area */}

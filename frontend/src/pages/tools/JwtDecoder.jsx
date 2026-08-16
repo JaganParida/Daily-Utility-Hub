@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import ToolHeader from '../../components/ToolHeader';
 import { Key, Copy, Check, AlertCircle, CheckCircle2, Clock, Clipboard, Shield, Info, FileJson, Timer, Hash, Eye, Lock, Sparkles, RotateCcw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
@@ -289,20 +290,19 @@ const JwtDecoder = () => {
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: 'easeOut' }}
-      className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8"
+      className="tool-page-container"
     >
       {/* ── Header ──────────────────────────────────────────────────────── */}
-      <div className="mb-6 flex items-center gap-3">
-        <div className="p-2.5 bg-primary/10 text-primary rounded-xl shadow-sm shrink-0">
-          <Key size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Advanced JWT Decoder</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">
-            Decode, inspect claims, and mathematically verify HMAC signatures with live expiry tracking.
-          </p>
-        </div>
-      </div>
+      <ToolHeader
+        title="Advanced JWT Decoder"
+        description="Decode, inspect claims, and mathematically verify HMAC signatures with live expiry tracking."
+        category="Developer Tools"
+        categoryPath="/search"
+        icon={Hash}
+        iconColor="text-[#f29900] bg-[#fef7e0] border-[#feefc3]"
+        badge="JWT Inspector"
+        extraBadge="Signature & Claims Verifier"
+      />
 
       {/* ── Main Split Layout ───────────────────────────────────────────── */}
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">

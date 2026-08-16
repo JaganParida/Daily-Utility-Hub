@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from 'react';
 import { UploadCloud, FileText, CheckCircle2, Download, Loader2, X, RefreshCw, Layers } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
+import ToolHeader from '../../components/ToolHeader';
 import * as pdfjsLib from 'pdfjs-dist';
 import { jsPDF } from 'jspdf';
 
@@ -243,23 +244,24 @@ const PdfCompressor = () => {
   };
 
   return (
-    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
-      <div className="mb-6 flex items-start gap-4 shrink-0">
-        <div className="p-2 bg-primary/10 text-primary rounded-md shadow-sm">
-          <Layers size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Smart PDF Compressor</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Drastically reduce PDF file sizes for easier sharing and uploading.</p>
-        </div>
-      </div>
+    <div className="tool-page-container">
+      <ToolHeader
+        title="Smart PDF Compressor & Optimizer"
+        description="Intelligently compress embedded images and streamline PDF page streams without destroying readability."
+        category="PDF Tools"
+        categoryPath="/search"
+        icon={Layers}
+        iconColor="text-[#1a73e8] bg-[#e8f0fe] border-[#d2e3fc]"
+        badge="Wasm Local Compression"
+        extraBadge="Up to 80% Reduction"
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         
         {/* Main Workspace Area */}
         <motion.div 
           layout
-          className={`flex-1 w-full bg-card border border-border p-4 md:p-6 rounded-2xl shadow-sm flex flex-col relative transition-all duration-500 ease-out ${!file ? 'min-h-[50vh]' : 'min-h-0'}`}
+          className={`flex-1 w-full tool-card p-4 md:p-6 flex flex-col relative transition-all duration-500 ease-out ${!file ? 'min-h-[50vh]' : 'min-h-0'}`}
         >
           <AnimatePresence mode="popLayout" initial={false}>
             {!file ? (
@@ -276,18 +278,18 @@ const PdfCompressor = () => {
                   onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}
                   onClick={() => !isProcessing && fileInputRef.current?.click()}
                   className={`flex-1 h-full w-full border-2 border-dashed rounded-2xl p-6 md:p-10 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 relative group min-h-[300px] ${
-                    isDragging ? 'border-primary bg-primary/5 scale-[0.99] shadow-inner' : 'border-border bg-card hover:border-primary/50 hover:bg-muted/20'
+                    isDragging ? 'border-[#1a73e8] bg-[#e8f0fe] scale-[0.99] shadow-inner' : 'border-[#c2d7fb] bg-white hover:border-[#1a73e8] hover:bg-[#f8fbff]'
                   }`}
                 >
                   <input type="file" ref={fileInputRef} onChange={handleFileSelect} className="hidden" accept=".pdf,application/pdf" />
-                  <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center text-primary mb-4 shadow-sm transition-transform duration-300 group-hover:scale-110 pointer-events-none">
+                  <div className="w-16 h-16 bg-[#e8f0fe] border border-[#d2e3fc] rounded-2xl flex items-center justify-center text-[#1a73e8] mb-4 shadow-2xs transition-transform duration-300 group-hover:scale-110 pointer-events-none">
                     {isProcessing ? <Loader2 size={32} className="animate-spin" /> : <UploadCloud size={32} />}
                   </div>
-                  <h3 className="text-lg font-bold text-foreground mb-2 pointer-events-none text-center">
+                  <h3 className="text-lg font-bold text-[#202124] mb-2 pointer-events-none text-center">
                     {isProcessing ? 'Analyzing Document...' : 'Upload PDF to Compress'}
                   </h3>
-                  <p className="text-sm text-muted-foreground text-center pointer-events-none max-w-sm leading-relaxed">
-                    {isProcessing ? 'Inspecting structure...' : <span>Drag & drop a PDF file here, or <span className="text-primary font-semibold hover:underline">browse files</span>. Processing is fully secure.</span>}
+                  <p className="text-xs sm:text-sm text-[#5f6368] text-center pointer-events-none max-w-sm leading-relaxed">
+                    {isProcessing ? 'Inspecting structure...' : <span>Drag & drop a PDF file here, or <span className="text-[#1a73e8] font-bold hover:underline">browse files</span>. 100% private in-browser compression.</span>}
                   </p>
                 </div>
               </motion.div>

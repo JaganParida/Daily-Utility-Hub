@@ -1,4 +1,5 @@
 import { useLocation } from 'react-router-dom';
+import ToolHeader from '../../components/ToolHeader';
 import { useState, useRef, useEffect } from 'react';
 import { FileText, ShieldAlert, Upload, Download, ShieldCheck, Trash2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
@@ -168,16 +169,17 @@ const DocMetadataCleaner = () => {
   };
 
   return (
-    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
-      <div className="mb-6 flex items-start gap-4 shrink-0">
-        <div className="p-2 bg-primary/10 text-primary rounded-md shadow-sm">
-          <ShieldAlert size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Document Metadata Stripper</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Identify and erase hidden creator profiles, system revisions, and software signatures from DOCX & PDF files.</p>
-        </div>
-      </div>
+    <div className="tool-page-container">
+      <ToolHeader
+        title="Document Metadata Stripper"
+        description="Identify and erase hidden creator profiles, system revisions, and software signatures from DOCX & PDF files."
+        category="Word & Docs Tools"
+        categoryPath="/search"
+        icon={FileText}
+        iconColor="text-[#ea4335] bg-[#fce8e6] border-[#fad2cf]"
+        badge="Metadata Stripper"
+        extraBadge="Erase Sensitive Tracked Properties"
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         

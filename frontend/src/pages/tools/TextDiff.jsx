@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import ToolHeader from '../../components/ToolHeader';
 import { FileDiff, SplitSquareHorizontal, Upload, FileText, Settings, Type } from 'lucide-react';
 import ReactDiffViewer from 'react-diff-viewer-continued';
 import { motion } from 'framer-motion';
@@ -56,16 +57,17 @@ const TextDiff = () => {
   };
 
   return (
-    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
-      <div className="mb-6 flex items-start gap-4 shrink-0">
-        <div className="p-2 bg-primary/10 text-primary rounded-md shadow-sm">
-          <FileDiff size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Text & Code Diff Checker</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Compare two files or texts instantly to see exactly what changed.</p>
-        </div>
-      </div>
+    <div className="tool-page-container">
+      <ToolHeader
+        title="Text & Code Diff Checker"
+        description="Compare two files or texts instantly to see exactly what changed."
+        category="Student & Docs"
+        categoryPath="/search"
+        icon={FileText}
+        iconColor="text-[#ea4335] bg-[#fce8e6] border-[#fad2cf]"
+        badge="Side-by-Side Diff Checker"
+        extraBadge="Character & Line Highlight"
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         

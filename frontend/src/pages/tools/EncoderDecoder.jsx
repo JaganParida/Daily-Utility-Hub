@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import ToolHeader from '../../components/ToolHeader';
 import { 
   Key, Copy, Check, RefreshCw, Trash2, Lock, 
   Unlock, Eye, EyeOff, Settings2, ShieldCheck, Zap 
@@ -106,7 +107,7 @@ const EncoderDecoder = () => {
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: 'easeOut' }}
-      className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8"
+      className="tool-page-container"
     >
       {/* Header */}
       <div className="mb-8 flex items-center gap-3.5">

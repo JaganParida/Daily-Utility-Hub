@@ -1,4 +1,5 @@
 import { useLocation } from 'react-router-dom';
+import ToolHeader from '../../components/ToolHeader';
 import { useState, useRef, useEffect } from 'react';
 import { UploadCloud, FileText, CheckCircle2, Download, Loader2, X, RefreshCw, LayoutGrid, RotateCw, Trash2, Copy } from 'lucide-react';
 import { toast } from 'react-hot-toast';
@@ -249,16 +250,17 @@ const PdfOrganizer = () => {
   };
 
   return (
-    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
-      <div className="mb-6 flex items-start gap-4 shrink-0">
-        <div className="p-2 bg-primary/10 text-primary rounded-md shadow-sm">
-          <LayoutGrid size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">PDF Visual Organizer</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Drag and drop to reorder, delete, duplicate, or rotate PDF pages visually.</p>
-        </div>
-      </div>
+    <div className="tool-page-container">
+      <ToolHeader
+        title="PDF Visual Organizer"
+        description="Drag and drop to reorder, delete, duplicate, or rotate PDF pages visually."
+        category="PDF Tools"
+        categoryPath="/search"
+        icon={FileText}
+        iconColor="text-[#1a73e8] bg-[#e8f0fe] border-[#d2e3fc]"
+        badge="Visual Page Organizer"
+        extraBadge="Rotate, Delete, Duplicate"
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         

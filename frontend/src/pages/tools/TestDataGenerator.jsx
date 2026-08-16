@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import ToolHeader from '../../components/ToolHeader';
 import { Layers, Download, Plus, Trash2, CheckCircle2, Play, Hash } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import * as XLSX from 'xlsx';
@@ -85,16 +86,17 @@ const TestDataGenerator = () => {
   };
 
   return (
-    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
-      <div className="mb-6 flex items-start gap-4 shrink-0">
-        <div className="p-2 bg-primary/10 text-primary rounded-md shadow-sm">
-          <Hash size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Random Test Data Generator</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Compile high-quality custom mock datasets with customizable schemas and export them to Excel, CSV, or JSON.</p>
-        </div>
-      </div>
+    <div className="tool-page-container">
+      <ToolHeader
+        title="Random Test Data Generator"
+        description="Compile high-quality custom mock datasets with customizable schemas and export them to Excel, CSV, or JSON."
+        category="Excel & Sheets Tools"
+        categoryPath="/search"
+        icon={Layers}
+        iconColor="text-[#137333] bg-[#e6f4ea] border-[#ceead6]"
+        badge="Mock Test Data Generator"
+        extraBadge="Names, Emails, Dates, Addresses"
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         

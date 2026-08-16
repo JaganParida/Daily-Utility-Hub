@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import ToolHeader from '../../components/ToolHeader';
 import { 
   Key, Copy, RefreshCw, Check, Settings2, 
   ChevronDown, ShieldAlert, Sparkles, Download, Info
@@ -149,18 +150,19 @@ const JwtSecretGenerator = () => {
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: 'easeOut' }}
-      className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8"
+      className="tool-page-container"
     >
       {/* Header */}
-      <div className="mb-6 flex items-center gap-3">
-        <div className="p-2.5 bg-primary/10 text-primary rounded-xl shadow-sm shrink-0">
-          <Key size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">JWT Secret Key Generator</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Generate high-entropy, cryptographically secure secrets to sign JSON Web Tokens (JWTs) and secure user authentication.</p>
-        </div>
-      </div>
+      <ToolHeader
+        title="JWT Secret Key Generator"
+        description="Generate high-entropy, cryptographically secure secrets to sign JSON Web Tokens (JWTs) and secure user authentication."
+        category="Developer Tools"
+        categoryPath="/search"
+        icon={Key}
+        iconColor="text-[#f29900] bg-[#fef7e0] border-[#feefc3]"
+        badge="Entropy-Secure Keys"
+        extraBadge="256 / 384 / 512-bit"
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         {/* Left Workspace */}

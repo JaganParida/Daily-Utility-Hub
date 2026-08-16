@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
+import ToolHeader from '../../components/ToolHeader';
 
 // Setup pdfjs worker using unpkg CDN
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
@@ -621,22 +622,23 @@ const PdfEdit = () => {
   const presetColors = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#000000'];
 
   return (
-    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
-      <div className="mb-6 flex items-start gap-4 shrink-0">
-        <div className="p-2 bg-primary/10 text-primary rounded-md shadow-sm">
-          <Type size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Interactive PDF Editor</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Draw, write text, highlight, and redact elements directly on your document online.</p>
-        </div>
-      </div>
+    <div className="tool-page-container">
+      <ToolHeader
+        title="Interactive PDF Editor & Annotator"
+        description="Draw, add signatures, type text, highlight, and redact elements directly on your PDF documents in the browser."
+        category="PDF Tools"
+        categoryPath="/search"
+        icon={FileText}
+        iconColor="text-[#ea4335] bg-[#fce8e6] border-[#fad2cf]"
+        badge="Wasm Client Engine"
+        extraBadge="Direct Text & Draw"
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         {/* Main Editing Board */}
         <motion.div 
           layout
-          className={`flex-1 min-w-0 w-full bg-card border border-border p-4 md:p-6 rounded-2xl shadow-sm flex flex-col gap-4 relative transition-all duration-500 ease-out ${!file ? 'min-h-[50vh]' : 'min-h-0'}`}
+          className={`flex-1 min-w-0 w-full tool-card p-4 md:p-6 flex flex-col gap-4 relative transition-all duration-500 ease-out ${!file ? 'min-h-[50vh]' : 'min-h-0'}`}
         >
           <AnimatePresence mode="popLayout" initial={false}>
             {!file ? (
@@ -653,16 +655,16 @@ const PdfEdit = () => {
                   onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}
                   onClick={() => fileInputRef.current?.click()}
                   className={`flex-1 h-full w-full border-2 border-dashed rounded-2xl p-6 md:p-10 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 relative group min-h-[300px] ${
-                    isDragging ? 'border-primary bg-primary/5 scale-[0.99] shadow-inner' : 'border-border bg-card hover:border-primary/50 hover:bg-muted/20'
+                    isDragging ? 'border-[#1a73e8] bg-[#e8f0fe] scale-[0.99] shadow-inner' : 'border-[#c2d7fb] bg-white hover:border-[#1a73e8] hover:bg-[#f8fbff]'
                   }`}
                 >
                   <input type="file" ref={fileInputRef} onChange={handleFileSelect} className="hidden" accept=".pdf,application/pdf" />
-                  <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center text-primary mb-4 shadow-sm transition-transform duration-300 group-hover:scale-110 pointer-events-none">
+                  <div className="w-16 h-16 bg-[#e8f0fe] border border-[#d2e3fc] rounded-2xl flex items-center justify-center text-[#1a73e8] mb-4 shadow-2xs transition-transform duration-300 group-hover:scale-110 pointer-events-none">
                     <UploadCloud size={32} />
                   </div>
-                  <h3 className="text-lg font-bold text-foreground mb-2 pointer-events-none text-center">Upload a PDF to Edit</h3>
-                  <p className="text-sm text-muted-foreground text-center pointer-events-none max-w-sm leading-relaxed">
-                    Drag & drop your PDF file here, or <span className="text-primary font-semibold hover:underline">browse files</span>. Fully secure & processed in your browser.
+                  <h3 className="text-lg font-bold text-[#202124] mb-2 pointer-events-none text-center">Upload a PDF to Edit</h3>
+                  <p className="text-xs sm:text-sm text-[#5f6368] text-center pointer-events-none max-w-sm leading-relaxed">
+                    Drag & drop your PDF file here, or <span className="text-[#1a73e8] font-bold hover:underline">browse files</span>. 100% private & client-side.
                   </p>
                 </div>
               </motion.div>

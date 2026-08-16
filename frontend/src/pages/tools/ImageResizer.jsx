@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import ToolHeader from '../../components/ToolHeader';
 import { Maximize, Download, RefreshCw, Lock, Unlock, Settings2, Image as ImageIcon, Loader2, CheckCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DropzoneComponent from '../../components/DropzoneComponent';
@@ -203,16 +204,17 @@ const ImageResizer = () => {
   };
 
   return (
-    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
-      <div className="mb-6 flex items-center gap-3">
-        <div className="p-2 bg-emerald-500/10 text-emerald-500 rounded-md shadow-sm">
-          <Maximize size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Advanced Image Resizer</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Resize images with precise dimensions, aspect ratio lock, or social presets.</p>
-        </div>
-      </div>
+    <div className="tool-page-container">
+      <ToolHeader
+        title="Advanced Image Resizer"
+        description="Resize images with precise dimensions, aspect ratio lock, or social presets."
+        category="Image Tools"
+        categoryPath="/search"
+        icon={Expand}
+        iconColor="text-[#1a73e8] bg-[#e8f0fe] border-[#d2e3fc]"
+        badge="Pixel & Percentage Scale"
+        extraBadge="Aspect Ratio Lock"
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         

@@ -1,4 +1,5 @@
 import { useLocation } from 'react-router-dom';
+import ToolHeader from '../../components/ToolHeader';
 import { useState, useRef, useEffect } from 'react';
 import { 
   Unlock, 
@@ -227,21 +228,18 @@ const PdfUnlock = () => {
   };
 
   return (
-    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
+    <div className="tool-page-container">
       {/* Header Container */}
-      <div className="mb-6 flex items-center gap-3">
-        <div className="p-2 bg-primary/10 text-primary rounded-md shadow-sm">
-          <Unlock size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">
-            Unlock PDF (Decrypt)
-          </h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">
-            Remove password protection and permissions restrictions from your PDF permanently.
-          </p>
-        </div>
-      </div>
+      <ToolHeader
+        title="Unlock PDF (Decrypt)"
+        description="Remove password protection and permissions restrictions from your PDF permanently."
+        category="PDF Tools"
+        categoryPath="/search"
+        icon={FileText}
+        iconColor="text-[#f29900] bg-[#fef7e0] border-[#feefc3]"
+        badge="Password Decryptor"
+        extraBadge="Remove Restrictions"
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         {/* Workspace Area */}

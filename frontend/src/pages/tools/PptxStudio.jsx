@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import ToolHeader from '../../components/ToolHeader';
 import JSZip from 'jszip';
 import { Upload, FileUp, Palette, Mic, Layers, Play, Square, Settings, Undo, Redo, Eraser, PenTool, LayoutGrid, Download, Trash2, ChevronLeft, ChevronRight, CheckCircle2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';

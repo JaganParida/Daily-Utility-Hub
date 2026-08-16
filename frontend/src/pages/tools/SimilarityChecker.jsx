@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import ToolHeader from '../../components/ToolHeader';
 import { Layers, CheckCircle2, Download, Copy, Play, RefreshCw, AlertTriangle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { motion } from 'framer-motion';
@@ -78,16 +79,17 @@ const SimilarityChecker = () => {
   };
 
   return (
-    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
-      <div className="mb-6 flex items-start gap-4 shrink-0">
-        <div className="p-2 bg-primary/10 text-primary rounded-md shadow-sm">
-          <Layers size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Plagiarism & Similarity Checker</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Compare two pieces of text side-by-side client-side to calculate matching indexes and download verification reports.</p>
-        </div>
-      </div>
+    <div className="tool-page-container">
+      <ToolHeader
+        title="Plagiarism & Similarity Checker"
+        description="Compare two pieces of text side-by-side client-side to calculate matching indexes and download verification reports."
+        category="Word & Docs Tools"
+        categoryPath="/search"
+        icon={Layers}
+        iconColor="text-[#f29900] bg-[#fef7e0] border-[#feefc3]"
+        badge="Document Similarity Matcher"
+        extraBadge="Side-by-Side Analysis"
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         

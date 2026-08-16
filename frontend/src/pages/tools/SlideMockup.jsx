@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
 import { Palette, Download, Trash2, RefreshCw, Layers } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import ToolHeader from '../../components/ToolHeader';
 
 const SlideMockup = () => {
   const canvasRef = useRef(null);
-  const [color, setColor] = useState('#818cf8'); // default indigo
+  const [color, setColor] = useState('#1a73e8'); // default google blue
   const [brushSize, setBrushSize] = useState(4);
   const [isDrawing, setIsDrawing] = useState(false);
 
@@ -72,10 +73,10 @@ const SlideMockup = () => {
     const ctx = canvas.getContext('2d');
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    toast.success('Whiteboard cleared!');
+    toast.success('Canvas cleared');
   };
 
-  const downloadMockup = () => {
+  const downloadDrawing = () => {
     const canvas = canvasRef.current;
     const url = canvas.toDataURL('image/png');
     const link = document.createElement('a');
@@ -86,23 +87,26 @@ const SlideMockup = () => {
   };
 
   return (
-    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
-      <div className="mb-6 flex items-start gap-4 shrink-0">
-        <div className="p-2 bg-primary/10 text-primary rounded-md shadow-sm">
-          <Palette size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Slide Canvas Whiteboard</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Sketch flow diagrams, design slide layouts, and draw wireframes on an interactive whiteboard, exporting drafts as PNG images.</p>
-        </div>
-      </div>
+    <div className="tool-page-container">
+      <ToolHeader
+        title="Slide Canvas & Wireframe Whiteboard"
+        description="Sketch flow diagrams, design presentation slide layouts, and draw wireframes on an interactive whiteboard with PNG export."
+        category="Slides & Presentation Tools"
+        categoryPath="/search"
+        icon={Palette}
+        iconColor="text-[#1a73e8] bg-[#e8f0fe] border-[#d2e3fc]"
+        badge="Interactive Canvas"
+        extraBadge="High-Res PNG Export"
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         
         {/* Brush Controller Sidebar */}
-        <div className="w-full lg:w-[350px] shrink-0 space-y-6">
-          <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-5">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Brush Settings</h3>
+        <div className="w-full lg:w-[340px] shrink-0 space-y-6">
+          <div className="tool-sidebar p-5 sm:p-6 space-y-5">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#5f6368] border-b border-[#dadce0] pb-3">
+              Brush & Canvas Settings
+            </h3>
             
             <div className="space-y-4">
               <div>

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import ToolHeader from '../../components/ToolHeader';
 import { Timer, Play, Pause, RotateCcw, ListTodo, Plus, Trash2, CheckCircle2, Circle, Coffee, Brain } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -68,16 +69,17 @@ const PomodoroHub = () => {
   };
 
   return (
-    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
-      <div className="mb-6 flex items-start gap-4 shrink-0">
-        <div className="p-2 bg-primary/10 text-primary rounded-md shadow-sm">
-          <Timer size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Pomodoro Study Hub</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Stay focused, manage your tasks, and boost your productivity.</p>
-        </div>
-      </div>
+    <div className="tool-page-container">
+      <ToolHeader
+        title="Pomodoro Study Hub"
+        description="Stay focused, manage your tasks, and boost your productivity."
+        category="Finance & Productivity"
+        categoryPath="/search"
+        icon={Timer}
+        iconColor="text-[#ea4335] bg-[#fce8e6] border-[#fad2cf]"
+        badge="Focus & Break Timer"
+        extraBadge="Productivity Tracker"
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         

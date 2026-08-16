@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import ToolHeader from '../../components/ToolHeader';
 import { 
   FileText, Eye, Download, Printer, Bold, Italic, 
   List, Quote, Code, Heading, Trash2 
@@ -108,15 +109,16 @@ Use the helper buttons to format notes easily!`);
       className="max-w-[1600px] mx-auto w-full px-2 md:px-8 print:p-0"
     >
       {/* Header */}
-      <div className="mb-6 flex items-center gap-3 print:hidden">
-        <div className="p-2.5 bg-primary/10 text-primary rounded-xl shadow-sm shrink-0">
-          <FileText size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Advanced Markdown Notes Builder</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Write markdown notes, compile rich assignments, preview structure, and print to PDF instantly.</p>
-        </div>
-      </div>
+      <ToolHeader
+        title="Advanced Markdown Notes Builder"
+        description="Write markdown notes, compile rich assignments, preview structure, and print to PDF instantly."
+        category="Developer Tools"
+        categoryPath="/search"
+        icon={FileText}
+        iconColor="text-[#1a73e8] bg-[#e8f0fe] border-[#d2e3fc]"
+        badge="GFM Markdown Engine"
+        extraBadge="Export PDF & HTML"
+      />
 
       {/* Editor & Previewer split */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full items-start">

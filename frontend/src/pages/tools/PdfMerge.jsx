@@ -1,4 +1,5 @@
 import { useLocation } from 'react-router-dom';
+import ToolHeader from '../../components/ToolHeader';
 import { useState, useRef, useEffect } from 'react';
 import { UploadCloud, FileText, CheckCircle2, GripVertical, Trash2, Eye, X, ExternalLink, Loader2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
@@ -188,7 +189,7 @@ const PdfMerge = () => {
   const formattedTotalSize = (totalSize / 1024 / 1024).toFixed(2);
 
   return (
-    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
+    <div className="tool-page-container">
       <input 
         type="file" 
         ref={fileInputRef} 
@@ -198,15 +199,16 @@ const PdfMerge = () => {
         accept=".pdf,application/pdf" 
       />
       {/* Header Container */}
-      <div className="mb-6 flex items-center gap-3">
-        <div className="p-2 bg-primary/10 text-primary rounded-md shadow-sm">
-          <FileText size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Interactive PDF Merge</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Drag, drop, and rearrange multiple PDF files securely.</p>
-        </div>
-      </div>
+      <ToolHeader
+        title="Interactive PDF Merge"
+        description="Drag, drop, and rearrange multiple PDF files securely."
+        category="PDF Tools"
+        categoryPath="/search"
+        icon={FileText}
+        iconColor="text-[#ea4335] bg-[#fce8e6] border-[#fad2cf]"
+        badge="Multi-PDF Combiner"
+        extraBadge="Visual Page Reorder"
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         {/* Upload & List Area */}

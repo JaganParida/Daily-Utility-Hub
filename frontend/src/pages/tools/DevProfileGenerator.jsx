@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
+import ToolHeader from '../../components/ToolHeader';
 
 const Github = ({ size = 24, className }) => (
   <svg viewBox="0 0 24 24" width={size} height={size} stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -299,28 +300,33 @@ ${statsMD}
   };
 
   return (
-    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
-      <div className="mb-6 flex items-start gap-4 shrink-0">
-        <div className="p-2 bg-primary/10 text-primary rounded-md shadow-sm">
-          <Code2 size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Dev Profile Generator</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Create and host premium, responsive developer link trees and portfolio cards.</p>
-        </div>
-      </div>
+    <div className="tool-page-container">
+      <ToolHeader
+        title="Developer Portfolio & Profile Generator"
+        description="Create, customize, and export responsive developer portfolio cards, link trees, and GitHub showcase hubs."
+        category="Student & Docs"
+        categoryPath="/search"
+        icon={Code2}
+        iconColor="text-[#1a73e8] bg-[#e8f0fe] border-[#d2e3fc]"
+        badge="Live Interactive Preview"
+        extraBadge="HTML & Card Export"
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         
         {/* Left Side: Builder Editor */}
-        <div className="flex-1 w-full bg-card border border-border rounded-2xl shadow-sm overflow-hidden flex flex-col min-h-[600px]">
+        <div className="flex-1 w-full tool-card overflow-hidden flex flex-col min-h-[600px]">
           {/* Tabs */}
-          <div className="flex border-b border-border bg-muted/20 overflow-x-auto custom-scrollbar shrink-0">
+          <div className="flex border-b border-[#dadce0] bg-[#f8f9fa] overflow-x-auto custom-scrollbar shrink-0 p-1.5 gap-1">
             {['bio', 'socials', 'skills', 'projects', 'github', 'theme'].map(tab => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`px-5 py-3.5 text-xs font-bold uppercase tracking-wider transition-colors capitalize ${activeTab === tab ? 'border-b-2 border-primary text-primary bg-background' : 'text-muted-foreground hover:text-foreground'}`}
+                className={`px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-xl transition-all capitalize cursor-pointer ${
+                  activeTab === tab 
+                    ? 'bg-white text-[#1a73e8] shadow-2xs border border-[#dadce0]' 
+                    : 'text-[#5f6368] hover:text-[#202124] hover:bg-[#e8eaed]/60'
+                }`}
               >
                 {tab}
               </button>

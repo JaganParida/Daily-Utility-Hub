@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
+import ToolHeader from '../../components/ToolHeader';
 
 const CitationGenerator = () => {
   const [format, setFormat] = useState('APA');
@@ -309,10 +310,10 @@ const CitationGenerator = () => {
             </div>
 
             <button 
-              onClick={clearForm}
-              className="w-full py-2.5 bg-background hover:bg-muted text-muted-foreground hover:text-rose-500 font-bold rounded-xl border border-border transition-colors text-sm uppercase tracking-wider"
+              onClick={handleGenerate}
+              className="w-full btn-google-primary shadow-sm mt-2"
             >
-              Clear Fields
+              <Sparkles size={16} /> Generate Citation
             </button>
           </div>
         </div>
@@ -321,25 +322,25 @@ const CitationGenerator = () => {
         <div className="flex-1 w-full flex flex-col gap-6">
           <motion.div 
             layout
-            className="w-full bg-card border border-border rounded-2xl shadow-sm flex flex-col relative overflow-hidden min-h-[300px] lg:min-h-[400px]"
+            className="w-full tool-card flex flex-col relative overflow-hidden min-h-[260px]"
           >
-            <div className="p-4 border-b border-border bg-muted/30 flex items-center justify-between shrink-0">
-              <h2 className="font-semibold text-foreground flex items-center gap-2 text-sm uppercase tracking-wider">
-                <CheckCircle2 size={16} className="text-primary" />
-                Generated Citation
+            <div className="p-4 border-b border-[#dadce0] bg-[#f8f9fa] flex items-center justify-between shrink-0">
+              <h2 className="font-bold text-[#202124] flex items-center gap-2 text-xs uppercase tracking-wider">
+                <CheckCircle2 size={16} className="text-[#1a73e8]" />
+                Formatted Citation Preview
               </h2>
               <div className="flex gap-2">
                 <button 
                   onClick={addToBibliography}
                   disabled={!citation || citation.length < 10}
-                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="btn-google-secondary text-xs py-2 px-3 disabled:opacity-50"
                 >
                   <Plus size={14} /> Add to Works Cited
                 </button>
                 <button 
                   onClick={copyToClipboard}
                   disabled={!citation || citation.length < 10}
-                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${isCopied ? 'bg-primary/20 text-primary border border-primary/50' : 'bg-primary hover:bg-primary/90 text-primary-foreground border border-transparent shadow-sm disabled:opacity-50 disabled:cursor-not-allowed'}`}
+                  className={`btn-google-primary text-xs py-2 px-4 ${isCopied ? '!bg-[#e6f4ea] !text-[#137333] !border-[#ceead6]' : ''}`}
                 >
                   {isCopied ? <CheckCircle2 size={14} /> : <Copy size={14} />}
                   {isCopied ? 'Copied' : 'Copy'}
@@ -347,15 +348,15 @@ const CitationGenerator = () => {
               </div>
             </div>
 
-            <div className="flex-1 p-6 md:p-12 flex flex-col items-center justify-center bg-[#0d1117] relative">
-              <div className="w-full max-w-3xl bg-[#161b22] border border-border/10 rounded-2xl p-8 md:p-12 shadow-2xl relative overflow-hidden group">
-                <div className="absolute top-0 left-0 w-2 h-full bg-primary/80"></div>
-                <div className="pl-6">
-                  <span className="text-xs font-bold text-primary/50 uppercase tracking-widest mb-4 block">
-                    {format} Style Format
+            <div className="flex-1 p-6 md:p-10 flex flex-col items-center justify-center bg-[#f8f9fa] relative">
+              <div className="w-full max-w-3xl bg-white border border-[#dadce0] rounded-2xl p-6 md:p-8 shadow-sm relative overflow-hidden group">
+                <div className="absolute top-0 left-0 w-1.5 h-full bg-[#1a73e8]"></div>
+                <div className="pl-4">
+                  <span className="text-[11px] font-bold text-[#1a73e8] uppercase tracking-wider mb-2 block">
+                    {format} Style Citation
                   </span>
                   
-                  <p className="text-[#e6edf3] text-lg md:text-xl font-serif leading-relaxed" style={{ textIndent: '-2rem', paddingLeft: '2rem' }}>
+                  <p className="text-[#202124] text-base md:text-lg font-serif leading-relaxed" style={{ textIndent: '-2rem', paddingLeft: '2rem' }}>
                     {renderCitationHTML(citation)}
                   </p>
                 </div>
@@ -364,26 +365,26 @@ const CitationGenerator = () => {
           </motion.div>
 
           {/* Bibliography List Section */}
-          <div className="bg-card border border-border rounded-2xl p-5 shadow-sm space-y-4">
-            <div className="flex justify-between items-center border-b border-border pb-3 shrink-0">
+          <div className="tool-card p-5 sm:p-6 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#dadce0] pb-4 shrink-0">
               <div>
-                <h3 className="font-bold text-foreground text-sm uppercase tracking-wider flex items-center gap-2">
-                  <BookMarked size={16} className="text-indigo-500" /> Compiled Works Cited / Bibliography ({bibliography.length})
+                <h3 className="font-bold text-[#202124] text-sm uppercase tracking-wider flex items-center gap-2">
+                  <BookMarked size={16} className="text-[#1a73e8]" /> Compiled Works Cited / Bibliography ({bibliography.length})
                 </h3>
-                <p className="text-xs text-muted-foreground mt-0.5">Citations are sorted alphabetically in standard assignment formatting.</p>
+                <p className="text-xs text-[#5f6368] mt-0.5">Citations are sorted alphabetically in standard assignment formatting.</p>
               </div>
               
               {bibliography.length > 0 && (
                 <div className="flex gap-2">
                   <button
                     onClick={copyAllBibliography}
-                    className="px-3.5 py-1.5 bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold rounded-lg border border-primary/20 transition-all flex items-center gap-1"
+                    className="btn-google-secondary text-xs py-1.5 px-3"
                   >
                     <Copy size={14} /> Copy All
                   </button>
                   <button
                     onClick={clearBibliography}
-                    className="px-3.5 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 text-xs font-bold rounded-lg border border-red-500/20 transition-all flex items-center gap-1"
+                    className="btn-google-danger text-xs py-1.5 px-3"
                   >
                     <Trash2 size={14} /> Clear List
                   </button>
@@ -392,17 +393,17 @@ const CitationGenerator = () => {
             </div>
 
             {sortedBibliography.length === 0 ? (
-              <p className="text-xs text-muted-foreground text-center py-6">Your bibliography is empty. Generate and add citations above!</p>
+              <p className="text-xs text-[#5f6368] text-center py-6">Your bibliography is empty. Generate and add citations above!</p>
             ) : (
-              <div className="space-y-4 bg-muted/20 border border-border/50 rounded-xl p-6 font-serif">
-                {sortedBibliography.map((item, idx) => (
-                  <div key={item.id} className="flex justify-between items-start gap-4 border-b border-border/30 pb-3 last:border-b-0 last:pb-0">
-                    <p className="text-sm text-foreground flex-1 leading-relaxed" style={{ textIndent: '-1.5rem', paddingLeft: '1.5rem' }}>
+              <div className="space-y-4 bg-[#f8f9fa] border border-[#dadce0] rounded-xl p-5 sm:p-6 font-serif">
+                {sortedBibliography.map((item) => (
+                  <div key={item.id} className="flex justify-between items-start gap-4 border-b border-[#dadce0]/70 pb-3 last:border-b-0 last:pb-0">
+                    <p className="text-sm text-[#202124] flex-1 leading-relaxed" style={{ textIndent: '-1.5rem', paddingLeft: '1.5rem' }}>
                       {renderCitationHTML(item.text)}
                     </p>
                     <button
                       onClick={() => removeBibliographyItem(item.id)}
-                      className="p-1 hover:bg-red-500/10 text-muted-foreground hover:text-red-500 rounded transition-colors shrink-0"
+                      className="p-1 text-[#5f6368] hover:text-[#ea4335] hover:bg-[#fce8e6] rounded-lg transition-colors shrink-0"
                       title="Remove from Bibliography"
                     >
                       <Trash2 size={14} />

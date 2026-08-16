@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import ToolHeader from '../../components/ToolHeader';
 import { 
   Code, Settings, Key, AlertCircle, Sparkles, Play, 
   Cpu, BarChart2, Eye, Trash2, ArrowRight, RefreshCw,

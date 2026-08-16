@@ -301,3 +301,256 @@
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
+
+/* ═══════════════════════════════════════════════════════
+   GOOGLE MATERIAL 3 TOOL DESIGN SYSTEM & UI UTILITIES
+   ═══════════════════════════════════════════════════════ */
+
+/* ── Tool Container & Surfaces ── */
+.tool-page-container {
+  max-width: 1320px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+@media (min-width: 640px) {
+  .tool-page-container {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+@media (min-width: 1024px) {
+  .tool-page-container {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+.tool-card {
+  background: #ffffff;
+  border: 1px solid #dadce0;
+  border-radius: 1.25rem;
+  box-shadow: 0 1px 3px 0 rgba(60, 64, 67, 0.08);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tool-card-interactive:hover {
+  border-color: #1a73e8;
+  box-shadow: 0 4px 18px rgba(26, 115, 232, 0.1), 0 1px 3px rgba(60, 64, 67, 0.08);
+  transform: translateY(-1px);
+}
+
+.tool-sidebar {
+  background: #ffffff;
+  border: 1px solid #dadce0;
+  border-radius: 1.25rem;
+  box-shadow: 0 1px 3px 0 rgba(60, 64, 67, 0.08);
+}
+
+/* ── Google Material 3 Form Controls ── */
+.google-input {
+  background: #ffffff;
+  border: 1px solid #dadce0;
+  color: #202124;
+  border-radius: 0.75rem;
+  padding: 0.625rem 1rem;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  outline: none;
+}
+.google-input:focus {
+  border-color: #1a73e8;
+  box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.15);
+}
+.google-input::placeholder {
+  color: #9aa0a6;
+}
+
+.google-textarea {
+  background: #ffffff;
+  border: 1px solid #dadce0;
+  color: #202124;
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  transition: all 0.2s ease;
+  outline: none;
+}
+.google-textarea:focus {
+  border-color: #1a73e8;
+  box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.15);
+}
+.google-textarea::placeholder {
+  color: #9aa0a6;
+}
+
+.google-select {
+  background-color: #ffffff;
+  border: 1px solid #dadce0;
+  color: #202124;
+  border-radius: 0.75rem;
+  padding: 0.625rem 2rem 0.625rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  outline: none;
+  cursor: pointer;
+}
+.google-select:focus {
+  border-color: #1a73e8;
+  box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.15);
+}
+
+/* ── Google Material 3 Buttons ── */
+.btn-google-primary {
+  background: #1a73e8;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.875rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.875rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 1px 2px rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
+  cursor: pointer;
+  user-select: none;
+}
+.btn-google-primary:hover:not(:disabled) {
+  background: #1557b0;
+  box-shadow: 0 2px 6px 2px rgba(60, 64, 67, 0.15), 0 1px 2px rgba(60, 64, 67, 0.3);
+  transform: translateY(-1px);
+}
+.btn-google-primary:active:not(:disabled) {
+  transform: scale(0.98);
+}
+.btn-google-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-google-secondary {
+  background: #f1f3f4;
+  color: #3c4043;
+  font-weight: 600;
+  font-size: 0.875rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: 0.875rem;
+  border: 1px solid #dadce0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+.btn-google-secondary:hover:not(:disabled) {
+  background: #e8eaed;
+  color: #202124;
+  border-color: #bdc1c6;
+}
+.btn-google-secondary:active:not(:disabled) {
+  transform: scale(0.98);
+}
+.btn-google-secondary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btn-google-danger {
+  background: #fce8e6;
+  color: #c5221f;
+  border: 1px solid #fad2cf;
+  font-weight: 600;
+  font-size: 0.875rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: 0.875rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+.btn-google-danger:hover:not(:disabled) {
+  background: #f8d7da;
+  border-color: #f5c6cb;
+}
+
+.btn-google-ghost {
+  background: transparent;
+  color: #5f6368;
+  font-weight: 600;
+  font-size: 0.875rem;
+  padding: 0.5rem 0.875rem;
+  border-radius: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+.btn-google-ghost:hover:not(:disabled) {
+  background: #f1f3f4;
+  color: #202124;
+}
+
+/* ── Segmented Tab Switchers ── */
+.google-tab-group {
+  display: flex;
+  background: #f1f3f4;
+  padding: 0.25rem;
+  border-radius: 0.875rem;
+  border: 1px solid #e8eaed;
+  gap: 0.25rem;
+}
+
+.google-tab-item {
+  padding: 0.5rem 1rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  border-radius: 0.625rem;
+  color: #5f6368;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  cursor: pointer;
+  user-select: none;
+}
+.google-tab-item:hover {
+  color: #202124;
+}
+.google-tab-item.active {
+  background: #ffffff;
+  color: #1a73e8;
+  box-shadow: 0 1px 3px rgba(60, 64, 67, 0.12), 0 1px 2px rgba(60, 64, 67, 0.08);
+}
+
+/* ── Google Light Code Preview Surfaces ── */
+.google-code-surface {
+  background: #ffffff;
+  border: 1px solid #dadce0;
+  color: #202124;
+  font-family: var(--font-mono);
+  border-radius: 0.875rem;
+}
+
+.google-code-header {
+  background: #f8f9fa;
+  border-bottom: 1px solid #dadce0;
+  padding: 0.625rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+

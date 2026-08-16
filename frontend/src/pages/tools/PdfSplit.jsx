@@ -1,4 +1,5 @@
 import { useLocation } from 'react-router-dom';
+import ToolHeader from '../../components/ToolHeader';
 import { useState, useRef, useEffect } from 'react';
 import { UploadCloud, FileText, CheckCircle2, Scissors, HelpCircle, Loader2, Eye, ExternalLink, Sparkles } from 'lucide-react';
 import { toast } from 'react-hot-toast';
@@ -237,22 +238,19 @@ const PdfSplit = () => {
   };
 
   return (
-    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
+    <div className="tool-page-container">
       {/* Header Container */}
-      <div className="mb-6 flex items-center gap-3">
-        <div className="p-2 bg-primary/10 text-primary rounded-md shadow-sm">
-          <Scissors size={24} className="transform -rotate-45" />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground flex items-center gap-2">
-            Extract & Split PDF
-            <span className="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] uppercase font-bold tracking-wider">Premium</span>
-          </h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">
-            Visually select pages or ranges to extract or split into clean, new documents.
-          </p>
-        </div>
-      </div>
+      <ToolHeader
+        title="Extract & Split PDF
+            Premium"
+        description="Visually select pages or ranges to extract or split into clean, new documents."
+        category="PDF Tools"
+        categoryPath="/search"
+        icon={FileText}
+        iconColor="text-[#1a73e8] bg-[#e8f0fe] border-[#d2e3fc]"
+        badge="Page Range Extractor"
+        extraBadge="Separate or Burst"
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         {/* Main Work Area */}

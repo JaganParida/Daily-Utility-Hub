@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import ToolHeader from '../../components/ToolHeader';
 import { Type, Download, Trash2, Settings, Stamp, Layers, FileImage, Sliders, Layout, RefreshCw, CheckCircle, Upload, ChevronDown, RotateCcw, Brush, Eraser } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DropzoneComponent from '../../components/DropzoneComponent';
@@ -471,19 +472,20 @@ const ImageWatermark = () => {
   const hasImage = !!imageSrc;
 
   return (
-    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
+    <div className="tool-page-container">
       <canvas ref={canvasRef} className="hidden" />
 
       {/* Header */}
-      <div className="mb-6 flex items-center gap-3">
-        <div className="p-2 bg-primary/10 text-primary rounded-lg shadow-sm">
-          <Stamp size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Advanced Image Watermarker</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Apply text/logo watermarks or use the Magic Eraser brush to remove visual overlays.</p>
-        </div>
-      </div>
+      <ToolHeader
+        title="Advanced Image Watermarker"
+        description="Apply text/logo watermarks or use the Magic Eraser brush to remove visual overlays."
+        category="Image Tools"
+        categoryPath="/search"
+        icon={Stamp}
+        iconColor="text-[#ea4335] bg-[#fce8e6] border-[#fad2cf]"
+        badge="Watermark & Eraser"
+        extraBadge="Magic Brush Tool"
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         {/* Left: Preview Container */}

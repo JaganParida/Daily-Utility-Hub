@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import ToolHeader from '../../components/ToolHeader';
 import { Landmark, Download, Play, CheckCircle2, Calculator } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import * as XLSX from 'xlsx';
@@ -123,16 +124,17 @@ const AmortizationScheduler = () => {
   };
 
   return (
-    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
-      <div className="mb-6 flex items-start gap-4 shrink-0">
-        <div className="p-2 bg-primary/10 text-primary rounded-md shadow-sm">
-          <Landmark size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Amortization & Financial Planner</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Compute principal debt repayments, compound growth, and amortization tables with high-res PDF & Excel spreadsheet exports.</p>
-        </div>
-      </div>
+    <div className="tool-page-container">
+      <ToolHeader
+        title="Amortization & Financial Planner"
+        description="Compute principal debt repayments, compound growth, and amortization tables with high-res PDF & Excel spreadsheet exports."
+        category="Excel & Sheets Tools"
+        categoryPath="/search"
+        icon={Calculator}
+        iconColor="text-[#1a73e8] bg-[#e8f0fe] border-[#d2e3fc]"
+        badge="Loan Amortization Scheduler"
+        extraBadge="Monthly Payment Table Breakdown"
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         

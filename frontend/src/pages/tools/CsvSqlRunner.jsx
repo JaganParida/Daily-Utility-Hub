@@ -1,4 +1,5 @@
 import { useLocation } from 'react-router-dom';
+import ToolHeader from '../../components/ToolHeader';
 import { useState, useRef, useEffect } from 'react';
 import { Database, Play, Download, Upload, RefreshCw, Layers } from 'lucide-react';
 import { toast } from 'react-hot-toast';
@@ -151,16 +152,17 @@ const CsvSqlRunner = () => {
   };
 
   return (
-    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
-      <div className="mb-6 flex items-start gap-4 shrink-0">
-        <div className="p-2 bg-primary/10 text-primary rounded-md shadow-sm">
-          <Database size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">SQL Sheet Query Runner</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Run local SQL database queries against your spreadsheets and download filtered results.</p>
-        </div>
-      </div>
+    <div className="tool-page-container">
+      <ToolHeader
+        title="SQL Sheet Query Runner"
+        description="Run local SQL database queries against your spreadsheets and download filtered results."
+        category="Excel & Sheets Tools"
+        categoryPath="/search"
+        icon={Database}
+        iconColor="text-[#8e24aa] bg-[#f3e8fd] border-[#e9d2fd]"
+        badge="In-Browser SQL Query Engine"
+        extraBadge="Run SQL against CSV/Excel"
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         

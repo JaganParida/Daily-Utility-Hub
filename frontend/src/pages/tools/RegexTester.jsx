@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import ToolHeader from '../../components/ToolHeader';
 import { 
   Search, Copy, Check, AlertTriangle, CheckCircle2, 
   Replace, Download, BookOpen, ChevronDown, ChevronRight, 
@@ -214,18 +215,19 @@ const RegexTester = () => {
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: 'easeOut' }}
-      className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8"
+      className="tool-page-container"
     >
       {/* Header */}
-      <div className="mb-6 flex items-center gap-3">
-        <div className="p-2.5 bg-primary/10 text-primary rounded-xl shadow-sm shrink-0">
-          <Search size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Advanced Regex Tester</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Write regular expressions, verify matches, and test replacement patterns in real-time.</p>
-        </div>
-      </div>
+      <ToolHeader
+        title="Advanced Regex Tester"
+        description="Write regular expressions, verify matches, and test replacement patterns in real-time."
+        category="Developer Tools"
+        categoryPath="/search"
+        icon={Type}
+        iconColor="text-[#1a73e8] bg-[#e8f0fe] border-[#d2e3fc]"
+        badge="Live Regex Engine"
+        extraBadge="Match Capture & Code Gen"
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         {/* Left: Main Workspace */}

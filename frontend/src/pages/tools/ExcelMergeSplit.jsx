@@ -1,4 +1,5 @@
 import { useLocation } from 'react-router-dom';
+import ToolHeader from '../../components/ToolHeader';
 import { useState, useRef, useEffect } from 'react';
 import { Layers, Download, Upload, Trash2, CheckCircle2, Split } from 'lucide-react';
 import { toast } from 'react-hot-toast';
@@ -136,16 +137,17 @@ const ExcelMergeSplit = () => {
   };
 
   return (
-    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
-      <div className="mb-6 flex items-start gap-4 shrink-0">
-        <div className="p-2 bg-primary/10 text-primary rounded-md shadow-sm">
-          <Split size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Excel File Merger & Splitter</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Combine sheets from multiple spreadsheet files, or split workbook sheets into separate Excel files client-side.</p>
-        </div>
-      </div>
+    <div className="tool-page-container">
+      <ToolHeader
+        title="Excel File Merger & Splitter"
+        description="Combine sheets from multiple spreadsheet files, or split workbook sheets into separate Excel files client-side."
+        category="Excel & Sheets Tools"
+        categoryPath="/search"
+        icon={FolderArchive}
+        iconColor="text-[#1a73e8] bg-[#e8f0fe] border-[#d2e3fc]"
+        badge="Excel Workbook Tools"
+        extraBadge="Merge Sheets or Split Workbooks"
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         

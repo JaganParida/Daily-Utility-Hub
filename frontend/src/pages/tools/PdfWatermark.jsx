@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import ToolHeader from '../../components/ToolHeader';
 import { UploadCloud, FileText, CheckCircle2, Droplets, Eye, EyeOff, ExternalLink, Loader2, X, Settings2, Sparkles, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
@@ -145,17 +146,18 @@ const PdfWatermark = () => {
   };
 
   return (
-    <div className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8">
+    <div className="tool-page-container">
       {/* Header Container */}
-      <div className="mb-6 flex items-center gap-3">
-        <div className="p-2 bg-primary/10 text-primary rounded-md shadow-sm">
-          <Droplets size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">Advanced PDF Watermark</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Stamp documents with customized text, positioning, colors, and opacity.</p>
-        </div>
-      </div>
+      <ToolHeader
+        title="Advanced PDF Watermark"
+        description="Stamp documents with customized text, positioning, colors, and opacity."
+        category="PDF Tools"
+        categoryPath="/search"
+        icon={FileText}
+        iconColor="text-[#8e24aa] bg-[#f3e8fd] border-[#e9d2fd]"
+        badge="Stamp & Watermark"
+        extraBadge="Opacity & Angle Controls"
+      />
 
       {/* Main Grid */}
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import ToolHeader from '../../components/ToolHeader';
 import { 
   FileJson, Copy, Check, Download, RefreshCw, Trash2, 
   Code2, CheckCircle2, AlertTriangle, Settings2 
@@ -259,18 +260,19 @@ const TypeConverter = () => {
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: 'easeOut' }}
-      className="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8"
+      className="tool-page-container"
     >
       {/* Header */}
-      <div className="mb-6 flex items-center gap-3">
-        <div className="p-2.5 bg-primary/10 text-primary rounded-xl shadow-sm shrink-0">
-          <Code2 size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">JSON to Types & Schema Converter</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Paste JSON payload data to instantly map out TypeScript interfaces, Go structures, Python dataclasses, or SQL schemas.</p>
-        </div>
-      </div>
+      <ToolHeader
+        title="JSON to Types & Schema Converter"
+        description="Paste JSON payload data to instantly map out TypeScript interfaces, Go structures, Python dataclasses, or SQL schemas."
+        category="Developer Tools"
+        categoryPath="/search"
+        icon={Code2}
+        iconColor="text-[#137333] bg-[#e6f4ea] border-[#ceead6]"
+        badge="Schema Generator"
+        extraBadge="TypeScript, Python, SQL"
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full items-start">
         
