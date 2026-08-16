@@ -5,7 +5,8 @@ import {
   ArrowRight, UploadCloud, X, ChevronDown, Zap, Shield, Cpu,
   FileText, ImageIcon, Code2, Type, Table2, FileSpreadsheet, MonitorPlay,
   FolderArchive, Music, Layers, Search, ChevronLeft, ChevronRight, Heart, Pin, Sparkles, Terminal, Activity,
-  Lock, CheckCircle2, Sliders, RefreshCw, Key, FileCheck, ArrowRightLeft, Copy, Check, Play, Globe, Flame
+  Lock, CheckCircle2, Sliders, RefreshCw, Key, FileCheck, ArrowRightLeft, Copy, Check, Play, Globe, Flame,
+  Clock, HardDrive, FileCode, CheckCircle, Database
 } from "lucide-react";
 import PageTransition from "../components/PageTransition";
 import { useAuth } from "../context/AuthContext";
@@ -77,7 +78,6 @@ function BracesIcon(props) {
 
 // ─── CONVERSION ROUTING ENGINE ───
 const CONVERSIONS_MAP = {
-  // From PDF
   "PDF": [
     { target: "DOCX", toolName: "PDF to Word Converter", desc: "Convert PDF to editable Word with OCR & exact layout", to: "/tools/pdf-to-word", badge: "AI / OCR Engine" },
     { target: "PNG", toolName: "PDF to High-Res Images", desc: "Extract PDF pages to crisp PNG images", to: "/tools/pdf-converter", badge: "Lossless" },
@@ -88,13 +88,11 @@ const CONVERSIONS_MAP = {
     { target: "AUDIO", toolName: "PDF Audio Reader", desc: "Listen to documents via speech synthesis", to: "/tools/pdf-audio-reader", badge: "Speech" },
     { target: "COMPRESS", toolName: "PDF Compressor", desc: "Intelligently shrink PDF file size", to: "/tools/pdf-compressor", badge: "Up to -80%" },
   ],
-  // From DOCX
   "DOCX": [
     { target: "PDF", toolName: "Word to PDF Converter", desc: "Convert DOCX to standard PDF documents", to: "/tools/docx-converter", badge: "Native Wasm" },
     { target: "PNG", toolName: "Word to Image Converter", desc: "Render document pages as images", to: "/tools/docx-converter", badge: "High DPI" },
     { target: "TXT", toolName: "Docx Text Extractor", desc: "Strip styles and extract pure text", to: "/tools/pdf-to-text", badge: "Clean" },
   ],
-  // From PNG
   "PNG": [
     { target: "WEBP", toolName: "PNG to WebP Converter", desc: "Convert to modern WebP with smaller size", to: "/tools/image-converter", badge: "Web Ready" },
     { target: "JPG", toolName: "PNG to JPG Converter", desc: "Convert with custom background & quality", to: "/tools/image-converter", badge: "Fast" },
@@ -103,20 +101,17 @@ const CONVERSIONS_MAP = {
     { target: "MD", toolName: "AI Image to Markdown/Code", desc: "Convert UI sketches or mockups to code", to: "/tools/ai-image-to-markdown", badge: "AI Vision" },
     { target: "COMPRESS", toolName: "Image Compressor", desc: "Compress without visual quality loss", to: "/tools/image-compressor", badge: "Lossless" },
   ],
-  // From JPG
   "JPG": [
     { target: "PNG", toolName: "JPG to PNG Converter", desc: "Lossless format conversion", to: "/tools/image-converter", badge: "Lossless" },
     { target: "WEBP", toolName: "JPG to WebP Converter", desc: "Save up to 40% image file size", to: "/tools/image-converter", badge: "Recommended" },
     { target: "PDF", toolName: "JPG to PDF Converter", desc: "Bundle photos into a single PDF file", to: "/tools/image-to-pdf", badge: "Multi-Page" },
     { target: "TXT", toolName: "OCR Image to Text", desc: "Extract printed and written text", to: "/tools/image-to-text", badge: "OCR Engine" },
   ],
-  // From WEBP
   "WEBP": [
     { target: "PNG", toolName: "WebP to PNG Converter", desc: "Convert WebP images to standard PNG", to: "/tools/image-converter", badge: "Standard" },
     { target: "JPG", toolName: "WebP to JPG Converter", desc: "Convert WebP to universal JPG", to: "/tools/image-converter", badge: "Universal" },
     { target: "PDF", toolName: "WebP to PDF Converter", desc: "Convert WebP files to document format", to: "/tools/image-to-pdf", badge: "Document" },
   ],
-  // From JSON
   "JSON": [
     { target: "CSV", toolName: "JSON to CSV Converter", desc: "Transform nested JSON to tabular CSV", to: "/tools/sheet-converter", badge: "Tabular" },
     { target: "XLSX", toolName: "JSON to Excel Converter", desc: "Export JSON directly to Excel workbook", to: "/tools/sheet-converter", badge: "Spreadsheet" },
@@ -124,20 +119,17 @@ const CONVERSIONS_MAP = {
     { target: "TYPESCRIPT", toolName: "JSON to TypeScript Schema", desc: "Generate typed interfaces & models", to: "/tools/type-converter", badge: "Dev Favorite" },
     { target: "SQL", toolName: "JSON to SQL Inserts", desc: "Generate SQL CREATE and INSERT statements", to: "/tools/sheet-converter", badge: "Database" },
   ],
-  // From CSV
   "CSV": [
     { target: "JSON", toolName: "CSV to JSON Converter", desc: "Convert table rows into structured JSON array", to: "/tools/sheet-converter", badge: "Structured" },
     { target: "XLSX", toolName: "CSV to Excel Workbook", desc: "Convert CSV to formatted Excel file", to: "/tools/excel-merge-split", badge: "Excel" },
     { target: "SQL", toolName: "SQL Query Runner on CSV", desc: "Run relational SQL queries on your table", to: "/tools/csv-sql-runner", badge: "SQL Engine" },
     { target: "PIVOT", toolName: "Pivot & Chart Builder", desc: "Generate interactive summaries & charts", to: "/tools/pivot-table-builder", badge: "Analytics" },
   ],
-  // From XLSX
   "XLSX": [
     { target: "CSV", toolName: "Excel to CSV Converter", desc: "Export sheets to lightweight CSV", to: "/tools/sheet-converter", badge: "Lightweight" },
     { target: "JSON", toolName: "Excel to JSON Converter", desc: "Convert workbook data to JSON objects", to: "/tools/sheet-converter", badge: "API Ready" },
     { target: "SQL", toolName: "Excel SQL Runner", desc: "Query Excel spreadsheets with SQLite", to: "/tools/csv-sql-runner", badge: "Query" },
   ],
-  // From Media
   "MP4": [
     { target: "SUBTITLES", toolName: "Audio/Video Transcriber", desc: "Extract timestamped text & subtitles", to: "/tools/audio-video-transcriber", badge: "AI Whisper" },
     { target: "TXT", toolName: "Audio to Text Transcriber", desc: "Full transcription with speaker diarization", to: "/tools/audio-video-transcriber", badge: "Text" },
@@ -146,12 +138,19 @@ const CONVERSIONS_MAP = {
     { target: "SUBTITLES", toolName: "Audio to Subtitles", desc: "Generate SRT/VTT caption files", to: "/tools/audio-video-transcriber", badge: "Subtitles" },
     { target: "TXT", toolName: "Speech to Text Engine", desc: "Transcribe voice memos and podcasts", to: "/tools/audio-video-transcriber", badge: "Local Model" },
   ],
-  // From ZIP
   "ZIP": [
     { target: "UNZIP", toolName: "Zip Extractor & Viewer", desc: "Inspect and extract files inside browser", to: "/tools/zip-archiver", badge: "Client Wasm" },
     { target: "VAULT", toolName: "Encrypted File Vault", desc: "Lock files with military-grade AES-256", to: "/tools/file-vault", badge: "Military Grade" },
   ]
 };
+
+// ─── LIVE ANIMATED SIMULATION PRESETS ───
+const LIVE_TRANSFORMATION_DEMOS = [
+  { fromExt: "PDF", fromName: "contract_nda_2026.pdf", fromSize: "2.4 MB", engine: "OCR Layout Engine", toExt: "DOCX", toName: "contract_nda_2026.docx", toSize: "1.1 MB", tool: "/tools/pdf-to-word", speed: "0.04s" },
+  { fromExt: "PNG", fromName: "hero_banner_4k.png", fromSize: "8.2 MB", engine: "WebP Lossless Optimizer", toExt: "WEBP", toName: "hero_banner_4k.webp", toSize: "1.9 MB (-76%)", tool: "/tools/image-converter", speed: "0.02s" },
+  { fromExt: "JSON", fromName: "api_schema_v2.json", fromSize: "180 KB", engine: "TypeScript Generator", toExt: "TS", toName: "api_schema_v2.d.ts", toSize: "45 KB", tool: "/tools/type-converter", speed: "0.01s" },
+  { fromExt: "CSV", fromName: "financial_q3_sales.csv", fromSize: "640 KB", engine: "SQLite Schema Exporter", toExt: "SQL", toName: "financial_q3_sales.sql", toSize: "820 KB", tool: "/tools/sheet-converter", speed: "0.03s" },
+];
 
 // ─── POPULAR 1-CLICK CONVERSIONS ───
 const POPULAR_CONVERSIONS = [
@@ -207,6 +206,18 @@ const Dashboard = () => {
   const [stagedFile, setStagedFile] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
 
+  // ─── LIVE TRANSFORMATION DEMO CYCLE ───
+  const [demoIndex, setDemoIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setDemoIndex((prev) => (prev + 1) % LIVE_TRANSFORMATION_DEMOS.length);
+    }, 4500);
+    return () => clearInterval(timer);
+  }, []);
+
+  const activeDemo = LIVE_TRANSFORMATION_DEMOS[demoIndex];
+
   // ─── ACTIVE CATEGORY & SEARCH ───
   const [activeCategory, setActiveCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
@@ -233,7 +244,6 @@ const Dashboard = () => {
     };
   }, [availableOutputs, toFormat]);
 
-  // When fromFormat changes, auto select best toFormat
   const handleSelectFromFormat = (ext) => {
     setFromFormat(ext);
     setIsFromDropdownOpen(false);
@@ -243,7 +253,6 @@ const Dashboard = () => {
     }
   };
 
-  // Swap formats if reciprocal exists
   const handleSwapFormats = () => {
     if (CONVERSIONS_MAP[toFormat]) {
       const prevFrom = fromFormat;
@@ -254,7 +263,6 @@ const Dashboard = () => {
     }
   };
 
-  // Auto-detect dropped file format
   const processUploadedFile = (file) => {
     if (!file) return;
     setStagedFile(file);
@@ -320,11 +328,24 @@ const Dashboard = () => {
       }
       toast.error("No image or text found on clipboard.");
     } catch (err) {
-      toast.error("Unable to read clipboard. Please grant clipboard permissions or select a file.");
+      toast.error("Unable to read clipboard. Please grant permissions or choose a file.");
     }
   };
 
-  // Filtered tools
+  const loadSampleFile = (type) => {
+    let dummyFile;
+    if (type === "pdf") {
+      dummyFile = new File(["%PDF-1.4 sample content"], "sample_financial_report.pdf", { type: "application/pdf" });
+    } else if (type === "image") {
+      dummyFile = new File(["dummy image"], "sample_photo.png", { type: "image/png" });
+    } else if (type === "json") {
+      dummyFile = new File(['{"status":"success","data":{"users":100}}'], "sample_api_response.json", { type: "application/json" });
+    }
+    if (dummyFile) {
+      processUploadedFile(dummyFile);
+    }
+  };
+
   const filteredTools = useMemo(() => {
     return ALL_DIRECTORY_TOOLS.filter(tool => {
       const matchesCategory = activeCategory === "All" || tool.category === activeCategory;
@@ -344,12 +365,12 @@ const Dashboard = () => {
   };
 
   const codeSnippets = {
-    js: `// Client-Side Offline File Conversion with Daily Utility Hub
+    js: `// 100% In-Browser WebAssembly File Conversion
 import { convertLocal } from '@utilityhub/engine';
 
 const file = document.querySelector('#fileInput').files[0];
 
-// 100% processed in browser via WebAssembly (Zero Server Upload)
+// Zero Cloud Upload • Runs locally on CPU/GPU
 const result = await convertLocal({
   file,
   from: '${fromFormat.toLowerCase()}',
@@ -357,7 +378,7 @@ const result = await convertLocal({
   quality: 0.95
 });
 
-// Instant download
+// Instant Local Download
 result.download();`,
     curl: `# CLI / Local Terminal Engine
 npx @utilityhub/cli convert \\
@@ -380,18 +401,18 @@ output.save("converted_output.${toFormat.toLowerCase()}")`
       <div className="w-full min-h-screen bg-[#f8f9fa] text-[#202124] flex flex-col items-center">
         
         {/* ══════════════════════════════════════════════════════════════════
-            HERO SECTION: CLOUDCONVERT-STYLE INTERACTIVE CONVERTER
+            HERO SECTION: ANIMATED DESIGN & CONVERSION SUITE
         ══════════════════════════════════════════════════════════════════ */}
-        <section className="w-full pt-8 sm:pt-12 pb-16 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto flex flex-col items-center text-center relative z-20">
+        <section className="w-full pt-8 sm:pt-12 pb-14 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto flex flex-col items-center text-center relative z-20">
           
-          {/* Top Privacy Pill Badge */}
+          {/* Privacy Pill Badge */}
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-[#dadce0] text-[#137333] shadow-2xs mb-6"
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-[#dadce0] text-[#137333] shadow-2xs mb-5"
           >
             <span className="w-2 h-2 rounded-full bg-[#34a853] animate-pulse" />
-            <span className="text-xs font-semibold">100% In-Browser Privacy • 0KB Cloud Uploads • Unlimited & Free</span>
+            <span className="text-xs font-semibold">100% In-Browser Privacy • 0KB Cloud Upload • Zero Telemetry</span>
           </motion.div>
 
           {/* Main Hero Headline */}
@@ -408,10 +429,67 @@ output.save("converted_output.${toFormat.toLowerCase()}")`
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-sm sm:text-base md:text-lg text-[#5f6368] max-w-2xl mx-auto mb-8 leading-relaxed"
+            className="text-sm sm:text-base md:text-lg text-[#5f6368] max-w-2xl mx-auto mb-6 leading-relaxed"
           >
             Drop a file and pick what to turn it into. Daily Utility Hub handles 200+ formats across documents, images, spreadsheets, media, and code — completely offline and private.
           </motion.p>
+
+          {/* ══════════════════════════════════════════════════════════════
+              ANIMATED CONVERSION TRANSFORMATION FLOW GRAPHIC
+          ══════════════════════════════════════════════════════════════ */}
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.12 }}
+            className="w-full max-w-2xl mb-8 p-3 sm:p-4 rounded-2xl bg-white border border-[#dadce0] shadow-2xs overflow-hidden cursor-pointer"
+            onClick={() => navigate(activeDemo.tool)}
+            title="Click to launch this utility"
+          >
+            <div className="flex items-center justify-between gap-2 sm:gap-4 flex-wrap sm:flex-nowrap">
+              
+              {/* Input Staged File */}
+              <div className="flex items-center gap-2.5 min-w-0 bg-[#f8f9fa] px-3 py-2 rounded-xl border border-[#dadce0] flex-1">
+                <span className="w-7 h-7 rounded-lg bg-[#e8f0fe] text-[#1a73e8] flex items-center justify-center text-[10px] font-bold shrink-0">
+                  {activeDemo.fromExt}
+                </span>
+                <div className="text-left min-w-0">
+                  <p className="text-xs font-bold text-[#202124] truncate">{activeDemo.fromName}</p>
+                  <p className="text-[10px] text-[#5f6368]">{activeDemo.fromSize}</p>
+                </div>
+              </div>
+
+              {/* Animated Engine Core */}
+              <div className="flex flex-col items-center justify-center shrink-0 px-2 py-1">
+                <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[#1a73e8] mb-0.5">
+                  <Zap size={13} className="text-[#1a73e8] animate-bounce-subtle" />
+                  <span className="hidden sm:inline">{activeDemo.engine}</span>
+                  <span className="sm:hidden">WASM</span>
+                </div>
+                <div className="w-20 sm:w-28 h-1.5 bg-[#f1f3f4] rounded-full overflow-hidden relative">
+                  <motion.div 
+                    key={activeDemo.fromExt}
+                    initial={{ x: "-100%" }}
+                    animate={{ x: "100%" }}
+                    transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+                    className="w-1/2 h-full bg-gradient-to-r from-[#1a73e8] to-[#34a853] rounded-full"
+                  />
+                </div>
+                <span className="text-[9px] text-[#34a853] font-bold mt-0.5">{activeDemo.speed} local speed</span>
+              </div>
+
+              {/* Output File */}
+              <div className="flex items-center gap-2.5 min-w-0 bg-[#f8f9fa] px-3 py-2 rounded-xl border border-[#dadce0] flex-1">
+                <span className="w-7 h-7 rounded-lg bg-[#e6f4ea] text-[#34a853] flex items-center justify-center text-[10px] font-bold shrink-0">
+                  {activeDemo.toExt}
+                </span>
+                <div className="text-left min-w-0">
+                  <p className="text-xs font-bold text-[#202124] truncate">{activeDemo.toName}</p>
+                  <p className="text-[10px] text-[#34a853] font-semibold">{activeDemo.toSize}</p>
+                </div>
+              </div>
+
+            </div>
+          </motion.div>
 
           {/* ══════════════════════════════════════════════════════════════
               SIGNATURE CONVERTER SELECTOR BAR
@@ -420,7 +498,7 @@ output.save("converted_output.${toFormat.toLowerCase()}")`
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.15 }}
-            className="w-full max-w-3xl bg-white border border-[#dadce0] rounded-3xl p-5 sm:p-7 shadow-xs relative mb-6"
+            className="w-full max-w-3xl bg-white border border-[#dadce0] rounded-3xl p-5 sm:p-7 shadow-xs relative mb-6 text-left"
           >
             {/* The Convert [FROM] to [TO] sentence bar */}
             <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 pb-6 border-b border-[#dadce0]">
@@ -555,6 +633,29 @@ output.save("converted_output.${toFormat.toLowerCase()}")`
                   <p className="text-xs text-[#5f6368] mt-1 max-w-sm">
                     Upload from your device. Files stay 100% on your machine with zero server roundtrips.
                   </p>
+                  
+                  {/* Sample file buttons */}
+                  <div className="flex flex-wrap items-center justify-center gap-2 mt-4" onClick={(e) => e.stopPropagation()}>
+                    <span className="text-[11px] font-semibold text-[#80868b]">Try Sample:</span>
+                    <button
+                      onClick={() => loadSampleFile("pdf")}
+                      className="text-[11px] px-2.5 py-1 rounded-full bg-white border border-[#dadce0] hover:border-[#1a73e8] text-[#5f6368] hover:text-[#1a73e8] transition-colors"
+                    >
+                      Sample PDF
+                    </button>
+                    <button
+                      onClick={() => loadSampleFile("image")}
+                      className="text-[11px] px-2.5 py-1 rounded-full bg-white border border-[#dadce0] hover:border-[#1a73e8] text-[#5f6368] hover:text-[#1a73e8] transition-colors"
+                    >
+                      Sample PNG
+                    </button>
+                    <button
+                      onClick={() => loadSampleFile("json")}
+                      className="text-[11px] px-2.5 py-1 rounded-full bg-white border border-[#dadce0] hover:border-[#1a73e8] text-[#5f6368] hover:text-[#1a73e8] transition-colors"
+                    >
+                      Sample JSON
+                    </button>
+                  </div>
                 </>
               ) : (
                 <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-xl border border-[#dadce0] shadow-2xs" onClick={(e) => e.stopPropagation()}>

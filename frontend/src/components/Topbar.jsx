@@ -107,35 +107,33 @@ const Topbar = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-50 w-full px-3 sm:px-6 pt-3 pointer-events-none">
-        <nav className="max-w-7xl mx-auto h-14 sm:h-16 px-3.5 sm:px-5 rounded-2xl glass-floating-nav bg-white/95 border border-[#dadce0] shadow-[0_1px_3px_rgba(60,64,67,0.12),0_4px_12px_rgba(60,64,67,0.04)] flex items-center justify-between pointer-events-auto transition-all">
+      <header className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-md border-b border-[#dadce0] transition-all">
+        <div className="max-w-7xl mx-auto h-14 sm:h-16 px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
           
-          {/* Brand Logo with Google-style color dots */}
-          <div className="flex items-center gap-3.5">
+          {/* Brand Logo with Google/CloudConvert clean typography */}
+          <div className="flex items-center gap-4">
             <Link to="/" className="flex items-center gap-2.5 group">
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#e8f0fe] border border-[#d2e3fc] flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
-                <Zap className="w-5 h-5 text-[#1a73e8] group-hover:text-[#1557b0] transition-colors" />
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#e8f0fe] border border-[#d2e3fc] flex items-center justify-center shadow-2xs group-hover:scale-105 transition-transform">
+                <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-[#1a73e8] group-hover:text-[#1557b0] transition-colors" />
               </div>
-              <div className="flex flex-col">
-                <div className="flex items-center gap-1.5">
-                  <span className="font-bold text-base sm:text-lg tracking-tight text-[#202124]">
-                    Utility<span className="text-[#1a73e8]">Hub</span>
-                  </span>
-                  <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#e8f0fe] text-[#1a73e8] border border-[#d2e3fc] hidden sm:inline-block">
-                    Free
-                  </span>
-                </div>
+              <div className="flex items-center gap-1.5">
+                <span className="font-bold text-base sm:text-lg tracking-tight text-[#202124]">
+                  Utility<span className="text-[#1a73e8]">Hub</span>
+                </span>
+                <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-[#e6f4ea] text-[#137333] border border-[#ceead6] hidden sm:inline-block">
+                  Offline
+                </span>
               </div>
             </Link>
 
-            {/* Desktop Categories Menu Button */}
+            {/* Desktop Categories Mega Menu Button */}
             <div ref={categoryMenuRef} className="relative hidden md:block">
               <button
                 type="button"
                 onClick={() => setIsCategoryMenuOpen(!isCategoryMenuOpen)}
-                className={`h-9 px-3.5 rounded-xl border text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
+                className={`h-9 px-3 rounded-lg border text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
                   isCategoryMenuOpen
-                    ? "bg-[#e8f0fe] border-[#1a73e8] text-[#1a73e8] shadow-xs"
+                    ? "bg-[#e8f0fe] border-[#1a73e8] text-[#1a73e8]"
                     : "bg-[#f8f9fa] border-[#dadce0] text-[#5f6368] hover:text-[#202124] hover:bg-[#f1f3f4]"
                 }`}
               >
@@ -148,11 +146,11 @@ const Topbar = () => {
               <AnimatePresence>
                 {isCategoryMenuOpen && (
                   <motion.div
-                    initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                    initial={{ opacity: 0, y: 6, scale: 0.99 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 6, scale: 0.98 }}
-                    transition={{ duration: 0.15 }}
-                    className="absolute top-full left-0 mt-2.5 w-[580px] bg-white border border-[#dadce0] rounded-2xl shadow-[0_4px_24px_rgba(60,64,67,0.15)] p-3 z-50 grid grid-cols-2 gap-2"
+                    exit={{ opacity: 0, y: 4, scale: 0.99 }}
+                    transition={{ duration: 0.12 }}
+                    className="absolute top-full left-0 mt-2 w-[540px] bg-white border border-[#dadce0] rounded-2xl shadow-xl p-3 z-50 grid grid-cols-2 gap-2"
                   >
                     {CATEGORY_ITEMS.map((cat) => {
                       const Icon = cat.icon;
@@ -188,16 +186,16 @@ const Topbar = () => {
           </div>
 
           {/* Center: Google-Style Omnibox Search Bar Trigger */}
-          <div className="flex-1 max-w-md mx-3 hidden sm:block">
+          <div className="flex-1 max-w-md mx-2 hidden sm:block">
             <button
               onClick={() => setIsSearchOpen(true)}
-              className="w-full h-10 px-4 rounded-full bg-[#f1f3f4] hover:bg-[#e8eaed] border border-transparent hover:border-[#dadce0] text-[#5f6368] hover:text-[#202124] flex items-center justify-between text-xs font-medium transition-all shadow-xs group cursor-pointer"
+              className="w-full h-9 px-3.5 rounded-lg bg-[#f1f3f4] hover:bg-[#e8eaed] border border-transparent hover:border-[#dadce0] text-[#5f6368] hover:text-[#202124] flex items-center justify-between text-xs font-medium transition-all group cursor-pointer"
             >
               <div className="flex items-center gap-2.5">
-                <Search size={15} className="text-[#5f6368] group-hover:text-[#1a73e8] transition-colors" />
+                <Search size={14} className="text-[#5f6368] group-hover:text-[#1a73e8] transition-colors" />
                 <span className="truncate">Search 90+ client-side tools...</span>
               </div>
-              <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-white border border-[#dadce0] text-[10px] font-mono font-medium text-[#5f6368] shadow-2xs">
+              <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-white border border-[#dadce0] text-[10px] font-mono text-[#5f6368]">
                 <Command size={10} /> K
               </div>
             </button>
@@ -208,15 +206,15 @@ const Topbar = () => {
             {/* Mobile search trigger icon */}
             <button
               onClick={() => setIsSearchOpen(true)}
-              className="sm:hidden p-2 rounded-xl bg-[#f8f9fa] border border-[#dadce0] text-[#5f6368] hover:text-[#202124] hover:bg-[#f1f3f4]"
+              className="sm:hidden p-2 rounded-lg bg-[#f8f9fa] border border-[#dadce0] text-[#5f6368] hover:text-[#202124] hover:bg-[#f1f3f4]"
             >
-              <Search size={16} />
+              <Search size={15} />
             </button>
 
             {/* Quick Workspace Nav Badges */}
             <Link
               to="/pinned"
-              className={`hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+              className={`hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
                 location.pathname === "/pinned"
                   ? "bg-[#e8f0fe] border-[#d2e3fc] text-[#1a73e8]"
                   : "bg-[#f8f9fa] border-[#dadce0] text-[#5f6368] hover:text-[#202124] hover:bg-[#f1f3f4]"
@@ -228,7 +226,7 @@ const Topbar = () => {
 
             <Link
               to="/favorites"
-              className={`hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+              className={`hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
                 location.pathname === "/favorites"
                   ? "bg-[#fce8e6] border-[#fad2cf] text-[#ea4335]"
                   : "bg-[#f8f9fa] border-[#dadce0] text-[#5f6368] hover:text-[#202124] hover:bg-[#f1f3f4]"
@@ -239,8 +237,8 @@ const Topbar = () => {
             </Link>
 
             {/* Privacy Telemetry Indicator */}
-            <div className="hidden xl:flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#e6f4ea] border border-[#ceead6] text-[11px] font-semibold text-[#137333]">
-              <span className="w-2 h-2 rounded-full bg-[#34a853] animate-pulse" />
+            <div className="hidden xl:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#e6f4ea] border border-[#ceead6] text-[11px] font-semibold text-[#137333]">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#34a853] animate-pulse" />
               <span>100% Client-Side</span>
             </div>
 
@@ -252,7 +250,7 @@ const Topbar = () => {
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                   className="flex items-center gap-2 p-1 sm:px-2.5 sm:py-1 rounded-full bg-[#f8f9fa] hover:bg-[#f1f3f4] border border-[#dadce0] text-xs font-bold text-[#202124] transition-all cursor-pointer"
                 >
-                  <div className="w-7 h-7 rounded-full bg-[#1a73e8] text-white flex items-center justify-center text-xs font-bold shadow-xs">
+                  <div className="w-7 h-7 rounded-full bg-[#1a73e8] text-white flex items-center justify-center text-xs font-bold shadow-2xs">
                     {currentUser.name ? currentUser.name[0].toUpperCase() : "U"}
                   </div>
                   <span className="hidden sm:inline-block max-w-[90px] truncate">{currentUser.name || "Account"}</span>
@@ -320,7 +318,7 @@ const Topbar = () => {
               </div>
             )}
           </div>
-        </nav>
+        </div>
       </header>
 
       {/* ═══ Google-Style Command Palette Search Modal (Cmd+K) ═══ */}
