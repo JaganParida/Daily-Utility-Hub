@@ -44,13 +44,13 @@ const ToolHeader = ({
   };
 
   return (
-    <div className="w-full mb-6 sm:mb-8">
-      {/* Top Breadcrumb & Mobile Back Action */}
-      <div className="flex flex-wrap items-center justify-between gap-2 mb-3 sm:mb-4">
-        <div className="flex items-center gap-1.5 text-xs text-[#5f6368] font-medium overflow-x-auto custom-scrollbar py-0.5">
+    <div className="w-full mb-5 sm:mb-7">
+      {/* Top Breadcrumb & Badges Container */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3 sm:mb-4">
+        <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-[#5f6368] font-medium overflow-x-auto custom-scrollbar py-0.5 max-w-full">
           <Link 
             to="/" 
-            className="hover:text-[#1a73e8] transition-colors flex items-center gap-1 whitespace-nowrap"
+            className="hover:text-[#1a73e8] transition-colors flex items-center gap-1 shrink-0"
           >
             <ArrowLeft size={13} className="inline sm:hidden mr-0.5" />
             <span>Dashboard</span>
@@ -58,41 +58,41 @@ const ToolHeader = ({
           <ChevronRight size={12} className="text-[#9aa0a6] shrink-0" />
           <Link 
             to={categoryPath} 
-            className="hover:text-[#1a73e8] transition-colors whitespace-nowrap"
+            className="hover:text-[#1a73e8] transition-colors shrink-0"
           >
             {category}
           </Link>
           <ChevronRight size={12} className="text-[#9aa0a6] shrink-0" />
-          <span className="text-[#202124] font-semibold truncate max-w-[180px] sm:max-w-none">
+          <span className="text-[#202124] font-semibold truncate max-w-[200px] sm:max-w-xs md:max-w-none">
             {title}
           </span>
-        </div>
+        </nav>
 
         {/* Client-Side / Security Badge */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0 flex-wrap">
           <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#e6f4ea] border border-[#ceead6] text-[11px] font-semibold text-[#137333] shadow-2xs">
-            <ShieldCheck size={13} className="text-[#34a853]" />
-            <span>{badge}</span>
+            <ShieldCheck size={13} className="text-[#34a853] shrink-0" />
+            <span className="truncate">{badge}</span>
           </div>
           {extraBadge && (
             <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#fef7e0] border border-[#feefc3] text-[11px] font-bold text-[#b06000] shadow-2xs">
-              <Sparkles size={11} />
-              <span>{extraBadge}</span>
+              <Sparkles size={11} className="shrink-0" />
+              <span className="truncate">{extraBadge}</span>
             </div>
           )}
         </div>
       </div>
 
-      {/* Main Header Container */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl bg-white border border-[#dadce0] shadow-xs">
-        <div className="flex items-start sm:items-center gap-3.5 min-w-0">
+      {/* Main Header Card */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl bg-white border border-[#dadce0] shadow-2xs">
+        <div className="flex items-start sm:items-center gap-3.5 min-w-0 flex-1">
           {Icon && (
-            <div className={`w-12 h-12 sm:w-13 sm:h-13 rounded-2xl border flex items-center justify-center shrink-0 shadow-xs ${iconColor}`}>
-              <Icon size={24} className="sm:w-6 sm:h-6" />
+            <div className={`w-11 h-11 sm:w-13 sm:h-13 rounded-2xl border flex items-center justify-center shrink-0 shadow-2xs ${iconColor}`}>
+              <Icon size={22} className="sm:w-6 sm:h-6" />
             </div>
           )}
           <div className="min-w-0 flex-1">
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-[#202124] tracking-tight leading-tight">
+            <h1 className="text-lg sm:text-2xl md:text-3xl font-extrabold text-[#202124] tracking-tight leading-tight break-words">
               {title}
             </h1>
             {description && (
@@ -104,7 +104,7 @@ const ToolHeader = ({
         </div>
 
         {/* Quick Actions (Pin, Favorite, Copy Link, Custom Actions) */}
-        <div className="flex items-center gap-2 self-start md:self-center shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-[#f1f3f4] w-full md:w-auto justify-end">
+        <div className="flex items-center gap-2 self-start md:self-center shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-[#f1f3f4] w-full md:w-auto justify-end flex-wrap">
           {actions}
           
           <button

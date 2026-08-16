@@ -299,44 +299,39 @@ ${styleGuide ? `Additional Formatting Requirements: ${styleGuide}` : ''}`;
         </div>
       )}
 
-      {/* Header */}
-      <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-rose-500/10 text-rose-500 rounded-xl shadow-sm shrink-0">
-            <Layers size={24} />
-          </div>
-          <div>
-            <h1 className="text-3xl sm:text-4xl font-black tracking-tighter text-foreground">AI PDF to Markdown Parser</h1>
-            <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">
-              Convert raw PDF reports, specs, and reference manuals into beautiful clean Markdown documentation.
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 self-start md:self-auto">
-          <button 
-            onClick={() => setShowSettings(true)}
-            className={`px-4 py-2 border rounded-xl flex items-center gap-2 text-xs md:text-sm font-semibold transition-all cursor-pointer ${
-              (ALL_MODELS.find(m => m.id === modelId)?.provider === 'google' ? isGeminiConfigured : isOpenaiConfigured)
-                ? 'bg-muted/30 border-border/80 text-foreground hover:bg-muted/55' 
-                : 'bg-red-500/10 hover:bg-red-500/20 text-red-500 border-red-500/20'
-            }`}
-          >
-            <Key size={14} />
-            Configure API Key
-          </button>
-        </div>
-      </div>
+      <ToolHeader
+        title="AI PDF to Markdown Parser"
+        description="Convert raw PDF reports, specs, and reference manuals into beautiful clean Markdown documentation."
+        category="PDF Tools"
+        categoryPath="/search"
+        icon={FileText}
+        iconColor="text-[#1a73e8] bg-[#e8f0fe] border-[#d2e3fc]"
+        badge="AI Document Engine"
+        extraBadge="Gemini & OpenAI Powered"
+      />
 
       {/* Main Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full items-start">
         {/* Left Control Column */}
         <div className="lg:col-span-5 flex flex-col gap-5 w-full">
           {/* Upload Card */}
-          <div className="bg-card border border-border/80 p-5 rounded-2xl shadow-sm">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4 flex items-center gap-2">
-              <FileText size={16} /> 1. Upload PDF Document
-            </h3>
+          <div className="tool-card p-5 space-y-4">
+            <div className="flex items-center justify-between border-b border-[#dadce0] pb-3">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-[#5f6368] flex items-center gap-2">
+                <FileText size={15} className="text-[#1a73e8]" /> 1. Upload PDF Document
+              </h3>
+              <button 
+                onClick={() => setShowSettings(true)}
+                className={`px-3 py-1 border rounded-lg flex items-center gap-1.5 text-xs font-semibold transition-all cursor-pointer ${
+                  (ALL_MODELS.find(m => m.id === modelId)?.provider === 'google' ? isGeminiConfigured : isOpenaiConfigured)
+                    ? 'bg-[#f8f9fa] border-[#dadce0] text-[#202124] hover:bg-[#f1f3f4]' 
+                    : 'bg-[#fce8e6] hover:bg-[#fad2cf] text-[#d93025] border-[#fad2cf]'
+                }`}
+              >
+                <Key size={13} />
+                API Key
+              </button>
+            </div>
 
             {!file ? (
               <div 
@@ -344,65 +339,64 @@ ${styleGuide ? `Additional Formatting Requirements: ${styleGuide}` : ''}`;
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
                 onClick={() => fileInputRef.current?.click()}
-                className={`border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center gap-3 text-center cursor-pointer transition-all hover:bg-muted/10 min-h-[200px] ${
-                  isDragging ? 'border-primary bg-primary/5' : 'border-border/80'
-                }`}
+                className="border-2 border-dashed border-[#c2d7fb] bg-white hover:border-[#1a73e8] hover:bg-[#f8fbff] rounded-2xl p-6 sm:p-8 flex flex-col items-center justify-center gap-3 text-center cursor-pointer transition-all min-h-[200px]"
               >
-                <div className="p-3 bg-muted/40 text-muted-foreground rounded-2xl border border-border/50 shadow-inner">
-                  <UploadCloud size={28} />
+                <div className="w-12 h-12 bg-[#e8f0fe] text-[#1a73e8] rounded-xl flex items-center justify-center border border-[#d2e3fc]">
+                  <UploadCloud size={24} />
                 </div>
                 <div>
-                  <p className="font-bold text-sm text-foreground">Drag & Drop PDF file here</p>
-                  <p className="text-xs text-muted-foreground mt-1">Files are processed entirely inside your browser</p>
+                  <p className="font-bold text-xs sm:text-sm text-[#202124]">Drag & Drop PDF file here</p>
+                  <p className="text-[11px] text-[#5f6368] mt-0.5">Files are processed directly in your browser</p>
                 </div>
-                <button className="mt-2 text-xs font-semibold px-4 py-2 bg-primary text-white rounded-xl shadow transition-colors">
+                <button type="button" className="btn-google-primary text-xs py-2 px-4 shadow-xs">
                   Browse File
                 </button>
               </div>
             ) : (
-              <div className="border border-border/50 rounded-2xl p-4 bg-muted/20 flex flex-col gap-3">
+              <div className="border border-[#dadce0] rounded-xl p-3 bg-[#f8f9fa] flex flex-col gap-3">
                 <div className="flex items-center gap-3">
-                  <div className="p-2.5 bg-rose-500/10 text-rose-500 rounded-xl border border-rose-500/20">
-                    <FileText size={24} />
+                  <div className="p-2 bg-[#e8f0fe] text-[#1a73e8] rounded-lg border border-[#d2e3fc]">
+                    <FileText size={20} />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="font-bold text-sm text-foreground truncate">{file.name}</p>
-                    <p className="text-xs text-muted-foreground">{(file.size / 1024 / 1024).toFixed(2)} MB • {totalPages} Pages</p>
+                    <p className="font-bold text-xs sm:text-sm text-[#202124] truncate">{file.name}</p>
+                    <p className="text-[11px] text-[#5f6368]">{(file.size / 1024 / 1024).toFixed(2)} MB &bull; {totalPages} Pages</p>
                   </div>
                   <button 
                     onClick={clearWorkspace}
-                    className="p-1.5 bg-background border border-border/80 text-muted-foreground hover:text-red-500 hover:bg-red-500/5 rounded-lg cursor-pointer"
+                    className="p-1.5 bg-white border border-[#dadce0] text-[#d93025] hover:bg-[#fce8e6] rounded-lg cursor-pointer transition-colors"
+                    title="Remove file"
                   >
                     <Trash2 size={14} />
                   </button>
                 </div>
                 
                 {/* Page range configuration */}
-                <div className="pt-3 border-t border-border/50 grid grid-cols-2 gap-3">
+                <div className="pt-2.5 border-t border-[#dadce0] grid grid-cols-2 gap-2.5">
                   <div>
-                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide block mb-1">Start Page</label>
+                    <label className="text-[10px] font-bold text-[#5f6368] uppercase tracking-wide block mb-1">Start Page</label>
                     <input 
                       type="number"
                       min="1"
                       max={totalPages}
                       value={startPage}
                       onChange={(e) => setStartPage(e.target.value)}
-                      className="w-full px-3 py-1.5 bg-background border border-border/80 rounded-lg text-xs font-semibold text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                      className="google-input text-xs py-1.5 px-2.5 font-semibold"
                     />
                   </div>
                   <div>
-                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide block mb-1">End Page</label>
+                    <label className="text-[10px] font-bold text-[#5f6368] uppercase tracking-wide block mb-1">End Page</label>
                     <input 
                       type="number"
                       min={startPage}
                       max={totalPages}
                       value={endPage}
                       onChange={(e) => setEndPage(e.target.value)}
-                      className="w-full px-3 py-1.5 bg-background border border-border/80 rounded-lg text-xs font-semibold text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                      className="google-input text-xs py-1.5 px-2.5 font-semibold"
                     />
                   </div>
                 </div>
-                <p className="text-[10px] text-muted-foreground">
+                <p className="text-[10px] text-[#5f6368]">
                   * Limit page range to manage AI token constraints. Best results: 1-5 pages per call.
                 </p>
               </div>
@@ -417,18 +411,18 @@ ${styleGuide ? `Additional Formatting Requirements: ${styleGuide}` : ''}`;
           </div>
 
           {/* Model & Formatting */}
-          <div className="bg-card border border-border/80 p-5 rounded-2xl shadow-sm">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4 flex items-center gap-2">
-              <Cpu size={16} /> 2. Restructuring Settings
+          <div className="tool-card p-5 space-y-4">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#5f6368] border-b border-[#dadce0] pb-3 flex items-center gap-2">
+              <Cpu size={15} className="text-[#1a73e8]" /> 2. Restructuring Settings
             </h3>
 
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div>
-                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wide block mb-1.5">Select LLM Engine</label>
+                <label className="text-xs font-bold text-[#5f6368] uppercase tracking-wide block mb-1.5">Select LLM Engine</label>
                 <select
                   value={modelId}
                   onChange={(e) => setModelId(e.target.value)}
-                  className="w-full px-3 py-2 bg-background border border-border/80 rounded-xl text-sm font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/50 cursor-pointer"
+                  className="google-select w-full text-xs font-semibold"
                 >
                   <optgroup label="Google Gemini">
                     {ALL_MODELS.filter(m => m.provider === 'google').map((m) => (
@@ -444,11 +438,11 @@ ${styleGuide ? `Additional Formatting Requirements: ${styleGuide}` : ''}`;
               </div>
 
               <div>
-                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wide block mb-1.5">Formatting Guideline (Optional)</label>
+                <label className="text-xs font-bold text-[#5f6368] uppercase tracking-wide block mb-1.5">Formatting Guideline (Optional)</label>
                 <textarea
                   value={styleGuide}
                   onChange={(e) => setStyleGuide(e.target.value)}
-                  className="w-full p-3 bg-background border border-border/80 rounded-xl text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/50 resize-none h-16 shadow-inner custom-scrollbar"
+                  className="google-input w-full p-2.5 text-xs resize-none h-16 shadow-inner custom-scrollbar"
                   placeholder="e.g. 'Format tables as GFM tables', 'Only output code snippets', 'Maintain mathematical equations in LaTeX style'"
                 />
               </div>
@@ -456,7 +450,7 @@ ${styleGuide ? `Additional Formatting Requirements: ${styleGuide}` : ''}`;
               <button
                 onClick={handleConvert}
                 disabled={loading || isParsingPdf || !file}
-                className="w-full py-3 bg-primary hover:bg-primary/95 text-white disabled:bg-muted/80 disabled:text-muted-foreground font-bold rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed text-sm"
+                className="w-full btn-google-primary text-xs sm:text-sm py-3 justify-center shadow-xs disabled:opacity-50"
               >
                 {loading || isParsingPdf ? (
                   <>
@@ -474,23 +468,23 @@ ${styleGuide ? `Additional Formatting Requirements: ${styleGuide}` : ''}`;
 
         {/* Right Output Column */}
         <div className="lg:col-span-7 w-full flex flex-col min-h-[580px]">
-          <div className="bg-card border border-border/80 rounded-2xl shadow-sm flex flex-col flex-1 overflow-hidden min-h-[520px]">
+          <div className="tool-card flex flex-col flex-1 overflow-hidden min-h-[520px]">
             {/* Tab Header */}
-            <div className="flex justify-between items-center px-5 py-3 border-b border-border/80 bg-muted/10 shrink-0 flex-wrap gap-3">
-              <div className="flex p-1 bg-muted/40 border border-border/50 rounded-xl shadow-inner">
+            <div className="flex justify-between items-center px-4 py-3 border-b border-[#dadce0] bg-[#f8f9fa] shrink-0 flex-wrap gap-2">
+              <div className="flex p-1 bg-white border border-[#dadce0] rounded-xl shadow-2xs">
                 {[
-                  { id: 'preview', label: 'Markdown Preview', icon: Eye },
+                  { id: 'preview', label: 'Preview', icon: Eye },
                   { id: 'code', label: 'Raw Markdown', icon: Code },
-                  { id: 'logs', label: 'Console Logs', icon: Terminal },
-                  { id: 'stats', label: 'Token Metrics', icon: BarChart2 }
+                  { id: 'logs', label: 'Logs', icon: Terminal },
+                  { id: 'stats', label: 'Metrics', icon: BarChart2 }
                 ].map((t) => (
                   <button
                     key={t.id}
                     onClick={() => setActiveTab(t.id)}
-                    className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
+                    className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
                       activeTab === t.id
-                        ? 'bg-card text-foreground shadow-sm border border-border/50'
-                        : 'text-muted-foreground hover:text-foreground'
+                        ? 'bg-[#1a73e8] text-white shadow-2xs'
+                        : 'text-[#5f6368] hover:text-[#202124]'
                     }`}
                   >
                     <t.icon size={13} />
@@ -504,14 +498,14 @@ ${styleGuide ? `Additional Formatting Requirements: ${styleGuide}` : ''}`;
                 <div className="flex items-center gap-2">
                   <button
                     onClick={handleCopyCode}
-                    className="p-1.5 bg-muted/30 border border-border/80 text-foreground hover:bg-muted/65 rounded-lg transition-colors cursor-pointer flex items-center gap-1 text-xs font-semibold"
+                    className="btn-google-secondary text-xs py-1 px-2.5"
                   >
-                    {copied ? <Check size={12} className="text-emerald-500" /> : <Copy size={12} />}
+                    {copied ? <Check size={12} className="text-[#34a853]" /> : <Copy size={12} />}
                     Copy
                   </button>
                   <button
                     onClick={handleDownload}
-                    className="p-1.5 bg-muted/30 border border-border/80 text-foreground hover:bg-muted/65 rounded-lg transition-colors cursor-pointer flex items-center gap-1 text-xs font-semibold"
+                    className="btn-google-secondary text-xs py-1 px-2.5"
                   >
                     <FileDown size={12} />
                     Download .MD
@@ -521,7 +515,7 @@ ${styleGuide ? `Additional Formatting Requirements: ${styleGuide}` : ''}`;
             </div>
 
             {/* Console and Outputs */}
-            <div className="flex-1 p-5 overflow-y-auto custom-scrollbar flex flex-col bg-background/25">
+            <div className="flex-1 p-5 overflow-y-auto custom-scrollbar flex flex-col bg-white">
               {activeTab === 'logs' ? (
                 <div className="flex-1 flex flex-col bg-black/95 text-green-400 p-4 rounded-xl font-mono text-xs overflow-y-auto custom-scrollbar min-h-[360px] border border-border/60 shadow-inner select-text">
                   <div className="flex items-center justify-between border-b border-white/10 pb-2 mb-3">

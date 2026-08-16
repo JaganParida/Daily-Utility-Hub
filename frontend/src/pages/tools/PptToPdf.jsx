@@ -198,12 +198,12 @@ const PptToPdf = () => {
   return (
     <div className="tool-page-container">
       <ToolHeader
-        title="PowerPoint to PDF / Image Converter"
+        title="PowerPoint to PDF Converter"
         description="Convert Microsoft PowerPoint slides (.pptx) client-side into structured PDF documents or individual PNG images."
-        category="Slides & Presentation Tools"
+        category="PDF Tools"
         categoryPath="/search"
         icon={FileText}
-        iconColor="text-[#ea4335] bg-[#fce8e6] border-[#fad2cf]"
+        iconColor="text-[#1a73e8] bg-[#e8f0fe] border-[#d2e3fc]"
         badge="PowerPoint to PDF"
         extraBadge="PPTX Document Converter"
       />
@@ -211,67 +211,73 @@ const PptToPdf = () => {
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         
         {/* Upload Column */}
-        <div className="w-full lg:w-[420px] shrink-0 space-y-6">
-          <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-5">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Select presentation</h3>
+        <div className="w-full lg:w-[380px] xl:w-[400px] shrink-0 space-y-6">
+          <div className="tool-sidebar p-5 sm:p-6 space-y-5">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#5f6368] border-b border-[#dadce0] pb-3">Select Presentation</h3>
             
             <div 
               onClick={() => fileInputRef.current?.click()}
-              className="border-2 border-dashed border-border hover:border-primary/50 rounded-2xl p-8 flex flex-col items-center justify-center gap-3 cursor-pointer bg-muted/20 hover:bg-muted/40 transition-all group"
+              className="border-2 border-dashed border-[#c2d7fb] bg-white hover:border-[#1a73e8] hover:bg-[#f8fbff] rounded-2xl p-6 sm:p-8 flex flex-col items-center justify-center gap-3 cursor-pointer transition-all group"
             >
-              <div className="p-4 bg-primary/5 text-primary rounded-full group-hover:scale-110 transition-transform">
-                <Upload size={28} />
+              <div className="w-14 h-14 bg-[#e8f0fe] text-[#1a73e8] rounded-2xl flex items-center justify-center border border-[#d2e3fc] group-hover:scale-110 transition-transform">
+                <Upload size={24} />
               </div>
-              <p className="text-sm font-bold text-foreground">Upload PPTX / PPT</p>
+              <div className="text-center">
+                <p className="text-xs sm:text-sm font-bold text-[#202124]">Upload PPTX / PPT</p>
+                <p className="text-[11px] text-[#5f6368] mt-0.5">Drag and drop or click to browse</p>
+              </div>
               <input type="file" ref={fileInputRef} className="hidden" accept=".pptx,.ppt" onChange={handleFileUpload} />
             </div>
 
             {file && (
-              <div className="p-4 bg-muted/40 rounded-xl border border-border flex items-center gap-3">
-                <FileText className="text-primary shrink-0" size={24} />
+              <div className="p-3 bg-[#f8f9fa] rounded-xl border border-[#dadce0] flex items-center gap-3">
+                <div className="p-2 bg-[#e8f0fe] text-[#1a73e8] rounded-lg shrink-0">
+                  <FileText size={18} />
+                </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-bold text-foreground truncate">{file.name}</p>
-                  <p className="text-xs text-muted-foreground">{(file.size / 1024).toFixed(1)} KB</p>
+                  <p className="text-xs sm:text-sm font-bold text-[#202124] truncate">{file.name}</p>
+                  <p className="text-[11px] text-[#5f6368]">{(file.size / 1024).toFixed(1)} KB &bull; {slides.length} slides</p>
                 </div>
               </div>
             )}
-          </div>
 
-          {slides.length > 0 && (
-            <div className="bg-card border border-border p-5 rounded-2xl shadow-sm space-y-3">
-              <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Conversion Actions</h3>
-              <div className="grid grid-cols-2 gap-3">
+            {slides.length > 0 && (
+              <div className="pt-3 border-t border-[#dadce0] space-y-2.5">
                 <button
                   onClick={exportPDF}
-                  className="py-3 px-4 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2"
+                  className="w-full btn-google-primary text-xs sm:text-sm py-2.5 justify-center shadow-xs"
                 >
-                  <Download size={16} /> Export to PDF
+                  <Download size={15} /> Export & Download PDF
                 </button>
                 <button
                   onClick={downloadPNG}
-                  className="py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2"
+                  className="w-full btn-google-secondary text-xs sm:text-sm py-2.5 justify-center"
                 >
-                  <FileImage size={16} /> Download PNG
+                  <FileImage size={15} /> Download All as PNG (ZIP)
                 </button>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
         {/* Live Presentation Canvas Preview */}
-        <div className="flex-1 w-full bg-card border border-border rounded-2xl shadow-sm overflow-hidden flex flex-col min-h-[480px]">
-          <div className="p-4 border-b border-border bg-muted/30 flex justify-between items-center shrink-0">
-            <h2 className="font-semibold text-foreground flex items-center gap-2 text-sm uppercase tracking-wider">
-              <Sparkles size={16} className="text-primary" />
+        <div className="flex-1 w-full tool-card overflow-hidden flex flex-col min-h-[480px]">
+          <div className="p-3 sm:p-4 border-b border-[#dadce0] bg-[#f8f9fa] flex flex-wrap justify-between items-center gap-2 shrink-0">
+            <h2 className="font-bold text-[#202124] flex items-center gap-2 text-xs uppercase tracking-wider">
+              <Sparkles size={15} className="text-[#1a73e8]" />
               Presentation Slides Preview
             </h2>
             {slides.length > 0 && (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 flex-wrap">
                 {slides.map((_, idx) => (
                   <button
                     key={idx}
                     onClick={() => setActiveSlideIdx(idx)}
-                    className={`w-6 h-6 rounded-lg text-[10px] font-bold transition-all ${activeSlideIdx === idx ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:text-foreground'}`}
+                    className={`w-6 h-6 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
+                      activeSlideIdx === idx 
+                        ? 'bg-[#1a73e8] text-white shadow-2xs' 
+                        : 'bg-white text-[#5f6368] border border-[#dadce0] hover:border-[#1a73e8]'
+                    }`}
                   >
                     {idx + 1}
                   </button>
@@ -280,37 +286,37 @@ const PptToPdf = () => {
             )}
           </div>
 
-          <div className="flex-1 p-6 md:p-12 bg-neutral-900 flex justify-center items-center overflow-auto custom-scrollbar">
+          <div className="flex-1 p-6 md:p-10 bg-[#f8f9fa] flex justify-center items-center overflow-auto custom-scrollbar">
             {slides.length > 0 ? (
               <motion.div 
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="w-full max-w-2xl aspect-[4/3] bg-slate-900 text-slate-100 p-12 shadow-2xl rounded-xl border border-slate-800 flex flex-col justify-between font-sans"
+                className="w-full max-w-2xl aspect-[4/3] bg-white text-[#202124] p-8 sm:p-10 shadow-md rounded-2xl border border-[#dadce0] flex flex-col justify-between"
               >
                 <div>
-                  <h2 className="text-2xl font-black border-b border-slate-800 pb-3 mb-6">{slides[activeSlideIdx].title}</h2>
-                  <ul className="space-y-4 pl-2">
+                  <h2 className="text-xl sm:text-2xl font-black border-b border-[#dadce0] pb-3 mb-5 text-[#202124]">{slides[activeSlideIdx].title}</h2>
+                  <ul className="space-y-3 pl-2">
                     {slides[activeSlideIdx].bullets.map((b, idx) => (
-                      <li key={idx} className="flex items-start gap-2.5 text-sm leading-relaxed text-slate-300">
-                        <span className="text-indigo-400 mt-1">&bull;</span>
+                      <li key={idx} className="flex items-start gap-2.5 text-xs sm:text-sm leading-relaxed text-[#5f6368]">
+                        <span className="text-[#1a73e8] mt-0.5 font-bold">&bull;</span>
                         <span>{b}</span>
                       </li>
                     ))}
                   </ul>
                 </div>
-                <div className="flex justify-between items-center text-[10px] text-slate-500 font-mono">
+                <div className="flex justify-between items-center text-[10px] text-[#5f6368] border-t border-[#dadce0] pt-3 mt-4 font-mono">
                   <span>Slide {activeSlideIdx + 1} of {slides.length}</span>
-                  <span>POWERPOINT CONVERTER ENGINE</span>
+                  <span className="text-[#1a73e8] font-bold">POWERPOINT CONVERTER</span>
                 </div>
               </motion.div>
             ) : (
               <div 
                 onClick={() => fileInputRef.current?.click()}
-                className="text-center text-muted-foreground p-12 flex flex-col items-center justify-center gap-2 h-full cursor-pointer hover:bg-neutral-800/40 border border-dashed border-slate-800/60 rounded-xl transition-all"
+                className="text-center text-[#5f6368] p-10 flex flex-col items-center justify-center gap-2 h-full cursor-pointer hover:bg-white/80 border border-dashed border-[#dadce0] rounded-2xl transition-all"
               >
-                <FileText size={48} className="text-muted-foreground/35" />
-                <p className="text-sm font-bold">No Presentation Uploaded</p>
-                <p className="text-xs max-w-xs leading-normal">Click here or upload a PPTX presentation file to audit slide structures.</p>
+                <FileText size={44} className="text-[#dadce0]" />
+                <p className="text-sm font-bold text-[#202124]">No Presentation Uploaded</p>
+                <p className="text-xs max-w-xs leading-normal text-[#5f6368]">Upload a PPTX presentation file to preview and convert slides.</p>
               </div>
             )}
           </div>

@@ -187,10 +187,10 @@ const ImageToPdf = () => {
       <ToolHeader
         title="Advanced Image to PDF"
         description="Convert photos to printable PDF documents — A4, Letter, and more."
-        category="Image Tools"
+        category="PDF Tools"
         categoryPath="/search"
         icon={FileText}
-        iconColor="text-[#ea4335] bg-[#fce8e6] border-[#fad2cf]"
+        iconColor="text-[#1a73e8] bg-[#e8f0fe] border-[#d2e3fc]"
         badge="Images to PDF Document"
         extraBadge="Page Margin Controls"
       />
@@ -200,7 +200,7 @@ const ImageToPdf = () => {
         {/* Left: Upload + Page Queue */}
         <motion.div
           layout
-          className={`flex-1 w-full bg-card border border-border rounded-2xl shadow-sm flex flex-col transition-all duration-500 ease-out ${
+          className={`flex-1 w-full tool-card flex flex-col transition-all duration-500 ease-out ${
             !hasImages ? 'min-h-[50vh] items-stretch p-4 md:p-5' : 'min-h-0 p-4 md:p-6 space-y-5'
           }`}
         >
@@ -220,13 +220,13 @@ const ImageToPdf = () => {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.98 }}
                 transition={{ duration: 0.3, ease: 'easeOut' }}
-                className="bg-muted/10 border border-border p-4 md:p-5 rounded-xl shadow-inner flex flex-col min-h-0"
+                className="bg-[#f8f9fa] border border-[#dadce0] p-4 md:p-5 rounded-2xl flex flex-col min-h-0"
               >
                 <div className="flex items-center justify-between mb-4 px-1">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                    <Layers size={14} /> Pages ({images.length})
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-[#5f6368] flex items-center gap-2">
+                    <Layers size={14} className="text-[#1a73e8]" /> Pages ({images.length})
                   </h3>
-                  <button onClick={clear} className="text-xs text-red-500 hover:text-red-600 font-semibold hover:underline">
+                  <button onClick={clear} className="text-xs text-[#d93025] hover:text-[#b3261e] font-semibold hover:underline cursor-pointer">
                     Clear All
                   </button>
                 </div>
@@ -240,51 +240,48 @@ const ImageToPdf = () => {
                         initial={{ opacity: 0, scale: 0.95, y: 8 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.18 } }}
-                        className="flex items-center gap-3 bg-muted/30 p-2.5 rounded-xl border border-border/50 group hover:border-primary/40 transition-colors duration-200 shadow-sm"
+                        className="flex items-center gap-3 bg-white p-2.5 rounded-xl border border-[#dadce0] group hover:border-[#1a73e8]/60 transition-colors duration-200 shadow-2xs"
                       >
                         {/* Page number */}
-                        <span className="w-6 text-center text-xs font-bold text-muted-foreground shrink-0">{idx + 1}</span>
+                        <span className="w-6 text-center text-xs font-bold text-[#5f6368] shrink-0">{idx + 1}</span>
 
                         {/* Thumbnail */}
                         <img
                           src={img.url}
-                          className="w-12 h-12 object-cover rounded-lg border border-border/50 shadow-sm shrink-0"
-                          alt="page"
+                          alt={`page-${idx + 1}`}
+                          className="w-12 h-12 object-cover rounded-lg border border-[#dadce0] shrink-0 bg-white"
                         />
 
-                        {/* Info */}
-                        <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-sm text-foreground truncate">{img.file.name}</p>
-                          <p className="text-xs text-muted-foreground mt-0.5 font-medium">
-                            {(img.file.size / 1024 / 1024).toFixed(2)} MB
-                          </p>
+                        {/* File info */}
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-bold text-[#202124] truncate">{img.file.name}</p>
+                          <p className="text-[11px] text-[#5f6368]">{(img.file.size / 1024).toFixed(1)} KB</p>
                         </div>
 
-                        {/* Controls */}
-                        <div className="flex items-center gap-0.5 shrink-0">
+                        {/* Page controls */}
+                        <div className="flex items-center gap-1 shrink-0">
                           <button
-                            onClick={() => moveUp(idx)}
+                            onClick={() => moveImage(idx, -1)}
                             disabled={idx === 0}
-                            className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg disabled:opacity-25 transition-colors"
-                            title="Move up"
+                            className="p-1 rounded-lg text-[#5f6368] hover:text-[#202124] hover:bg-[#f1f3f4] disabled:opacity-30 transition-colors cursor-pointer"
+                            title="Move Up"
                           >
-                            <ArrowUp size={15} />
+                            <ArrowUp size={14} />
                           </button>
                           <button
-                            onClick={() => moveDown(idx)}
+                            onClick={() => moveImage(idx, 1)}
                             disabled={idx === images.length - 1}
-                            className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg disabled:opacity-25 transition-colors"
-                            title="Move down"
+                            className="p-1 rounded-lg text-[#5f6368] hover:text-[#202124] hover:bg-[#f1f3f4] disabled:opacity-30 transition-colors cursor-pointer"
+                            title="Move Down"
                           >
-                            <ArrowDown size={15} />
+                            <ArrowDown size={14} />
                           </button>
-                          <div className="w-px h-5 bg-border mx-1" />
                           <button
                             onClick={() => removeImage(idx)}
-                            className="p-1.5 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
-                            title="Remove"
+                            className="p-1 rounded-lg text-[#d93025] hover:bg-[#fce8e6] transition-colors cursor-pointer"
+                            title="Remove Page"
                           >
-                            <Trash2 size={15} />
+                            <Trash2 size={14} />
                           </button>
                         </div>
                       </motion.div>
@@ -296,19 +293,19 @@ const ImageToPdf = () => {
           </AnimatePresence>
         </motion.div>
 
-        {/* Right: Settings Sidebar */}
-        <div className={`w-full lg:w-[350px] xl:w-[400px] shrink-0 space-y-6 transition-all duration-300 ${!hasImages ? 'opacity-50 pointer-events-none grayscale-[0.5]' : ''}`}>
+        {/* Right Settings */}
+        <div className={`w-full lg:w-[360px] xl:w-[400px] shrink-0 space-y-6 transition-all duration-300 ${!hasImages ? 'opacity-50 pointer-events-none grayscale-[0.5]' : ''}`}>
 
-          <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6">
+          <div className="tool-sidebar p-5 sm:p-6 space-y-5">
 
-            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground border-b border-border pb-3 flex items-center gap-2">
-              <Settings2 size={15} /> Document Layout
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#5f6368] border-b border-[#dadce0] pb-3 flex items-center gap-2">
+              <Settings2 size={15} className="text-[#1a73e8]" /> Document Layout
             </h3>
 
             {/* Export Mode Selection */}
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-foreground">Export Mode</label>
-              <div className="flex p-1.5 bg-muted/30 rounded-xl border border-border/50 shadow-inner relative gap-1">
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-[#5f6368] uppercase tracking-wider">Export Mode</label>
+              <div className="grid grid-cols-2 gap-2">
                 {[
                   { id: 'combined', label: 'Single PDF' },
                   { id: 'separate', label: 'Separate PDFs (ZIP)' }
@@ -316,16 +313,12 @@ const ImageToPdf = () => {
                   <button
                     key={mode.id}
                     onClick={() => setExportMode(mode.id)}
-                    className={`flex-1 relative z-10 py-2.5 text-xs font-bold rounded-lg transition-colors ${
-                      exportMode === mode.id ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
+                    className={`py-2 text-xs font-bold rounded-xl border transition-all cursor-pointer ${
+                      exportMode === mode.id
+                        ? 'bg-[#1a73e8] text-white border-[#1a73e8] shadow-xs'
+                        : 'bg-white text-[#5f6368] border-[#dadce0] hover:border-[#1a73e8]'
                     }`}
                   >
-                    {exportMode === mode.id && (
-                      <motion.div
-                        layoutId="export-active"
-                        className="absolute inset-0 bg-background border border-border rounded-lg shadow-sm -z-10"
-                      />
-                    )}
                     {mode.label}
                   </button>
                 ))}
@@ -333,42 +326,33 @@ const ImageToPdf = () => {
             </div>
 
             {/* Paper Size */}
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-foreground">Paper Size</label>
-              <div className="relative group">
-                <select
-                  value={pageSize}
-                  onChange={(e) => setPageSize(e.target.value)}
-                  className="w-full appearance-none bg-muted/20 border border-border/50 group-hover:border-border p-3 pl-4 pr-10 rounded-xl text-sm font-semibold text-foreground focus:ring-2 focus:ring-primary/50 outline-none transition-all cursor-pointer shadow-sm"
-                >
-                  {PAGE_SIZES.map(s => (
-                    <option key={s.id} value={s.id} className="bg-background text-foreground">{s.name}</option>
-                  ))}
-                </select>
-                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground group-hover:text-foreground transition-colors">
-                  <ChevronDown size={18} />
-                </div>
-              </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-[#5f6368] uppercase tracking-wider">Paper Size</label>
+              <select
+                value={pageSize}
+                onChange={(e) => setPageSize(e.target.value)}
+                className="google-select w-full text-xs font-semibold"
+              >
+                {PAGE_SIZES.map(s => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
+                ))}
+              </select>
             </div>
 
             {/* Orientation */}
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-foreground">Orientation</label>
-              <div className="flex p-1.5 bg-muted/30 rounded-xl border border-border/50 shadow-inner relative gap-1">
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-[#5f6368] uppercase tracking-wider">Orientation</label>
+              <div className="grid grid-cols-2 gap-2">
                 {[{ id: 'p', label: 'Portrait' }, { id: 'l', label: 'Landscape' }].map(mode => (
                   <button
                     key={mode.id}
                     onClick={() => setPdfOrientation(mode.id)}
-                    className={`flex-1 relative z-10 py-2.5 text-sm font-bold rounded-lg transition-colors ${
-                      pdfOrientation === mode.id ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
+                    className={`py-2 text-xs font-bold rounded-xl border transition-all cursor-pointer ${
+                      pdfOrientation === mode.id
+                        ? 'bg-[#1a73e8] text-white border-[#1a73e8] shadow-xs'
+                        : 'bg-white text-[#5f6368] border-[#dadce0] hover:border-[#1a73e8]'
                     }`}
                   >
-                    {pdfOrientation === mode.id && (
-                      <motion.div
-                        layoutId="orientation-active"
-                        className="absolute inset-0 bg-background border border-border rounded-lg shadow-sm -z-10"
-                      />
-                    )}
                     {mode.label}
                   </button>
                 ))}
@@ -376,109 +360,53 @@ const ImageToPdf = () => {
             </div>
 
             {/* Margin Slider */}
-            <div className="space-y-3 pt-4 border-t border-border/50">
+            <div className="space-y-2 pt-3 border-t border-[#dadce0]">
               <div className="flex justify-between items-center">
-                <label className="text-sm font-semibold text-foreground">White Margin</label>
-                <span className="text-xs font-bold bg-primary/10 text-primary border border-primary/20 px-2 py-1 rounded-md">{margin} mm</span>
+                <label className="text-xs font-bold text-[#5f6368] uppercase tracking-wider">White Margin</label>
+                <span className="text-xs font-bold bg-[#e8f0fe] text-[#1a73e8] border border-[#d2e3fc] px-2 py-0.5 rounded-md">{margin} mm</span>
               </div>
-              <div className="pt-1 pb-1">
-                <input
-                  type="range"
-                  min="0"
-                  max="50"
-                  value={margin}
-                  onChange={(e) => setMargin(Number(e.target.value))}
-                  className="pdf-margin-slider w-full cursor-pointer outline-none"
-                  style={{
-                    WebkitAppearance: 'none',
-                    appearance: 'none',
-                    height: '10px',
-                    borderRadius: '999px',
-                    background: `linear-gradient(to right, var(--primary) ${(margin / 50) * 100}%, color-mix(in srgb, var(--muted) 80%, transparent) ${(margin / 50) * 100}%)`,
-                  }}
-                />
-                <style dangerouslySetInnerHTML={{__html: `
-                  .pdf-margin-slider::-webkit-slider-thumb {
-                    -webkit-appearance: none;
-                    appearance: none;
-                    width: 22px;
-                    height: 22px;
-                    border-radius: 50%;
-                    background: #ffffff;
-                    border: 2.5px solid var(--primary);
-                    cursor: pointer;
-                    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
-                    transition: transform 0.15s ease, box-shadow 0.15s ease;
-                  }
-                  .pdf-margin-slider::-webkit-slider-thumb:hover {
-                    transform: scale(1.2);
-                    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-                  }
-                  .pdf-margin-slider::-moz-range-thumb {
-                    width: 22px;
-                    height: 22px;
-                    border-radius: 50%;
-                    background: #ffffff;
-                    border: 2.5px solid var(--primary);
-                    cursor: pointer;
-                    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
-                  }
-                `}} />
-              </div>
-              <p className="text-xs text-muted-foreground leading-relaxed">Leave white space around images on each page.</p>
+              <input
+                type="range"
+                min="0"
+                max="50"
+                value={margin}
+                onChange={(e) => setMargin(Number(e.target.value))}
+                className="w-full h-1.5 rounded-full appearance-none cursor-pointer outline-none bg-[#e8eaed] accent-[#1a73e8]"
+              />
+              <p className="text-[11px] text-[#5f6368] leading-relaxed">Leave clean white border spacing around images.</p>
             </div>
 
-          </div>
-
-          {/* Action Buttons */}
-          <div className="space-y-3">
-            <button
-              onClick={generatePDF}
-              disabled={downloadState !== 'idle' || !hasImages}
-              className={`w-full h-14 font-bold rounded-xl transition-all flex items-center justify-center gap-2
-                shadow-[0_1px_2px_rgba(0,0,0,0.1),0_0_0_1px_rgba(255,255,255,0.1)_inset]
-                disabled:opacity-50 active:scale-[0.98] overflow-hidden
-                ${downloadState === 'done'
-                  ? 'bg-green-600 hover:bg-green-700 text-white shadow-[0_4px_12px_rgba(22,163,74,0.3)]'
-                  : 'bg-primary hover:bg-primary/90 text-primary-foreground hover:shadow-[0_4px_12px_rgba(var(--primary),0.3)]'
-                }`}
-            >
-              <AnimatePresence mode="popLayout" initial={false}>
+            {/* Action Buttons */}
+            <div className="pt-3 border-t border-[#dadce0] flex flex-col gap-2.5">
+              <button
+                onClick={generatePDF}
+                disabled={downloadState !== 'idle' || !hasImages}
+                className="w-full btn-google-primary text-sm py-3 shadow-sm justify-center disabled:opacity-50"
+              >
                 {downloadState === 'done' ? (
-                  <motion.div key="done"
-                    initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
-                    transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                    className="flex items-center gap-2"
-                  >
-                    <CheckCircle size={20} /> Exported!
-                  </motion.div>
+                  <>
+                    <CheckCircle size={16} /> Exported Successfully!
+                  </>
                 ) : downloadState === 'generating' ? (
-                  <motion.div key="generating"
-                    initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
-                    transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                    className="flex items-center gap-2"
-                  >
-                    <Loader2 size={20} className="animate-spin" /> {exportMode === 'combined' ? 'Generating PDF…' : 'Generating ZIP…'}
-                  </motion.div>
+                  <>
+                    <Loader2 size={16} className="animate-spin" /> {exportMode === 'combined' ? 'Generating PDF…' : 'Generating ZIP…'}
+                  </>
                 ) : (
-                  <motion.div key="idle"
-                    initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
-                    transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                    className="flex items-center gap-2"
-                  >
-                    <Download size={20} /> {exportMode === 'combined' ? 'Generate PDF' : 'Generate PDFs (ZIP)'}
-                  </motion.div>
+                  <>
+                    <Download size={16} /> {exportMode === 'combined' ? 'Generate & Download PDF' : 'Generate PDFs (ZIP)'}
+                  </>
                 )}
-              </AnimatePresence>
-            </button>
+              </button>
 
-            <button
-              onClick={clear}
-              disabled={downloadState === 'generating' || !hasImages}
-              className="w-full py-3.5 bg-muted/20 hover:bg-muted/50 border border-border/50 hover:border-border text-foreground font-semibold rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 active:scale-[0.98]"
-            >
-              <Trash2 size={18} /> Clear Queue
-            </button>
+              <button
+                onClick={clear}
+                disabled={downloadState === 'generating' || !hasImages}
+                className="w-full btn-google-secondary text-xs py-2 justify-center"
+              >
+                <Trash2 size={14} /> Clear Queue
+              </button>
+            </div>
+
           </div>
 
         </div>

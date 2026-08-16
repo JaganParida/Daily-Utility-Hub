@@ -234,20 +234,20 @@ const PdfMetadata = () => {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ duration: 0.3 }}
-                className="space-y-6 w-full flex flex-col min-h-0"
+                className="space-y-5 w-full flex flex-col min-h-0"
               >
                 {/* File Details Card */}
-                <div className="bg-card border border-border rounded-xl p-5 flex flex-col gap-4 shadow-sm">
+                <div className="p-4 sm:p-5 rounded-2xl bg-[#f8f9fa] border border-[#dadce0] flex flex-col gap-4">
                   <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                    <div className="flex items-center gap-4 min-w-0 w-full sm:w-auto">
-                      <div className="w-12 h-12 bg-primary/10 text-primary rounded-xl flex items-center justify-center shrink-0">
+                    <div className="flex items-center gap-3.5 min-w-0">
+                      <div className="w-12 h-12 bg-[#e8f0fe] text-[#1a73e8] border border-[#d2e3fc] rounded-xl flex items-center justify-center shrink-0 shadow-2xs">
                         <FileText size={24} />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <h3 className="font-bold text-foreground text-lg truncate w-full" title={file.name}>
+                        <h3 className="font-bold text-[#202124] text-sm sm:text-base truncate" title={file.name}>
                           {file.name}
                         </h3>
-                        <p className="text-muted-foreground text-sm">
+                        <p className="text-[#5f6368] text-xs mt-0.5">
                           {(file.size / 1024 / 1024).toFixed(2)} MB
                         </p>
                       </div>
@@ -255,16 +255,16 @@ const PdfMetadata = () => {
                     <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
                       <button
                         onClick={() => setShowPreview(!showPreview)}
-                        className="text-xs bg-muted hover:bg-muted/80 border border-border hover:border-border text-foreground px-3.5 py-2 rounded-xl transition-all font-semibold flex items-center gap-1.5 active:scale-[0.98]"
+                        className="btn-google-secondary text-xs py-1.5 px-3"
                       >
-                        {showPreview ? <EyeOff size={14} /> : <Eye size={14} />}
+                        {showPreview ? <EyeOff size={13} /> : <Eye size={13} />}
                         {showPreview ? 'Hide Preview' : 'Interactive Preview'}
                       </button>
                       <button 
                         onClick={handleClear} 
-                        className="text-xs text-red-400 bg-red-950/10 hover:bg-red-950/20 px-3.5 py-2 rounded-xl transition-all font-semibold active:scale-[0.98] border border-red-900/20"
+                        className="btn-google-danger text-xs py-1.5 px-3"
                       >
-                        <X size={14} className="inline mr-1" />
+                        <X size={13} className="inline mr-1" />
                         Remove
                       </button>
                     </div>
@@ -277,25 +277,25 @@ const PdfMetadata = () => {
                         animate={{ opacity: 1, height: 'auto' }}
                         exit={{ opacity: 0, height: 0 }}
                         transition={{ duration: 0.3 }}
-                        className="border-t border-border/80 pt-4 w-full flex flex-col gap-3 overflow-hidden"
+                        className="border-t border-[#dadce0] pt-4 w-full flex flex-col gap-3 overflow-hidden"
                       >
                         <div className="flex items-center justify-between">
-                          <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Interactive Document Preview</h4>
+                          <h4 className="text-xs font-bold uppercase tracking-wider text-[#5f6368]">Interactive Document Preview</h4>
                           <a 
                             href={previewUrl} target="_blank" rel="noreferrer"
-                            className="text-xs text-primary hover:underline flex items-center gap-1 font-semibold"
+                            className="text-xs text-[#1a73e8] hover:underline flex items-center gap-1 font-semibold"
                           >
                             Open in New Tab <ExternalLink size={12} />
                           </a>
                         </div>
-                        <div className="w-full h-[400px] md:h-[500px] border border-border rounded-xl overflow-hidden bg-muted/5 relative">
+                        <div className="w-full h-[360px] md:h-[450px] border border-[#dadce0] rounded-xl overflow-hidden bg-white relative">
                           <object 
                             data={previewUrl} 
                             type="application/pdf" 
                             className="w-full h-full"
                           >
                             <iframe src={previewUrl} className="w-full h-full border-none" title="PDF Preview">
-                              <div className="p-6 text-center text-sm text-muted-foreground">
+                              <div className="p-6 text-center text-sm text-[#5f6368]">
                                 Your browser doesn't support inline PDF previews. Please click "Open in New Tab" to view it.
                               </div>
                             </iframe>
@@ -307,75 +307,75 @@ const PdfMetadata = () => {
                 </div>
 
                 {/* Document Properties Form */}
-                <div className="space-y-4">
-                  <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground border-b border-border pb-3 mb-5">
-                    Document Properties
+                <div className="p-5 sm:p-6 rounded-2xl bg-white border border-[#dadce0] shadow-2xs space-y-4">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-[#5f6368] border-b border-[#dadce0] pb-3 mb-4">
+                    Document Properties & Metadata
                   </h3>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Title</label>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-[#5f6368] mb-1.5">Document Title</label>
                       <input
                         type="text" 
                         name="title" 
                         value={metadata.title} 
                         onChange={handleChange}
-                        className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all placeholder:text-muted-foreground/40"
+                        className="google-input w-full text-sm font-semibold"
                         placeholder="Document Title"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Author</label>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-[#5f6368] mb-1.5">Author / Creator</label>
                       <input
                         type="text" 
                         name="author" 
                         value={metadata.author} 
                         onChange={handleChange}
-                        className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all placeholder:text-muted-foreground/40"
+                        className="google-input w-full text-sm font-semibold"
                         placeholder="Author Name"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Subject</label>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-[#5f6368] mb-1.5">Subject / Topic</label>
                       <input
                         type="text" 
                         name="subject" 
                         value={metadata.subject} 
                         onChange={handleChange}
-                        className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all placeholder:text-muted-foreground/40"
-                        placeholder="Subject"
+                        className="google-input w-full text-sm font-semibold"
+                        placeholder="Subject description"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Creator</label>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-[#5f6368] mb-1.5">Creator Tool / App</label>
                       <input
                         type="text" 
                         name="creator" 
                         value={metadata.creator} 
                         onChange={handleChange}
-                        className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all placeholder:text-muted-foreground/40"
+                        className="google-input w-full text-sm font-semibold"
                         placeholder="Creator Application"
                       />
                     </div>
                     <div className="md:col-span-2">
-                      <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Keywords</label>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-[#5f6368] mb-1.5">Keywords & Tags (Comma Separated)</label>
                       <input
                         type="text" 
                         name="keywords" 
                         value={metadata.keywords} 
                         onChange={handleChange}
-                        className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all placeholder:text-muted-foreground/40"
-                        placeholder="e.g. tag1, tag2, document keyphrase (comma separated)"
+                        className="google-input w-full text-sm font-semibold"
+                        placeholder="e.g. report, annual, financial, 2026"
                       />
                     </div>
                     <div className="md:col-span-2">
-                      <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Producer (Read-Only)</label>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-[#5f6368] mb-1.5">PDF Producer (Read-Only)</label>
                       <input
                         type="text" 
                         name="producer" 
                         value={metadata.producer} 
                         readOnly
-                        className="w-full bg-muted/20 border border-border/50 rounded-xl px-4 py-3 text-sm text-muted-foreground/80 focus:outline-none cursor-not-allowed"
+                        className="google-input w-full text-sm font-semibold bg-[#f8f9fa] text-[#5f6368] cursor-not-allowed"
                         placeholder="PDF Generator Engine"
                       />
                     </div>
@@ -386,65 +386,44 @@ const PdfMetadata = () => {
           </AnimatePresence>
         </motion.div>
 
-        {/* Sidebar layouts should use the standard width classes */}
-        <div className="w-full lg:w-[350px] xl:w-[400px] shrink-0 space-y-6">
-          <div className={`bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6 transition-all duration-300 ${!file ? 'opacity-50 pointer-events-none grayscale-[0.5]' : ''}`}>
-            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2 border-b border-border pb-3 mb-5">
-              <Info size={16} /> Metadata Information
+        {/* Sidebar */}
+        <div className="w-full lg:w-[360px] xl:w-[400px] shrink-0 space-y-6">
+          <div className="tool-sidebar p-5 sm:p-6 space-y-5">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#5f6368] border-b border-[#dadce0] pb-3 flex items-center gap-2">
+              <Info size={15} className="text-[#1a73e8]" /> Metadata Summary
             </h3>
             
-            <div className="space-y-4 text-sm text-muted-foreground bg-muted/10 p-4 rounded-xl border border-border/30">
-              <div className="flex items-start gap-3">
-                <CheckCircle2 className="text-emerald-500 mt-0.5 shrink-0" size={16} />
+            <div className="space-y-3 text-xs text-[#5f6368]">
+              <div className="flex items-start gap-2.5">
+                <CheckCircle2 size={15} className="text-[#34a853] mt-0.5 shrink-0" />
                 <p>Edits internal metadata properties embedded in the PDF.</p>
               </div>
-              <div className="flex items-start gap-3">
-                <CheckCircle2 className="text-emerald-500 mt-0.5 shrink-0" size={16} />
-                <p>Helps with search indexing, search engines, and folder sorting.</p>
+              <div className="flex items-start gap-2.5">
+                <CheckCircle2 size={15} className="text-[#34a853] mt-0.5 shrink-0" />
+                <p>Improves search indexing, SEO metadata, and folder organization.</p>
               </div>
-              <div className="flex items-start gap-3">
-                <CheckCircle2 className="text-emerald-500 mt-0.5 shrink-0" size={16} />
-                <p>Original file is securely wiped after modification.</p>
+              <div className="flex items-start gap-2.5">
+                <CheckCircle2 size={15} className="text-[#34a853] mt-0.5 shrink-0" />
+                <p>100% private in-browser document modification.</p>
               </div>
             </div>
             
-            <div className="flex flex-col gap-3">
+            <div className="pt-3 border-t border-[#dadce0]">
               <button 
                 onClick={handleUpdate}
                 disabled={!file || isProcessing}
-                className={`w-full h-14 font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-[0_1px_2px_rgba(0,0,0,0.1),0_0_0_1px_rgba(255,255,255,0.1)_inset] disabled:opacity-50 disabled:hover:shadow-none active:scale-[0.98] overflow-hidden ${
-                  isProcessing
-                    ? 'bg-primary/70 text-primary-foreground cursor-not-allowed'
-                    : 'bg-primary hover:bg-primary/90 text-primary-foreground hover:shadow-[0_4px_12px_rgba(var(--primary),0.3)]'
-                }`}
+                className="w-full btn-google-primary text-sm py-3 shadow-sm justify-center disabled:opacity-50"
               >
-                <AnimatePresence mode="popLayout" initial={false}>
-                  {isProcessing ? (
-                    <motion.div
-                      key="generating"
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20 }}
-                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                      className="flex items-center gap-2"
-                    >
-                      <Loader2 className="animate-spin" size={20} />
-                      Updating...
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key="idle"
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20 }}
-                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                      className="flex items-center gap-2"
-                    >
-                      <Settings size={20} />
-                      <span>Save Metadata</span>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                {isProcessing ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" /> Saving Metadata...
+                  </>
+                ) : (
+                  <>
+                    <Settings size={16} />
+                    <span>Save & Download PDF</span>
+                  </>
+                )}
               </button>
             </div>
           </div>

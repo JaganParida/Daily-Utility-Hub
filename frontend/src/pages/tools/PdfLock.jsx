@@ -192,246 +192,219 @@ const PdfLock = () => {
                 transition={{ duration: 0.3 }}
                 className="flex flex-col min-h-0 w-full space-y-6"
               >
-                <div className="bg-card border border-border/80 rounded-2xl shadow-sm p-6 flex flex-col gap-4 shrink-0 min-w-0">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-4 min-w-0 w-full sm:w-auto">
-                  <div className="w-12 h-12 bg-emerald-500/10 text-emerald-500 rounded-xl flex items-center justify-center shrink-0">
-                    <FileText size={24} />
+                {/* File summary & preview toggle card */}
+                <div className="p-4 sm:p-5 rounded-2xl bg-[#f8f9fa] border border-[#dadce0] flex flex-col gap-4">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div className="flex items-center gap-3.5 min-w-0">
+                      <div className="w-12 h-12 bg-[#e6f4ea] text-[#137333] border border-[#ceead6] rounded-xl flex items-center justify-center shrink-0 shadow-2xs">
+                        <FileText size={24} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="font-bold text-[#202124] text-sm sm:text-base truncate" title={file.name}>{file.name}</h3>
+                        <p className="text-[#5f6368] text-xs mt-0.5">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
+                      <button
+                        onClick={() => setShowPreview(!showPreview)}
+                        className="btn-google-secondary text-xs py-1.5 px-3"
+                      >
+                        <Eye size={13} />
+                        {showPreview ? 'Hide Preview' : 'Show Preview'}
+                      </button>
+                      <button onClick={handleClear} className="btn-google-danger text-xs py-1.5 px-3">
+                        Change File
+                      </button>
+                    </div>
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <h3 className="font-bold text-foreground text-lg truncate w-full" title={file.name}>{file.name}</h3>
-                    <p className="text-muted-foreground text-sm">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
-                  <button
-                    onClick={() => setShowPreview(!showPreview)}
-                    className="text-xs bg-muted hover:bg-muted/80 text-foreground px-3 py-1.5 rounded-lg transition-colors font-bold flex items-center gap-1.5"
-                  >
-                    <Eye size={14} />
-                    {showPreview ? 'Hide Preview' : 'Show Preview'}
-                  </button>
-                  <button onClick={handleClear} className="text-xs text-red-500 hover:bg-red-500/10 px-3 py-1.5 rounded-lg transition-colors font-semibold">
-                    Change File
-                  </button>
-                </div>
-              </div>
 
-              {showPreview && previewUrl && (
-                <div className="border-t border-border pt-4 w-full flex flex-col gap-3">
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Interactive Document Preview</h4>
-                    <a 
-                      href={previewUrl} target="_blank" rel="noreferrer"
-                      className="text-xs text-primary hover:underline flex items-center gap-1 font-semibold"
-                    >
-                      Open in New Tab <ExternalLink size={12} />
-                    </a>
-                  </div>
-                  <div className="w-full h-[400px] md:h-[500px] border border-border rounded-xl overflow-hidden bg-muted/5 relative">
-                    <object 
-                      data={previewUrl} 
-                      type="application/pdf" 
-                      className="w-full h-full"
-                    >
-                      <iframe src={previewUrl} className="w-full h-full border-none" title="PDF Preview">
-                        <div className="p-6 text-center text-sm text-muted-foreground">
-                          Your browser doesn't support inline PDF previews. Please click "Open in New Tab" to view it.
-                        </div>
-                      </iframe>
-                    </object>
-                  </div>
+                  {showPreview && previewUrl && (
+                    <div className="border-t border-[#dadce0] pt-4 w-full flex flex-col gap-3">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-[#5f6368]">Interactive Document Preview</h4>
+                        <a 
+                          href={previewUrl} target="_blank" rel="noreferrer"
+                          className="text-xs text-[#1a73e8] hover:underline flex items-center gap-1 font-semibold"
+                        >
+                          Open in New Tab <ExternalLink size={12} />
+                        </a>
+                      </div>
+                      <div className="w-full h-[360px] md:h-[450px] border border-[#dadce0] rounded-xl overflow-hidden bg-white relative">
+                        <object 
+                          data={previewUrl} 
+                          type="application/pdf" 
+                          className="w-full h-full"
+                        >
+                          <iframe src={previewUrl} className="w-full h-full border-none" title="PDF Preview">
+                            <div className="p-6 text-center text-sm text-[#5f6368]">
+                              Your browser doesn't support inline PDF previews. Please click "Open in New Tab" to view it.
+                            </div>
+                          </iframe>
+                        </object>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
 
-            <div className="bg-card border border-border/80 p-6 rounded-2xl shadow-sm space-y-6 overflow-y-auto custom-scrollbar flex-1 min-h-[350px]">
-                
-                {/* Password Fields */}
-                <div className="grid md:grid-cols-2 gap-6">
-                   
-                   {/* Password */}
-                   <div className="space-y-2">
-                      <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">Set Password</label>
+                {/* Password Configuration */}
+                <div className="p-5 sm:p-6 rounded-2xl bg-white border border-[#dadce0] shadow-2xs space-y-6">
+                  <div className="grid md:grid-cols-2 gap-5">
+                    {/* Password */}
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold uppercase tracking-wider text-[#5f6368] block">Set PDF Password</label>
                       <div className="relative">
-                         <input
-                           type={showPassword ? 'text' : 'password'}
-                           value={password}
-                           onChange={(e) => setPassword(e.target.value)}
-                           placeholder="Enter a strong password"
-                           className="w-full bg-background border border-border rounded-xl pl-4 pr-10 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
-                         />
-                         <button 
-                           onClick={() => setShowPassword(!showPassword)}
-                           className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                         >
-                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                         </button>
+                        <input
+                          type={showPassword ? 'text' : 'password'}
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          placeholder="Enter a strong password"
+                          className="google-input w-full pr-10 text-sm font-semibold"
+                        />
+                        <button 
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-[#5f6368] hover:text-[#202124]"
+                        >
+                          {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                        </button>
                       </div>
                       
                       {/* Strength Meter */}
                       {password && (
-                        <div className="space-y-1.5 pt-1">
-                           <div className="flex justify-between items-center text-xs font-bold">
-                              <span className="text-muted-foreground">Strength:</span>
-                              <span className={strength.score <= 2 ? 'text-red-500' : strength.score <= 4 ? 'text-yellow-500' : 'text-emerald-500'}>
-                                 {strength.label}
-                              </span>
-                           </div>
-                           <div className="h-1 w-full bg-muted rounded-full overflow-hidden flex gap-0.5">
-                              {Array.from({ length: 5 }).map((_, i) => (
-                                 <div 
-                                   key={i} 
-                                   className={`h-full flex-1 rounded-full transition-colors ${i < strength.score ? strength.color : 'bg-muted/50'}`} 
-                                 />
-                              ))}
-                           </div>
+                        <div className="space-y-1 pt-1">
+                          <div className="flex justify-between items-center text-xs font-bold">
+                            <span className="text-[#5f6368]">Strength:</span>
+                            <span className={strength.score <= 2 ? 'text-[#d93025]' : strength.score <= 4 ? 'text-[#f29900]' : 'text-[#137333]'}>
+                              {strength.label}
+                            </span>
+                          </div>
+                          <div className="h-1.5 w-full bg-[#f1f3f4] rounded-full overflow-hidden flex gap-1">
+                            {Array.from({ length: 5 }).map((_, i) => (
+                              <div 
+                                key={i} 
+                                className={`h-full flex-1 rounded-full transition-colors ${i < strength.score ? strength.color : 'bg-[#e8eaed]'}`} 
+                              />
+                            ))}
+                          </div>
                         </div>
                       )}
-                   </div>
+                    </div>
 
-                   {/* Confirm Password */}
-                   <div className="space-y-2">
-                      <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">Confirm Password</label>
+                    {/* Confirm Password */}
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold uppercase tracking-wider text-[#5f6368] block">Confirm Password</label>
                       <div className="relative">
-                         <input
-                           type={showPassword ? 'text' : 'password'}
-                           value={confirmPassword}
-                           onChange={(e) => setConfirmPassword(e.target.value)}
-                           placeholder="Re-enter password"
-                           className={`w-full bg-background border rounded-xl pl-4 pr-10 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 ${confirmPassword && password !== confirmPassword ? 'border-red-500 focus:ring-red-500/50' : 'border-border focus:ring-emerald-500/50'}`}
-                         />
+                        <input
+                          type={showPassword ? 'text' : 'password'}
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          placeholder="Re-enter password"
+                          className={`google-input w-full pr-10 text-sm font-semibold ${confirmPassword && password !== confirmPassword ? '!border-[#d93025]' : ''}`}
+                        />
                       </div>
                       {confirmPassword && password !== confirmPassword && (
-                         <p className="text-xs text-red-500 font-bold flex items-center gap-1">
-                            <ShieldAlert size={12}/> Passwords do not match
-                         </p>
+                        <p className="text-xs text-[#d93025] font-bold flex items-center gap-1">
+                          <ShieldAlert size={12}/> Passwords do not match
+                        </p>
                       )}
                       {confirmPassword && password === confirmPassword && (
-                         <p className="text-xs text-emerald-500 font-bold flex items-center gap-1">
-                            <ShieldCheck size={12}/> Passwords match
-                         </p>
+                        <p className="text-xs text-[#137333] font-bold flex items-center gap-1">
+                          <ShieldCheck size={12}/> Passwords match
+                        </p>
                       )}
-                   </div>
+                    </div>
+                  </div>
 
+                  {/* Permissions / Restrictions Settings */}
+                  <div className="pt-5 border-t border-[#dadce0] space-y-3">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-[#5f6368]">Advanced Permissions & Restrictions</h3>
+                    <div className="grid sm:grid-cols-3 gap-3">
+                      <label className="flex items-start gap-2.5 cursor-pointer p-3.5 bg-[#f8f9fa] border border-[#dadce0] hover:bg-[#f1f3f4] rounded-xl transition-colors">
+                        <input 
+                          type="checkbox" 
+                          checked={restrictPrinting}
+                          onChange={(e) => setRestrictPrinting(e.target.checked)}
+                          className="w-4 h-4 mt-0.5 rounded text-[#1a73e8] focus:ring-[#1a73e8]/30 accent-[#1a73e8]" 
+                        />
+                        <div>
+                          <p className="text-xs font-bold text-[#202124]">Restrict Printing</p>
+                          <p className="text-[11px] text-[#5f6368] mt-0.5">Disallows printing the document</p>
+                        </div>
+                      </label>
+
+                      <label className="flex items-start gap-2.5 cursor-pointer p-3.5 bg-[#f8f9fa] border border-[#dadce0] hover:bg-[#f1f3f4] rounded-xl transition-colors">
+                        <input 
+                          type="checkbox" 
+                          checked={restrictCopying}
+                          onChange={(e) => setRestrictCopying(e.target.checked)}
+                          className="w-4 h-4 mt-0.5 rounded text-[#1a73e8] focus:ring-[#1a73e8]/30 accent-[#1a73e8]" 
+                        />
+                        <div>
+                          <p className="text-xs font-bold text-[#202124]">Restrict Copying</p>
+                          <p className="text-[11px] text-[#5f6368] mt-0.5">Disallows copying text & graphics</p>
+                        </div>
+                      </label>
+
+                      <label className="flex items-start gap-2.5 cursor-pointer p-3.5 bg-[#f8f9fa] border border-[#dadce0] hover:bg-[#f1f3f4] rounded-xl transition-colors">
+                        <input 
+                          type="checkbox" 
+                          checked={restrictModifying}
+                          onChange={(e) => setRestrictModifying(e.target.checked)}
+                          className="w-4 h-4 mt-0.5 rounded text-[#1a73e8] focus:ring-[#1a73e8]/30 accent-[#1a73e8]" 
+                        />
+                        <div>
+                          <p className="text-xs font-bold text-[#202124]">Restrict Modifying</p>
+                          <p className="text-[11px] text-[#5f6368] mt-0.5">Prevents editing & form filling</p>
+                        </div>
+                      </label>
+                    </div>
+                  </div>
                 </div>
-
-                {/* Permissions / Restrictions Settings */}
-                <div className="pt-6 border-t border-border space-y-4">
-                   <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Advanced Protection Permissions</h3>
-                   <div className="space-y-3">
-                      
-                      <label className="flex items-center gap-3 cursor-pointer p-3 bg-muted/20 border border-border/50 hover:bg-muted/40 rounded-xl transition-colors">
-                         <input 
-                           type="checkbox" 
-                           checked={restrictPrinting}
-                           onChange={(e) => setRestrictPrinting(e.target.checked)}
-                           className="w-4 h-4 rounded border-border text-emerald-500 focus:ring-emerald-500/50 accent-emerald-500" 
-                         />
-                         <div>
-                            <p className="text-sm font-semibold text-foreground">Restrict Printing</p>
-                            <p className="text-xs text-muted-foreground">Disallows anyone from printing the document.</p>
-                         </div>
-                      </label>
-
-                      <label className="flex items-center gap-3 cursor-pointer p-3 bg-muted/20 border border-border/50 hover:bg-muted/40 rounded-xl transition-colors">
-                         <input 
-                           type="checkbox" 
-                           checked={restrictCopying}
-                           onChange={(e) => setRestrictCopying(e.target.checked)}
-                           className="w-4 h-4 rounded border-border text-emerald-500 focus:ring-emerald-500/50 accent-emerald-500" 
-                         />
-                         <div>
-                            <p className="text-sm font-semibold text-foreground">Restrict Content Copying</p>
-                            <p className="text-xs text-muted-foreground">Prevents highlighting and copying text or graphics.</p>
-                         </div>
-                      </label>
-
-                      <label className="flex items-center gap-3 cursor-pointer p-3 bg-muted/20 border border-border/50 hover:bg-muted/40 rounded-xl transition-colors">
-                         <input 
-                           type="checkbox" 
-                           checked={restrictModifying}
-                           onChange={(e) => setRestrictModifying(e.target.checked)}
-                           className="w-4 h-4 rounded border-border text-emerald-500 focus:ring-emerald-500/50 accent-emerald-500" 
-                         />
-                         <div>
-                            <p className="text-sm font-semibold text-foreground">Restrict Modifications</p>
-                            <p className="text-xs text-muted-foreground">Prevents editing content, form filling, or rotating pages.</p>
-                         </div>
-                      </label>
-
-                   </div>
-                </div>
-
-             </div>
               </motion.div>
             )}
           </AnimatePresence>
         </motion.div>
 
         {/* Action Panel */}
-        <div className="w-full lg:w-[350px] xl:w-[400px] shrink-0 space-y-6">
-          <div className={`bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6 transition-all duration-300 ${!file ? 'opacity-50 pointer-events-none grayscale-[0.5]' : ''}`}>
-            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground border-b border-border pb-3 mb-4">
-              <Lock size={16} className="inline mr-2" /> Encryption Info
+        <div className="w-full lg:w-[360px] xl:w-[400px] shrink-0 space-y-6">
+          <div className="tool-sidebar p-5 sm:p-6 space-y-5">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#5f6368] border-b border-[#dadce0] pb-3 flex items-center gap-2">
+              <Lock size={15} className="text-[#1a73e8]" /> Encryption Details
             </h3>
-            <div className="space-y-4 text-sm text-foreground">
-              <div className="flex items-start gap-3">
-                <CheckCircle2 className="text-emerald-500 mt-0.5 shrink-0" size={16} />
-                <p>Uses strong AES-256 bit encryption standard.</p>
+            <div className="space-y-3 text-xs text-[#5f6368]">
+              <div className="flex items-start gap-2.5">
+                <CheckCircle2 size={15} className="text-[#34a853] mt-0.5 shrink-0" />
+                <p>Standard AES-256 / 128-bit encryption standard.</p>
               </div>
-              <div className="flex items-start gap-3">
-                <CheckCircle2 className="text-emerald-500 mt-0.5 shrink-0" size={16} />
-                <p>Prevents unauthorized opening of critical sheets.</p>
+              <div className="flex items-start gap-2.5">
+                <CheckCircle2 size={15} className="text-[#34a853] mt-0.5 shrink-0" />
+                <p>Protects confidential documents with user passwords.</p>
               </div>
-              <div className="flex items-start gap-3">
-                <CheckCircle2 className="text-emerald-500 mt-0.5 shrink-0" size={16} />
-                <p>Files are permanently deleted after locking.</p>
+              <div className="flex items-start gap-2.5">
+                <CheckCircle2 size={15} className="text-[#34a853] mt-0.5 shrink-0" />
+                <p>100% private in-browser encryption.</p>
               </div>
             </div>
-          </div>
-          
-          <div className="flex flex-col gap-3">
-            <button 
-              onClick={handleLock}
-              disabled={!file || !password.trim() || password !== confirmPassword || isProcessing}
-              className={`w-full h-14 font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-[0_1px_2px_rgba(0,0,0,0.1),0_0_0_1px_rgba(255,255,255,0.1)_inset] disabled:opacity-50 disabled:hover:shadow-none active:scale-[0.98] overflow-hidden ${
-                isProcessing
-                  ? 'bg-primary/70 text-primary-foreground cursor-not-allowed'
-                  : 'bg-primary hover:bg-primary/90 text-primary-foreground hover:shadow-[0_4px_12px_rgba(var(--primary),0.3)]'
-              }`}
-            >
-              <AnimatePresence mode="popLayout" initial={false}>
+
+            <div className="pt-3 border-t border-[#dadce0]">
+              <button 
+                onClick={handleLock}
+                disabled={!file || !password.trim() || password !== confirmPassword || isProcessing}
+                className="w-full btn-google-primary text-sm py-3 shadow-sm justify-center disabled:opacity-50"
+              >
                 {isProcessing ? (
-                  <motion.div
-                    key="generating"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                    className="flex items-center gap-2"
-                  >
-                    <Loader2 className="animate-spin" size={20} />
-                    Encrypting...
-                  </motion.div>
+                  <>
+                    <Loader2 size={16} className="animate-spin" /> Encrypting PDF...
+                  </>
                 ) : (
-                  <motion.div
-                    key="idle"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                    className="flex items-center gap-2"
-                  >
-                    <Lock size={20} />
-                    Lock PDF
-                  </motion.div>
+                  <>
+                    <Lock size={16} /> Protect & Lock PDF
+                  </>
                 )}
-              </AnimatePresence>
-            </button>
+              </button>
+            </div>
           </div>
         </div>
-
       </div>
     </div>
   );

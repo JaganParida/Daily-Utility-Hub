@@ -161,41 +161,23 @@ const PdfConverter = () => {
   };
 
   return (
-    <div className="tool-page-container space-y-6">
-      {/* Top Banner pointing to PDF to Word tool */}
-      <div className="bg-gradient-to-r from-blue-900/40 via-indigo-900/30 to-slate-900/40 border border-blue-500/20 rounded-2xl p-5 backdrop-blur-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-blue-500/10 rounded-xl text-blue-400">
-            <Sparkles className="w-5 h-5" />
-          </div>
-          <div>
-            <h4 className="text-sm font-bold text-white">Looking for PDF to Word Converter?</h4>
-            <p className="text-xs text-slate-300">Convert PDF to fully editable Word (.docx) documents with OCR & layout preservation.</p>
-          </div>
-        </div>
-        <button
-          onClick={() => navigate('/tools/pdf-to-word', { state: file ? { initialFile: file } : null })}
-          className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-md shadow-blue-600/20 transition flex items-center gap-2 shrink-0"
-        >
-          <FileType className="w-4 h-4" /> Go to PDF to Word Tool
-        </button>
-      </div>
-
-      <div className="flex items-start gap-4 shrink-0">
-        <div className="p-2 bg-primary/10 text-primary rounded-md shadow-sm">
-          <ImageIcon size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">PDF to Image Converter</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">Convert PDF pages into high-resolution PNG, JPG, or WEBP images instantly.</p>
-        </div>
-      </div>
+    <div className="tool-page-container">
+      <ToolHeader
+        title="PDF to Image Converter"
+        description="Convert PDF document pages into high-resolution PNG, JPG, or WEBP images with custom scaling."
+        category="PDF Tools"
+        categoryPath="/search"
+        icon={ImageIcon}
+        iconColor="text-[#1a73e8] bg-[#e8f0fe] border-[#d2e3fc]"
+        badge="High-DPI Vector Rasterizer"
+        extraBadge="ZIP Archive Export"
+      />
 
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         {/* Main Workspace Area */}
         <motion.div 
           layout
-          className={`flex-1 w-full bg-card border border-border p-4 md:p-6 rounded-2xl shadow-sm flex flex-col relative transition-all duration-500 ease-out ${!file ? 'min-h-[50vh]' : 'min-h-0'}`}
+          className={`flex-1 w-full tool-card p-4 md:p-6 flex flex-col relative transition-all duration-500 ease-out ${!file ? 'min-h-[50vh]' : 'min-h-0'}`}
         >
           <AnimatePresence mode="popLayout" initial={false}>
             {!file ? (
@@ -211,19 +193,17 @@ const PdfConverter = () => {
                 <div 
                   onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}
                   onClick={() => !isInspecting && fileInputRef.current?.click()}
-                  className={`flex-1 h-full w-full border-2 border-dashed rounded-2xl p-6 md:p-10 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 relative group min-h-[300px] ${
-                    isDragging ? 'border-primary bg-primary/5 scale-[0.99] shadow-inner' : 'border-border bg-card hover:border-primary/50 hover:bg-muted/20'
-                  }`}
+                  className="flex-1 h-full w-full border-2 border-dashed border-[#c2d7fb] hover:border-[#1a73e8] rounded-2xl p-8 md:p-12 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 relative group min-h-[320px] bg-white hover:bg-[#f8fbff]"
                 >
                   <input type="file" ref={fileInputRef} onChange={handleFileSelect} className="hidden" accept=".pdf,application/pdf" />
-                  <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center text-primary mb-4 shadow-sm transition-transform duration-300 group-hover:scale-110 pointer-events-none">
+                  <div className="w-16 h-16 bg-[#e8f0fe] border border-[#d2e3fc] rounded-2xl flex items-center justify-center text-[#1a73e8] mb-4 shadow-2xs transition-transform duration-300 group-hover:scale-110 pointer-events-none">
                     {isInspecting ? <Loader2 size={32} className="animate-spin" /> : <UploadCloud size={32} />}
                   </div>
-                  <h3 className="text-lg font-bold text-foreground mb-2 pointer-events-none text-center">
-                    {isInspecting ? 'Analyzing Document...' : 'Upload PDF to Convert'}
+                  <h3 className="text-lg font-bold text-[#202124] mb-2 pointer-events-none text-center">
+                    {isInspecting ? 'Analyzing Document...' : 'Upload PDF to Convert to Images'}
                   </h3>
-                  <p className="text-sm text-muted-foreground text-center pointer-events-none max-w-sm leading-relaxed">
-                    {isInspecting ? 'Inspecting page count and structure.' : <span>Drag & drop a PDF file here, or <span className="text-primary font-semibold hover:underline">browse files</span>. Processing is fully secure.</span>}
+                  <p className="text-xs sm:text-sm text-[#5f6368] text-center pointer-events-none max-w-sm leading-relaxed">
+                    {isInspecting ? 'Inspecting page count and structure.' : <span>Drag & drop a PDF file here, or <span className="text-[#1a73e8] font-bold hover:underline">browse files</span>. Processing is fully secure.</span>}
                   </p>
                 </div>
               </motion.div>
@@ -239,67 +219,54 @@ const PdfConverter = () => {
               >
                 {/* Target format selection */}
                 <div>
-                  <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4">Select Target Image Format</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <label 
-                      onClick={() => setTargetFormat('png')}
-                      className={`border rounded-xl p-4 flex flex-col items-center gap-3 cursor-pointer transition-all ${
-                        targetFormat === 'png' ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-border bg-muted/10 hover:bg-muted/30'
-                      }`}
-                    >
-                      <FileImage className={targetFormat === 'png' ? 'text-primary' : 'text-muted-foreground'} size={28} />
-                      <div className="text-center">
-                        <p className="font-bold text-foreground text-sm">PNG Images</p>
-                        <p className="text-[10px] text-muted-foreground mt-0.5">High-quality lossless images</p>
-                      </div>
-                    </label>
-
-                    <label 
-                      onClick={() => setTargetFormat('jpg')}
-                      className={`border rounded-xl p-4 flex flex-col items-center gap-3 cursor-pointer transition-all ${
-                        targetFormat === 'jpg' ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-border bg-muted/10 hover:bg-muted/30'
-                      }`}
-                    >
-                      <FileImage className={targetFormat === 'jpg' ? 'text-primary' : 'text-muted-foreground'} size={28} />
-                      <div className="text-center">
-                        <p className="font-bold text-foreground text-sm">JPG Images</p>
-                        <p className="text-[10px] text-muted-foreground mt-0.5">Optimized compressed page images</p>
-                      </div>
-                    </label>
-
-                    <label 
-                      onClick={() => setTargetFormat('webp')}
-                      className={`border rounded-xl p-4 flex flex-col items-center gap-3 cursor-pointer transition-all ${
-                        targetFormat === 'webp' ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-border bg-muted/10 hover:bg-muted/30'
-                      }`}
-                    >
-                      <FileImage className={targetFormat === 'webp' ? 'text-primary' : 'text-muted-foreground'} size={28} />
-                      <div className="text-center">
-                        <p className="font-bold text-foreground text-sm">WEBP Images</p>
-                        <p className="text-[10px] text-muted-foreground mt-0.5">Modern high compression format</p>
-                      </div>
-                    </label>
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-[#5f6368] mb-3">Target Image Format</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    {[
+                      { id: 'png', title: 'PNG Images', desc: 'Lossless crisp format with transparency support' },
+                      { id: 'jpg', title: 'JPG Images', desc: 'Standard compressed format for smaller sizes' },
+                      { id: 'webp', title: 'WEBP Images', desc: 'Modern high-efficiency web image compression' }
+                    ].map(fmt => (
+                      <button
+                        key={fmt.id}
+                        type="button"
+                        onClick={() => setTargetFormat(fmt.id)}
+                        className={`p-4 rounded-xl border text-left transition-all cursor-pointer ${
+                          targetFormat === fmt.id
+                            ? 'border-[#1a73e8] bg-[#e8f0fe] shadow-2xs'
+                            : 'border-[#dadce0] bg-white hover:bg-[#f8f9fa]'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5 mb-1.5">
+                          <FileImage className={targetFormat === fmt.id ? 'text-[#1a73e8]' : 'text-[#5f6368]'} size={20} />
+                          <p className={`text-sm font-bold ${targetFormat === fmt.id ? 'text-[#1a73e8]' : 'text-[#202124]'}`}>{fmt.title}</p>
+                        </div>
+                        <p className="text-xs text-[#5f6368] leading-relaxed">{fmt.desc}</p>
+                      </button>
+                    ))}
                   </div>
                 </div>
 
                 {/* Quality adjustment for images */}
-                <div className="border-t border-border pt-6">
-                  <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4">Rendering Scale (Image Quality)</h3>
-                  <div className="flex flex-wrap gap-3">
+                <div className="border-t border-[#dadce0] pt-5">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-[#5f6368] mb-3">Rendering Quality & Resolution</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     {[
-                      { label: 'Standard (1x)', val: 1.0, desc: 'Web preview' },
-                      { label: 'Medium (1.5x)', val: 1.5, desc: 'Balanced detail' },
-                      { label: 'Ultra High (2.5x)', val: 2.5, desc: 'Print quality' }
+                      { label: 'Standard (1.0x)', val: 1.0, desc: 'Web & screen viewing (72 DPI)' },
+                      { label: 'High Resolution (1.5x)', val: 1.5, desc: 'Sharp text & illustrations (150 DPI)' },
+                      { label: 'Ultra Retina (2.5x)', val: 2.5, desc: 'Print & archive fidelity (300 DPI)' }
                     ].map(opt => (
                       <button
                         key={opt.val}
+                        type="button"
                         onClick={() => setImgQuality(opt.val)}
-                        className={`flex-1 border rounded-xl p-3 text-left transition-all ${
-                          imgQuality === opt.val ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-border bg-muted/10 hover:bg-muted/35'
+                        className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer ${
+                          imgQuality === opt.val
+                            ? 'border-[#1a73e8] bg-[#e8f0fe] shadow-2xs'
+                            : 'border-[#dadce0] bg-white hover:bg-[#f8f9fa]'
                         }`}
                       >
-                        <p className="font-bold text-xs text-foreground">{opt.label}</p>
-                        <p className="text-[10px] text-muted-foreground mt-0.5">{opt.desc}</p>
+                        <p className={`text-xs font-bold ${imgQuality === opt.val ? 'text-[#1a73e8]' : 'text-[#202124]'}`}>{opt.label}</p>
+                        <p className="text-[11px] text-[#5f6368] mt-0.5">{opt.desc}</p>
                       </button>
                     ))}
                   </div>
@@ -307,14 +274,14 @@ const PdfConverter = () => {
 
                 {/* Active processing progress bar */}
                 {isProcessing && (
-                  <div className="border-t border-border pt-6 space-y-2">
-                    <div className="flex justify-between items-center text-xs font-bold text-muted-foreground">
+                  <div className="border-t border-[#dadce0] pt-5 space-y-2">
+                    <div className="flex justify-between items-center text-xs font-bold text-[#1a73e8]">
                       <span>Converting PDF pages...</span>
                       <span>{progress}%</span>
                     </div>
-                    <div className="w-full bg-muted rounded-full h-2.5 overflow-hidden">
+                    <div className="w-full bg-[#e8eaed] rounded-full h-2.5 overflow-hidden">
                       <div 
-                        className="bg-primary h-2.5 rounded-full transition-all duration-300"
+                        className="bg-[#1a73e8] h-2.5 rounded-full transition-all duration-300"
                         style={{ width: `${progress}%` }}
                       />
                     </div>
@@ -326,35 +293,61 @@ const PdfConverter = () => {
         </motion.div>
 
         {/* Info / Controls Sidebar */}
-        {file && (
-          <div className="w-full lg:w-80 bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6">
-            <div className="flex items-center justify-between border-b border-border pb-4">
-              <h3 className="font-bold text-foreground text-sm">Loaded Document</h3>
-              <button onClick={handleClear} className="text-muted-foreground hover:text-foreground text-xs flex items-center gap-1">
-                <X size={14} /> Clear
-              </button>
+        <div className="w-full lg:w-[360px] xl:w-[400px] shrink-0 space-y-6">
+          <div className="tool-sidebar p-5 sm:p-6 space-y-5">
+            <div className="flex items-center justify-between border-b border-[#dadce0] pb-3">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-[#5f6368] flex items-center gap-2">
+                <FileText size={15} className="text-[#1a73e8]" /> Document Summary
+              </h3>
+              {file && (
+                <button onClick={handleClear} className="btn-google-danger text-xs py-1 px-2.5">
+                  <X size={13} /> Change
+                </button>
+              )}
             </div>
 
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <FileText className="text-primary" size={24} />
-                <div className="truncate">
-                  <p className="text-sm font-bold text-foreground truncate">{file.name}</p>
-                  <p className="text-xs text-muted-foreground">{totalPages} pages • {(file.size / (1024 * 1024)).toFixed(2)} MB</p>
+            {file ? (
+              <div className="space-y-4">
+                <div className="p-3.5 rounded-xl bg-[#f8f9fa] border border-[#dadce0] flex items-center gap-3">
+                  <div className="p-2 bg-[#e8f0fe] rounded-lg text-[#1a73e8] shrink-0">
+                    <FileText size={20} />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs sm:text-sm font-bold text-[#202124] truncate" title={file.name}>{file.name}</p>
+                    <p className="text-xs text-[#5f6368] mt-0.5">{totalPages} pages • {(file.size / (1024 * 1024)).toFixed(2)} MB</p>
+                  </div>
+                </div>
+
+                <div className="space-y-2 text-xs text-[#5f6368]">
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 size={15} className="text-[#34a853] shrink-0 mt-0.5" />
+                    <p>Converts every page into an individual <span className="font-bold text-[#202124]">{targetFormat.toUpperCase()}</span> image.</p>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 size={15} className="text-[#34a853] shrink-0 mt-0.5" />
+                    <p>Packaged into a single clean ZIP download.</p>
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleConvert}
+                  disabled={isProcessing}
+                  className="w-full btn-google-primary text-sm py-3 shadow-sm justify-center disabled:opacity-50"
+                >
+                  {isProcessing ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
+                  Convert to {targetFormat.toUpperCase()} & Download ZIP
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-2 text-xs text-[#5f6368]">
+                <p>Upload a PDF document to render its pages to high-resolution PNG, JPG, or WEBP images.</p>
+                <div className="p-3 rounded-xl bg-[#f8f9fa] border border-[#dadce0] text-[#5f6368] text-xs">
+                  ⚡ 100% Client-side. High-speed local Canvas rasterization.
                 </div>
               </div>
-            </div>
-
-            <button
-              onClick={handleConvert}
-              disabled={isProcessing}
-              className="w-full py-3 px-4 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl shadow-md transition flex items-center justify-center gap-2 disabled:opacity-50"
-            >
-              {isProcessing ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
-              Convert & Download ZIP
-            </button>
+            )}
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

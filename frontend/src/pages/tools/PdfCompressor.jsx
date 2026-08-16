@@ -304,33 +304,35 @@ const PdfCompressor = () => {
                 className="flex flex-col min-h-0 w-full space-y-6"
               >
                 <div>
-                  <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4">Select Compression Level</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-[#5f6368] mb-3">Select Compression Level</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                     {COMPRESSION_LEVELS.map(level => (
                       <label 
                         key={level.id}
                         onClick={() => setCompressionLevel(level.id)}
-                        className={`relative border rounded-xl p-4 flex flex-col gap-2 cursor-pointer transition-all ${
-                          compressionLevel === level.id ? 'border-primary bg-primary/5 ring-1 ring-primary shadow-sm' : 'border-border bg-muted/10 hover:bg-muted/30'
+                        className={`relative border rounded-xl p-4 flex flex-col gap-1.5 cursor-pointer transition-all ${
+                          compressionLevel === level.id 
+                            ? 'border-[#1a73e8] bg-[#e8f0fe] ring-1 ring-[#1a73e8] shadow-2xs' 
+                            : 'border-[#dadce0] bg-white hover:bg-[#f8f9fa]'
                         }`}
                       >
                         {level.badge && (
-                          <div className="absolute -top-2.5 right-3 bg-primary text-primary-foreground text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full shadow-sm">
+                          <div className="absolute -top-2.5 right-2.5 bg-[#1a73e8] text-white text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full shadow-2xs">
                             {level.badge}
                           </div>
                         )}
                         <div className="flex items-center justify-between">
-                          <p className="font-bold text-foreground text-sm">{level.label}</p>
+                          <p className={`font-bold text-xs sm:text-sm ${compressionLevel === level.id ? 'text-[#1a73e8]' : 'text-[#202124]'}`}>{level.label}</p>
                           <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors ${
-                            compressionLevel === level.id ? 'border-primary' : 'border-muted-foreground/30'
+                            compressionLevel === level.id ? 'border-[#1a73e8]' : 'border-[#dadce0]'
                           }`}>
-                            {compressionLevel === level.id && <div className="w-2 h-2 rounded-full bg-primary" />}
+                            {compressionLevel === level.id && <div className="w-2 h-2 rounded-full bg-[#1a73e8]" />}
                           </div>
                         </div>
-                        <p className="text-xs text-muted-foreground">{level.desc}</p>
+                        <p className="text-[11px] text-[#5f6368]">{level.desc}</p>
                         
                         {level.id === 'manual' && compressionLevel === 'manual' && (
-                          <div className="mt-2" onClick={(e) => e.stopPropagation()}>
+                          <div className="mt-2 pt-2 border-t border-[#dadce0]" onClick={(e) => e.stopPropagation()}>
                             <div className="flex items-center gap-2">
                               <input 
                                 type="text" 
@@ -345,13 +347,13 @@ const PdfCompressor = () => {
                                     setTargetSizeMb(cleaned);
                                   }
                                 }}
-                                className="w-full bg-background border border-border text-foreground text-sm rounded-lg px-2 py-1.5 focus:outline-none focus:border-primary"
+                                className="google-input w-full text-xs font-semibold py-1.5 px-2"
                                 placeholder="Enter size"
                               />
                               <select 
                                 value={targetUnit}
                                 onChange={(e) => setTargetUnit(e.target.value)}
-                                className="bg-background border border-border text-foreground text-xs font-bold rounded-lg px-2 py-1.5 focus:outline-none focus:border-primary shrink-0 cursor-pointer"
+                                className="google-select text-xs font-bold py-1.5 px-2 shrink-0 cursor-pointer"
                               >
                                 <option value="MB">MB</option>
                                 <option value="KB">KB</option>
@@ -365,14 +367,14 @@ const PdfCompressor = () => {
                 </div>
 
                 {isProcessing && (
-                  <div className="border-t border-border pt-6 space-y-2">
-                    <div className="flex justify-between items-center text-xs font-bold text-muted-foreground">
-                      <span>Compressing pages...</span>
-                      <span>{progress}%</span>
+                  <div className="border-t border-[#dadce0] pt-5 space-y-2">
+                    <div className="flex justify-between items-center text-xs font-bold text-[#5f6368]">
+                      <span>Compressing document pages...</span>
+                      <span className="text-[#1a73e8]">{progress}%</span>
                     </div>
-                    <div className="w-full bg-muted rounded-full h-2.5 overflow-hidden">
+                    <div className="w-full bg-[#e8eaed] rounded-full h-2 overflow-hidden">
                       <div 
-                        className="bg-primary h-2.5 rounded-full transition-all duration-300"
+                        className="bg-[#1a73e8] h-2 rounded-full transition-all duration-300"
                         style={{ width: `${progress}%` }}
                       />
                     </div>
@@ -384,83 +386,62 @@ const PdfCompressor = () => {
         </motion.div>
 
         {/* Right Action panel */}
-        <div className="w-full lg:w-[350px] xl:w-[400px] shrink-0 space-y-6 lg:sticky lg:top-6">
-          <div className={`bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6 transition-all duration-300 ${!file ? 'opacity-50 pointer-events-none grayscale-[0.5]' : ''}`}>
-            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground border-b border-border pb-3 mb-4 flex items-center gap-2">
-              <RefreshCw size={16} /> Document Details
+        <div className="w-full lg:w-[360px] xl:w-[400px] shrink-0 space-y-6">
+          <div className="tool-sidebar p-5 sm:p-6 space-y-5">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#5f6368] border-b border-[#dadce0] pb-3 flex items-center gap-2">
+              <RefreshCw size={15} className="text-[#1a73e8]" /> Document Summary
             </h3>
-            <div className="space-y-4 text-sm text-muted-foreground bg-muted/10 p-4 rounded-xl border border-border/30">
-              <div className="flex items-start gap-3">
-                <CheckCircle2 className="text-emerald-500 mt-0.5 shrink-0" size={16} />
-                <p>Rasterizes & compresses internal images to drastically reduce size.</p>
+            
+            <div className="space-y-3 text-xs text-[#5f6368]">
+              <div className="flex items-start gap-2.5">
+                <CheckCircle2 size={15} className="text-[#34a853] mt-0.5 shrink-0" />
+                <p>Rasterizes & compresses internal images to drastically reduce file weight.</p>
               </div>
-              <div className="flex items-start gap-3">
-                <CheckCircle2 className="text-emerald-500 mt-0.5 shrink-0" size={16} />
-                <p>{totalPages} pages ready for optimization.</p>
+              <div className="flex items-start gap-2.5">
+                <CheckCircle2 size={15} className="text-[#34a853] mt-0.5 shrink-0" />
+                <p>{totalPages > 0 ? `${totalPages} pages ready for optimization.` : '100% private in-browser compression.'}</p>
               </div>
             </div>
 
             {file && (
-              <div className="border-t border-border pt-4 min-w-0">
-                <div className="flex items-center gap-3 bg-muted/20 p-3 rounded-xl min-w-0 border border-border/50">
-                  <div className="p-2 bg-primary/10 text-primary rounded-lg shrink-0">
-                    <FileText size={20} />
+              <div className="border-t border-[#dadce0] pt-3 min-w-0">
+                <div className="flex items-center gap-3 bg-[#f8f9fa] p-3 rounded-xl min-w-0 border border-[#dadce0]">
+                  <div className="p-2 bg-[#e8f0fe] text-[#1a73e8] rounded-lg shrink-0">
+                    <FileText size={18} />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="font-bold text-sm text-foreground truncate" title={file.name}>{file.name}</p>
-                    <p className="text-xs text-muted-foreground">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                    <p className="font-bold text-xs sm:text-sm text-[#202124] truncate" title={file.name}>{file.name}</p>
+                    <p className="text-[11px] text-[#5f6368]">{(file.size / 1024 / 1024).toFixed(2)} MB &bull; {totalPages} pages</p>
                   </div>
                 </div>
               </div>
             )}
 
-            <div className="flex flex-col gap-3">
+            <div className="pt-3 border-t border-[#dadce0] flex flex-col gap-2.5">
               <button 
                 onClick={handleCompress}
                 disabled={isProcessing || !file}
-                className={`w-full h-14 font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-[0_1px_2px_rgba(0,0,0,0.1),0_0_0_1px_rgba(255,255,255,0.1)_inset] disabled:opacity-50 disabled:hover:shadow-none active:scale-[0.98] overflow-hidden ${
-                  isProcessing
-                    ? 'bg-primary/70 text-primary-foreground cursor-not-allowed'
-                    : 'bg-primary hover:bg-primary/90 text-primary-foreground hover:shadow-[0_4px_12px_rgba(var(--primary),0.3)]'
-                }`}
+                className="w-full btn-google-primary text-sm py-3 shadow-sm justify-center disabled:opacity-50"
               >
-                <AnimatePresence mode="popLayout" initial={false}>
-                  {isProcessing ? (
-                    <motion.div
-                      key="generating"
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20 }}
-                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                      className="flex items-center gap-2"
-                    >
-                      <Loader2 className="animate-spin" size={20} />
-                      Compressing...
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key="idle"
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20 }}
-                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                      className="flex items-center gap-2"
-                    >
-                      <Download size={20} />
-                      <span>Compress PDF</span>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                {isProcessing ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" /> Compressing PDF...
+                  </>
+                ) : (
+                  <>
+                    <Download size={16} />
+                    <span>Compress & Download PDF</span>
+                  </>
+                )}
               </button>
               
               {file && (
                 <button
                   onClick={handleClear}
                   disabled={isProcessing}
-                  className="w-full py-3.5 bg-muted hover:bg-muted/80 text-foreground font-semibold text-sm rounded-xl transition-colors flex items-center justify-center gap-1.5 border border-border disabled:opacity-50"
+                  className="w-full btn-google-secondary text-xs py-2 justify-center"
                 >
-                  <X size={16} />
-                  Clear Document
+                  <X size={14} /> Clear Document
                 </button>
               )}
             </div>

@@ -619,7 +619,7 @@ const PdfEdit = () => {
     }
   };
 
-  const presetColors = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#000000'];
+  const presetColors = ['#ef4444', '#1a73e8', '#137333', '#f29900', '#000000'];
 
   return (
     <div className="tool-page-container">
@@ -629,7 +629,7 @@ const PdfEdit = () => {
         category="PDF Tools"
         categoryPath="/search"
         icon={FileText}
-        iconColor="text-[#ea4335] bg-[#fce8e6] border-[#fad2cf]"
+        iconColor="text-[#1a73e8] bg-[#e8f0fe] border-[#d2e3fc]"
         badge="Wasm Client Engine"
         extraBadge="Direct Text & Draw"
       />
@@ -654,9 +654,7 @@ const PdfEdit = () => {
                 <div 
                   onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}
                   onClick={() => fileInputRef.current?.click()}
-                  className={`flex-1 h-full w-full border-2 border-dashed rounded-2xl p-6 md:p-10 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 relative group min-h-[300px] ${
-                    isDragging ? 'border-[#1a73e8] bg-[#e8f0fe] scale-[0.99] shadow-inner' : 'border-[#c2d7fb] bg-white hover:border-[#1a73e8] hover:bg-[#f8fbff]'
-                  }`}
+                  className="flex-1 h-full w-full border-2 border-dashed border-[#c2d7fb] bg-white hover:border-[#1a73e8] hover:bg-[#f8fbff] rounded-2xl p-6 md:p-10 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 relative group min-h-[300px]"
                 >
                   <input type="file" ref={fileInputRef} onChange={handleFileSelect} className="hidden" accept=".pdf,application/pdf" />
                   <div className="w-16 h-16 bg-[#e8f0fe] border border-[#d2e3fc] rounded-2xl flex items-center justify-center text-[#1a73e8] mb-4 shadow-2xs transition-transform duration-300 group-hover:scale-110 pointer-events-none">
@@ -664,7 +662,7 @@ const PdfEdit = () => {
                   </div>
                   <h3 className="text-lg font-bold text-[#202124] mb-2 pointer-events-none text-center">Upload a PDF to Edit</h3>
                   <p className="text-xs sm:text-sm text-[#5f6368] text-center pointer-events-none max-w-sm leading-relaxed">
-                    Drag & drop your PDF file here, or <span className="text-[#1a73e8] font-bold hover:underline">browse files</span>. 100% private & client-side.
+                    Drag & drop your PDF file here, or <span className="text-[#1a73e8] font-bold hover:underline">browse files</span>. 100% private in-browser editing.
                   </p>
                 </div>
               </motion.div>
@@ -679,92 +677,99 @@ const PdfEdit = () => {
                 className="flex flex-col min-h-0 w-full space-y-4"
               >
             
-              <div className="bg-card border border-border rounded-xl p-3 flex flex-wrap items-center justify-between gap-4 shadow-sm shrink-0 sticky top-0 z-40 backdrop-blur-md bg-card/85">
+              <div className="bg-white border border-[#dadce0] rounded-2xl p-2.5 sm:p-3 flex flex-wrap items-center justify-between gap-3 shadow-2xs shrink-0 sticky top-0 z-40">
                 
                 {/* Tool Selector */}
-                <div className="flex items-center gap-1.5 bg-muted/40 p-1 rounded-xl">
+                <div className="flex items-center gap-1 bg-[#f8f9fa] p-1 rounded-xl border border-[#dadce0]">
                   <button
+                    type="button"
                     onClick={() => setSelectedTool('select')}
                     title="Select & Move Text"
-                    className={`p-2 rounded-lg transition-colors ${selectedTool === 'select' ? 'bg-background shadow text-primary font-bold' : 'text-muted-foreground hover:text-foreground'}`}
+                    className={`p-2 rounded-lg transition-colors cursor-pointer ${selectedTool === 'select' ? 'bg-[#1a73e8] text-white shadow-2xs font-bold' : 'text-[#5f6368] hover:text-[#202124] hover:bg-[#f1f3f4]'}`}
                   >
-                    <MousePointer size={18} />
+                    <MousePointer size={16} />
                   </button>
                   <button
+                    type="button"
                     onClick={() => setSelectedTool('edit-text')}
                     title="Edit PDF Text (Click to Rewrite)"
-                    className={`p-2 rounded-lg transition-colors ${selectedTool === 'edit-text' ? 'bg-background shadow text-primary font-bold' : 'text-muted-foreground hover:text-foreground'}`}
+                    className={`p-2 rounded-lg transition-colors cursor-pointer ${selectedTool === 'edit-text' ? 'bg-[#1a73e8] text-white shadow-2xs font-bold' : 'text-[#5f6368] hover:text-[#202124] hover:bg-[#f1f3f4]'}`}
                   >
-                    <Edit3 size={18} />
+                    <Edit3 size={16} />
                   </button>
                   <button
+                    type="button"
                     onClick={() => setSelectedTool('text')}
                     title="Insert New Text"
-                    className={`p-2 rounded-lg transition-colors ${selectedTool === 'text' ? 'bg-background shadow text-primary font-bold' : 'text-muted-foreground hover:text-foreground'}`}
+                    className={`p-2 rounded-lg transition-colors cursor-pointer ${selectedTool === 'text' ? 'bg-[#1a73e8] text-white shadow-2xs font-bold' : 'text-[#5f6368] hover:text-[#202124] hover:bg-[#f1f3f4]'}`}
                   >
-                    <Type size={18} />
+                    <Type size={16} />
                   </button>
                   <button
+                    type="button"
                     onClick={() => setSelectedTool('draw')}
                     title="Draw / Signature"
-                    className={`p-2 rounded-lg transition-colors ${selectedTool === 'draw' ? 'bg-background shadow text-primary font-bold' : 'text-muted-foreground hover:text-foreground'}`}
+                    className={`p-2 rounded-lg transition-colors cursor-pointer ${selectedTool === 'draw' ? 'bg-[#1a73e8] text-white shadow-2xs font-bold' : 'text-[#5f6368] hover:text-[#202124] hover:bg-[#f1f3f4]'}`}
                   >
-                    <Paintbrush size={18} />
+                    <Paintbrush size={16} />
                   </button>
                   <button
+                    type="button"
                     onClick={() => setSelectedTool('highlight')}
                     title="Translucent Highlight"
-                    className={`p-2 rounded-lg transition-colors ${selectedTool === 'highlight' ? 'bg-background shadow text-primary font-bold' : 'text-muted-foreground hover:text-foreground'}`}
+                    className={`p-2 rounded-lg transition-colors cursor-pointer ${selectedTool === 'highlight' ? 'bg-[#1a73e8] text-white shadow-2xs font-bold' : 'text-[#5f6368] hover:text-[#202124] hover:bg-[#f1f3f4]'}`}
                   >
-                    <Highlighter size={18} />
+                    <Highlighter size={16} />
                   </button>
                   <button
+                    type="button"
                     onClick={() => setSelectedTool('redact')}
                     title="Solid Redaction Box"
-                    className={`p-2 rounded-lg transition-colors ${selectedTool === 'redact' ? 'bg-background shadow text-primary font-bold' : 'text-muted-foreground hover:text-foreground'}`}
+                    className={`p-2 rounded-lg transition-colors cursor-pointer ${selectedTool === 'redact' ? 'bg-[#1a73e8] text-white shadow-2xs font-bold' : 'text-[#5f6368] hover:text-[#202124] hover:bg-[#f1f3f4]'}`}
                   >
-                    <Square size={18} />
+                    <Square size={16} />
                   </button>
                 </div>
 
-              {/* Toolbar Settings (Colors / Size / Sliders) */}
-              <div className="flex items-center flex-wrap gap-4">
-                
-                {/* Color Selection */}
-                {selectedTool !== 'select' && (
-                  <div className="flex items-center gap-1.5 border-r border-border pr-4">
-                    {presetColors.map(c => (
-                      <button
-                        key={c}
-                        onClick={() => setSelectedColor(c)}
-                        style={{ backgroundColor: c }}
-                        className={`w-5 h-5 rounded-full border transition-all ${selectedColor === c ? 'border-foreground scale-125 ring-2 ring-foreground/20' : 'border-transparent hover:scale-110'}`}
-                      />
-                    ))}
-                  </div>
-                )}
+                {/* Toolbar Settings (Colors / Size / Sliders) */}
+                <div className="flex items-center flex-wrap gap-3">
+                  
+                  {/* Color Selection */}
+                  {selectedTool !== 'select' && (
+                    <div className="flex items-center gap-1.5 border-r border-[#dadce0] pr-3">
+                      {presetColors.map(c => (
+                        <button
+                          key={c}
+                          type="button"
+                          onClick={() => setSelectedColor(c)}
+                          style={{ backgroundColor: c }}
+                          className={`w-5 h-5 rounded-full border transition-all cursor-pointer ${selectedColor === c ? 'border-[#1a73e8] scale-125 ring-2 ring-[#1a73e8]/30 shadow-2xs' : 'border-transparent hover:scale-110'}`}
+                        />
+                      ))}
+                    </div>
+                  )}
 
-                {/* Size / Font Size Adjusters */}
-                {selectedTool === 'draw' && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground font-semibold">Width:</span>
-                    <input 
-                      type="range" min="1" max="15" 
-                      value={selectedWidth} 
-                      onChange={(e) => setSelectedWidth(parseInt(e.target.value))}
-                      className="w-16 h-1 bg-muted rounded-lg appearance-none cursor-pointer"
-                    />
-                    <span className="text-xs font-bold w-4 text-center">{selectedWidth}</span>
-                  </div>
-                )}
+                  {/* Size / Font Size Adjusters */}
+                  {selectedTool === 'draw' && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-[#5f6368] font-semibold">Width:</span>
+                      <input 
+                        type="range" min="1" max="15" 
+                        value={selectedWidth} 
+                        onChange={(e) => setSelectedWidth(parseInt(e.target.value))}
+                        className="w-16 h-1.5 bg-[#e8eaed] rounded-lg appearance-none cursor-pointer accent-[#1a73e8]"
+                      />
+                      <span className="text-xs font-bold text-[#202124] w-4 text-center">{selectedWidth}</span>
+                    </div>
+                  )}
 
                   {selectedTool === 'text' && (
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-muted-foreground font-semibold">Size:</span>
+                      <span className="text-xs text-[#5f6368] font-semibold">Size:</span>
                       <select
                         value={selectedFontSize}
                         onChange={(e) => setSelectedFontSize(parseInt(e.target.value))}
-                        className="bg-muted/50 border border-border text-xs rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-primary"
+                        className="google-select text-xs py-1 px-2 font-semibold"
                       >
                         <option value="12">12px</option>
                         <option value="14">14px</option>
@@ -777,246 +782,252 @@ const PdfEdit = () => {
                     </div>
                   )}
 
-                {/* Zoom Control */}
-                <div className="flex items-center gap-2 border-l border-border pl-4">
-                  <button 
-                    onClick={() => setScale(s => Math.max(0.75, s - 0.25))}
-                    className="p-1 hover:bg-muted rounded-md text-muted-foreground hover:text-foreground"
-                    title="Zoom Out"
+                  {/* Zoom Control */}
+                  <div className="flex items-center gap-1.5 border-l border-[#dadce0] pl-3">
+                    <button 
+                      type="button"
+                      onClick={() => setScale(s => Math.max(0.75, s - 0.25))}
+                      className="p-1.5 hover:bg-[#f1f3f4] rounded-lg text-[#5f6368] hover:text-[#202124] cursor-pointer"
+                      title="Zoom Out"
+                    >
+                      <ZoomOut size={15} />
+                    </button>
+                    <span className="text-xs font-bold text-[#202124] w-10 text-center">{Math.round(scale * 100)}%</span>
+                    <button 
+                      type="button"
+                      onClick={() => setScale(s => Math.min(2.0, s + 0.25))}
+                      className="p-1.5 hover:bg-[#f1f3f4] rounded-lg text-[#5f6368] hover:text-[#202124] cursor-pointer"
+                      title="Zoom In"
+                    >
+                      <ZoomIn size={15} />
+                    </button>
+                  </div>
+
+                  {/* Undo Action */}
+                  <button
+                    type="button"
+                    onClick={handleUndo}
+                    disabled={actionHistory.length === 0}
+                    className="p-2 hover:bg-[#f1f3f4] rounded-xl text-[#5f6368] hover:text-[#202124] disabled:opacity-40 transition-colors cursor-pointer border border-[#dadce0]"
+                    title="Undo Last Action"
                   >
-                    <ZoomOut size={16} />
-                  </button>
-                  <span className="text-xs font-bold w-10 text-center">{Math.round(scale * 100)}%</span>
-                  <button 
-                    onClick={() => setScale(s => Math.min(2.0, s + 0.25))}
-                    className="p-1 hover:bg-muted rounded-md text-muted-foreground hover:text-foreground"
-                    title="Zoom In"
-                  >
-                    <ZoomIn size={16} />
+                    <Undo2 size={16} />
                   </button>
                 </div>
 
-                {/* Undo Action */}
-                <button
-                  onClick={handleUndo}
-                  disabled={actionHistory.length === 0}
-                  className="p-2 hover:bg-muted rounded-xl text-muted-foreground hover:text-foreground disabled:opacity-40 transition-colors"
-                  title="Undo Last Action"
-                >
-                  <Undo2 size={18} />
-                </button>
-              </div>
-
-              {/* Info Indicator */}
-              <div className="text-xs bg-muted/40 px-3 py-1.5 rounded-xl text-muted-foreground border border-border hidden sm:block">
-                {selectedTool === 'select' && 'Select / Drag text elements.'}
-                {selectedTool === 'edit-text' && 'Click on any original PDF text to edit it.'}
-                {selectedTool === 'text' && 'Click on page to type text.'}
-                {selectedTool === 'draw' && 'Draw signature / lines.'}
-                {selectedTool === 'highlight' && 'Click & drag to highlight.'}
-                {selectedTool === 'redact' && 'Click & drag to blackout info.'}
-              </div>
+                {/* Info Indicator */}
+                <div className="text-[11px] bg-[#f8f9fa] px-3 py-1.5 rounded-xl text-[#5f6368] border border-[#dadce0] hidden xl:block font-medium">
+                  {selectedTool === 'select' && 'Select / Drag text annotations'}
+                  {selectedTool === 'edit-text' && 'Click on any detected text to rewrite it'}
+                  {selectedTool === 'text' && 'Click anywhere on page to place new text'}
+                  {selectedTool === 'draw' && 'Draw lines or freehand signature'}
+                  {selectedTool === 'highlight' && 'Click & drag to highlight text region'}
+                  {selectedTool === 'redact' && 'Click & drag to blackout private info'}
+                </div>
 
               </div>
 
               {/* Document Canvas Workspace Container */}
-              <div className="w-full max-w-full bg-muted/10 border border-border rounded-xl p-4 min-h-[500px] overflow-auto flex items-center justify-center relative select-none">
+              <div className="w-full max-w-full bg-[#f8f9fa] border border-[#dadce0] rounded-2xl p-4 min-h-[480px] overflow-auto flex items-center justify-center relative select-none">
                 
                 {isRendering && (
-                  <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-50 flex items-center justify-center">
-                    <div className="text-center text-sm font-semibold flex items-center gap-2">
-                      <Loader2 className="animate-spin text-primary" size={20} />
+                  <div className="absolute inset-0 bg-white/70 backdrop-blur-xs z-50 flex items-center justify-center">
+                    <div className="text-center text-xs font-bold text-[#1a73e8] flex items-center gap-2 bg-white border border-[#dadce0] px-4 py-2 rounded-xl shadow-md">
+                      <Loader2 className="animate-spin text-[#1a73e8]" size={18} />
                       Rendering Page...
                     </div>
                   </div>
                 )}
 
-              {/* Interactive Canvas Overlay Container */}
-              <div 
-                ref={containerRef}
-                className="relative bg-card shadow-xl border border-border rounded-xl mx-auto overflow-hidden"
-                style={{ 
-                  width: `${pageDimensions.width}px`, 
-                  height: `${pageDimensions.height}px` 
-                }}
-              >
-                {/* Rendered PDF Page Canvas */}
-                <canvas 
-                  ref={canvasRef} 
-                  className="absolute inset-0 z-0 pointer-events-none" 
-                />
-                
-                {/* Mouse/Touch Interaction Overlay Board */}
+                {/* Interactive Canvas Overlay Container */}
                 <div 
-                  className="absolute inset-0 z-10"
-                  style={{ cursor: selectedTool === 'select' ? 'default' : 'crosshair' }}
-                  onMouseDown={handlePointerDown}
-                  onMouseMove={handlePointerMove}
-                  onMouseUp={handlePointerUp}
-                  onTouchStart={handlePointerDown}
-                  onTouchMove={handlePointerMove}
-                  onTouchEnd={handlePointerUp}
+                  ref={containerRef}
+                  className="relative bg-white shadow-md border border-[#dadce0] rounded-xl mx-auto overflow-hidden"
+                  style={{ 
+                    width: `${pageDimensions.width}px`, 
+                    height: `${pageDimensions.height}px` 
+                  }}
                 >
-                  {/* Drawings SVG Render Board */}
-                  <svg className="absolute inset-0 w-full h-full pointer-events-none z-10">
-                    {/* Render finalized drawings */}
-                    {(drawings[pageIdx] || []).map((draw, idx) => (
-                      <path 
-                        key={idx}
-                        d={draw.path}
-                        fill="none"
-                        stroke={draw.color}
-                        strokeWidth={draw.width}
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    ))}
-                    
-                    {/* Render active drawing line */}
-                    {currentDrawingPath && (
-                      <path 
-                        d={currentDrawingPath}
-                        fill="none"
-                        stroke={selectedColor}
-                        strokeWidth={selectedWidth}
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    )}
-
-                    {/* Render finalized shapes */}
-                    {(shapes[pageIdx] || []).map((shape, idx) => (
-                      <rect 
-                        key={idx}
-                        x={shape.x}
-                        y={shape.y}
-                        width={shape.width}
-                        height={shape.height}
-                        fill={shape.type === 'highlight' ? `${shape.color}50` : shape.color}
-                        stroke="none"
-                      />
-                    ))}
-
-                    {/* Render active shape */}
-                    {tempShape && (
-                      <rect 
-                        x={tempShape.x}
-                        y={tempShape.y}
-                        width={tempShape.width}
-                        height={tempShape.height}
-                        fill={tempShape.type === 'highlight' ? `${tempShape.color}50` : tempShape.color}
-                        stroke="none"
-                      />
-                    )}
-                  </svg>
-
-                  {/* Render editable text overlays */}
-                  {(texts[pageIdx] || []).map((textItem) => (
-                    <div
-                      key={textItem.id}
-                      style={{
-                        position: 'absolute',
-                        left: `${textItem.x}px`,
-                        top: `${textItem.y}px`,
-                        color: textItem.color,
-                        fontSize: `${textItem.fontSize * scale}px`,
-                        fontFamily: textItem.fontFamily || 'sans-serif',
-                        fontWeight: 'bold',
-                        zIndex: 20
-                      }}
-                      onMouseDown={(e) => handleTextMouseDown(e, pageIdx, textItem.id)}
-                      onTouchStart={(e) => handleTextMouseDown(e, pageIdx, textItem.id)}
-                    >
-                      {textItem.isEditing ? (
-                        <input
-                          autoFocus
-                          type="text"
-                          value={textItem.text}
-                          onChange={(e) => handleTextChange(e, pageIdx, textItem.id)}
-                          onBlur={() => handleTextBlur(pageIdx, textItem.id)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') handleTextBlur(pageIdx, textItem.id);
-                          }}
-                          className="bg-transparent border border-dashed border-blue-500 outline-none text-foreground font-bold p-0 m-0"
-                          style={{ 
-                            fontSize: `${textItem.fontSize * scale}px`, 
-                            color: textItem.color,
-                            fontFamily: textItem.fontFamily || 'sans-serif'
-                          }}
-                          onClick={(e) => e.stopPropagation()}
-                          onMouseDown={(e) => e.stopPropagation()}
+                  {/* Rendered PDF Page Canvas */}
+                  <canvas 
+                    ref={canvasRef} 
+                    className="absolute inset-0 z-0 pointer-events-none" 
+                  />
+                  
+                  {/* Mouse/Touch Interaction Overlay Board */}
+                  <div 
+                    className="absolute inset-0 z-10"
+                    style={{ cursor: selectedTool === 'select' ? 'default' : 'crosshair' }}
+                    onMouseDown={handlePointerDown}
+                    onMouseMove={handlePointerMove}
+                    onMouseUp={handlePointerUp}
+                    onTouchStart={handlePointerDown}
+                    onTouchMove={handlePointerMove}
+                    onTouchEnd={handlePointerUp}
+                  >
+                    {/* Drawings SVG Render Board */}
+                    <svg className="absolute inset-0 w-full h-full pointer-events-none z-10">
+                      {/* Render finalized drawings */}
+                      {(drawings[pageIdx] || []).map((draw, idx) => (
+                        <path 
+                          key={idx}
+                          d={draw.path}
+                          fill="none"
+                          stroke={draw.color}
+                          strokeWidth={draw.width}
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
                         />
-                      ) : (
-                        <div 
-                          className="border border-dashed border-transparent hover:border-red-500/55 hover:bg-muted/40 rounded cursor-move select-none flex items-center gap-1.5"
-                          style={{
-                            fontFamily: textItem.fontFamily || 'sans-serif'
-                          }}
-                          onDoubleClick={() => startTextEdit(pageIdx, textItem.id)}
-                        >
-                          <span>{textItem.text || 'Type...'}</span>
-                          {selectedTool === 'select' && (
-                            <button
-                              onClick={(e) => { e.stopPropagation(); deleteText(pageIdx, textItem.id); }}
-                              className="text-[10px] bg-red-500 text-white rounded-full w-3.5 h-3.5 flex items-center justify-center opacity-0 group-hover:opacity-100 hover:scale-110 ml-1 transition-all cursor-pointer font-normal"
-                              title="Delete Text"
-                            >
-                              ✕
-                            </button>
-                          )}
-                        </div>
+                      ))}
+                      
+                      {/* Render active drawing line */}
+                      {currentDrawingPath && (
+                        <path 
+                          d={currentDrawingPath}
+                          fill="none"
+                          stroke={selectedColor}
+                          strokeWidth={selectedWidth}
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
                       )}
-                    </div>
-                  ))}
 
-                  {/* Render detected text runs when 'edit-text' tool is active */}
-                  {selectedTool === 'edit-text' && (detectedTexts[pageIdx] || []).map((item, idx) => (
-                    <div
-                      key={`det_${idx}`}
-                      style={{
-                        position: 'absolute',
-                        left: `${item.x}px`,
-                        top: `${item.y}px`,
-                        width: `${item.width}px`,
-                        height: `${item.height}px`,
-                        border: '1px dashed rgba(59, 130, 246, 0.5)',
-                        backgroundColor: 'rgba(59, 130, 246, 0.05)',
-                        cursor: 'pointer',
-                        zIndex: 15
-                      }}
-                      className="hover:bg-blue-500/30 hover:border-blue-500 transition-all duration-100"
-                      onMouseDown={(e) => {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        handleEditTextClick(item);
-                      }}
-                      title="Click to edit this text"
-                    />
-                  ))}
+                      {/* Render finalized shapes */}
+                      {(shapes[pageIdx] || []).map((shape, idx) => (
+                        <rect 
+                          key={idx}
+                          x={shape.x}
+                          y={shape.y}
+                          width={shape.width}
+                          height={shape.height}
+                          fill={shape.type === 'highlight' ? `${shape.color}50` : shape.color}
+                          stroke="none"
+                        />
+                      ))}
+
+                      {/* Render active shape */}
+                      {tempShape && (
+                        <rect 
+                          x={tempShape.x}
+                          y={tempShape.y}
+                          width={tempShape.width}
+                          height={tempShape.height}
+                          fill={tempShape.type === 'highlight' ? `${tempShape.color}50` : tempShape.color}
+                          stroke="none"
+                        />
+                      )}
+                    </svg>
+
+                    {/* Render editable text overlays */}
+                    {(texts[pageIdx] || []).map((textItem) => (
+                      <div
+                        key={textItem.id}
+                        style={{
+                          position: 'absolute',
+                          left: `${textItem.x}px`,
+                          top: `${textItem.y}px`,
+                          color: textItem.color,
+                          fontSize: `${textItem.fontSize * scale}px`,
+                          fontFamily: textItem.fontFamily || 'sans-serif',
+                          fontWeight: 'bold',
+                          zIndex: 20
+                        }}
+                        onMouseDown={(e) => handleTextMouseDown(e, pageIdx, textItem.id)}
+                        onTouchStart={(e) => handleTextMouseDown(e, pageIdx, textItem.id)}
+                      >
+                        {textItem.isEditing ? (
+                          <input
+                            autoFocus
+                            type="text"
+                            value={textItem.text}
+                            onChange={(e) => handleTextChange(e, pageIdx, textItem.id)}
+                            onBlur={() => handleTextBlur(pageIdx, textItem.id)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') handleTextBlur(pageIdx, textItem.id);
+                            }}
+                            className="bg-white border border-dashed border-[#1a73e8] outline-none text-[#202124] font-bold p-0.5 m-0 rounded shadow-xs"
+                            style={{ 
+                              fontSize: `${textItem.fontSize * scale}px`, 
+                              color: textItem.color,
+                              fontFamily: textItem.fontFamily || 'sans-serif'
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                            onMouseDown={(e) => e.stopPropagation()}
+                          />
+                        ) : (
+                          <div 
+                            className="border border-dashed border-transparent hover:border-[#1a73e8] hover:bg-[#e8f0fe]/60 px-1 py-0.5 rounded cursor-move select-none flex items-center gap-1.5"
+                            style={{
+                              fontFamily: textItem.fontFamily || 'sans-serif'
+                            }}
+                            onDoubleClick={() => startTextEdit(pageIdx, textItem.id)}
+                          >
+                            <span>{textItem.text || 'Type...'}</span>
+                            {selectedTool === 'select' && (
+                              <button
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); deleteText(pageIdx, textItem.id); }}
+                                className="text-[10px] bg-[#d93025] text-white rounded-full w-3.5 h-3.5 flex items-center justify-center opacity-0 group-hover:opacity-100 hover:scale-110 ml-1 transition-all cursor-pointer font-normal"
+                                title="Delete Text"
+                              >
+                                ✕
+                              </button>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+
+                    {/* Render detected text runs when 'edit-text' tool is active */}
+                    {selectedTool === 'edit-text' && (detectedTexts[pageIdx] || []).map((item, idx) => (
+                      <div
+                        key={`det_${idx}`}
+                        style={{
+                          position: 'absolute',
+                          left: `${item.x}px`,
+                          top: `${item.y}px`,
+                          width: `${item.width}px`,
+                          height: `${item.height}px`,
+                          border: '1px dashed rgba(26, 115, 232, 0.6)',
+                          backgroundColor: 'rgba(26, 115, 232, 0.08)',
+                          cursor: 'pointer',
+                          zIndex: 15
+                        }}
+                        className="hover:bg-[#1a73e8]/20 hover:border-[#1a73e8] rounded transition-all duration-100"
+                        onMouseDown={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          handleEditTextClick(item);
+                        }}
+                        title="Click to edit this text"
+                      />
+                    ))}
+
+                  </div>
 
                 </div>
-
               </div>
-            </div>
 
               {/* Bottom Page Navigation Controls */}
-              <div className="flex items-center justify-center gap-4 bg-card border border-border p-3 rounded-xl shadow-sm shrink-0">
+              <div className="flex items-center justify-center gap-4 bg-white border border-[#dadce0] p-2.5 rounded-2xl shadow-2xs shrink-0">
                 <button
+                  type="button"
                   disabled={currentPage <= 1 || isRendering}
                   onClick={() => setCurrentPage(c => Math.max(1, c - 1))}
-                  className="p-2 hover:bg-muted rounded-xl disabled:opacity-40 transition-colors"
+                  className="btn-google-secondary p-1.5 disabled:opacity-40"
                 >
-                  <ChevronLeft size={20} />
+                  <ChevronLeft size={18} />
                 </button>
-                <span className="text-sm font-bold text-foreground">
+                <span className="text-xs font-bold text-[#202124]">
                   Page {currentPage} of {numPages}
                 </span>
                 <button
+                  type="button"
                   disabled={currentPage >= numPages || isRendering}
                   onClick={() => setCurrentPage(c => Math.min(numPages, c + 1))}
-                  className="p-2 hover:bg-muted rounded-xl disabled:opacity-40 transition-colors"
+                  className="btn-google-secondary p-1.5 disabled:opacity-40"
                 >
-                  <ChevronRight size={20} />
+                  <ChevronRight size={18} />
                 </button>
               </div>
               </motion.div>
@@ -1025,87 +1036,66 @@ const PdfEdit = () => {
         </motion.div>
 
         {/* Right Action/Compile Sidebar Panel */}
-        <div className="w-full lg:w-[350px] xl:w-[400px] shrink-0 space-y-6 lg:sticky lg:top-6">
-          <div className={`bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6 transition-all duration-300 ${!file ? 'opacity-50 pointer-events-none grayscale-[0.5]' : ''}`}>
-            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground border-b border-border pb-3 mb-4 flex items-center gap-2">
-              <Edit3 size={16} /> Edit Details
+        <div className="w-full lg:w-[360px] xl:w-[400px] shrink-0 space-y-6">
+          <div className="tool-sidebar p-5 sm:p-6 space-y-5">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#5f6368] border-b border-[#dadce0] pb-3 flex items-center gap-2">
+              <Edit3 size={15} className="text-[#1a73e8]" /> Editor Summary
             </h3>
-            <div className="space-y-4 text-sm text-muted-foreground bg-muted/10 p-4 rounded-xl border border-border/30">
-              <div className="flex items-start gap-3">
-                <CheckCircle2 className="text-emerald-500 mt-0.5 shrink-0" size={16} />
-                <p>Changes are saved inside the browser using standard vectors.</p>
+            
+            <div className="space-y-3 text-xs text-[#5f6368]">
+              <div className="flex items-start gap-2.5">
+                <CheckCircle2 size={15} className="text-[#34a853] mt-0.5 shrink-0" />
+                <p>Edits and annotations are saved inside the browser with vector accuracy.</p>
               </div>
-              <div className="flex items-start gap-3">
-                <CheckCircle2 className="text-emerald-500 mt-0.5 shrink-0" size={16} />
-                <p>Works completely client-side. Zero server upload latency.</p>
+              <div className="flex items-start gap-2.5">
+                <CheckCircle2 size={15} className="text-[#34a853] mt-0.5 shrink-0" />
+                <p>100% private in-browser editing. Zero server upload latency.</p>
               </div>
-              <div className="flex items-start gap-3">
-                <HelpCircle className="text-blue-500 mt-0.5 shrink-0" size={16} />
-                <p className="text-xs text-muted-foreground">Double click on a text annotation block to re-edit it.</p>
+              <div className="flex items-start gap-2.5">
+                <HelpCircle size={15} className="text-[#1a73e8] mt-0.5 shrink-0" />
+                <p>Double-click on any text annotation to edit its content.</p>
               </div>
             </div>
             
             {/* File info card */}
             {file && (
-              <div className="border-t border-border pt-4 min-w-0">
-                <div className="flex items-center gap-3 bg-muted/20 p-3 rounded-xl min-w-0 border border-border/50">
-                  <div className="p-2 bg-primary/10 text-primary rounded-lg shrink-0">
-                    <FileText size={20} />
+              <div className="border-t border-[#dadce0] pt-3 min-w-0">
+                <div className="flex items-center gap-3 bg-[#f8f9fa] p-3 rounded-xl min-w-0 border border-[#dadce0]">
+                  <div className="p-2 bg-[#e8f0fe] text-[#1a73e8] rounded-lg shrink-0">
+                    <FileText size={18} />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="font-bold text-sm text-foreground truncate" title={file.name}>{file.name}</p>
-                    <p className="text-xs text-muted-foreground">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                    <p className="font-bold text-xs sm:text-sm text-[#202124] truncate" title={file.name}>{file.name}</p>
+                    <p className="text-[11px] text-[#5f6368]">{(file.size / 1024 / 1024).toFixed(2)} MB &bull; {numPages} pages</p>
                   </div>
                 </div>
               </div>
             )}
             
-            <div className="flex flex-col gap-3">
+            <div className="pt-3 border-t border-[#dadce0] flex flex-col gap-2.5">
               <button 
                 onClick={handleSave}
                 disabled={isProcessing || !file}
-                className={`w-full h-14 font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-[0_1px_2px_rgba(0,0,0,0.1),0_0_0_1px_rgba(255,255,255,0.1)_inset] disabled:opacity-50 disabled:hover:shadow-none active:scale-[0.98] overflow-hidden ${
-                  isProcessing
-                    ? 'bg-primary/70 text-primary-foreground cursor-not-allowed'
-                    : 'bg-primary hover:bg-primary/90 text-primary-foreground hover:shadow-[0_4px_12px_rgba(var(--primary),0.3)]'
-                }`}
+                className="w-full btn-google-primary text-sm py-3 shadow-sm justify-center disabled:opacity-50"
               >
-                <AnimatePresence mode="popLayout" initial={false}>
-                  {isProcessing ? (
-                    <motion.div
-                      key="generating"
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20 }}
-                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                      className="flex items-center gap-2"
-                    >
-                      <Loader2 className="animate-spin" size={20} />
-                      Compiling...
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key="idle"
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20 }}
-                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                      className="flex items-center gap-2"
-                    >
-                      <Download size={20} />
-                      <span>Download Edited PDF</span>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                {isProcessing ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" /> Compiling PDF...
+                  </>
+                ) : (
+                  <>
+                    <Download size={16} />
+                    <span>Download Edited PDF</span>
+                  </>
+                )}
               </button>
               
               {file && (
                 <button
                   onClick={handleClear}
-                  className="w-full py-3.5 bg-muted hover:bg-muted/80 text-foreground font-semibold text-sm rounded-xl transition-colors flex items-center justify-center gap-1.5 border border-border"
+                  className="w-full btn-google-secondary text-xs py-2 justify-center"
                 >
-                  <X size={16} />
-                  Close Document
+                  <X size={14} /> Close Document
                 </button>
               )}
             </div>

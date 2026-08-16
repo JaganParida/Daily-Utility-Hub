@@ -41,13 +41,15 @@ const SortablePage = ({ page, index, onRemove, onDuplicate, onRotate }) => {
       style={style} 
       {...attributes} 
       {...listeners}
-      className={`relative group bg-muted/20 border-2 rounded-xl p-2 cursor-grab active:cursor-grabbing transition-colors ${isDragging ? 'border-primary shadow-2xl opacity-80' : 'border-border/50 hover:border-primary/50'}`}
+      className={`relative group bg-[#f8f9fa] border-2 rounded-xl p-2 cursor-grab active:cursor-grabbing transition-all ${
+        isDragging ? 'border-[#1a73e8] shadow-lg bg-[#e8f0fe] opacity-90 scale-105' : 'border-[#dadce0] hover:border-[#1a73e8]/60 bg-white shadow-2xs'
+      }`}
     >
-      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-foreground text-background text-xs uppercase font-bold tracking-widest px-3 py-1 rounded-full shadow-lg z-10 transition-opacity pointer-events-none">
+      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-[#202124]/90 text-white text-[10px] uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full shadow-md z-10 pointer-events-none">
         Page {index + 1}
       </div>
       
-      <div className="w-full aspect-[1/1.4] rounded-lg overflow-hidden bg-background shadow-inner border border-border/50 flex items-center justify-center relative">
+      <div className="w-full aspect-[1/1.4] rounded-lg overflow-hidden bg-white shadow-inner border border-[#dadce0] flex items-center justify-center relative">
         <img 
           src={page.thumbnailUrl} 
           alt={`Page ${index + 1}`} 
@@ -61,26 +63,26 @@ const SortablePage = ({ page, index, onRemove, onDuplicate, onRotate }) => {
         <button 
           onPointerDown={(e) => e.stopPropagation()}
           onClick={(e) => { e.stopPropagation(); onRemove(page.id); }}
-          className="p-1.5 bg-red-500/90 hover:bg-red-500 text-white rounded-md shadow-sm transition-colors"
+          className="p-1.5 bg-[#d93025] hover:bg-[#b3261e] text-white rounded-md shadow-xs transition-colors cursor-pointer"
           title="Remove Page"
         >
-          <Trash2 size={14} />
+          <Trash2 size={13} />
         </button>
         <button 
           onPointerDown={(e) => e.stopPropagation()}
           onClick={(e) => { e.stopPropagation(); onDuplicate(page.id); }}
-          className="p-1.5 bg-blue-500/90 hover:bg-blue-500 text-white rounded-md shadow-sm transition-colors"
+          className="p-1.5 bg-[#1a73e8] hover:bg-[#1557b0] text-white rounded-md shadow-xs transition-colors cursor-pointer"
           title="Duplicate Page"
         >
-          <Copy size={14} />
+          <Copy size={13} />
         </button>
         <button 
           onPointerDown={(e) => e.stopPropagation()}
           onClick={(e) => { e.stopPropagation(); onRotate(page.id); }}
-          className="p-1.5 bg-green-500/90 hover:bg-green-500 text-white rounded-md shadow-sm transition-colors"
+          className="p-1.5 bg-[#137333] hover:bg-[#0d5926] text-white rounded-md shadow-xs transition-colors cursor-pointer"
           title="Rotate Page"
         >
-          <RotateCw size={14} />
+          <RotateCw size={13} />
         </button>
       </div>
     </div>
@@ -98,72 +100,91 @@ const PdfOrganizer = () => {
     }
   }, [location.state]);
   const [file, setFile] = useState(null);
-  const [pdfData, setPdfData] = useState(null); // original array buffer
-  const [pages, setPages] = useState([]); // { id, originalIndex, rotation, thumbnailUrl }
-  
-  const [isDragging, setIsDragging] = useState(false);
+  const [pdfData, setPdfData] = useState(null);
+  const [pages, setPages] = useState([]);
   const [isProcessing, setIsProcessing] = useState(false);
-  
   const fileInputRef = useRef(null);
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
   );
 
-  const handleDragOver = (e) => { e.preventDefault(); setIsDragging(true); };
-  const handleDragLeave = (e) => { e.preventDefault(); setIsDragging(false); };
-  const handleDrop = async (e) => {
-    e.preventDefault();
-    setIsDragging(false);
-    const droppedFile = e.dataTransfer.files[0];
-    if (droppedFile?.type === 'application/pdf') {
-      await loadPdf(droppedFile);
-    } else {
-      toast.error('Only PDF files are supported.');
-    }
-  };
-
-  const handleFileSelect = async (e) => {
-    const selectedFile = e.target.files[0];
-    if (selectedFile?.type === 'application/pdf') {
-      await loadPdf(selectedFile);
-    }
-  };
-
   const loadPdf = async (selectedFile) => {
+    if (!selectedFile) return;
+    setFile(selectedFile);
+    setIsProcessing(true);
+    const toastId = toast.loading('Rendering page thumbnails...');
+
     try {
-      setIsProcessing(true);
       const arrayBuffer = await selectedFile.arrayBuffer();
       setPdfData(arrayBuffer);
-      
-      const clonedBuffer = arrayBuffer.slice(0);
-      const pdf = await pdfjsLib.getDocument({ data: clonedBuffer }).promise;
-      
-      const loadedPages = [];
-      for (let i = 1; i <= pdf.numPages; i++) {
+
+      const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer.slice(0) });
+      const pdf = await loadingTask.promise;
+      const numPages = pdf.numPages;
+
+      const renderedPages = [];
+
+      for (let i = 1; i <= numPages; i++) {
         const page = await pdf.getPage(i);
-        const viewport = page.getViewport({ scale: 0.5 }); // lower scale for thumbnail
+        const viewport = page.getViewport({ scale: 0.5 });
         const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        canvas.width = viewport.width;
+        const context = canvas.getContext('2d');
         canvas.height = viewport.height;
-        await page.render({ canvasContext: ctx, viewport }).promise;
-        
-        loadedPages.push({
+        canvas.width = viewport.width;
+
+        await page.render({ canvasContext: context, viewport }).promise;
+
+        renderedPages.push({
           id: `page-${i}-${Date.now()}`,
-          originalIndex: i - 1, // 0-indexed for pdf-lib
+          originalIndex: i - 1,
+          thumbnailUrl: canvas.toDataURL(),
           rotation: 0,
-          thumbnailUrl: canvas.toDataURL('image/jpeg', 0.8)
         });
       }
-      setPages(loadedPages);
-      setFile(selectedFile);
-    } catch (err) {
-      console.error(err);
-      toast.error('Failed to load PDF.');
+
+      setPages(renderedPages);
+      toast.success('Document pages loaded!', { id: toastId });
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to load PDF pages. Password-protected files are not supported here.', { id: toastId });
+      setFile(null);
     } finally {
       setIsProcessing(false);
+    }
+  };
+
+  const handleFileSelect = (e) => {
+    const selectedFile = e.target.files[0];
+    if (selectedFile && selectedFile.type === 'application/pdf') {
+      loadPdf(selectedFile);
+    } else {
+      toast.error('Please select a valid PDF file.');
+    }
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    const droppedFile = e.dataTransfer.files[0];
+    if (droppedFile && droppedFile.type === 'application/pdf') {
+      loadPdf(droppedFile);
+    } else {
+      toast.error('Please drop a valid PDF file.');
     }
   };
 
@@ -171,59 +192,63 @@ const PdfOrganizer = () => {
     const { active, over } = event;
     if (active.id !== over.id) {
       setPages((items) => {
-        const oldIndex = items.findIndex((i) => i.id === active.id);
-        const newIndex = items.findIndex((i) => i.id === over.id);
+        const oldIndex = items.findIndex((item) => item.id === active.id);
+        const newIndex = items.findIndex((item) => item.id === over.id);
         return arrayMove(items, oldIndex, newIndex);
       });
     }
   };
 
   const removePage = (id) => {
-    setPages(pages.filter(p => p.id !== id));
-  };
-
-  const rotatePage = (id) => {
-    setPages(pages.map(p => p.id === id ? { ...p, rotation: (p.rotation + 90) % 360 } : p));
+    setPages(pages.filter((p) => p.id !== id));
+    toast.info('Page removed');
   };
 
   const duplicatePage = (id) => {
-    const pageIndex = pages.findIndex(p => p.id === id);
-    if (pageIndex === -1) return;
-    const pageToDup = pages[pageIndex];
-    const newPage = {
-      ...pageToDup,
-      id: `page-${pageToDup.originalIndex}-${Date.now()}`
-    };
-    const newPages = [...pages];
-    newPages.splice(pageIndex + 1, 0, newPage);
-    setPages(newPages);
+    const pageIndex = pages.findIndex((p) => p.id === id);
+    if (pageIndex !== -1) {
+      const pageToDup = pages[pageIndex];
+      const newPage = {
+        ...pageToDup,
+        id: `page-${pageToDup.originalIndex}-${Date.now()}`,
+      };
+      const newPages = [...pages];
+      newPages.splice(pageIndex + 1, 0, newPage);
+      setPages(newPages);
+      toast.success('Page duplicated');
+    }
+  };
+
+  const rotatePage = (id) => {
+    setPages(
+      pages.map((p) => {
+        if (p.id === id) {
+          return { ...p, rotation: (p.rotation + 90) % 360 };
+        }
+        return p;
+      })
+    );
   };
 
   const handleExport = async () => {
-    if (!file || pages.length === 0) return;
+    if (!pdfData || pages.length === 0) return;
     setIsProcessing(true);
-    
-    try {
-      // 1. Yield for UI update
-      await new Promise(r => setTimeout(r, 100));
+    const toastId = toast.loading('Compiling organized PDF...');
 
-      const originalDoc = await PDFDocument.load(pdfData.slice(0));
+    try {
+      const srcDoc = await PDFDocument.load(pdfData);
       const newDoc = await PDFDocument.create();
 
-      // We need to copy pages. Since pages can be duplicated, we can just copy them all one by one or batch
       for (const p of pages) {
-        const [copiedPage] = await newDoc.copyPages(originalDoc, [p.originalIndex]);
-        if (p.rotation !== 0) {
-          const currentRotation = copiedPage.getRotation().angle;
-          copiedPage.setRotation(degrees(currentRotation + p.rotation));
-        }
+        const [copiedPage] = await newDoc.copyPages(srcDoc, [p.originalIndex]);
+        const currentRotation = copiedPage.getRotation().angle;
+        copiedPage.setRotation(degrees(currentRotation + p.rotation));
         newDoc.addPage(copiedPage);
       }
 
-      const pdfBytes = await newDoc.save({ useObjectStreams: false });
+      const pdfBytes = await newDoc.save();
       const blob = new Blob([pdfBytes], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
-      
       const link = document.createElement('a');
       link.href = url;
       link.download = `${file.name.replace('.pdf', '')}_organized.pdf`;
@@ -231,12 +256,12 @@ const PdfOrganizer = () => {
       link.click();
       link.remove();
       URL.revokeObjectURL(url);
-      
-      toast.success('PDF organized successfully!');
+
+      toast.success('PDF organized and saved!', { id: toastId });
       document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
       console.error(error);
-      toast.error('Failed to organize PDF.');
+      toast.error('Failed to export PDF.', { id: toastId });
     } finally {
       setIsProcessing(false);
     }
@@ -252,7 +277,7 @@ const PdfOrganizer = () => {
   return (
     <div className="tool-page-container">
       <ToolHeader
-        title="PDF Visual Organizer"
+        title="PDF Visual Page Organizer"
         description="Drag and drop to reorder, delete, duplicate, or rotate PDF pages visually."
         category="PDF Tools"
         categoryPath="/search"
@@ -267,7 +292,7 @@ const PdfOrganizer = () => {
         {/* Main Workspace Area */}
         <motion.div 
           layout
-          className={`flex-1 w-full bg-card border border-border p-4 md:p-6 rounded-2xl shadow-sm flex flex-col relative transition-all duration-500 ease-out ${!file ? 'min-h-[50vh]' : 'min-h-0'}`}
+          className={`flex-1 w-full tool-card p-4 md:p-6 flex flex-col relative transition-all duration-500 ease-out ${!file ? 'min-h-[50vh]' : 'min-h-0'}`}
         >
           <AnimatePresence mode="popLayout" initial={false}>
             {!file ? (
@@ -283,19 +308,17 @@ const PdfOrganizer = () => {
                 <div 
                   onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}
                   onClick={() => !isProcessing && fileInputRef.current?.click()}
-                  className={`flex-1 h-full w-full border-2 border-dashed rounded-2xl p-6 md:p-10 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 relative group min-h-[300px] ${
-                    isDragging ? 'border-primary bg-primary/5 scale-[0.99] shadow-inner' : 'border-border bg-card hover:border-primary/50 hover:bg-muted/20'
-                  }`}
+                  className="flex-1 h-full w-full border-2 border-dashed border-[#c2d7fb] bg-white hover:border-[#1a73e8] hover:bg-[#f8fbff] rounded-2xl p-6 md:p-10 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 relative group min-h-[300px]"
                 >
                   <input type="file" ref={fileInputRef} onChange={handleFileSelect} className="hidden" accept=".pdf,application/pdf" />
-                  <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center text-primary mb-4 shadow-sm transition-transform duration-300 group-hover:scale-110 pointer-events-none">
+                  <div className="w-16 h-16 bg-[#e8f0fe] border border-[#d2e3fc] rounded-2xl flex items-center justify-center text-[#1a73e8] mb-4 shadow-2xs transition-transform duration-300 group-hover:scale-110 pointer-events-none">
                     {isProcessing ? <Loader2 size={32} className="animate-spin" /> : <UploadCloud size={32} />}
                   </div>
-                  <h3 className="text-lg font-bold text-foreground mb-2 pointer-events-none text-center">
-                    {isProcessing ? 'Analyzing Document...' : 'Upload PDF to Organize'}
+                  <h3 className="text-lg font-bold text-[#202124] mb-2 pointer-events-none text-center">
+                    {isProcessing ? 'Analyzing Document Pages...' : 'Upload PDF to Organize'}
                   </h3>
-                  <p className="text-sm text-muted-foreground text-center pointer-events-none max-w-sm leading-relaxed">
-                    {isProcessing ? 'Generating thumbnails...' : <span>Drag & drop a PDF file here, or <span className="text-primary font-semibold hover:underline">browse files</span>. Processing is fully secure.</span>}
+                  <p className="text-xs sm:text-sm text-[#5f6368] text-center pointer-events-none max-w-sm leading-relaxed">
+                    {isProcessing ? 'Generating page previews...' : <span>Drag & drop a PDF file here, or <span className="text-[#1a73e8] font-bold hover:underline">browse files</span>. 100% private in-browser.</span>}
                   </p>
                 </div>
               </motion.div>
@@ -307,19 +330,19 @@ const PdfOrganizer = () => {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ duration: 0.3 }}
-                className="flex flex-col min-h-0 w-full space-y-6"
+                className="flex flex-col min-h-0 w-full space-y-5"
               >
-                <div className="flex items-center justify-between border-b border-border pb-4">
-                  <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Document Pages ({pages.length})</h3>
-                  <div className="flex items-center gap-3">
-                    <p className="text-xs text-muted-foreground">Drag to reorder • Hover for actions</p>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-[#dadce0] pb-3 gap-2">
+                  <div>
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-[#5f6368]">Document Pages ({pages.length})</h3>
+                    <p className="text-xs text-[#5f6368] mt-0.5">Drag tiles to reorder &bull; Hover or tap controls to rotate or duplicate</p>
                   </div>
                 </div>
 
                 {pages.length > 0 ? (
                   <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                     <SortableContext items={pages.map(p => p.id)} strategy={rectSortingStrategy}>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 custom-scrollbar max-h-[60vh] overflow-y-auto p-2">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 custom-scrollbar max-h-[60vh] overflow-y-auto p-1">
                         {pages.map((page, idx) => (
                           <SortablePage 
                             key={page.id} 
@@ -334,9 +357,9 @@ const PdfOrganizer = () => {
                     </SortableContext>
                   </DndContext>
                 ) : (
-                  <div className="py-20 flex flex-col items-center justify-center text-muted-foreground">
-                    <Trash2 size={40} className="mb-4 opacity-20" />
-                    <p className="font-semibold">All pages removed.</p>
+                  <div className="py-20 flex flex-col items-center justify-center text-[#5f6368]">
+                    <Trash2 size={40} className="mb-4 opacity-30 text-[#d93025]" />
+                    <p className="font-semibold text-sm">All pages removed.</p>
                   </div>
                 )}
 
@@ -346,83 +369,61 @@ const PdfOrganizer = () => {
         </motion.div>
 
         {/* Right Action panel */}
-        <div className="w-full lg:w-[350px] xl:w-[400px] shrink-0 space-y-6 lg:sticky lg:top-6">
-          <div className={`bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6 transition-all duration-300 ${!file ? 'opacity-50 pointer-events-none grayscale-[0.5]' : ''}`}>
-            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground border-b border-border pb-3 mb-4 flex items-center gap-2">
-              <RefreshCw size={16} /> Document Details
+        <div className="w-full lg:w-[360px] xl:w-[400px] shrink-0 space-y-6">
+          <div className="tool-sidebar p-5 sm:p-6 space-y-5">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#5f6368] border-b border-[#dadce0] pb-3 flex items-center gap-2">
+              <RefreshCw size={15} className="text-[#1a73e8]" /> Document Summary
             </h3>
-            <div className="space-y-4 text-sm text-muted-foreground bg-muted/10 p-4 rounded-xl border border-border/30">
-              <div className="flex items-start gap-3">
-                <CheckCircle2 className="text-emerald-500 mt-0.5 shrink-0" size={16} />
-                <p>Drag pages to reorder them in the final document.</p>
+            <div className="space-y-3 text-xs text-[#5f6368]">
+              <div className="flex items-start gap-2.5">
+                <CheckCircle2 size={15} className="text-[#34a853] mt-0.5 shrink-0" />
+                <p>Drag pages to reorder them in the compiled final PDF.</p>
               </div>
-              <div className="flex items-start gap-3">
-                <CheckCircle2 className="text-emerald-500 mt-0.5 shrink-0" size={16} />
-                <p>Hover over a page to rotate, duplicate, or delete it.</p>
+              <div className="flex items-start gap-2.5">
+                <CheckCircle2 size={15} className="text-[#34a853] mt-0.5 shrink-0" />
+                <p>Hover over pages to rotate 90°, duplicate, or delete.</p>
               </div>
             </div>
 
             {file && (
-              <div className="border-t border-border pt-4 min-w-0">
-                <div className="flex items-center gap-3 bg-muted/20 p-3 rounded-xl min-w-0 border border-border/50">
-                  <div className="p-2 bg-primary/10 text-primary rounded-lg shrink-0">
-                    <FileText size={20} />
+              <div className="border-t border-[#dadce0] pt-3 min-w-0">
+                <div className="flex items-center gap-3 bg-[#f8f9fa] p-3 rounded-xl min-w-0 border border-[#dadce0]">
+                  <div className="p-2 bg-[#e8f0fe] text-[#1a73e8] rounded-lg shrink-0">
+                    <FileText size={18} />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="font-bold text-sm text-foreground truncate" title={file.name}>{file.name}</p>
-                    <p className="text-xs text-muted-foreground">Will export with {pages.length} pages</p>
+                    <p className="font-bold text-xs sm:text-sm text-[#202124] truncate" title={file.name}>{file.name}</p>
+                    <p className="text-[11px] text-[#5f6368]">Will export with {pages.length} pages</p>
                   </div>
                 </div>
               </div>
             )}
 
-            <div className="flex flex-col gap-3">
+            <div className="pt-3 border-t border-[#dadce0] flex flex-col gap-2.5">
               <button 
                 onClick={handleExport}
                 disabled={isProcessing || !file || pages.length === 0}
-                className={`w-full h-14 font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-[0_1px_2px_rgba(0,0,0,0.1),0_0_0_1px_rgba(255,255,255,0.1)_inset] disabled:opacity-50 disabled:hover:shadow-none active:scale-[0.98] overflow-hidden ${
-                  isProcessing
-                    ? 'bg-primary/70 text-primary-foreground cursor-not-allowed'
-                    : 'bg-primary hover:bg-primary/90 text-primary-foreground hover:shadow-[0_4px_12px_rgba(var(--primary),0.3)]'
-                }`}
+                className="w-full btn-google-primary text-sm py-3 shadow-sm justify-center disabled:opacity-50"
               >
-                <AnimatePresence mode="popLayout" initial={false}>
-                  {isProcessing ? (
-                    <motion.div
-                      key="generating"
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20 }}
-                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                      className="flex items-center gap-2"
-                    >
-                      <Loader2 className="animate-spin" size={20} />
-                      Exporting...
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key="idle"
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20 }}
-                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                      className="flex items-center gap-2"
-                    >
-                      <Download size={20} />
-                      <span>Export PDF</span>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                {isProcessing ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" /> Exporting PDF...
+                  </>
+                ) : (
+                  <>
+                    <Download size={16} />
+                    <span>Export & Download PDF</span>
+                  </>
+                )}
               </button>
               
               {file && (
                 <button
                   onClick={handleClear}
                   disabled={isProcessing}
-                  className="w-full py-3.5 bg-muted hover:bg-muted/80 text-foreground font-semibold text-sm rounded-xl transition-colors flex items-center justify-center gap-1.5 border border-border disabled:opacity-50"
+                  className="w-full btn-google-secondary text-xs py-2 justify-center"
                 >
-                  <X size={16} />
-                  Clear Document
+                  <X size={14} /> Clear Document
                 </button>
               )}
             </div>

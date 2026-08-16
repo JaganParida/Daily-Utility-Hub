@@ -477,207 +477,233 @@ const PdfToWord = () => {
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8 space-y-8">
-      {/* Header Banner */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-900/40 via-indigo-900/40 to-slate-900/40 border border-blue-500/20 p-8 backdrop-blur-xl">
-        <div className="absolute top-0 right-0 -mt-8 -mr-8 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-          <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold uppercase tracking-wider">
-              <Sparkles className="w-3.5 h-3.5" /> Exact PDF Layout Preserved
-            </div>
-            <h1 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight">
-              PDF to Word Converter
-            </h1>
-            <p className="text-slate-300 text-sm md:text-base max-w-2xl">
-              Convert any PDF into an editable Word (<code className="text-blue-400 font-mono">.docx</code>) file with exact visual layout, tables, images, and OCR support.
-            </p>
-          </div>
+    <div className="tool-page-container">
+      <ToolHeader
+        title="PDF to Word Converter"
+        description="Convert any PDF document into an editable Microsoft Word (.docx) file with layout, tables, and images preserved."
+        category="PDF Tools"
+        categoryPath="/search"
+        icon={FileText}
+        iconColor="text-[#1a73e8] bg-[#e8f0fe] border-[#d2e3fc]"
+        badge="Direct .DOCX Engine"
+        extraBadge="Layout & Tables Preserved"
+      />
 
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => window.location.href = '/tools/pdf-converter'}
-              className="px-4 py-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 hover:text-white border border-slate-700 text-xs font-medium transition flex items-center gap-2"
-            >
-              <ImageIcon className="w-4 h-4 text-rose-400" />
-              PDF to Images
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      {!file ? (
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          onDragOver={handleDragOver}
-          onDrop={handleDrop}
-          onClick={() => fileInputRef.current?.click()}
-          className="relative border-2 border-dashed border-blue-500/30 hover:border-blue-500/60 rounded-3xl p-12 text-center bg-slate-900/40 hover:bg-slate-900/60 transition cursor-pointer group"
+      <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
+        {/* Main Workspace Area */}
+        <motion.div 
+          layout
+          className={`flex-1 w-full tool-card p-4 md:p-6 flex flex-col relative transition-all duration-500 ease-out ${!file ? 'min-h-[50vh]' : 'min-h-0'}`}
         >
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={(e) => e.target.files[0] && handleFileLoad(e.target.files[0])}
-            accept="application/pdf"
-            className="hidden"
-          />
-          <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 group-hover:scale-110 transition duration-300">
-            <UploadCloud className="w-10 h-10" />
-          </div>
-          <h3 className="text-xl font-bold text-white mb-2">
-            Select PDF file, or <span className="text-blue-400 underline">drag & drop</span>
-          </h3>
-          <p className="text-slate-400 text-sm max-w-md mx-auto">
-            Works with all PDFs — digital, scanned, receipts, assignments, forms, and reports.
-          </p>
-
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-xs text-slate-400">
-            <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-emerald-400" /> Exact Visual Layout</span>
-            <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-emerald-400" /> Tables & Images</span>
-            <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-emerald-400" /> Auto OCR</span>
-            <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-emerald-400" /> 100% Free & Private</span>
-          </div>
-        </motion.div>
-      ) : (
-        <div className="space-y-6">
-          <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-8 space-y-6 backdrop-blur-md">
-            {/* File info & actions */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 pb-6 border-b border-slate-800">
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 shrink-0">
-                  <FileText className="w-7 h-7" />
-                </div>
-                <div>
-                  <h4 className="text-xl font-bold text-white truncate max-w-md">{file.name}</h4>
-                  <p className="text-xs text-slate-400 mt-1">
-                    {(file.size / (1024 * 1024)).toFixed(2)} MB • {totalPages} {totalPages === 1 ? 'Page' : 'Pages'}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={handleClear}
-                  disabled={isProcessing}
-                  className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold border border-slate-700 transition flex items-center gap-2 disabled:opacity-50"
+          <AnimatePresence mode="popLayout" initial={false}>
+            {!file ? (
+              <motion.div
+                key="dropzone"
+                layout
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.3 }}
+                className="flex-1 h-full w-full flex flex-col justify-center"
+              >
+                <div 
+                  onDragOver={handleDragOver} onDrop={handleDrop}
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex-1 h-full w-full border-2 border-dashed border-[#c2d7fb] hover:border-[#1a73e8] rounded-2xl p-8 md:p-12 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 relative group min-h-[320px] bg-white hover:bg-[#f8fbff]"
                 >
-                  <X className="w-4 h-4" /> Change PDF
-                </button>
+                  <input type="file" ref={fileInputRef} onChange={(e) => e.target.files[0] && handleFileLoad(e.target.files[0])} className="hidden" accept=".pdf,application/pdf" />
+                  <div className="w-16 h-16 bg-[#e8f0fe] border border-[#d2e3fc] rounded-2xl flex items-center justify-center text-[#1a73e8] mb-4 shadow-2xs transition-transform duration-300 group-hover:scale-110 pointer-events-none">
+                    <UploadCloud size={32} />
+                  </div>
+                  <h3 className="text-lg font-bold text-[#202124] mb-2 pointer-events-none text-center">
+                    Select PDF to convert to Word
+                  </h3>
+                  <p className="text-xs sm:text-sm text-[#5f6368] text-center pointer-events-none max-w-sm leading-relaxed">
+                    Drag and drop your PDF here, or <span className="text-[#1a73e8] font-bold hover:underline">browse files</span>. Fast & client-side processed.
+                  </p>
 
+                  <div className="mt-8 flex flex-wrap items-center justify-center gap-4 text-xs text-[#5f6368] pointer-events-none">
+                    <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-[#34a853]" /> Layout Preserved</span>
+                    <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-[#34a853]" /> Tables & Images</span>
+                    <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-[#34a853]" /> Multi-language OCR</span>
+                  </div>
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="workspace"
+                layout
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.3 }}
+                className="flex flex-col min-h-0 w-full space-y-6"
+              >
+                {/* File summary card */}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-xl bg-[#f8f9fa] border border-[#dadce0]">
+                  <div className="flex items-center gap-3.5 min-w-0">
+                    <div className="w-12 h-12 rounded-xl bg-[#e8f0fe] border border-[#d2e3fc] flex items-center justify-center text-[#1a73e8] shrink-0 shadow-2xs">
+                      <FileText size={24} />
+                    </div>
+                    <div className="min-w-0">
+                      <h4 className="text-sm sm:text-base font-bold text-[#202124] truncate max-w-md">{file.name}</h4>
+                      <p className="text-xs text-[#5f6368] mt-0.5">
+                        {(file.size / (1024 * 1024)).toFixed(2)} MB • {totalPages} {totalPages === 1 ? 'Page' : 'Pages'}
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={handleClear}
+                    disabled={isProcessing}
+                    className="btn-google-secondary text-xs py-1.5 px-3"
+                  >
+                    <X size={14} /> Change PDF
+                  </button>
+                </div>
+
+                {/* Progress Bar */}
+                {isProcessing && (
+                  <div className="space-y-2.5 p-4 rounded-xl bg-[#f8f9fa] border border-[#dadce0]">
+                    <div className="flex justify-between items-center text-xs font-bold text-[#1a73e8]">
+                      <span className="flex items-center gap-2">
+                        <Loader2 className="w-4 h-4 animate-spin text-[#1a73e8]" />
+                        {currentStatus || 'Converting document...'}
+                      </span>
+                      <span>{progress}%</span>
+                    </div>
+                    <div className="w-full bg-[#e8eaed] rounded-full h-2.5 overflow-hidden">
+                      <div
+                        className="bg-[#1a73e8] h-full transition-all duration-300 rounded-full"
+                        style={{ width: `${progress}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Success Card */}
+                {wordBlob && (
+                  <div className="p-5 rounded-2xl bg-[#e6f4ea] border border-[#ceead6] space-y-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-[#34a853] text-white flex items-center justify-center shadow-2xs shrink-0">
+                        <CheckCircle2 size={22} />
+                      </div>
+                      <div>
+                        <h5 className="text-[#137333] font-bold text-sm">Conversion Complete!</h5>
+                        <p className="text-xs text-[#137333]/80 mt-0.5">
+                          {conversionMethod === 'server' 
+                            ? 'High-fidelity server docx engine compiled your file successfully.' 
+                            : 'Client-side high-resolution layout docx created.'}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3 pt-2">
+                      <button
+                        onClick={handleDownload}
+                        className="btn-google-primary text-xs py-2.5 px-5 shadow-sm"
+                      >
+                        <Download size={15} /> Download Word ({wordFileName})
+                      </button>
+                      <button
+                        onClick={() => { setWordBlob(null); setConversionMethod(''); }}
+                        className="btn-google-secondary text-xs py-2.5 px-4"
+                      >
+                        Convert Again
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Advanced OCR Options */}
+                <div className="pt-2 border-t border-[#dadce0]">
+                  <button
+                    onClick={() => setShowAdvanced(!showAdvanced)}
+                    className="text-xs text-[#5f6368] hover:text-[#202124] transition-colors flex items-center gap-1.5 font-bold cursor-pointer"
+                  >
+                    {showAdvanced ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                    {showAdvanced ? 'Hide OCR Language Options' : 'OCR Language Options (for Scanned Documents)'}
+                  </button>
+
+                  {showAdvanced && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      className="mt-3 pt-3 max-w-sm text-xs space-y-1.5"
+                    >
+                      <label className="text-xs font-bold text-[#202124] block">Document Language</label>
+                      <select
+                        value={ocrLanguage}
+                        onChange={(e) => setOcrLanguage(e.target.value)}
+                        className="google-select w-full"
+                      >
+                        {OCR_LANGUAGES.map((lang) => (
+                          <option key={lang.code} value={lang.code}>
+                            {lang.name}
+                          </option>
+                        ))}
+                      </select>
+                    </motion.div>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+
+        {/* Right Action Sidebar */}
+        <div className="w-full lg:w-[360px] xl:w-[400px] shrink-0 space-y-6">
+          <div className="tool-sidebar p-5 sm:p-6 space-y-5">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#5f6368] border-b border-[#dadce0] pb-3 flex items-center gap-2">
+              <Sparkles size={15} className="text-[#1a73e8]" /> Document Details
+            </h3>
+
+            <div className="space-y-3 text-xs text-[#5f6368]">
+              <div className="flex items-start gap-2.5">
+                <CheckCircle2 size={16} className="text-[#34a853] shrink-0 mt-0.5" />
+                <p>Editable .DOCX formatted output compatible with Microsoft Word & Google Docs.</p>
+              </div>
+              <div className="flex items-start gap-2.5">
+                <CheckCircle2 size={16} className="text-[#34a853] shrink-0 mt-0.5" />
+                <p>Preserves columns, tables, headers, and image positions.</p>
+              </div>
+              <div className="flex items-start gap-2.5">
+                <CheckCircle2 size={16} className="text-[#34a853] shrink-0 mt-0.5" />
+                <p>100% private. Files are processed securely.</p>
+              </div>
+            </div>
+
+            {file && (
+              <div className="pt-3 border-t border-[#dadce0]">
                 {wordBlob ? (
                   <button
                     onClick={handleDownload}
-                    className="px-8 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold shadow-lg shadow-emerald-600/25 transition flex items-center gap-2"
+                    className="w-full btn-google-primary text-sm py-3 shadow-sm justify-center"
                   >
-                    <Download className="w-5 h-5" /> Download Word (.docx)
+                    <Download size={16} /> Download .DOCX
                   </button>
                 ) : (
                   <button
                     onClick={handleConvert}
                     disabled={isProcessing}
-                    className="px-8 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold shadow-lg shadow-blue-600/25 transition flex items-center gap-2 disabled:opacity-50"
+                    className="w-full btn-google-primary text-sm py-3 shadow-sm justify-center disabled:opacity-50"
                   >
                     {isProcessing ? (
                       <>
-                        <Loader2 className="w-5 h-5 animate-spin" /> Converting...
+                        <Loader2 size={16} className="animate-spin" /> Converting...
                       </>
                     ) : (
                       <>
-                        <Sparkles className="w-5 h-5" /> Convert to Word
+                        <Sparkles size={16} /> Convert to Word
                       </>
                     )}
                   </button>
                 )}
               </div>
-            </div>
-
-            {/* Progress */}
-            {isProcessing && (
-              <div className="space-y-3 pt-2">
-                <div className="flex justify-between items-center text-xs font-semibold text-blue-400">
-                  <span className="flex items-center gap-2">
-                    <Loader2 className="w-4 h-4 animate-spin text-blue-400" />
-                    {currentStatus || 'Converting document...'}
-                  </span>
-                  <span>{progress}%</span>
-                </div>
-                <div className="w-full bg-slate-800 rounded-full h-3 overflow-hidden">
-                  <div
-                    className="bg-gradient-to-r from-blue-500 to-indigo-500 h-full transition-all duration-300 rounded-full"
-                    style={{ width: `${progress}%` }}
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* Optional OCR Language */}
-            <div className="pt-2">
-              <button
-                onClick={() => setShowAdvanced(!showAdvanced)}
-                className="text-xs text-slate-400 hover:text-slate-200 transition flex items-center gap-1.5 font-medium"
-              >
-                {showAdvanced ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                {showAdvanced ? 'Hide Language Options' : 'OCR Language (for scanned PDFs)'}
-              </button>
-
-              {showAdvanced && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  className="mt-4 pt-4 border-t border-slate-800 max-w-sm text-xs"
-                >
-                  <span className="text-slate-400 mb-1 block">OCR Recognition Language</span>
-                  <select
-                    value={ocrLanguage}
-                    onChange={(e) => setOcrLanguage(e.target.value)}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-blue-500"
-                  >
-                    {OCR_LANGUAGES.map((lang) => (
-                      <option key={lang.code} value={lang.code}>
-                        {lang.name}
-                      </option>
-                    ))}
-                  </select>
-                </motion.div>
-              )}
-            </div>
-
-            {/* Success Result */}
-            {wordBlob && (
-              <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-2xl p-6 space-y-4">
-                <div className="flex items-center gap-3">
-                  <CheckCircle2 className="w-6 h-6 text-emerald-400" />
-                  <div>
-                    <h5 className="text-white font-bold text-sm">Conversion Complete!</h5>
-                    <p className="text-xs text-slate-400 mt-0.5">
-                      {conversionMethod === 'server' 
-                        ? 'Converted using high-fidelity server engine (pdf2docx)' 
-                        : 'Converted with full layout preservation + editable text'}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={handleDownload}
-                    className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-600/25 transition flex items-center gap-2"
-                  >
-                    <Download className="w-4 h-4" /> Download {wordFileName}
-                  </button>
-                  <button
-                    onClick={() => { setWordBlob(null); setConversionMethod(''); }}
-                    className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold border border-slate-700 transition"
-                  >
-                    Convert Again
-                  </button>
-                </div>
-              </div>
             )}
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };

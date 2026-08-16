@@ -304,34 +304,34 @@ const PdfUnlock = () => {
                 className="flex flex-col min-h-0 w-full space-y-6"
               >
                 {/* File Info Card */}
-                <div className="bg-card border border-border rounded-2xl shadow-sm p-6 space-y-6">
+                <div className="p-4 sm:p-5 rounded-2xl bg-[#f8f9fa] border border-[#dadce0] space-y-4">
                   <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                    <div className="flex items-center gap-4 min-w-0 w-full sm:w-auto">
-                      <div className="w-12 h-12 bg-primary/10 text-primary rounded-xl flex items-center justify-center shrink-0">
+                    <div className="flex items-center gap-3.5 min-w-0">
+                      <div className="w-12 h-12 bg-[#e8f0fe] text-[#1a73e8] border border-[#d2e3fc] rounded-xl flex items-center justify-center shrink-0 shadow-2xs">
                         <FileText size={24} />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <h3 className="font-bold text-foreground text-lg truncate w-full" title={file.name}>
+                        <h3 className="font-bold text-[#202124] text-sm sm:text-base truncate" title={file.name}>
                           {file.name}
                         </h3>
-                        <p className="text-muted-foreground text-sm">
+                        <p className="text-[#5f6368] text-xs mt-0.5">
                           {(file.size / 1024 / 1024).toFixed(2)} MB
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2.5 shrink-0 w-full sm:w-auto justify-end">
+                    <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
                       <button
                         onClick={() => setShowPreview(!showPreview)}
-                        className="text-xs bg-muted hover:bg-muted/80 text-foreground px-3.5 py-2 rounded-xl transition-all font-bold flex items-center gap-1.5 border border-border shadow-sm"
+                        className="btn-google-secondary text-xs py-1.5 px-3"
                       >
-                        {showPreview ? <EyeOff size={14} /> : <Eye size={14} />}
+                        {showPreview ? <EyeOff size={13} /> : <Eye size={13} />}
                         {showPreview ? 'Hide Preview' : 'Interactive Preview'}
                       </button>
                       <button
                         onClick={handleClear}
-                        className="text-xs text-red-400 bg-red-950/10 border border-red-900/20 hover:bg-red-950/20 px-3.5 py-2 rounded-xl transition-all font-semibold flex items-center gap-1.5"
+                        className="btn-google-danger text-xs py-1.5 px-3"
                       >
-                        <X size={14} />
+                        <X size={13} />
                         Remove
                       </button>
                     </div>
@@ -345,29 +345,29 @@ const PdfUnlock = () => {
                         animate={{ opacity: 1, height: 'auto' }}
                         exit={{ opacity: 0, height: 0 }}
                         transition={{ duration: 0.3 }}
-                        className="overflow-hidden border-t border-border/80 pt-5 space-y-3"
+                        className="overflow-hidden border-t border-[#dadce0] pt-4 space-y-3"
                       >
                         <div className="flex items-center justify-between">
-                          <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                          <h4 className="text-xs font-bold uppercase tracking-wider text-[#5f6368]">
                             Interactive Document Preview
                           </h4>
                           <a
                             href={previewUrl}
                             target="_blank"
                             rel="noreferrer"
-                            className="text-xs text-primary hover:text-primary/80 flex items-center gap-1 font-semibold transition-colors"
+                            className="text-xs text-[#1a73e8] hover:underline flex items-center gap-1 font-semibold"
                           >
                             Open in New Tab <ExternalLink size={12} />
                           </a>
                         </div>
-                        <div className="w-full h-[400px] md:h-[500px] border border-border rounded-xl overflow-hidden bg-muted/5 relative">
+                        <div className="w-full h-[360px] md:h-[450px] border border-[#dadce0] rounded-xl overflow-hidden bg-white relative">
                           <object
                             data={previewUrl}
                             type="application/pdf"
                             className="w-full h-full"
                           >
                             <iframe src={previewUrl} className="w-full h-full border-none" title="PDF Preview">
-                              <div className="p-6 text-center text-sm text-muted-foreground">
+                              <div className="p-6 text-center text-sm text-[#5f6368]">
                                 Your browser doesn't support inline PDF previews. Please click "Open in New Tab" to view it.
                               </div>
                             </iframe>
@@ -379,25 +379,25 @@ const PdfUnlock = () => {
                 </div>
 
                 {/* Settings Card */}
-                <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-5">
-                  <div className="border-b border-border pb-3 mb-5">
-                    <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Decryption Settings</h3>
+                <div className="p-5 sm:p-6 rounded-2xl bg-white border border-[#dadce0] shadow-2xs space-y-5">
+                  <div className="border-b border-[#dadce0] pb-3">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-[#5f6368]">Decryption Settings</h3>
                   </div>
 
                   {!isEncrypted ? (
-                    <div className="flex items-start gap-3.5 p-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-xl">
+                    <div className="flex items-start gap-3 p-4 bg-[#e6f4ea] border border-[#ceead6] text-[#137333] rounded-xl">
                       <CheckCircle2 size={20} className="shrink-0 mt-0.5" />
                       <div>
-                        <span className="text-sm font-semibold block">This PDF is already unlocked!</span>
-                        <span className="text-xs text-emerald-400/80 mt-1 block leading-relaxed">
+                        <span className="text-xs sm:text-sm font-bold block">This PDF is already unlocked!</span>
+                        <span className="text-xs text-[#137333]/80 mt-1 block leading-relaxed">
                           No password protection detected on this document. You can directly proceed to download it or strip digital signatures.
                         </span>
                       </div>
                     </div>
                   ) : (
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                       <div>
-                        <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground block mb-2">
+                        <label className="text-xs font-bold uppercase tracking-wider text-[#5f6368] block mb-2">
                           Original PDF Password
                         </label>
                         <div className="relative">
@@ -406,18 +406,18 @@ const PdfUnlock = () => {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             placeholder="Enter the document password"
-                            className="w-full bg-background border border-border/80 focus:border-primary/80 focus:ring-1 focus:ring-primary/50 rounded-xl pl-4 pr-10 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none transition-all"
+                            className="google-input w-full pr-10 text-sm font-semibold"
                           />
                           <button
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#5f6368] hover:text-[#202124] transition-colors"
                           >
-                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                            {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                           </button>
                         </div>
-                        <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1.5">
-                          <Info size={13} className="text-primary shrink-0" />
+                        <p className="text-xs text-[#5f6368] mt-2 flex items-center gap-1.5">
+                          <Info size={13} className="text-[#1a73e8] shrink-0" />
                           You must know the password to strip encryption and access the document.
                         </p>
                       </div>
@@ -425,21 +425,21 @@ const PdfUnlock = () => {
                   )}
 
                   {/* Remove Signatures Option */}
-                  <div className="pt-2">
-                    <div className="flex items-start gap-3.5 border border-border/80 bg-muted/10 hover:bg-muted/20 p-4 rounded-xl transition-colors duration-200 cursor-pointer select-none">
+                  <div className="pt-3 border-t border-[#dadce0]">
+                    <div className="flex items-start gap-3 p-3.5 bg-[#f8f9fa] border border-[#dadce0] rounded-xl transition-colors cursor-pointer select-none">
                       <div className="flex items-center h-5">
                         <input
                           type="checkbox"
                           id="removeSignatures"
                           checked={removeSignatures}
                           onChange={(e) => setRemoveSignatures(e.target.checked)}
-                          className="w-4.5 h-4.5 rounded border-border/80 text-primary focus:ring-primary focus:ring-offset-background cursor-pointer"
+                          className="w-4 h-4 rounded text-[#1a73e8] focus:ring-[#1a73e8]/30 accent-[#1a73e8] cursor-pointer"
                         />
                       </div>
-                      <label htmlFor="removeSignatures" className="text-xs font-bold text-foreground cursor-pointer flex-1">
-                        Remove digital signatures (Aadhaar cards, etc.)
-                        <span className="block text-[11px] text-muted-foreground font-normal mt-1 leading-relaxed">
-                          Highly recommended. Prevents Acrobat and Chrome from showing "Signature Invalid" warnings on decrypted PDFs.
+                      <label htmlFor="removeSignatures" className="text-xs font-bold text-[#202124] cursor-pointer flex-1">
+                        Remove digital signature locks (Aadhaar cards, bank statements, etc.)
+                        <span className="block text-[11px] text-[#5f6368] font-normal mt-0.5 leading-relaxed">
+                          Highly recommended. Prevents Acrobat and browsers from displaying signature warning errors on decrypted PDFs.
                         </span>
                       </label>
                     </div>
@@ -451,76 +451,54 @@ const PdfUnlock = () => {
         </motion.div>
 
         {/* Sidebar Panel */}
-        <div className="w-full lg:w-[350px] xl:w-[400px] shrink-0 space-y-6 lg:sticky lg:top-6">
-          {/* Decryption Info Card */}
-          <div className={`bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6 transition-all duration-300 ${!file ? 'opacity-50 pointer-events-none grayscale-[0.5]' : ''}`}>
-            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground border-b border-border pb-3 mb-4 flex items-center gap-2">
-              <ShieldCheck size={16} /> Decryption Info
+        <div className="w-full lg:w-[360px] xl:w-[400px] shrink-0 space-y-6">
+          <div className="tool-sidebar p-5 sm:p-6 space-y-5">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#5f6368] border-b border-[#dadce0] pb-3 flex items-center gap-2">
+              <ShieldCheck size={15} className="text-[#1a73e8]" /> Decryption Summary
             </h3>
-            <div className="space-y-4 text-sm text-muted-foreground bg-muted/10 p-4 rounded-xl border border-border/30">
-              <div className="flex items-start gap-3">
-                <CheckCircle2 className="text-emerald-500 mt-0.5 shrink-0" size={16} />
-                <p>Removes document passwords and restriction permissions permanently.</p>
+            <div className="space-y-3 text-xs text-[#5f6368]">
+              <div className="flex items-start gap-2.5">
+                <CheckCircle2 size={15} className="text-[#34a853] mt-0.5 shrink-0" />
+                <p>Permanently removes passwords and printing/copying restrictions.</p>
               </div>
-              <div className="flex items-start gap-3">
-                <CheckCircle2 className="text-emerald-500 mt-0.5 shrink-0" size={16} />
-                <p>Supports 128-bit & 256-bit AES as well as legacy RC4 encryption.</p>
+              <div className="flex items-start gap-2.5">
+                <CheckCircle2 size={15} className="text-[#34a853] mt-0.5 shrink-0" />
+                <p>Supports 128-bit & 256-bit AES as well as standard RC4 encryption.</p>
               </div>
-              <div className="flex items-start gap-3">
-                <CheckCircle2 className="text-emerald-500 mt-0.5 shrink-0" size={16} />
-                <p>Files are processed securely and deleted immediately.</p>
+              <div className="flex items-start gap-2.5">
+                <CheckCircle2 size={15} className="text-[#34a853] mt-0.5 shrink-0" />
+                <p>100% private in-browser decryption.</p>
               </div>
             </div>
-          </div>
-          
-          <div className="flex flex-col gap-3">
-            <button
-              onClick={handleUnlock}
-              disabled={!file || (isEncrypted && !password.trim()) || isProcessing}
-              className={`w-full h-14 font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-[0_1px_2px_rgba(0,0,0,0.1),0_0_0_1px_rgba(255,255,255,0.1)_inset] disabled:opacity-50 disabled:hover:shadow-none active:scale-[0.98] overflow-hidden ${
-                isProcessing
-                  ? 'bg-primary/70 text-primary-foreground cursor-not-allowed'
-                  : 'bg-primary hover:bg-primary/90 text-primary-foreground hover:shadow-[0_4px_12px_rgba(var(--primary),0.3)]'
-              }`}
-            >
-              <AnimatePresence mode="popLayout" initial={false}>
-                {isProcessing ? (
-                  <motion.div
-                    key="generating"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                    className="flex items-center gap-2"
-                  >
-                    <Loader2 className="animate-spin" size={20} />
-                    Decrypting...
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="idle"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                    className="flex items-center gap-2"
-                  >
-                    <Unlock size={20} />
-                    <span>{!isEncrypted ? 'Download Unlocked' : 'Unlock PDF'}</span>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </button>
 
-            {file && (
+            <div className="pt-3 border-t border-[#dadce0] flex flex-col gap-2.5">
               <button
-                onClick={handleClear}
-                disabled={isProcessing}
-                className="w-full py-3.5 px-4 bg-muted hover:bg-muted/80 text-foreground font-medium rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed border border-border"
+                onClick={handleUnlock}
+                disabled={!file || (isEncrypted && !password.trim()) || isProcessing}
+                className="w-full btn-google-primary text-sm py-3 shadow-sm justify-center disabled:opacity-50"
               >
-                Clear File
+                {isProcessing ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" /> Decrypting PDF...
+                  </>
+                ) : (
+                  <>
+                    <Unlock size={16} />
+                    <span>{!isEncrypted ? 'Download Unlocked PDF' : 'Unlock PDF Document'}</span>
+                  </>
+                )}
               </button>
-            )}
+
+              {file && (
+                <button
+                  onClick={handleClear}
+                  disabled={isProcessing}
+                  className="w-full btn-google-secondary text-xs py-2 justify-center"
+                >
+                  Clear File
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>

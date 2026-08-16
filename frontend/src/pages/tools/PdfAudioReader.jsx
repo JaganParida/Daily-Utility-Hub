@@ -264,7 +264,7 @@ const PdfAudioReader = () => {
         {/* Main Workspace Area */}
         <motion.div 
           layout
-          className={`flex-1 w-full bg-card border border-border p-4 md:p-6 rounded-2xl shadow-sm flex flex-col relative transition-all duration-500 ease-out ${!file ? 'min-h-[50vh]' : 'min-h-0'}`}
+          className={`flex-1 w-full tool-card p-4 md:p-6 flex flex-col relative transition-all duration-500 ease-out ${!file ? 'min-h-[50vh]' : 'min-h-0'}`}
         >
           <AnimatePresence mode="popLayout" initial={false}>
             {!file ? (
@@ -280,19 +280,17 @@ const PdfAudioReader = () => {
                 <div 
                   onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}
                   onClick={() => !isProcessing && fileInputRef.current?.click()}
-                  className={`flex-1 h-full w-full border-2 border-dashed rounded-2xl p-6 md:p-10 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 relative group min-h-[300px] ${
-                    isDragging ? 'border-primary bg-primary/5 scale-[0.99] shadow-inner' : 'border-border bg-card hover:border-primary/50 hover:bg-muted/20'
-                  }`}
+                  className="flex-1 h-full w-full border-2 border-dashed border-[#c2d7fb] bg-white hover:border-[#1a73e8] hover:bg-[#f8fbff] rounded-2xl p-6 md:p-10 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 relative group min-h-[300px]"
                 >
                   <input type="file" ref={fileInputRef} onChange={handleFileSelect} className="hidden" accept=".pdf,application/pdf" />
-                  <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center text-primary mb-4 shadow-sm transition-transform duration-300 group-hover:scale-110 pointer-events-none">
+                  <div className="w-16 h-16 bg-[#fef7e0] border border-[#feefc3] rounded-2xl flex items-center justify-center text-[#f29900] mb-4 shadow-2xs transition-transform duration-300 group-hover:scale-110 pointer-events-none">
                     {isProcessing ? <Loader2 size={32} className="animate-spin" /> : <UploadCloud size={32} />}
                   </div>
-                  <h3 className="text-lg font-bold text-foreground mb-2 pointer-events-none text-center">
+                  <h3 className="text-lg font-bold text-[#202124] mb-2 pointer-events-none text-center">
                     {isProcessing ? 'Analyzing Document...' : 'Upload PDF to Read & Listen'}
                   </h3>
-                  <p className="text-sm text-muted-foreground text-center pointer-events-none max-w-sm leading-relaxed">
-                    {isProcessing ? 'Extracting text layer...' : <span>Drag & drop a PDF file here, or <span className="text-primary font-semibold hover:underline">browse files</span>. Processing is fully secure.</span>}
+                  <p className="text-xs sm:text-sm text-[#5f6368] text-center pointer-events-none max-w-sm leading-relaxed">
+                    {isProcessing ? 'Extracting text layer...' : <span>Drag & drop a PDF file here, or <span className="text-[#1a73e8] font-bold hover:underline">browse files</span>. 100% private in-browser.</span>}
                   </p>
                 </div>
               </motion.div>
@@ -304,23 +302,26 @@ const PdfAudioReader = () => {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ duration: 0.3 }}
-                className="flex flex-col h-[70vh] w-full"
+                className="flex flex-col h-[65vh] w-full space-y-4"
               >
-                <div className="flex items-center justify-between border-b border-border pb-4 mb-4 shrink-0">
-                  <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Study Mode Viewer</h3>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <span className="text-xs font-semibold text-muted-foreground">Bionic Reading</span>
+                <div className="flex items-center justify-between border-b border-[#dadce0] pb-3 shrink-0">
+                  <div>
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-[#5f6368]">Document Reader Viewer</h3>
+                    <p className="text-xs text-[#5f6368] mt-0.5">Read along or follow spoken sentences</p>
+                  </div>
+                  <label className="flex items-center gap-2 cursor-pointer bg-[#f8f9fa] border border-[#dadce0] px-3 py-1.5 rounded-xl hover:bg-[#f1f3f4] transition-colors">
+                    <span className="text-xs font-bold text-[#202124]">Bionic Reading</span>
                     <input 
                       type="checkbox" 
                       className="sr-only peer"
                       checked={bionicMode}
                       onChange={(e) => setBionicMode(e.target.checked)}
                     />
-                    <div className="w-9 h-5 bg-muted peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary relative"></div>
+                    <div className="w-8 h-4.5 bg-[#dadce0] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-3.5 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3.5 after:w-3.5 after:transition-all peer-checked:bg-[#1a73e8] relative"></div>
                   </label>
                 </div>
 
-                <div className="flex-1 overflow-y-auto custom-scrollbar p-6 bg-muted/10 rounded-xl border border-border/50 text-foreground text-lg leading-loose font-serif">
+                <div className="flex-1 overflow-y-auto custom-scrollbar p-5 bg-[#f8f9fa] rounded-xl border border-[#dadce0] text-[#202124] text-base sm:text-lg leading-relaxed font-serif">
                   {text.split('\n').map((paragraph, i) => (
                     <p key={i} className="mb-4">
                       {bionicMode ? bionifyText(paragraph) : paragraph}
@@ -333,19 +334,19 @@ const PdfAudioReader = () => {
         </motion.div>
 
         {/* Right Action panel */}
-        <div className="w-full lg:w-[350px] xl:w-[400px] shrink-0 space-y-6 lg:sticky lg:top-6">
-          <div className={`bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6 transition-all duration-300 ${!file ? 'opacity-50 pointer-events-none grayscale-[0.5]' : ''}`}>
-            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground border-b border-border pb-3 mb-4 flex items-center gap-2">
-              <Settings size={16} /> Audio Controls
+        <div className="w-full lg:w-[360px] xl:w-[400px] shrink-0 space-y-6">
+          <div className="tool-sidebar p-5 sm:p-6 space-y-5">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#5f6368] border-b border-[#dadce0] pb-3 flex items-center gap-2">
+              <Settings size={15} className="text-[#1a73e8]" /> Speech Controls
             </h3>
             
             <div className="space-y-4">
               <div>
-                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 block">Voice</label>
+                <label className="text-xs font-bold text-[#5f6368] uppercase tracking-wider mb-1.5 block">Narrator Voice</label>
                 <select 
                   value={selectedVoice || ''}
                   onChange={(e) => setSelectedVoice(e.target.value)}
-                  className="w-full bg-muted/50 border border-border text-foreground text-sm rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all appearance-none"
+                  className="google-select w-full text-xs font-semibold"
                 >
                   {voices.map(voice => (
                     <option key={voice.name} value={voice.name}>
@@ -356,7 +357,10 @@ const PdfAudioReader = () => {
               </div>
 
               <div>
-                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 block">Speed ({rate}x)</label>
+                <div className="flex justify-between items-center mb-1.5">
+                  <label className="text-xs font-bold text-[#5f6368] uppercase tracking-wider">Reading Speed</label>
+                  <span className="text-xs font-bold text-[#1a73e8] bg-[#e8f0fe] px-2 py-0.5 rounded">{rate}x</span>
+                </div>
                 <input 
                   type="range" 
                   min="0.5" 
@@ -364,62 +368,57 @@ const PdfAudioReader = () => {
                   step="0.1" 
                   value={rate}
                   onChange={(e) => setRate(parseFloat(e.target.value))}
-                  className="w-full accent-primary"
+                  className="w-full h-1.5 rounded-full appearance-none cursor-pointer outline-none bg-[#e8eaed] accent-[#1a73e8]"
                 />
               </div>
             </div>
 
             {file && (
-              <div className="border-t border-border pt-4 min-w-0">
-                <div className="flex items-center gap-3 bg-muted/20 p-3 rounded-xl min-w-0 border border-border/50">
-                  <div className="p-2 bg-primary/10 text-primary rounded-lg shrink-0">
-                    <FileText size={20} />
+              <div className="border-t border-[#dadce0] pt-3 min-w-0">
+                <div className="flex items-center gap-3 bg-[#f8f9fa] p-3 rounded-xl min-w-0 border border-[#dadce0]">
+                  <div className="p-2 bg-[#e8f0fe] text-[#1a73e8] rounded-lg shrink-0">
+                    <FileText size={18} />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="font-bold text-sm text-foreground truncate" title={file.name}>{file.name}</p>
-                    <p className="text-xs text-muted-foreground">{text.split(/\s+/).length} words</p>
+                    <p className="font-bold text-xs sm:text-sm text-[#202124] truncate" title={file.name}>{file.name}</p>
+                    <p className="text-[11px] text-[#5f6368]">{text.split(/\s+/).length} words extracted</p>
                   </div>
                 </div>
               </div>
             )}
 
-            <div className="flex flex-col gap-3">
-              <div className="grid grid-cols-2 gap-3">
+            <div className="pt-3 border-t border-[#dadce0] flex flex-col gap-2.5">
+              <div className="grid grid-cols-2 gap-2.5">
                 <button 
                   onClick={handlePlay}
                   disabled={isPlaying || !file}
-                  className={`h-14 font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-[0_1px_2px_rgba(0,0,0,0.1),0_0_0_1px_rgba(255,255,255,0.1)_inset] disabled:opacity-50 disabled:hover:shadow-none active:scale-[0.98] ${
-                    isPlaying ? 'bg-primary/50 text-primary-foreground cursor-not-allowed' : 'bg-primary hover:bg-primary/90 text-primary-foreground hover:shadow-[0_4px_12px_rgba(var(--primary),0.3)]'
-                  }`}
+                  className="btn-google-primary text-xs sm:text-sm py-2.5 justify-center shadow-xs disabled:opacity-50"
                 >
-                  <Play size={20} /> Play
+                  <Play size={16} /> Play Audio
                 </button>
                 <button 
                   onClick={handlePause}
                   disabled={!isPlaying || !file}
-                  className={`h-14 font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-[0_1px_2px_rgba(0,0,0,0.1),0_0_0_1px_rgba(255,255,255,0.1)_inset] disabled:opacity-50 disabled:hover:shadow-none active:scale-[0.98] ${
-                    !isPlaying ? 'bg-amber-500/50 text-white cursor-not-allowed' : 'bg-amber-500 hover:bg-amber-600 text-white hover:shadow-[0_4px_12px_rgba(245,158,11,0.3)]'
-                  }`}
+                  className="btn-google-secondary text-xs sm:text-sm py-2.5 justify-center disabled:opacity-50"
                 >
-                  <Pause size={20} /> Pause
+                  <Pause size={16} /> Pause
                 </button>
               </div>
 
               <button 
                 onClick={handleStop}
                 disabled={(!isPlaying && !isPaused) || !file}
-                className="w-full py-3.5 bg-red-500 hover:bg-red-600 text-white font-semibold text-sm rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-50 disabled:hover:bg-red-500"
+                className="w-full btn-google-danger text-xs sm:text-sm py-2.5 justify-center disabled:opacity-50"
               >
-                <Square size={16} fill="currentColor" /> Stop Reading
+                <Square size={14} fill="currentColor" /> Stop Reading
               </button>
               
               {file && (
                 <button
                   onClick={handleClear}
-                  className="w-full py-3.5 mt-2 bg-muted hover:bg-muted/80 text-foreground font-semibold text-sm rounded-xl transition-colors flex items-center justify-center gap-1.5 border border-border"
+                  className="w-full btn-google-secondary text-xs py-2 justify-center"
                 >
-                  <X size={16} />
-                  Clear Document
+                  <X size={14} /> Clear Document
                 </button>
               )}
             </div>

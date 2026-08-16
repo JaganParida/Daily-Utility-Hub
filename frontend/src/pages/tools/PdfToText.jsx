@@ -208,30 +208,30 @@ const PdfToText = () => {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ duration: 0.3 }}
-                className="flex flex-col min-h-0 w-full space-y-6"
+                className="flex flex-col min-h-0 w-full space-y-5"
               >
-                <div className="bg-card border border-border rounded-2xl shadow-sm p-6 flex flex-col gap-4 shrink-0 min-w-0">
+                <div className="p-4 sm:p-5 rounded-2xl bg-[#f8f9fa] border border-[#dadce0] flex flex-col gap-4">
                   <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                    <div className="flex items-center gap-4 min-w-0 w-full sm:w-auto">
-                      <div className="w-12 h-12 bg-primary/10 text-primary rounded-xl flex items-center justify-center shrink-0">
+                    <div className="flex items-center gap-3.5 min-w-0">
+                      <div className="w-12 h-12 bg-[#fce8e6] text-[#ea4335] border border-[#fad2cf] rounded-xl flex items-center justify-center shrink-0 shadow-2xs">
                         <FileText size={24} />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <h3 className="font-bold text-foreground text-lg truncate w-full" title={file.name}>{file.name}</h3>
-                        <p className="text-muted-foreground text-sm">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                        <h3 className="font-bold text-[#202124] text-sm sm:text-base truncate" title={file.name}>{file.name}</h3>
+                        <p className="text-[#5f6368] text-xs mt-0.5">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
                       <button
                         onClick={() => setShowPreview(!showPreview)}
-                        className="text-xs bg-muted hover:bg-muted/80 text-foreground px-3.5 py-2 rounded-xl transition-all font-bold flex items-center gap-1.5 border border-border shadow-sm"
+                        className="btn-google-secondary text-xs py-1.5 px-3"
                       >
-                        {showPreview ? <EyeOff size={14} /> : <Eye size={14} />}
+                        {showPreview ? <EyeOff size={13} /> : <Eye size={13} />}
                         {showPreview ? 'Hide Preview' : 'Interactive Preview'}
                       </button>
                       <button 
                         onClick={handleClear} 
-                        className="text-xs text-red-400 bg-red-950/10 border border-red-900/20 hover:bg-red-950/20 px-3.5 py-2 rounded-xl transition-all font-semibold flex items-center gap-1.5"
+                        className="btn-google-danger text-xs py-1.5 px-3"
                       >
                         Remove
                       </button>
@@ -239,24 +239,24 @@ const PdfToText = () => {
                   </div>
 
                   {showPreview && previewUrl && (
-                    <div className="border-t border-border pt-4 w-full flex flex-col gap-3">
+                    <div className="border-t border-[#dadce0] pt-4 w-full flex flex-col gap-3">
                       <div className="flex items-center justify-between">
-                        <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Interactive Document Preview</h4>
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-[#5f6368]">Interactive Document Preview</h4>
                         <a 
                           href={previewUrl} target="_blank" rel="noreferrer"
-                          className="text-xs text-blue-500 hover:underline flex items-center gap-1 font-semibold"
+                          className="text-xs text-[#1a73e8] hover:underline flex items-center gap-1 font-semibold"
                         >
                           Open in New Tab <ExternalLink size={12} />
                         </a>
                       </div>
-                      <div className="w-full h-[400px] md:h-[500px] border border-border rounded-xl overflow-hidden bg-muted/5 relative">
+                      <div className="w-full h-[360px] md:h-[450px] border border-[#dadce0] rounded-xl overflow-hidden bg-white relative">
                         <object 
                           data={previewUrl} 
                           type="application/pdf" 
                           className="w-full h-full"
                         >
                           <iframe src={previewUrl} className="w-full h-full border-none" title="PDF Preview">
-                            <div className="p-6 text-center text-sm text-muted-foreground">
+                            <div className="p-6 text-center text-sm text-[#5f6368]">
                               Your browser doesn't support inline PDF previews. Please click "Open in New Tab" to view it.
                             </div>
                           </iframe>
@@ -267,34 +267,34 @@ const PdfToText = () => {
                 </div>
 
                 {extractedText && (
-                  <div className="bg-card border border-border p-6 rounded-2xl shadow-sm flex flex-col min-h-0 flex-1 relative overflow-hidden mt-6">
-                    <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 mb-4 shrink-0">
+                  <div className="p-5 sm:p-6 rounded-2xl bg-white border border-[#dadce0] shadow-2xs flex flex-col min-h-0 flex-1 relative overflow-hidden">
+                    <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 mb-4 shrink-0 border-b border-[#dadce0] pb-3">
                       <div>
-                        <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Extracted Text ({pagesCount} Pages)</h3>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Words: {words.toLocaleString()} &bull; Characters: {chars.toLocaleString()}
+                        <h3 className="text-xs font-bold uppercase tracking-wider text-[#5f6368]">Extracted Plain Text ({pagesCount} Pages)</h3>
+                        <p className="text-xs text-[#5f6368] mt-0.5 font-medium">
+                          Words: <span className="text-[#202124] font-bold">{words.toLocaleString()}</span> &bull; Characters: <span className="text-[#202124] font-bold">{chars.toLocaleString()}</span>
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
                         <button 
                           onClick={copyToClipboard}
-                          className="text-xs bg-muted hover:bg-muted/80 text-foreground px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 font-bold"
+                          className="btn-google-secondary text-xs py-1.5 px-3 font-semibold"
                         >
-                          {copied ? <Check size={14} className="text-emerald-500"/> : <Copy size={14}/>}
-                          {copied ? 'Copied' : 'Copy'}
+                          {copied ? <Check size={13} className="text-[#137333]"/> : <Copy size={13}/>}
+                          {copied ? 'Copied' : 'Copy Text'}
                         </button>
                         <button 
                           onClick={downloadTextFile}
-                          className="text-xs bg-pink-500 hover:bg-pink-600 text-white px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 font-bold"
+                          className="btn-google-primary text-xs py-1.5 px-3 font-semibold"
                         >
-                          <Download size={14} /> Download TXT
+                          <Download size={13} /> Download .TXT
                         </button>
                       </div>
                     </div>
                     <textarea
                       readOnly
                       value={extractedText}
-                      className="w-full flex-1 min-h-[250px] lg:min-h-0 bg-background border border-border rounded-xl p-4 text-sm text-foreground focus:outline-none custom-scrollbar resize-none font-mono"
+                      className="google-input w-full flex-1 min-h-[260px] p-4 text-xs sm:text-sm text-[#202124] custom-scrollbar resize-none font-mono leading-relaxed bg-[#f8f9fa]"
                       placeholder="Extracted text will appear here..."
                     />
                   </div>
@@ -305,68 +305,46 @@ const PdfToText = () => {
         </motion.div>
 
         {/* Action Panel */}
-        <div className="w-full lg:w-[350px] xl:w-[400px] shrink-0 space-y-6 lg:sticky lg:top-6">
-          <div className={`bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6 transition-all duration-300 ${!file ? 'opacity-50 pointer-events-none grayscale-[0.5]' : ''}`}>
-            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground border-b border-border pb-3 mb-4 flex items-center gap-2">
-              <Type size={16} /> Extraction Details
+        <div className="w-full lg:w-[360px] xl:w-[400px] shrink-0 space-y-6">
+          <div className="tool-sidebar p-5 sm:p-6 space-y-5">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#5f6368] border-b border-[#dadce0] pb-3 flex items-center gap-2">
+              <Type size={15} className="text-[#1a73e8]" /> Extraction Summary
             </h3>
-            <div className="space-y-4 text-sm text-muted-foreground bg-muted/10 p-4 rounded-xl border border-border/30">
-              <div className="flex items-start gap-3">
-                <CheckCircle2 className="text-emerald-500 mt-0.5 shrink-0" size={16} />
-                <p>Scrapes selectable text layer instantly from the PDF.</p>
+            <div className="space-y-3 text-xs text-[#5f6368]">
+              <div className="flex items-start gap-2.5">
+                <CheckCircle2 size={15} className="text-[#34a853] mt-0.5 shrink-0" />
+                <p>Instantly extracts raw text layers directly within your browser.</p>
               </div>
-              <div className="flex items-start gap-3">
-                <CheckCircle2 className="text-emerald-500 mt-0.5 shrink-0" size={16} />
-                <p>Computes readability stats: word count and character count.</p>
+              <div className="flex items-start gap-2.5">
+                <CheckCircle2 size={15} className="text-[#34a853] mt-0.5 shrink-0" />
+                <p>Calculates real-time word count and character count statistics.</p>
               </div>
-              <div className="flex items-start gap-3">
-                <CheckCircle2 className="text-emerald-500 mt-0.5 shrink-0" size={16} />
-                <p>Note: Scanned images with no text layer cannot be parsed (requires OCR).</p>
+              <div className="flex items-start gap-2.5">
+                <CheckCircle2 size={15} className="text-[#34a853] mt-0.5 shrink-0" />
+                <p>100% private in-browser document processing.</p>
               </div>
             </div>
-          </div>
-          
-          <div className="flex flex-col gap-3">
-            <button 
-              onClick={handleExtract}
-              disabled={!file || isProcessing || extractedText.length > 0}
-              className={`w-full h-14 font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-[0_1px_2px_rgba(0,0,0,0.1),0_0_0_1px_rgba(255,255,255,0.1)_inset] disabled:opacity-50 disabled:hover:shadow-none active:scale-[0.98] overflow-hidden ${
-                isProcessing
-                  ? 'bg-primary/70 text-primary-foreground cursor-not-allowed'
-                  : 'bg-primary hover:bg-primary/90 text-primary-foreground hover:shadow-[0_4px_12px_rgba(var(--primary),0.3)]'
-              }`}
-            >
-              <AnimatePresence mode="popLayout" initial={false}>
+            
+            <div className="pt-3 border-t border-[#dadce0]">
+              <button 
+                onClick={handleExtract}
+                disabled={!file || isProcessing || extractedText.length > 0}
+                className="w-full btn-google-primary text-sm py-3 shadow-sm justify-center disabled:opacity-50"
+              >
                 {isProcessing ? (
-                  <motion.div
-                    key="generating"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                    className="flex items-center gap-2"
-                  >
-                    <Loader2 className="animate-spin" size={20} />
-                    Extracting...
-                  </motion.div>
+                  <>
+                    <Loader2 size={16} className="animate-spin" /> Extracting Text...
+                  </>
                 ) : (
-                  <motion.div
-                    key="idle"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                    className="flex items-center gap-2"
-                  >
-                    <Type size={20} />
-                    <span>Extract Text Now</span>
-                  </motion.div>
+                  <>
+                    <Type size={16} />
+                    <span>{extractedText.length > 0 ? 'Text Extracted' : 'Extract Text Now'}</span>
+                  </>
                 )}
-              </AnimatePresence>
-            </button>
+              </button>
+            </div>
           </div>
         </div>
-
       </div>
     </div>
   );

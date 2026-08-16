@@ -23,40 +23,41 @@ const SortableItem = ({ id, file, index, removeFile, onPreview }) => {
     <div 
       ref={setNodeRef} 
       style={style} 
-      className={`flex items-center gap-3 p-3 bg-card border rounded-xl group transition-all duration-200 ${
+      className={`flex items-center gap-3 p-3 bg-white border rounded-xl group transition-all duration-200 ${
         isDragging 
-          ? 'border-primary bg-primary/5 shadow-lg shadow-primary/10 scale-[1.01]' 
-          : 'border-border/80 hover:border-primary/40 hover:bg-muted/10'
+          ? 'border-[#1a73e8] bg-[#e8f0fe] shadow-md scale-[1.01]' 
+          : 'border-[#dadce0] hover:border-[#1a73e8]/40 hover:bg-[#f8f9fa]'
       }`}
     >
       <button 
         {...attributes} 
         {...listeners} 
-        className="p-2 text-muted-foreground hover:text-foreground cursor-grab active:cursor-grabbing shrink-0 transition-colors"
+        className="p-1.5 text-[#5f6368] hover:text-[#202124] cursor-grab active:cursor-grabbing shrink-0 transition-colors"
+        title="Drag to reorder"
       >
-        <GripVertical size={18} />
+        <GripVertical size={16} />
       </button>
-      <div className="w-10 h-10 bg-primary/10 text-primary border border-primary/20 rounded-lg flex items-center justify-center shrink-0">
-        <span className="font-bold text-sm">{index + 1}</span>
+      <div className="w-8 h-8 bg-[#e8f0fe] text-[#1a73e8] border border-[#d2e3fc] rounded-lg flex items-center justify-center shrink-0">
+        <span className="font-bold text-xs">{index + 1}</span>
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-foreground truncate" title={file.name}>{file.name}</p>
-        <p className="text-xs text-muted-foreground mt-0.5">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+        <p className="text-xs sm:text-sm font-semibold text-[#202124] truncate" title={file.name}>{file.name}</p>
+        <p className="text-[11px] text-[#5f6368] mt-0.5">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
       </div>
-      <div className="flex items-center gap-1.5 shrink-0 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
+      <div className="flex items-center gap-1 shrink-0">
         <button 
           onClick={() => onPreview(file)} 
-          className="p-2 text-primary/70 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors cursor-pointer"
+          className="p-1.5 text-[#5f6368] hover:text-[#1a73e8] hover:bg-[#e8f0fe] rounded-lg transition-colors cursor-pointer"
           title="Preview File"
         >
-          <Eye size={18} />
+          <Eye size={16} />
         </button>
         <button 
           onClick={() => removeFile(id)} 
-          className="p-2 text-destructive/70 hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors cursor-pointer"
+          className="p-1.5 text-[#5f6368] hover:text-[#d93025] hover:bg-[#fce8e6] rounded-lg transition-colors cursor-pointer"
           title="Remove File"
         >
-          <Trash2 size={18} />
+          <Trash2 size={16} />
         </button>
       </div>
     </div>
@@ -214,7 +215,7 @@ const PdfMerge = () => {
         {/* Upload & List Area */}
         <motion.div 
           layout
-          className={`flex-1 w-full bg-card border border-border p-4 md:p-6 rounded-2xl shadow-sm flex flex-col relative transition-all duration-500 ease-out ${files.length === 0 ? 'min-h-[50vh]' : 'min-h-0'}`}
+          className={`flex-1 w-full tool-card p-4 md:p-6 flex flex-col relative transition-all duration-500 ease-out ${files.length === 0 ? 'min-h-[50vh]' : 'min-h-0'}`}
         >
           <AnimatePresence mode="popLayout" initial={false}>
             {files.length === 0 ? (
@@ -232,23 +233,19 @@ const PdfMerge = () => {
                   onDragLeave={handleDragLeave} 
                   onDrop={handleDrop}
                   onClick={() => fileInputRef.current?.click()}
-                  className={`flex-1 h-full w-full border-2 border-dashed rounded-2xl p-6 md:p-10 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 relative group min-h-[300px] ${
-                    isDragging 
-                      ? 'border-primary bg-primary/5 scale-[0.99] shadow-inner' 
-                      : 'border-border bg-card hover:border-primary/50 hover:bg-muted/20'
-                  }`}
+                  className="flex-1 h-full w-full border-2 border-dashed border-[#c2d7fb] hover:border-[#1a73e8] rounded-2xl p-8 md:p-12 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 relative group min-h-[320px] bg-white hover:bg-[#f8fbff]"
                 >
-                  <div className="w-16 h-16 bg-primary/10 text-primary rounded-2xl flex items-center justify-center mb-4 pointer-events-none shadow-sm transition-transform duration-300 group-hover:scale-110">
+                  <div className="w-16 h-16 bg-[#e8f0fe] text-[#1a73e8] border border-[#d2e3fc] rounded-2xl flex items-center justify-center mb-4 pointer-events-none shadow-2xs transition-transform duration-300 group-hover:scale-110">
                     <UploadCloud size={32} />
                   </div>
-                  <h3 className="text-lg font-bold text-foreground mb-2 pointer-events-none text-center">
-                    Upload your PDF files
+                  <h3 className="text-lg font-bold text-[#202124] mb-2 pointer-events-none text-center">
+                    Select or Drop Multiple PDF Files
                   </h3>
-                  <p className="text-sm text-muted-foreground text-center max-w-sm pointer-events-none leading-relaxed">
-                    Drag and drop PDF files here, or <span className="text-primary font-semibold hover:underline">browse files</span>.
+                  <p className="text-xs sm:text-sm text-[#5f6368] text-center max-w-sm pointer-events-none leading-relaxed">
+                    Drag and drop PDF files here, or <span className="text-[#1a73e8] font-bold hover:underline">browse files</span>.
                   </p>
-                  <p className="text-xs text-muted-foreground/60 mt-3 pointer-events-none text-center">
-                    Supports multiple PDF files. Files are processed securely.
+                  <p className="text-[11px] text-[#5f6368] mt-3 pointer-events-none text-center">
+                    Supports 2 to 50+ PDF files. Files are merged safely inside your browser.
                   </p>
                 </div>
               </motion.div>
@@ -262,19 +259,18 @@ const PdfMerge = () => {
                 transition={{ duration: 0.3 }}
                 className="flex flex-col min-h-0 w-full"
               >
-                <div className="flex justify-between items-center pb-3 mb-5 border-b border-border">
+                <div className="flex justify-between items-center pb-3 mb-4 border-b border-[#dadce0]">
                   <div>
-                    <h3 className="font-bold text-foreground">Reorder Documents</h3>
-                    <p className="text-xs text-muted-foreground mt-0.5">Drag handles to rearrange your merge order.</p>
+                    <h3 className="font-bold text-[#202124] text-sm sm:text-base">Document Sequence</h3>
+                    <p className="text-xs text-[#5f6368] mt-0.5">Drag to rearrange the sequence before merging.</p>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs text-muted-foreground italic hidden sm:inline">Drag the handles to sort</span>
+                  <div className="flex items-center gap-2">
                     <button 
                       onClick={() => fileInputRef.current?.click()}
                       disabled={isProcessing}
-                      className="px-3 py-1.5 bg-primary/10 text-primary hover:bg-primary/20 disabled:opacity-50 text-xs font-bold rounded-lg transition-colors flex items-center gap-1 cursor-pointer disabled:cursor-not-allowed"
+                      className="btn-google-secondary text-xs py-1.5 px-3"
                     >
-                      + Add Files
+                      + Add More
                     </button>
                   </div>
                 </div>
@@ -301,85 +297,61 @@ const PdfMerge = () => {
         </motion.div>
 
         {/* Action Panel Sidebar */}
-        <div className="w-full lg:w-[350px] xl:w-[400px] shrink-0 space-y-6">
-          <div className={`bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6 transition-all duration-300 ${files.length === 0 ? 'opacity-50 pointer-events-none grayscale-[0.5]' : ''}`}>
-            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-2 border-b border-border pb-3">
-              <FileText size={16} /> Merge Details
+        <div className="w-full lg:w-[360px] xl:w-[400px] shrink-0 space-y-6">
+          <div className="tool-sidebar p-5 sm:p-6 space-y-5">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#5f6368] flex items-center gap-2 border-b border-[#dadce0] pb-3">
+              <FileText size={15} className="text-[#1a73e8]" /> Merge Details
             </h3>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="p-4 bg-muted/20 border border-border/50 rounded-xl text-center">
-                <p className="text-xs text-muted-foreground font-medium">Selected Files</p>
-                <p className="text-2xl font-extrabold text-foreground mt-1">{files.length}</p>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="p-3.5 bg-[#f8f9fa] border border-[#dadce0] rounded-xl text-center">
+                <p className="text-[11px] text-[#5f6368] font-medium">Selected Files</p>
+                <p className="text-xl font-extrabold text-[#202124] mt-0.5">{files.length}</p>
               </div>
-              <div className="p-4 bg-muted/20 border border-border/50 rounded-xl text-center">
-                <p className="text-xs text-muted-foreground font-medium">Total Size</p>
-                <p className="text-2xl font-extrabold text-foreground mt-1">{formattedTotalSize} MB</p>
+              <div className="p-3.5 bg-[#f8f9fa] border border-[#dadce0] rounded-xl text-center">
+                <p className="text-[11px] text-[#5f6368] font-medium">Total Size</p>
+                <p className="text-xl font-extrabold text-[#202124] mt-0.5">{formattedTotalSize} MB</p>
               </div>
             </div>
 
-            <div className="space-y-4 text-sm text-muted-foreground bg-muted/10 p-4 rounded-xl border border-border/30">
-              <div className="flex items-start gap-3">
-                <CheckCircle2 className="text-emerald-500 mt-0.5 shrink-0" size={16} />
-                <p>Order is determined from top to bottom.</p>
+            <div className="space-y-2.5 text-xs text-[#5f6368]">
+              <div className="flex items-start gap-2">
+                <CheckCircle2 size={15} className="text-[#34a853] shrink-0 mt-0.5" />
+                <p>Merged in exact sequence from top to bottom.</p>
               </div>
-              <div className="flex items-start gap-3">
-                <CheckCircle2 className="text-emerald-500 mt-0.5 shrink-0" size={16} />
-                <p>Original files are untouched.</p>
-              </div>
-              <div className="flex items-start gap-3">
-                <CheckCircle2 className="text-emerald-500 mt-0.5 shrink-0" size={16} />
-                <p>Processed securely in-memory.</p>
+              <div className="flex items-start gap-2">
+                <CheckCircle2 size={15} className="text-[#34a853] shrink-0 mt-0.5" />
+                <p>100% private in-browser client-side merging.</p>
               </div>
             </div>
-          </div>
-          
-          <div className="flex flex-col gap-3">
-            <button 
-              onClick={handleMerge}
-              disabled={files.length < 2 || isProcessing}
-              className={`w-full h-14 font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-[0_1px_2px_rgba(0,0,0,0.1),0_0_0_1px_rgba(255,255,255,0.1)_inset] disabled:opacity-50 disabled:hover:shadow-none active:scale-[0.98] overflow-hidden ${
-                isProcessing
-                  ? 'bg-primary/70 text-primary-foreground cursor-not-allowed'
-                  : 'bg-primary hover:bg-primary/90 text-primary-foreground hover:shadow-[0_4px_12px_rgba(var(--primary),0.3)]'
-              }`}
-            >
-              <AnimatePresence mode="popLayout" initial={false}>
+
+            <div className="pt-3 border-t border-[#dadce0] flex flex-col gap-2.5">
+              <button 
+                onClick={handleMerge}
+                disabled={files.length < 2 || isProcessing}
+                className="w-full btn-google-primary text-sm py-3 shadow-sm justify-center disabled:opacity-50"
+              >
                 {isProcessing ? (
-                  <motion.div
-                    key="generating"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                    className="flex items-center gap-2"
-                  >
-                    <Loader2 className="animate-spin" size={20} />
-                    Merging PDFs...
-                  </motion.div>
+                  <>
+                    <Loader2 size={16} className="animate-spin" /> Merging PDFs...
+                  </>
                 ) : (
-                  <motion.div
-                    key="idle"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                    className="flex items-center gap-2"
-                  >
-                    <FileText size={20} />
-                    Merge {files.length} PDFs
-                  </motion.div>
+                  <>
+                    <FileText size={16} /> Merge {files.length} PDFs
+                  </>
                 )}
-              </AnimatePresence>
-            </button>
+              </button>
 
-            <button 
-              onClick={() => { setFiles([]); document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' }); }} 
-              disabled={isProcessing || files.length === 0}
-              className="w-full py-3.5 bg-muted/20 hover:bg-muted/50 border border-border/50 hover:border-border text-foreground font-semibold rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 active:scale-[0.98]"
-            >
-              <Trash2 size={18} /> Clear All
-            </button>
+              {files.length > 0 && (
+                <button 
+                  onClick={() => { setFiles([]); document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' }); }} 
+                  disabled={isProcessing}
+                  className="w-full btn-google-secondary text-xs py-2 justify-center"
+                >
+                  <Trash2 size={13} /> Clear All
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>
