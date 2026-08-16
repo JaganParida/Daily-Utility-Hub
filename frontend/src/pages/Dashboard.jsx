@@ -79,7 +79,7 @@ function BracesIcon(props) {
 // ─── CONVERSION ROUTING ENGINE ───
 const CONVERSIONS_MAP = {
   "PDF": [
-    { target: "DOCX", toolName: "PDF to Word Converter", desc: "Convert PDF to editable Word with OCR & exact layout", to: "/tools/pdf-to-word", badge: "AI / OCR Engine" },
+    { target: "DOCX", toolName: "PDF to Word Converter", desc: "Convert PDF to editable Word with OCR & exact layout", to: "/tools/pdf-to-word", badge: "OCR Engine" },
     { target: "PNG", toolName: "PDF to High-Res Images", desc: "Extract PDF pages to crisp PNG images", to: "/tools/pdf-converter", badge: "Lossless" },
     { target: "JPG", toolName: "PDF to JPG Converter", desc: "Export lightweight JPG images", to: "/tools/pdf-converter", badge: "Fast" },
     { target: "WEBP", toolName: "PDF to WebP Converter", desc: "Modern web-optimized images", to: "/tools/pdf-converter", badge: "Compact" },
@@ -149,7 +149,7 @@ const LIVE_TRANSFORMATION_DEMOS = [
   { fromExt: "PDF", fromName: "contract_nda_2026.pdf", fromSize: "2.4 MB", engine: "OCR Layout Engine", toExt: "DOCX", toName: "contract_nda_2026.docx", toSize: "1.1 MB", tool: "/tools/pdf-to-word", speed: "0.04s" },
   { fromExt: "PNG", fromName: "hero_banner_4k.png", fromSize: "8.2 MB", engine: "WebP Lossless Optimizer", toExt: "WEBP", toName: "hero_banner_4k.webp", toSize: "1.9 MB (-76%)", tool: "/tools/image-converter", speed: "0.02s" },
   { fromExt: "JSON", fromName: "api_schema_v2.json", fromSize: "180 KB", engine: "TypeScript Generator", toExt: "TS", toName: "api_schema_v2.d.ts", toSize: "45 KB", tool: "/tools/type-converter", speed: "0.01s" },
-  { fromExt: "CSV", fromName: "financial_q3_sales.csv", fromSize: "640 KB", engine: "SQLite Schema Exporter", toExt: "SQL", toName: "financial_q3_sales.sql", toSize: "820 KB", tool: "/tools/sheet-converter", speed: "0.03s" },
+  { fromExt: "CSV", fromName: "financial_sales.csv", fromSize: "640 KB", engine: "SQLite Schema Exporter", toExt: "SQL", toName: "financial_sales.sql", toSize: "820 KB", tool: "/tools/sheet-converter", speed: "0.03s" },
 ];
 
 // ─── POPULAR 1-CLICK CONVERSIONS ───
@@ -328,7 +328,7 @@ const Dashboard = () => {
       }
       toast.error("No image or text found on clipboard.");
     } catch (err) {
-      toast.error("Unable to read clipboard. Please grant permissions or choose a file.");
+      toast.error("Unable to read clipboard. Please select a file directly.");
     }
   };
 
@@ -401,37 +401,27 @@ output.save("converted_output.${toFormat.toLowerCase()}")`
       <div className="w-full min-h-screen bg-[#f8f9fa] text-[#202124] flex flex-col items-center">
         
         {/* ══════════════════════════════════════════════════════════════════
-            HERO SECTION: ANIMATED DESIGN & CONVERSION SUITE
+            HERO SECTION: RESPONSIVE, CLEAN & TOUCH-FRIENDLY
         ══════════════════════════════════════════════════════════════════ */}
-        <section className="w-full pt-8 sm:pt-12 pb-14 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto flex flex-col items-center text-center relative z-20">
+        <section className="w-full pt-6 sm:pt-10 pb-12 px-3 sm:px-6 lg:px-8 max-w-5xl mx-auto flex flex-col items-center text-center relative z-20">
           
-          {/* Privacy Pill Badge */}
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-[#dadce0] text-[#137333] shadow-2xs mb-5"
-          >
-            <span className="w-2 h-2 rounded-full bg-[#34a853] animate-pulse" />
-            <span className="text-xs font-semibold">100% In-Browser Privacy • 0KB Cloud Upload • Zero Telemetry</span>
-          </motion.div>
-
-          {/* Main Hero Headline */}
+          {/* Main Hero Headline: Clean, unified, and mobile responsive */}
           <motion.h1 
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.05 }}
-            className="text-3xl sm:text-5xl md:text-6xl font-black text-[#202124] tracking-tight max-w-4xl leading-[1.15] mb-4"
+            transition={{ duration: 0.2 }}
+            className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-[#202124] tracking-tight max-w-3xl leading-tight sm:leading-tight mb-3 sm:mb-4 px-2"
           >
-            Convert & Process Any File — <span className="text-[#1a73e8]">Directly In Your Browser</span>
+            Convert & Process Any File <span className="text-[#1a73e8]">In Your Browser</span>
           </motion.h1>
 
           <motion.p
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="text-sm sm:text-base md:text-lg text-[#5f6368] max-w-2xl mx-auto mb-6 leading-relaxed"
+            transition={{ delay: 0.05 }}
+            className="text-xs sm:text-sm md:text-base text-[#5f6368] max-w-xl mx-auto mb-6 leading-relaxed px-2"
           >
-            Drop a file and pick what to turn it into. Daily Utility Hub handles 200+ formats across documents, images, spreadsheets, media, and code — completely offline and private.
+            Process 200+ formats across documents, images, spreadsheets, media, and code — 100% locally and privately.
           </motion.p>
 
           {/* ══════════════════════════════════════════════════════════════
@@ -440,51 +430,51 @@ output.save("converted_output.${toFormat.toLowerCase()}")`
           <motion.div 
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.12 }}
-            className="w-full max-w-2xl mb-8 p-3 sm:p-4 rounded-2xl bg-white border border-[#dadce0] shadow-2xs overflow-hidden cursor-pointer"
+            transition={{ delay: 0.1 }}
+            className="w-full max-w-2xl mb-6 p-2.5 sm:p-3.5 rounded-2xl bg-white border border-[#dadce0] shadow-2xs overflow-hidden cursor-pointer"
             onClick={() => navigate(activeDemo.tool)}
             title="Click to launch this utility"
           >
-            <div className="flex items-center justify-between gap-2 sm:gap-4 flex-wrap sm:flex-nowrap">
+            <div className="flex items-center justify-between gap-1.5 sm:gap-3">
               
               {/* Input Staged File */}
-              <div className="flex items-center gap-2.5 min-w-0 bg-[#f8f9fa] px-3 py-2 rounded-xl border border-[#dadce0] flex-1">
-                <span className="w-7 h-7 rounded-lg bg-[#e8f0fe] text-[#1a73e8] flex items-center justify-center text-[10px] font-bold shrink-0">
+              <div className="flex items-center gap-2 min-w-0 bg-[#f8f9fa] px-2.5 py-1.5 sm:py-2 rounded-xl border border-[#dadce0] flex-1">
+                <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-[#e8f0fe] text-[#1a73e8] flex items-center justify-center text-[10px] font-bold shrink-0">
                   {activeDemo.fromExt}
                 </span>
                 <div className="text-left min-w-0">
-                  <p className="text-xs font-bold text-[#202124] truncate">{activeDemo.fromName}</p>
-                  <p className="text-[10px] text-[#5f6368]">{activeDemo.fromSize}</p>
+                  <p className="text-[11px] sm:text-xs font-bold text-[#202124] truncate">{activeDemo.fromName}</p>
+                  <p className="text-[9px] sm:text-[10px] text-[#5f6368]">{activeDemo.fromSize}</p>
                 </div>
               </div>
 
               {/* Animated Engine Core */}
-              <div className="flex flex-col items-center justify-center shrink-0 px-2 py-1">
-                <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[#1a73e8] mb-0.5">
-                  <Zap size={13} className="text-[#1a73e8] animate-bounce-subtle" />
+              <div className="flex flex-col items-center justify-center shrink-0 px-1 sm:px-2">
+                <div className="flex items-center gap-1 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-[#1a73e8] mb-0.5">
+                  <Zap size={12} className="text-[#1a73e8] animate-bounce-subtle" />
                   <span className="hidden sm:inline">{activeDemo.engine}</span>
                   <span className="sm:hidden">WASM</span>
                 </div>
-                <div className="w-20 sm:w-28 h-1.5 bg-[#f1f3f4] rounded-full overflow-hidden relative">
+                <div className="w-14 sm:w-24 h-1.5 bg-[#f1f3f4] rounded-full overflow-hidden relative">
                   <motion.div 
                     key={activeDemo.fromExt}
                     initial={{ x: "-100%" }}
                     animate={{ x: "100%" }}
-                    transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+                    transition={{ repeat: Infinity, duration: 1.4, ease: "easeInOut" }}
                     className="w-1/2 h-full bg-gradient-to-r from-[#1a73e8] to-[#34a853] rounded-full"
                   />
                 </div>
-                <span className="text-[9px] text-[#34a853] font-bold mt-0.5">{activeDemo.speed} local speed</span>
+                <span className="text-[8px] sm:text-[9px] text-[#34a853] font-bold mt-0.5">{activeDemo.speed}</span>
               </div>
 
               {/* Output File */}
-              <div className="flex items-center gap-2.5 min-w-0 bg-[#f8f9fa] px-3 py-2 rounded-xl border border-[#dadce0] flex-1">
-                <span className="w-7 h-7 rounded-lg bg-[#e6f4ea] text-[#34a853] flex items-center justify-center text-[10px] font-bold shrink-0">
+              <div className="flex items-center gap-2 min-w-0 bg-[#f8f9fa] px-2.5 py-1.5 sm:py-2 rounded-xl border border-[#dadce0] flex-1">
+                <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-[#e6f4ea] text-[#34a853] flex items-center justify-center text-[10px] font-bold shrink-0">
                   {activeDemo.toExt}
                 </span>
                 <div className="text-left min-w-0">
-                  <p className="text-xs font-bold text-[#202124] truncate">{activeDemo.toName}</p>
-                  <p className="text-[10px] text-[#34a853] font-semibold">{activeDemo.toSize}</p>
+                  <p className="text-[11px] sm:text-xs font-bold text-[#202124] truncate">{activeDemo.toName}</p>
+                  <p className="text-[9px] sm:text-[10px] text-[#34a853] font-semibold">{activeDemo.toSize}</p>
                 </div>
               </div>
 
@@ -492,119 +482,138 @@ output.save("converted_output.${toFormat.toLowerCase()}")`
           </motion.div>
 
           {/* ══════════════════════════════════════════════════════════════
-              SIGNATURE CONVERTER SELECTOR BAR
+              SIGNATURE CONVERTER SELECTOR BAR (RESPONSIVE & MOBILE POLISHED)
           ══════════════════════════════════════════════════════════════ */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.98 }}
+            initial={{ opacity: 0, scale: 0.99 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.15 }}
-            className="w-full max-w-3xl bg-white border border-[#dadce0] rounded-3xl p-5 sm:p-7 shadow-xs relative mb-6 text-left"
+            className="w-full max-w-2xl bg-white border border-[#dadce0] rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-xs relative mb-6 text-left"
           >
-            {/* The Convert [FROM] to [TO] sentence bar */}
-            <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 pb-6 border-b border-[#dadce0]">
-              <span className="text-lg sm:text-xl font-bold text-[#5f6368] lowercase">convert</span>
+            {/* The Convert [FROM] to [TO] sentence / card selector */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-2.5 sm:gap-4 pb-5 border-b border-[#dadce0]">
+              
+              <div className="flex items-center justify-between w-full sm:w-auto gap-2">
+                <span className="text-sm font-bold text-[#5f6368] lowercase sm:hidden">from</span>
 
-              {/* FROM Format Dropdown Button */}
-              <div className="relative">
-                <button
-                  onClick={() => {
-                    setIsFromDropdownOpen(!isFromDropdownOpen);
-                    setIsToDropdownOpen(false);
-                  }}
-                  className="h-12 px-4 rounded-xl bg-[#f8f9fa] border border-[#dadce0] hover:border-[#1a73e8] hover:bg-white text-[#202124] font-bold text-sm sm:text-base flex items-center gap-2.5 transition-all shadow-2xs cursor-pointer"
-                >
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#1a73e8]" />
-                  <span>{fromFormat}</span>
-                  <ChevronDown size={16} className="text-[#5f6368]" />
-                </button>
-
-                {/* Dropdown Menu */}
-                {isFromDropdownOpen && (
-                  <div className="absolute top-full left-0 mt-2 w-72 sm:w-80 bg-white border border-[#dadce0] rounded-2xl shadow-xl z-50 p-3 text-left max-h-96 overflow-y-auto custom-scrollbar">
-                    <div className="text-[10px] font-bold uppercase tracking-wider text-[#5f6368] px-2 py-1 mb-1">
-                      Select Input Format
+                {/* FROM Format Dropdown Button */}
+                <div className="relative flex-1 sm:flex-none">
+                  <button
+                    onClick={() => {
+                      setIsFromDropdownOpen(!isFromDropdownOpen);
+                      setIsToDropdownOpen(false);
+                    }}
+                    className="w-full sm:w-auto h-11 sm:h-12 px-3 sm:px-4 rounded-xl bg-[#f8f9fa] border border-[#dadce0] hover:border-[#1a73e8] hover:bg-white text-[#202124] font-bold text-xs sm:text-sm flex items-center justify-between sm:justify-start gap-2 transition-all shadow-2xs cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-[#1a73e8]" />
+                      <span>{fromFormat}</span>
                     </div>
-                    {FORMAT_GROUPS.map((grp) => (
-                      <div key={grp.category} className="mb-2">
-                        <div className="text-[11px] font-bold text-[#80868b] px-2 py-1">{grp.category}</div>
-                        <div className="grid grid-cols-2 gap-1">
-                          {grp.formats.map((f) => (
-                            <button
-                              key={f.ext}
-                              onClick={() => handleSelectFromFormat(f.ext)}
-                              className={`p-2 rounded-lg text-left text-xs font-semibold flex items-center gap-2 hover:bg-[#f1f3f4] transition-colors cursor-pointer ${
-                                fromFormat === f.ext ? "bg-[#e8f0fe] text-[#1a73e8]" : "text-[#202124]"
-                              }`}
-                            >
-                              <span className={`w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold ${f.color}`}>
-                                {f.ext.slice(0, 3)}
-                              </span>
-                              <span className="truncate">{f.ext}</span>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+                    <ChevronDown size={14} className="text-[#5f6368]" />
+                  </button>
 
-              {/* Interchange Swap Button */}
-              <button
-                onClick={handleSwapFormats}
-                title="Swap formats"
-                className="w-10 h-10 rounded-full bg-[#f1f3f4] hover:bg-[#e8f0fe] text-[#5f6368] hover:text-[#1a73e8] border border-[#dadce0] flex items-center justify-center transition-all active:rotate-180 cursor-pointer"
-              >
-                <ArrowRightLeft size={16} />
-              </button>
-
-              <span className="text-lg sm:text-xl font-bold text-[#5f6368] lowercase">to</span>
-
-              {/* TO Format Dropdown Button */}
-              <div className="relative">
-                <button
-                  onClick={() => {
-                    setIsToDropdownOpen(!isToDropdownOpen);
-                    setIsFromDropdownOpen(false);
-                  }}
-                  className="h-12 px-4 rounded-xl bg-[#f8f9fa] border border-[#dadce0] hover:border-[#1a73e8] hover:bg-white text-[#202124] font-bold text-sm sm:text-base flex items-center gap-2.5 transition-all shadow-2xs cursor-pointer"
-                >
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#34a853]" />
-                  <span>{toFormat}</span>
-                  <ChevronDown size={16} className="text-[#5f6368]" />
-                </button>
-
-                {/* TO Dropdown Menu */}
-                {isToDropdownOpen && (
-                  <div className="absolute top-full right-0 sm:left-0 mt-2 w-72 sm:w-80 bg-white border border-[#dadce0] rounded-2xl shadow-xl z-50 p-3 text-left max-h-96 overflow-y-auto custom-scrollbar">
-                    <div className="text-[10px] font-bold uppercase tracking-wider text-[#5f6368] px-2 py-1 mb-1">
-                      Compatible Output Targets
-                    </div>
-                    <div className="space-y-1">
-                      {availableOutputs.map((op) => (
-                        <button
-                          key={op.target}
-                          onClick={() => {
-                            setToFormat(op.target);
-                            setIsToDropdownOpen(false);
-                          }}
-                          className={`w-full p-2.5 rounded-xl text-left text-xs font-semibold flex items-center justify-between hover:bg-[#f1f3f4] transition-colors cursor-pointer ${
-                            toFormat === op.target ? "bg-[#e6f4ea] text-[#137333]" : "text-[#202124]"
-                          }`}
-                        >
-                          <div>
-                            <span className="font-bold text-sm block">{op.target}</span>
-                            <span className="text-[11px] text-[#5f6368] block mt-0.5">{op.toolName}</span>
-                          </div>
-                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-white border border-[#dadce0] text-[#5f6368]">
-                            {op.badge}
-                          </span>
+                  {/* Dropdown Menu */}
+                  {isFromDropdownOpen && (
+                    <div className="fixed inset-x-4 top-24 sm:absolute sm:top-full sm:left-0 sm:inset-x-auto mt-2 w-auto sm:w-80 bg-white border border-[#dadce0] rounded-2xl shadow-2xl z-50 p-3 text-left max-h-[75vh] sm:max-h-96 overflow-y-auto custom-scrollbar">
+                      <div className="flex items-center justify-between pb-2 mb-1 border-b border-[#dadce0]">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-[#5f6368]">
+                          Select Input Format
+                        </span>
+                        <button onClick={() => setIsFromDropdownOpen(false)} className="p-1 rounded text-[#5f6368] hover:bg-[#f1f3f4]">
+                          <X size={14} />
                         </button>
+                      </div>
+                      {FORMAT_GROUPS.map((grp) => (
+                        <div key={grp.category} className="mb-2">
+                          <div className="text-[10px] font-bold text-[#80868b] px-2 py-1">{grp.category}</div>
+                          <div className="grid grid-cols-2 gap-1">
+                            {grp.formats.map((f) => (
+                              <button
+                                key={f.ext}
+                                onClick={() => handleSelectFromFormat(f.ext)}
+                                className={`p-2 rounded-lg text-left text-xs font-semibold flex items-center gap-2 hover:bg-[#f1f3f4] transition-colors cursor-pointer ${
+                                  fromFormat === f.ext ? "bg-[#e8f0fe] text-[#1a73e8]" : "text-[#202124]"
+                                }`}
+                              >
+                                <span className={`w-5 h-5 rounded flex items-center justify-center text-[9px] font-bold ${f.color}`}>
+                                  {f.ext.slice(0, 3)}
+                                </span>
+                                <span className="truncate">{f.ext}</span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
                       ))}
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
+
+                {/* Interchange Swap Button */}
+                <button
+                  onClick={handleSwapFormats}
+                  title="Swap formats"
+                  className="w-10 h-10 rounded-xl sm:rounded-full bg-[#f1f3f4] hover:bg-[#e8f0fe] text-[#5f6368] hover:text-[#1a73e8] border border-[#dadce0] flex items-center justify-center transition-all active:rotate-180 shrink-0 cursor-pointer"
+                >
+                  <ArrowRightLeft size={15} />
+                </button>
+
+                <span className="text-sm font-bold text-[#5f6368] lowercase sm:hidden">to</span>
+
+                {/* TO Format Dropdown Button */}
+                <div className="relative flex-1 sm:flex-none">
+                  <button
+                    onClick={() => {
+                      setIsToDropdownOpen(!isToDropdownOpen);
+                      setIsFromDropdownOpen(false);
+                    }}
+                    className="w-full sm:w-auto h-11 sm:h-12 px-3 sm:px-4 rounded-xl bg-[#f8f9fa] border border-[#dadce0] hover:border-[#1a73e8] hover:bg-white text-[#202124] font-bold text-xs sm:text-sm flex items-center justify-between sm:justify-start gap-2 transition-all shadow-2xs cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-[#34a853]" />
+                      <span>{toFormat}</span>
+                    </div>
+                    <ChevronDown size={14} className="text-[#5f6368]" />
+                  </button>
+
+                  {/* TO Dropdown Menu */}
+                  {isToDropdownOpen && (
+                    <div className="fixed inset-x-4 top-24 sm:absolute sm:top-full sm:right-0 sm:left-auto sm:inset-x-auto mt-2 w-auto sm:w-80 bg-white border border-[#dadce0] rounded-2xl shadow-2xl z-50 p-3 text-left max-h-[75vh] sm:max-h-96 overflow-y-auto custom-scrollbar">
+                      <div className="flex items-center justify-between pb-2 mb-1 border-b border-[#dadce0]">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-[#5f6368]">
+                          Compatible Output Targets
+                        </span>
+                        <button onClick={() => setIsToDropdownOpen(false)} className="p-1 rounded text-[#5f6368] hover:bg-[#f1f3f4]">
+                          <X size={14} />
+                        </button>
+                      </div>
+                      <div className="space-y-1">
+                        {availableOutputs.map((op) => (
+                          <button
+                            key={op.target}
+                            onClick={() => {
+                              setToFormat(op.target);
+                              setIsToDropdownOpen(false);
+                            }}
+                            className={`w-full p-2.5 rounded-xl text-left text-xs font-semibold flex items-center justify-between hover:bg-[#f1f3f4] transition-colors cursor-pointer ${
+                              toFormat === op.target ? "bg-[#e6f4ea] text-[#137333]" : "text-[#202124]"
+                            }`}
+                          >
+                            <div>
+                              <span className="font-bold text-xs sm:text-sm block">{op.target}</span>
+                              <span className="text-[10px] text-[#5f6368] block mt-0.5">{op.toolName}</span>
+                            </div>
+                            <span className="text-[9px] px-2 py-0.5 rounded-full bg-white border border-[#dadce0] text-[#5f6368]">
+                              {op.badge}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
               </div>
+
             </div>
 
             {/* Drag & Drop Live Zone */}
@@ -612,7 +621,7 @@ output.save("converted_output.${toFormat.toLowerCase()}")`
               onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
               onDragLeave={() => setIsDragging(false)}
               onDrop={handleDrop}
-              className={`mt-6 p-6 sm:p-8 rounded-2xl dropzone-animated ${isDragging ? "is-dragover" : ""} flex flex-col items-center justify-center text-center cursor-pointer`}
+              className={`mt-4 sm:mt-5 p-5 sm:p-7 rounded-2xl dropzone-animated ${isDragging ? "is-dragover" : ""} flex flex-col items-center justify-center text-center cursor-pointer`}
               onClick={() => fileInputRef.current?.click()}
             >
               <input
@@ -624,60 +633,60 @@ output.save("converted_output.${toFormat.toLowerCase()}")`
 
               {!stagedFile ? (
                 <>
-                  <div className="w-14 h-14 rounded-2xl bg-[#e8f0fe] text-[#1a73e8] border border-[#d2e3fc] flex items-center justify-center mb-3 shadow-2xs">
-                    <UploadCloud size={28} />
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-[#e8f0fe] text-[#1a73e8] border border-[#d2e3fc] flex items-center justify-center mb-2.5 shadow-2xs">
+                    <UploadCloud size={24} />
                   </div>
-                  <h3 className="text-base sm:text-lg font-bold text-[#202124]">
+                  <h3 className="text-sm sm:text-base font-bold text-[#202124]">
                     Select File or Drop here
                   </h3>
-                  <p className="text-xs text-[#5f6368] mt-1 max-w-sm">
-                    Upload from your device. Files stay 100% on your machine with zero server roundtrips.
+                  <p className="text-[11px] sm:text-xs text-[#5f6368] mt-1 max-w-sm">
+                    Files stay 100% on your device with zero remote server roundtrips.
                   </p>
                   
                   {/* Sample file buttons */}
-                  <div className="flex flex-wrap items-center justify-center gap-2 mt-4" onClick={(e) => e.stopPropagation()}>
-                    <span className="text-[11px] font-semibold text-[#80868b]">Try Sample:</span>
+                  <div className="flex flex-wrap items-center justify-center gap-1.5 mt-3.5" onClick={(e) => e.stopPropagation()}>
+                    <span className="text-[10px] font-semibold text-[#80868b]">Try Sample:</span>
                     <button
                       onClick={() => loadSampleFile("pdf")}
-                      className="text-[11px] px-2.5 py-1 rounded-full bg-white border border-[#dadce0] hover:border-[#1a73e8] text-[#5f6368] hover:text-[#1a73e8] transition-colors"
+                      className="text-[10px] px-2 py-0.5 rounded-full bg-white border border-[#dadce0] hover:border-[#1a73e8] text-[#5f6368] hover:text-[#1a73e8] transition-colors"
                     >
                       Sample PDF
                     </button>
                     <button
                       onClick={() => loadSampleFile("image")}
-                      className="text-[11px] px-2.5 py-1 rounded-full bg-white border border-[#dadce0] hover:border-[#1a73e8] text-[#5f6368] hover:text-[#1a73e8] transition-colors"
+                      className="text-[10px] px-2 py-0.5 rounded-full bg-white border border-[#dadce0] hover:border-[#1a73e8] text-[#5f6368] hover:text-[#1a73e8] transition-colors"
                     >
                       Sample PNG
                     </button>
                     <button
                       onClick={() => loadSampleFile("json")}
-                      className="text-[11px] px-2.5 py-1 rounded-full bg-white border border-[#dadce0] hover:border-[#1a73e8] text-[#5f6368] hover:text-[#1a73e8] transition-colors"
+                      className="text-[10px] px-2 py-0.5 rounded-full bg-white border border-[#dadce0] hover:border-[#1a73e8] text-[#5f6368] hover:text-[#1a73e8] transition-colors"
                     >
                       Sample JSON
                     </button>
                   </div>
                 </>
               ) : (
-                <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-xl border border-[#dadce0] shadow-2xs" onClick={(e) => e.stopPropagation()}>
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-10 h-10 rounded-lg bg-[#e8f0fe] text-[#1a73e8] flex items-center justify-center font-bold text-xs shrink-0">
+                <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-3 bg-white p-3.5 rounded-xl border border-[#dadce0] shadow-2xs" onClick={(e) => e.stopPropagation()}>
+                  <div className="flex items-center gap-2.5 min-w-0 w-full sm:w-auto">
+                    <div className="w-9 h-9 rounded-lg bg-[#e8f0fe] text-[#1a73e8] flex items-center justify-center font-bold text-xs shrink-0">
                       {stagedFile.name.split('.').pop().toUpperCase()}
                     </div>
-                    <div className="text-left min-w-0">
+                    <div className="text-left min-w-0 flex-1">
                       <p className="text-xs sm:text-sm font-bold text-[#202124] truncate">{stagedFile.name}</p>
-                      <p className="text-[11px] text-[#5f6368]">
+                      <p className="text-[10px] text-[#5f6368]">
                         {(stagedFile.size / (1024 * 1024)).toFixed(2)} MB • Ready to convert
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
                     <button
                       onClick={() => setStagedFile(null)}
-                      className="p-2 rounded-lg text-[#5f6368] hover:bg-[#f1f3f4] hover:text-[#ea4335] cursor-pointer"
+                      className="p-1.5 rounded-lg text-[#5f6368] hover:bg-[#f1f3f4] hover:text-[#ea4335] cursor-pointer"
                       title="Remove file"
                     >
-                      <X size={16} />
+                      <X size={15} />
                     </button>
                   </div>
                 </div>
@@ -685,46 +694,46 @@ output.save("converted_output.${toFormat.toLowerCase()}")`
             </div>
 
             {/* Action Bar: Select File CTA + Launch */}
-            <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="mt-4 sm:mt-5 flex flex-col sm:flex-row items-center justify-between gap-3">
               
               {/* Select File Multi-Action Button */}
               <div className="relative w-full sm:w-auto">
-                <div className="flex items-center">
+                <div className="flex items-center w-full sm:w-auto">
                   <button
                     onClick={() => fileInputRef.current?.click()}
-                    className="h-12 px-6 rounded-l-full bg-[#1a73e8] hover:bg-[#1557b0] text-white font-bold text-sm flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer flex-1 sm:flex-none"
+                    className="h-11 sm:h-12 px-5 rounded-l-xl sm:rounded-l-full bg-[#1a73e8] hover:bg-[#1557b0] text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-2xs transition-all cursor-pointer flex-1 sm:flex-none"
                   >
-                    <UploadCloud size={18} />
+                    <UploadCloud size={16} />
                     <span>Select File</span>
                   </button>
                   <button
                     onClick={() => setIsSelectFileMenuOpen(!isSelectFileMenuOpen)}
-                    className="h-12 px-3 rounded-r-full bg-[#1765cc] hover:bg-[#124ea2] text-white border-l border-white/20 flex items-center justify-center transition-colors cursor-pointer"
+                    className="h-11 sm:h-12 px-3 rounded-r-xl sm:rounded-r-full bg-[#1765cc] hover:bg-[#124ea2] text-white border-l border-white/20 flex items-center justify-center transition-colors cursor-pointer"
                   >
-                    <ChevronDown size={16} />
+                    <ChevronDown size={15} />
                   </button>
                 </div>
 
                 {isSelectFileMenuOpen && (
-                  <div className="absolute top-full left-0 mt-2 w-64 bg-white border border-[#dadce0] rounded-2xl shadow-xl z-50 p-2 text-left">
+                  <div className="absolute top-full left-0 mt-2 w-60 bg-white border border-[#dadce0] rounded-2xl shadow-xl z-50 p-2 text-left">
                     <button
                       onClick={() => {
                         fileInputRef.current?.click();
                         setIsSelectFileMenuOpen(false);
                       }}
-                      className="w-full px-3 py-2 text-xs font-semibold text-[#202124] hover:bg-[#f1f3f4] rounded-lg flex items-center gap-2.5 transition-colors cursor-pointer"
+                      className="w-full px-3 py-2 text-xs font-semibold text-[#202124] hover:bg-[#f1f3f4] rounded-lg flex items-center gap-2 transition-colors cursor-pointer"
                     >
-                      <UploadCloud size={15} className="text-[#1a73e8]" />
-                      <span>From My Computer</span>
+                      <UploadCloud size={14} className="text-[#1a73e8]" />
+                      <span>From My Device</span>
                     </button>
                     <button
                       onClick={() => {
                         handlePasteClipboard();
                         setIsSelectFileMenuOpen(false);
                       }}
-                      className="w-full px-3 py-2 text-xs font-semibold text-[#202124] hover:bg-[#f1f3f4] rounded-lg flex items-center gap-2.5 transition-colors cursor-pointer"
+                      className="w-full px-3 py-2 text-xs font-semibold text-[#202124] hover:bg-[#f1f3f4] rounded-lg flex items-center gap-2 transition-colors cursor-pointer"
                     >
-                      <Copy size={15} className="text-[#34a853]" />
+                      <Copy size={14} className="text-[#34a853]" />
                       <span>Paste from Clipboard</span>
                     </button>
                     <button
@@ -734,9 +743,9 @@ output.save("converted_output.${toFormat.toLowerCase()}")`
                         const el = document.getElementById("all-tools-grid");
                         el?.scrollIntoView({ behavior: "smooth" });
                       }}
-                      className="w-full px-3 py-2 text-xs font-semibold text-[#202124] hover:bg-[#f1f3f4] rounded-lg flex items-center gap-2.5 transition-colors cursor-pointer"
+                      className="w-full px-3 py-2 text-xs font-semibold text-[#202124] hover:bg-[#f1f3f4] rounded-lg flex items-center gap-2 transition-colors cursor-pointer"
                     >
-                      <Layers size={15} className="text-[#8e24aa]" />
+                      <Layers size={14} className="text-[#8e24aa]" />
                       <span>Browse 90+ Tools</span>
                     </button>
                   </div>
@@ -746,32 +755,31 @@ output.save("converted_output.${toFormat.toLowerCase()}")`
               {/* Right: Convert Trigger CTA */}
               <button
                 onClick={handleLaunchConversion}
-                className="w-full sm:w-auto h-12 px-7 rounded-full bg-[#ea4335] hover:bg-[#d93025] text-white font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-xs active:scale-[0.98] cursor-pointer"
+                className="w-full sm:w-auto h-11 sm:h-12 px-6 rounded-xl sm:rounded-full bg-[#ea4335] hover:bg-[#d93025] text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all shadow-2xs active:scale-[0.98] cursor-pointer"
               >
                 <span>Convert {fromFormat} to {toFormat}</span>
-                <ArrowRight size={16} />
+                <ArrowRight size={15} />
               </button>
             </div>
 
           </motion.div>
 
           {/* ══════════════════════════════════════════════════════════════
-              FLOATING INTERACTIVE FORMAT PILLS
+              FLOATING INTERACTIVE FORMAT PILLS (MOBILE SCROLLABLE)
           ══════════════════════════════════════════════════════════════ */}
-          <div className="flex flex-wrap items-center justify-center gap-2 max-w-2xl mx-auto pt-2">
-            <span className="text-xs font-semibold text-[#5f6368] mr-1 flex items-center gap-1">
-              <Flame size={14} className="text-[#ea4335]" /> Popular Formats:
+          <div className="w-full flex items-center justify-start sm:justify-center gap-1.5 overflow-x-auto pb-2 custom-scrollbar">
+            <span className="text-[11px] font-semibold text-[#5f6368] shrink-0 mr-1 flex items-center gap-1">
+              <Flame size={13} className="text-[#ea4335]" /> Formats:
             </span>
-            {["PDF", "DOCX", "PNG", "WEBP", "JSON", "CSV", "MP4", "MP3", "ZIP", "SVG"].map((ext, idx) => (
+            {["PDF", "DOCX", "PNG", "WEBP", "JSON", "CSV", "MP4", "MP3", "ZIP", "SVG"].map((ext) => (
               <button
                 key={ext}
                 onClick={() => handleSelectFromFormat(ext)}
-                className={`text-xs px-3 py-1 rounded-full font-bold format-pill cursor-pointer shadow-2xs border transition-all ${
+                className={`text-[11px] px-2.5 py-1 rounded-full font-bold whitespace-nowrap cursor-pointer shadow-2xs border transition-all ${
                   fromFormat === ext
                     ? "bg-[#1a73e8] text-white border-[#1a73e8]"
                     : "bg-white text-[#3c4043] border-[#dadce0] hover:border-[#1a73e8] hover:text-[#1a73e8]"
                 }`}
-                style={{ animationDelay: `${idx * 150}ms` }}
               >
                 {ext}
               </button>
@@ -784,53 +792,53 @@ output.save("converted_output.${toFormat.toLowerCase()}")`
         {/* ══════════════════════════════════════════════════════════════════
             POPULAR 1-CLICK CONVERSIONS MATRIX
         ══════════════════════════════════════════════════════════════════ */}
-        <section className="w-full py-12 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
+        <section className="w-full py-10 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-5">
             <div>
-              <h2 className="text-2xl sm:text-3xl font-black text-[#202124] tracking-tight">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-[#202124] tracking-tight">
                 Popular Conversions
               </h2>
               <p className="text-xs sm:text-sm text-[#5f6368] mt-1">
-                Frequently used offline pipelines across developers, students, and businesses.
+                Frequently used offline pipelines across developers, students, and professionals.
               </p>
             </div>
             <Link
               to="/search"
               className="text-xs font-bold text-[#1a73e8] hover:underline flex items-center gap-1 shrink-0"
             >
-              Explore all 200+ formats <ArrowRight size={14} />
+              Explore all 200+ formats <ArrowRight size={13} />
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
             {POPULAR_CONVERSIONS.map((item) => {
               const Icon = item.icon;
               return (
                 <Link
                   key={item.name}
                   to={item.link}
-                  className="p-5 bg-white border border-[#dadce0] hover:border-[#1a73e8] hover:shadow-[0_4px_16px_rgba(26,115,232,0.12)] rounded-2xl transition-all shadow-xs flex flex-col justify-between group"
+                  className="p-4 bg-white border border-[#dadce0] hover:border-[#1a73e8] hover:shadow-[0_4px_16px_rgba(26,115,232,0.1)] rounded-2xl transition-all shadow-2xs flex flex-col justify-between group"
                 >
                   <div>
-                    <div className="flex items-center justify-between mb-3">
-                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${item.color}`}>
-                        <Icon size={18} />
+                    <div className="flex items-center justify-between mb-2.5">
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${item.color}`}>
+                        <Icon size={16} />
                       </div>
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#f1f3f4] text-[#5f6368] border border-[#dadce0]">
                         {item.from} → {item.to}
                       </span>
                     </div>
-                    <h3 className="font-bold text-sm text-[#202124] group-hover:text-[#1a73e8] transition-colors">
+                    <h3 className="font-bold text-xs sm:text-sm text-[#202124] group-hover:text-[#1a73e8] transition-colors">
                       {item.name}
                     </h3>
-                    <p className="text-xs text-[#5f6368] mt-1 line-clamp-2 leading-relaxed">
+                    <p className="text-[11px] text-[#5f6368] mt-1 line-clamp-2 leading-relaxed">
                       {item.desc}
                     </p>
                   </div>
 
-                  <div className="mt-4 pt-3 border-t border-[#dadce0] flex items-center justify-between text-xs font-semibold text-[#5f6368] group-hover:text-[#1a73e8]">
+                  <div className="mt-3.5 pt-2.5 border-t border-[#dadce0] flex items-center justify-between text-xs font-semibold text-[#5f6368] group-hover:text-[#1a73e8]">
                     <span>Convert Now</span>
-                    <ArrowRight size={13} className="group-hover:translate-x-1 transition-transform" />
+                    <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />
                   </div>
                 </Link>
               );
@@ -840,80 +848,80 @@ output.save("converted_output.${toFormat.toLowerCase()}")`
 
 
         {/* ══════════════════════════════════════════════════════════════════
-            WHY CLIENT-SIDE BEATS CLOUD CONVERT (COMPARISON MATRIX)
+            WHY PROCESS FILES LOCALLY VS OTHER TOOLS (COMPARISON MATRIX)
         ══════════════════════════════════════════════════════════════════ */}
-        <section className="w-full py-14 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto border-t border-[#dadce0]">
-          <div className="text-center max-w-2xl mx-auto mb-10">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#e6f4ea] border border-[#ceead6] text-[#137333] text-[11px] font-bold uppercase tracking-wider mb-2">
-              <Shield size={13} /> The Client-Side Advantage
+        <section className="w-full py-12 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto border-t border-[#dadce0]">
+          <div className="text-center max-w-2xl mx-auto mb-8">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#e6f4ea] border border-[#ceead6] text-[#137333] text-[10px] font-bold uppercase tracking-wider mb-2">
+              <Shield size={12} /> The Client-Side Advantage
             </div>
-            <h2 className="text-2xl sm:text-4xl font-black text-[#202124] tracking-tight">
-              Why Daily Utility Hub Beats Cloud Converters
+            <h2 className="text-xl sm:text-3xl font-black text-[#202124] tracking-tight">
+              Why Process Files Locally vs Other Tools
             </h2>
-            <p className="text-xs sm:text-sm text-[#5f6368] mt-2">
-              Unlike cloud services that upload your private documents to 3rd-party servers, Daily Utility Hub processes everything directly in your browser.
+            <p className="text-xs sm:text-sm text-[#5f6368] mt-1.5">
+              Unlike other online tools that upload your private documents to remote servers, all utilities process everything directly on your device with 0KB cloud uploads.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
             
-            <div className="p-6 bg-white border border-[#dadce0] rounded-2xl shadow-xs flex flex-col justify-between">
+            <div className="p-5 bg-white border border-[#dadce0] rounded-2xl shadow-2xs flex flex-col justify-between">
               <div>
-                <div className="w-10 h-10 rounded-xl bg-[#e6f4ea] text-[#34a853] flex items-center justify-center mb-3">
-                  <Shield size={20} />
+                <div className="w-9 h-9 rounded-xl bg-[#e6f4ea] text-[#34a853] flex items-center justify-center mb-3">
+                  <Shield size={18} />
                 </div>
-                <h3 className="font-bold text-sm text-[#202124] mb-1">100% Data Confidentiality</h3>
-                <p className="text-xs text-[#5f6368] leading-relaxed">
-                  Your files never leave your device. Zero cloud uploads, zero telemetry, and zero compliance exposure (HIPAA, GDPR safe).
+                <h3 className="font-bold text-xs sm:text-sm text-[#202124] mb-1">100% Data Confidentiality</h3>
+                <p className="text-[11px] sm:text-xs text-[#5f6368] leading-relaxed">
+                  Your files never leave your device. Zero remote uploads, zero telemetry, and zero compliance exposure.
                 </p>
               </div>
-              <div className="mt-4 pt-3 border-t border-[#dadce0] text-[11px] font-bold text-[#137333] flex items-center gap-1">
-                <Check size={14} /> 0KB Server Upload
+              <div className="mt-3.5 pt-2.5 border-t border-[#dadce0] text-[10px] font-bold text-[#137333] flex items-center gap-1">
+                <Check size={13} /> 0KB Server Upload
               </div>
             </div>
 
-            <div className="p-6 bg-white border border-[#dadce0] rounded-2xl shadow-xs flex flex-col justify-between">
+            <div className="p-5 bg-white border border-[#dadce0] rounded-2xl shadow-2xs flex flex-col justify-between">
               <div>
-                <div className="w-10 h-10 rounded-xl bg-[#e8f0fe] text-[#1a73e8] flex items-center justify-center mb-3">
-                  <Zap size={20} />
+                <div className="w-9 h-9 rounded-xl bg-[#e8f0fe] text-[#1a73e8] flex items-center justify-center mb-3">
+                  <Zap size={18} />
                 </div>
-                <h3 className="font-bold text-sm text-[#202124] mb-1">Instant Execution (0s Queue)</h3>
-                <p className="text-xs text-[#5f6368] leading-relaxed">
+                <h3 className="font-bold text-xs sm:text-sm text-[#202124] mb-1">Instant Execution (0s Queue)</h3>
+                <p className="text-[11px] sm:text-xs text-[#5f6368] leading-relaxed">
                   Powered by WebAssembly (Wasm) and multithreaded Web Workers running directly on your CPU/GPU hardware.
                 </p>
               </div>
-              <div className="mt-4 pt-3 border-t border-[#dadce0] text-[11px] font-bold text-[#1a73e8] flex items-center gap-1">
-                <Check size={14} /> No server waiting queues
+              <div className="mt-3.5 pt-2.5 border-t border-[#dadce0] text-[10px] font-bold text-[#1a73e8] flex items-center gap-1">
+                <Check size={13} /> No server waiting queues
               </div>
             </div>
 
-            <div className="p-6 bg-white border border-[#dadce0] rounded-2xl shadow-xs flex flex-col justify-between">
+            <div className="p-5 bg-white border border-[#dadce0] rounded-2xl shadow-2xs flex flex-col justify-between">
               <div>
-                <div className="w-10 h-10 rounded-xl bg-[#fef7e0] text-[#b06000] flex items-center justify-center mb-3">
-                  <Flame size={20} />
+                <div className="w-9 h-9 rounded-xl bg-[#fef7e0] text-[#b06000] flex items-center justify-center mb-3">
+                  <Flame size={18} />
                 </div>
-                <h3 className="font-bold text-sm text-[#202124] mb-1">Unlimited Free Conversions</h3>
-                <p className="text-xs text-[#5f6368] leading-relaxed">
-                  No 25-conversions/day quotas, no artificial file size caps, and no paywalls. Convert gigabytes without paying a cent.
+                <h3 className="font-bold text-xs sm:text-sm text-[#202124] mb-1">Unlimited Free Conversions</h3>
+                <p className="text-[11px] sm:text-xs text-[#5f6368] leading-relaxed">
+                  No daily quotas, no artificial file size caps, and no paywalls. Convert gigabytes without paying a cent.
                 </p>
               </div>
-              <div className="mt-4 pt-3 border-t border-[#dadce0] text-[11px] font-bold text-[#b06000] flex items-center gap-1">
-                <Check size={14} /> Unlimited forever
+              <div className="mt-3.5 pt-2.5 border-t border-[#dadce0] text-[10px] font-bold text-[#b06000] flex items-center gap-1">
+                <Check size={13} /> Unlimited free utilities
               </div>
             </div>
 
-            <div className="p-6 bg-white border border-[#dadce0] rounded-2xl shadow-xs flex flex-col justify-between">
+            <div className="p-5 bg-white border border-[#dadce0] rounded-2xl shadow-2xs flex flex-col justify-between">
               <div>
-                <div className="w-10 h-10 rounded-xl bg-[#f3e8fd] text-[#7627bb] flex items-center justify-center mb-3">
-                  <Globe size={20} />
+                <div className="w-9 h-9 rounded-xl bg-[#f3e8fd] text-[#7627bb] flex items-center justify-center mb-3">
+                  <Globe size={18} />
                 </div>
-                <h3 className="font-bold text-sm text-[#202124] mb-1">Works 100% Offline</h3>
-                <p className="text-xs text-[#5f6368] leading-relaxed">
+                <h3 className="font-bold text-xs sm:text-sm text-[#202124] mb-1">Works 100% Offline</h3>
+                <p className="text-[11px] sm:text-xs text-[#5f6368] leading-relaxed">
                   Install as a Progressive Web App (PWA). Convert files on airplanes, remote locations, or without internet access.
                 </p>
               </div>
-              <div className="mt-4 pt-3 border-t border-[#dadce0] text-[11px] font-bold text-[#7627bb] flex items-center gap-1">
-                <Check size={14} /> Full PWA offline mode
+              <div className="mt-3.5 pt-2.5 border-t border-[#dadce0] text-[10px] font-bold text-[#7627bb] flex items-center gap-1">
+                <Check size={13} /> Full PWA offline mode
               </div>
             </div>
 
@@ -924,14 +932,14 @@ output.save("converted_output.${toFormat.toLowerCase()}")`
         {/* ══════════════════════════════════════════════════════════════════
             INTERACTIVE DEVELOPER API / CLI CODE PREVIEW
         ══════════════════════════════════════════════════════════════════ */}
-        <section className="w-full py-12 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto border-t border-[#dadce0]">
-          <div className="bg-white border border-[#dadce0] rounded-3xl p-6 sm:p-8 shadow-xs">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+        <section className="w-full py-10 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto border-t border-[#dadce0]">
+          <div className="bg-white border border-[#dadce0] rounded-2xl sm:rounded-3xl p-5 sm:p-7 shadow-xs">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3.5 mb-5">
               <div>
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#e8f0fe] border border-[#d2e3fc] text-[#1a73e8] text-[10px] font-bold uppercase tracking-wider mb-2">
-                  <Terminal size={13} /> Developer Ready
+                  <Terminal size={12} /> Developer Ready
                 </div>
-                <h3 className="text-xl sm:text-2xl font-black text-[#202124] tracking-tight">
+                <h3 className="text-lg sm:text-xl font-black text-[#202124] tracking-tight">
                   Integrate Client-Side Utilities in Your Stack
                 </h3>
                 <p className="text-xs text-[#5f6368] mt-1">
@@ -940,10 +948,10 @@ output.save("converted_output.${toFormat.toLowerCase()}")`
               </div>
 
               {/* Code Tab Switcher */}
-              <div className="flex items-center gap-1 bg-[#f1f3f4] p-1 rounded-full border border-[#dadce0] self-start md:self-auto">
+              <div className="flex items-center gap-1 bg-[#f1f3f4] p-1 rounded-full border border-[#dadce0] self-start md:self-auto overflow-x-auto">
                 <button
                   onClick={() => setApiTab("js")}
-                  className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                  className={`px-3 py-1 rounded-full text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                     apiTab === "js" ? "bg-white text-[#202124] shadow-2xs" : "text-[#5f6368] hover:text-[#202124]"
                   }`}
                 >
@@ -951,7 +959,7 @@ output.save("converted_output.${toFormat.toLowerCase()}")`
                 </button>
                 <button
                   onClick={() => setApiTab("curl")}
-                  className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                  className={`px-3 py-1 rounded-full text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                     apiTab === "curl" ? "bg-white text-[#202124] shadow-2xs" : "text-[#5f6368] hover:text-[#202124]"
                   }`}
                 >
@@ -959,7 +967,7 @@ output.save("converted_output.${toFormat.toLowerCase()}")`
                 </button>
                 <button
                   onClick={() => setApiTab("python")}
-                  className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                  className={`px-3 py-1 rounded-full text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                     apiTab === "python" ? "bg-white text-[#202124] shadow-2xs" : "text-[#5f6368] hover:text-[#202124]"
                   }`}
                 >
@@ -969,15 +977,15 @@ output.save("converted_output.${toFormat.toLowerCase()}")`
             </div>
 
             {/* Code Block Container */}
-            <div className="relative bg-[#1e1e1e] rounded-2xl p-4 sm:p-5 font-mono text-xs text-[#d4d4d4] overflow-x-auto shadow-inner">
+            <div className="relative bg-[#1e1e1e] rounded-2xl p-4 font-mono text-xs text-[#d4d4d4] overflow-x-auto shadow-inner">
               <button
                 onClick={() => copyCodeSnippet(codeSnippets[apiTab])}
-                className="absolute top-3 right-3 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-[11px] font-sans font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+                className="absolute top-3 right-3 px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-white text-[10px] font-sans font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
               >
-                {copiedCode ? <Check size={13} className="text-[#34a853]" /> : <Copy size={13} />}
-                <span>{copiedCode ? "Copied" : "Copy Code"}</span>
+                {copiedCode ? <Check size={12} className="text-[#34a853]" /> : <Copy size={12} />}
+                <span>{copiedCode ? "Copied" : "Copy"}</span>
               </button>
-              <pre className="pr-20 leading-relaxed">{codeSnippets[apiTab]}</pre>
+              <pre className="pr-16 leading-relaxed text-[11px] sm:text-xs">{codeSnippets[apiTab]}</pre>
             </div>
           </div>
         </section>
@@ -986,11 +994,11 @@ output.save("converted_output.${toFormat.toLowerCase()}")`
         {/* ══════════════════════════════════════════════════════════════════
             COMPLETE 90+ TOOLS EXPLORER & MATRIX
         ══════════════════════════════════════════════════════════════════ */}
-        <section id="all-tools-grid" className="w-full py-12 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto border-t border-[#dadce0]">
+        <section id="all-tools-grid" className="w-full py-10 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto border-t border-[#dadce0]">
           
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5">
             <div>
-              <h2 className="text-2xl sm:text-3xl font-black text-[#202124] tracking-tight">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-[#202124] tracking-tight">
                 All 90+ Utilities & Tools
               </h2>
               <p className="text-xs sm:text-sm text-[#5f6368] mt-1">
@@ -1000,7 +1008,7 @@ output.save("converted_output.${toFormat.toLowerCase()}")`
 
             {/* Quick Search */}
             <div className="relative w-full md:w-72">
-              <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#5f6368]" />
+              <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#5f6368]" />
               <input
                 type="text"
                 value={searchQuery}
@@ -1012,14 +1020,14 @@ output.save("converted_output.${toFormat.toLowerCase()}")`
           </div>
 
           {/* Category Tabs */}
-          <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-3 mb-6">
+          <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar pb-2.5 mb-5">
             {CATEGORIES.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
-                className={`px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+                className={`px-3.5 py-1 rounded-full text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
                   activeCategory === cat
-                    ? "bg-[#1a73e8] text-white shadow-xs"
+                    ? "bg-[#1a73e8] text-white shadow-2xs"
                     : "bg-white border border-[#dadce0] text-[#5f6368] hover:text-[#202124] hover:bg-[#f1f3f4]"
                 }`}
               >
@@ -1029,7 +1037,7 @@ output.save("converted_output.${toFormat.toLowerCase()}")`
           </div>
 
           {/* Tools Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5">
             {filteredTools.map((tool) => {
               const Icon = tool.icon || Zap;
               const isFav = currentUser?.favoriteTools?.includes(tool.to);
@@ -1038,12 +1046,12 @@ output.save("converted_output.${toFormat.toLowerCase()}")`
               return (
                 <div
                   key={tool.name}
-                  className="p-4 bg-white border border-[#dadce0] hover:border-[#1a73e8] hover:shadow-[0_4px_16px_rgba(26,115,232,0.12)] rounded-2xl transition-all shadow-xs flex flex-col justify-between group"
+                  className="p-4 bg-white border border-[#dadce0] hover:border-[#1a73e8] hover:shadow-[0_4px_16px_rgba(26,115,232,0.1)] rounded-2xl transition-all shadow-2xs flex flex-col justify-between group"
                 >
                   <div>
-                    <div className="flex items-center justify-between mb-3">
-                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${tool.color}`}>
-                        <Icon size={18} />
+                    <div className="flex items-center justify-between mb-2.5">
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${tool.color}`}>
+                        <Icon size={16} />
                       </div>
                       <div className="flex items-center gap-1">
                         <button
@@ -1067,20 +1075,20 @@ output.save("converted_output.${toFormat.toLowerCase()}")`
                       </div>
                     </div>
 
-                    <h3 className="font-bold text-sm text-[#202124] group-hover:text-[#1a73e8] transition-colors">
+                    <h3 className="font-bold text-xs sm:text-sm text-[#202124] group-hover:text-[#1a73e8] transition-colors">
                       {tool.name}
                     </h3>
-                    <p className="text-xs text-[#5f6368] mt-1 line-clamp-2 leading-relaxed">
+                    <p className="text-[11px] text-[#5f6368] mt-1 line-clamp-2 leading-relaxed">
                       {tool.desc}
                     </p>
                   </div>
 
                   <Link
                     to={tool.to}
-                    className="mt-4 pt-3 border-t border-[#dadce0] flex items-center justify-between text-xs font-semibold text-[#5f6368] group-hover:text-[#1a73e8]"
+                    className="mt-3.5 pt-2.5 border-t border-[#dadce0] flex items-center justify-between text-xs font-semibold text-[#5f6368] group-hover:text-[#1a73e8]"
                   >
                     <span>Launch Utility</span>
-                    <ArrowRight size={13} className="group-hover:translate-x-1 transition-transform" />
+                    <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />
                   </Link>
                 </div>
               );

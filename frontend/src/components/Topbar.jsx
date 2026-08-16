@@ -27,20 +27,23 @@ import {
   ArrowRight,
   Sliders,
   Cpu,
-  Check
+  Check,
+  LayoutGrid,
+  Lock,
+  ExternalLink
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { allTools, toolCategories } from "../data/toolCategories";
 
 const CATEGORY_ITEMS = [
-  { id: "pdf", label: "PDF Tools", icon: FileText, color: "text-[#ea4335] bg-[#fce8e6] border-[#fad2cf]", count: 14 },
-  { id: "image", label: "Image Studio", icon: ImageIcon, color: "text-[#34a853] bg-[#e6f4ea] border-[#ceead6]", count: 10 },
-  { id: "code", label: "Developer", icon: Code2, color: "text-[#1a73e8] bg-[#e8f0fe] border-[#d2e3fc]", count: 19 },
-  { id: "spreadsheet", label: "Spreadsheets", icon: Table2, color: "text-[#b06000] bg-[#fef7e0] border-[#feefc3]", count: 7 },
-  { id: "document", label: "Word & Docs", icon: FileSpreadsheet, color: "text-[#1a73e8] bg-[#e8f0fe] border-[#d2e3fc]", count: 11 },
-  { id: "presentation", label: "Slides & PPT", icon: MonitorPlay, color: "text-[#7627bb] bg-[#f3e8fd] border-[#e9d2fd]", count: 8 },
-  { id: "archive", label: "Vault & Files", icon: FolderArchive, color: "text-[#007b83] bg-[#e0f2f1] border-[#b2dfdb]", count: 4 },
-  { id: "media", label: "Media & Math", icon: Music, color: "text-[#c2185b] bg-[#fce4ec] border-[#f8bbd0]", count: 7 },
+  { id: "pdf", label: "PDF Tools", icon: FileText, color: "text-[#ea4335] bg-[#fce8e6] border-[#fad2cf]", count: 14, to: "/search" },
+  { id: "image", label: "Image Studio", icon: ImageIcon, color: "text-[#34a853] bg-[#e6f4ea] border-[#ceead6]", count: 10, to: "/search" },
+  { id: "code", label: "Developer", icon: Code2, color: "text-[#1a73e8] bg-[#e8f0fe] border-[#d2e3fc]", count: 19, to: "/search" },
+  { id: "spreadsheet", label: "Spreadsheets", icon: Table2, color: "text-[#b06000] bg-[#fef7e0] border-[#feefc3]", count: 7, to: "/search" },
+  { id: "document", label: "Word & Docs", icon: FileSpreadsheet, color: "text-[#1a73e8] bg-[#e8f0fe] border-[#d2e3fc]", count: 11, to: "/search" },
+  { id: "presentation", label: "Slides & PPT", icon: MonitorPlay, color: "text-[#7627bb] bg-[#f3e8fd] border-[#e9d2fd]", count: 8, to: "/search" },
+  { id: "archive", label: "Vault & Security", icon: Lock, color: "text-[#007b83] bg-[#e0f2f1] border-[#b2dfdb]", count: 4, to: "/search" },
+  { id: "media", label: "Media & Math", icon: Music, color: "text-[#c2185b] bg-[#fce4ec] border-[#f8bbd0]", count: 7, to: "/search" },
 ];
 
 const Topbar = () => {
@@ -50,11 +53,12 @@ const Topbar = () => {
 
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [isCategoryMenuOpen, setIsCategoryMenuOpen] = useState(false);
+  const [isAppsMenuOpen, setIsAppsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
   const searchInputRef = useRef(null);
-  const categoryMenuRef = useRef(null);
+  const appsMenuRef = useRef(null);
   const userMenuRef = useRef(null);
 
   // Keyboard shortcut for Cmd/Ctrl + K
@@ -66,8 +70,9 @@ const Topbar = () => {
       }
       if (e.key === "Escape") {
         setIsSearchOpen(false);
-        setIsCategoryMenuOpen(false);
+        setIsAppsMenuOpen(false);
         setIsUserMenuOpen(false);
+        setIsMobileNavOpen(false);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -77,8 +82,8 @@ const Topbar = () => {
   // Close menus on outside click
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (categoryMenuRef.current && !categoryMenuRef.current.contains(e.target)) {
-        setIsCategoryMenuOpen(false);
+      if (appsMenuRef.current && !appsMenuRef.current.contains(e.target)) {
+        setIsAppsMenuOpen(false);
       }
       if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
         setIsUserMenuOpen(false);
@@ -96,6 +101,13 @@ const Topbar = () => {
     }
   }, [isSearchOpen]);
 
+  // Close mobile nav on route change
+  useEffect(() => {
+    setIsMobileNavOpen(false);
+    setIsAppsMenuOpen(false);
+    setIsUserMenuOpen(false);
+  }, [location.pathname]);
+
   // Filter tools for Command Palette search
   const searchResults = searchQuery.trim() === "" 
     ? allTools.slice(0, 8) 
@@ -107,50 +119,117 @@ const Topbar = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-md border-b border-[#dadce0] transition-all">
-        <div className="max-w-7xl mx-auto h-14 sm:h-16 px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
+      {/* ══════════════════════════════════════════════════════════════════
+          FLAT GOOGLE-STYLE FULL-WIDTH NAVBAR (NO BUBBLE / NO CONTAINER)
+      ══════════════════════════════════════════════════════════════════ */}
+      <header className="sticky top-0 z-50 w-full bg-white border-b border-[#dadce0] transition-all">
+        <div className="w-full max-w-7xl mx-auto h-14 sm:h-16 px-3 sm:px-6 lg:px-8 flex items-center justify-between gap-2 sm:gap-4">
           
-          {/* Brand Logo with Google/CloudConvert clean typography */}
-          <div className="flex items-center gap-4">
+          {/* Left: Mobile Hamburger + Clean Google-Style Logo */}
+          <div className="flex items-center gap-2 sm:gap-4">
+            {/* Mobile Menu Trigger */}
+            <button
+              onClick={() => setIsMobileNavOpen(!isMobileNavOpen)}
+              className="lg:hidden p-2 rounded-lg text-[#5f6368] hover:text-[#202124] hover:bg-[#f1f3f4] transition-colors"
+              aria-label="Toggle Navigation Menu"
+            >
+              {isMobileNavOpen ? <X size={20} /> : <Menu size={20} />}
+            </button>
+
+            {/* Brand Logo */}
             <Link to="/" className="flex items-center gap-2.5 group">
-              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#e8f0fe] border border-[#d2e3fc] flex items-center justify-center shadow-2xs group-hover:scale-105 transition-transform">
-                <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-[#1a73e8] group-hover:text-[#1557b0] transition-colors" />
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#1a73e8] text-white flex items-center justify-center shadow-xs group-hover:bg-[#1557b0] transition-colors">
+                <Zap size={18} fill="currentColor" />
               </div>
-              <div className="flex items-center gap-1.5">
-                <span className="font-bold text-base sm:text-lg tracking-tight text-[#202124]">
-                  Utility<span className="text-[#1a73e8]">Hub</span>
+              <div className="flex items-center">
+                <span className="font-semibold text-base sm:text-lg tracking-tight text-[#202124]">
+                  Utility<span className="text-[#1a73e8] font-bold">Hub</span>
                 </span>
-                <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-[#e6f4ea] text-[#137333] border border-[#ceead6] hidden sm:inline-block">
-                  Offline
+                <span className="ml-2 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-[#e6f4ea] text-[#137333] border border-[#ceead6] hidden sm:inline-block">
+                  100% Local
                 </span>
               </div>
             </Link>
 
-            {/* Desktop Categories Mega Menu Button */}
-            <div ref={categoryMenuRef} className="relative hidden md:block">
-              <button
-                type="button"
-                onClick={() => setIsCategoryMenuOpen(!isCategoryMenuOpen)}
-                className={`h-9 px-3 rounded-lg border text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
-                  isCategoryMenuOpen
-                    ? "bg-[#e8f0fe] border-[#1a73e8] text-[#1a73e8]"
-                    : "bg-[#f8f9fa] border-[#dadce0] text-[#5f6368] hover:text-[#202124] hover:bg-[#f1f3f4]"
+            {/* Desktop Navigation Links */}
+            <nav className="hidden lg:flex items-center gap-1 ml-2">
+              <Link
+                to="/search"
+                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                  location.pathname === "/search"
+                    ? "text-[#1a73e8] bg-[#e8f0fe] font-semibold"
+                    : "text-[#5f6368] hover:text-[#202124] hover:bg-[#f1f3f4]"
                 }`}
               >
-                <Layers size={14} className={isCategoryMenuOpen ? "text-[#1a73e8]" : "text-[#5f6368]"} />
-                <span>Categories</span>
-                <ChevronDown size={13} className={`transition-transform ${isCategoryMenuOpen ? "rotate-180 text-[#1a73e8]" : "text-[#5f6368]"}`} />
+                All Tools
+              </Link>
+              <Link
+                to="/pinned"
+                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors flex items-center gap-1.5 ${
+                  location.pathname === "/pinned"
+                    ? "text-[#1a73e8] bg-[#e8f0fe] font-semibold"
+                    : "text-[#5f6368] hover:text-[#202124] hover:bg-[#f1f3f4]"
+                }`}
+              >
+                <Pin size={12} className="text-[#1a73e8]" />
+                <span>Pinned</span>
+              </Link>
+              <Link
+                to="/favorites"
+                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors flex items-center gap-1.5 ${
+                  location.pathname === "/favorites"
+                    ? "text-[#ea4335] bg-[#fce8e6] font-semibold"
+                    : "text-[#5f6368] hover:text-[#202124] hover:bg-[#f1f3f4]"
+                }`}
+              >
+                <Heart size={12} className="text-[#ea4335]" />
+                <span>Favorites</span>
+              </Link>
+            </nav>
+          </div>
+
+          {/* Center: Google Omnibox Search Bar */}
+          <div className="flex-1 max-w-lg mx-2 sm:mx-4">
+            <button
+              onClick={() => setIsSearchOpen(true)}
+              className="w-full h-10 px-3.5 sm:px-4 rounded-full bg-[#f1f3f4] hover:bg-[#e8eaed] border border-transparent hover:border-[#dadce0] text-[#5f6368] hover:text-[#202124] flex items-center justify-between text-xs sm:text-sm font-normal transition-all group cursor-pointer"
+            >
+              <div className="flex items-center gap-2.5 min-w-0">
+                <Search size={16} className="text-[#5f6368] group-hover:text-[#1a73e8] transition-colors shrink-0" />
+                <span className="truncate text-xs sm:text-sm">Search 90+ client-side tools...</span>
+              </div>
+              <div className="hidden sm:flex items-center gap-1 px-2 py-0.5 rounded bg-white border border-[#dadce0] text-[10px] font-mono text-[#5f6368] shadow-2xs shrink-0">
+                <Command size={10} /> K
+              </div>
+            </button>
+          </div>
+
+          {/* Right: Google-Style App Grid Launcher, Privacy Tag & User Avatar */}
+          <div className="flex items-center gap-1.5 sm:gap-3">
+            
+            {/* Google Apps 9-Dot Launcher Button */}
+            <div ref={appsMenuRef} className="relative">
+              <button
+                type="button"
+                onClick={() => setIsAppsMenuOpen(!isAppsMenuOpen)}
+                className={`p-2 rounded-full transition-colors cursor-pointer ${
+                  isAppsMenuOpen ? "bg-[#e8f0fe] text-[#1a73e8]" : "text-[#5f6368] hover:text-[#202124] hover:bg-[#f1f3f4]"
+                }`}
+                title="Utility Categories"
+                aria-label="Google-style Apps Launcher"
+              >
+                <LayoutGrid size={20} />
               </button>
 
-              {/* Categories Megamenu Dropdown */}
+              {/* Google Apps Style Launcher Menu */}
               <AnimatePresence>
-                {isCategoryMenuOpen && (
+                {isAppsMenuOpen && (
                   <motion.div
-                    initial={{ opacity: 0, y: 6, scale: 0.99 }}
+                    initial={{ opacity: 0, y: 8, scale: 0.96 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 4, scale: 0.99 }}
+                    exit={{ opacity: 0, y: 6, scale: 0.96 }}
                     transition={{ duration: 0.12 }}
-                    className="absolute top-full left-0 mt-2 w-[540px] bg-white border border-[#dadce0] rounded-2xl shadow-xl p-3 z-50 grid grid-cols-2 gap-2"
+                    className="absolute top-full right-0 mt-2.5 w-[320px] sm:w-[360px] bg-white border border-[#dadce0] rounded-3xl shadow-[0_4px_24px_rgba(60,64,67,0.2)] p-4 z-50 grid grid-cols-3 gap-2"
                   >
                     {CATEGORY_ITEMS.map((cat) => {
                       const Icon = cat.icon;
@@ -158,24 +237,17 @@ const Topbar = () => {
                         <button
                           key={cat.id}
                           onClick={() => {
-                            setIsCategoryMenuOpen(false);
-                            navigate(`/search`);
+                            setIsAppsMenuOpen(false);
+                            navigate(cat.to);
                           }}
-                          className="flex items-center gap-3 p-2.5 rounded-xl bg-[#f8f9fa] hover:bg-[#f1f3f4] border border-transparent hover:border-[#dadce0] transition-all text-left group cursor-pointer"
+                          className="flex flex-col items-center justify-center p-3 rounded-2xl hover:bg-[#f1f3f4] transition-colors text-center group cursor-pointer"
                         >
-                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center border shrink-0 ${cat.color}`}>
-                            <Icon size={16} />
+                          <div className={`w-10 h-10 rounded-2xl flex items-center justify-center border mb-1.5 shadow-2xs group-hover:scale-105 transition-transform ${cat.color}`}>
+                            <Icon size={18} />
                           </div>
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center justify-between">
-                              <span className="text-xs font-bold text-[#202124] group-hover:text-[#1a73e8] transition-colors truncate">
-                                {cat.label}
-                              </span>
-                              <span className="text-[10px] font-semibold text-[#80868b] group-hover:text-[#5f6368]">
-                                {cat.count} tools
-                              </span>
-                            </div>
-                          </div>
+                          <span className="text-[11px] font-medium text-[#202124] group-hover:text-[#1a73e8] truncate w-full">
+                            {cat.label}
+                          </span>
                         </button>
                       );
                     })}
@@ -183,66 +255,14 @@ const Topbar = () => {
                 )}
               </AnimatePresence>
             </div>
-          </div>
 
-          {/* Center: Google-Style Omnibox Search Bar Trigger */}
-          <div className="flex-1 max-w-md mx-2 hidden sm:block">
-            <button
-              onClick={() => setIsSearchOpen(true)}
-              className="w-full h-9 px-3.5 rounded-lg bg-[#f1f3f4] hover:bg-[#e8eaed] border border-transparent hover:border-[#dadce0] text-[#5f6368] hover:text-[#202124] flex items-center justify-between text-xs font-medium transition-all group cursor-pointer"
-            >
-              <div className="flex items-center gap-2.5">
-                <Search size={14} className="text-[#5f6368] group-hover:text-[#1a73e8] transition-colors" />
-                <span className="truncate">Search 90+ client-side tools...</span>
-              </div>
-              <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-white border border-[#dadce0] text-[10px] font-mono text-[#5f6368]">
-                <Command size={10} /> K
-              </div>
-            </button>
-          </div>
-
-          {/* Right Navigation & User Actions */}
-          <div className="flex items-center gap-2 sm:gap-2.5">
-            {/* Mobile search trigger icon */}
-            <button
-              onClick={() => setIsSearchOpen(true)}
-              className="sm:hidden p-2 rounded-lg bg-[#f8f9fa] border border-[#dadce0] text-[#5f6368] hover:text-[#202124] hover:bg-[#f1f3f4]"
-            >
-              <Search size={15} />
-            </button>
-
-            {/* Quick Workspace Nav Badges */}
-            <Link
-              to="/pinned"
-              className={`hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
-                location.pathname === "/pinned"
-                  ? "bg-[#e8f0fe] border-[#d2e3fc] text-[#1a73e8]"
-                  : "bg-[#f8f9fa] border-[#dadce0] text-[#5f6368] hover:text-[#202124] hover:bg-[#f1f3f4]"
-              }`}
-            >
-              <Pin size={12} className="text-[#1a73e8]" />
-              <span>Pinned</span>
-            </Link>
-
-            <Link
-              to="/favorites"
-              className={`hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
-                location.pathname === "/favorites"
-                  ? "bg-[#fce8e6] border-[#fad2cf] text-[#ea4335]"
-                  : "bg-[#f8f9fa] border-[#dadce0] text-[#5f6368] hover:text-[#202124] hover:bg-[#f1f3f4]"
-              }`}
-            >
-              <Heart size={12} className="text-[#ea4335]" />
-              <span>Favorites</span>
-            </Link>
-
-            {/* Privacy Telemetry Indicator */}
+            {/* Privacy Telemetry Tag */}
             <div className="hidden xl:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#e6f4ea] border border-[#ceead6] text-[11px] font-semibold text-[#137333]">
               <span className="w-1.5 h-1.5 rounded-full bg-[#34a853] animate-pulse" />
-              <span>100% Client-Side</span>
+              <span>0KB Cloud</span>
             </div>
 
-            {/* User Account / Auth Button */}
+            {/* Google User Avatar / Sign In */}
             {currentUser ? (
               <div ref={userMenuRef} className="relative">
                 <button
@@ -263,46 +283,51 @@ const Topbar = () => {
                       initial={{ opacity: 0, y: 8, scale: 0.98 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 6, scale: 0.98 }}
-                      className="absolute right-0 top-full mt-2 w-56 bg-white border border-[#dadce0] rounded-2xl shadow-[0_4px_24px_rgba(60,64,67,0.15)] p-1.5 z-50"
+                      transition={{ duration: 0.12 }}
+                      className="absolute top-full right-0 mt-2.5 w-60 bg-white border border-[#dadce0] rounded-2xl shadow-xl p-2 z-50"
                     >
-                      <div className="px-3 py-2.5 border-b border-[#dadce0] mb-1">
+                      <div className="px-3 py-2 border-b border-[#dadce0] mb-1">
                         <p className="text-xs font-bold text-[#202124] truncate">{currentUser.name || "User Account"}</p>
-                        <p className="text-[11px] text-[#5f6368] truncate">{currentUser.email}</p>
+                        <p className="text-[11px] text-[#5f6368] truncate">{currentUser.email || "Offline Mode Active"}</p>
                       </div>
+
                       <Link
                         to="/profile"
                         onClick={() => setIsUserMenuOpen(false)}
-                        className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-[#202124] hover:bg-[#f1f3f4] transition-colors"
+                        className="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-[#202124] hover:bg-[#f1f3f4] rounded-lg transition-colors"
                       >
                         <User size={14} className="text-[#1a73e8]" />
-                        Account Settings
+                        Workspace Profile
                       </Link>
                       <Link
                         to="/pinned"
                         onClick={() => setIsUserMenuOpen(false)}
-                        className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-[#202124] hover:bg-[#f1f3f4] transition-colors"
+                        className="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-[#202124] hover:bg-[#f1f3f4] rounded-lg transition-colors"
                       >
                         <Pin size={14} className="text-[#1a73e8]" />
-                        Pinned Workspaces
+                        Pinned Utilities
                       </Link>
                       <Link
                         to="/favorites"
                         onClick={() => setIsUserMenuOpen(false)}
-                        className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-[#202124] hover:bg-[#f1f3f4] transition-colors"
+                        className="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-[#202124] hover:bg-[#f1f3f4] rounded-lg transition-colors"
                       >
                         <Heart size={14} className="text-[#ea4335]" />
-                        Favorites
+                        Favorite Tools
                       </Link>
-                      <button
-                        onClick={() => {
-                          setIsUserMenuOpen(false);
-                          logout();
-                        }}
-                        className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-[#ea4335] hover:bg-[#fce8e6] transition-colors cursor-pointer text-left mt-1 border-t border-[#dadce0]"
-                      >
-                        <LogOut size={14} />
-                        Sign Out
-                      </button>
+
+                      <div className="pt-1 mt-1 border-t border-[#dadce0]">
+                        <button
+                          onClick={() => {
+                            setIsUserMenuOpen(false);
+                            logout();
+                          }}
+                          className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-[#ea4335] hover:bg-[#fce8e6] rounded-lg transition-colors text-left cursor-pointer"
+                        >
+                          <LogOut size={14} />
+                          Sign Out
+                        </button>
+                      </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -311,20 +336,89 @@ const Topbar = () => {
               <div className="flex items-center gap-2">
                 <Link
                   to="/login"
-                  className="px-4 py-1.5 rounded-full bg-[#1a73e8] hover:bg-[#1557b0] text-white text-xs font-bold transition-all shadow-xs active:scale-[0.98]"
+                  className="px-4 py-1.5 rounded-lg bg-[#1a73e8] hover:bg-[#1557b0] text-white text-xs font-medium transition-all shadow-2xs active:scale-[0.98]"
                 >
-                  Sign In
+                  Sign in
                 </Link>
               </div>
             )}
+
           </div>
         </div>
+
+        {/* ══════════════════════════════════════════════════════════════════
+            MOBILE NAVIGATION DRAWER / SHEET
+        ══════════════════════════════════════════════════════════════════ */}
+        <AnimatePresence>
+          {isMobileNavOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="lg:hidden w-full border-t border-[#dadce0] bg-white px-4 py-3 shadow-lg"
+            >
+              <div className="grid grid-cols-2 gap-2 pb-3 border-b border-[#dadce0]">
+                <Link
+                  to="/search"
+                  className="flex items-center gap-2 p-2.5 rounded-xl bg-[#f8f9fa] text-xs font-semibold text-[#202124]"
+                >
+                  <Layers size={15} className="text-[#1a73e8]" />
+                  <span>All 90+ Tools</span>
+                </Link>
+                <Link
+                  to="/pinned"
+                  className="flex items-center gap-2 p-2.5 rounded-xl bg-[#f8f9fa] text-xs font-semibold text-[#202124]"
+                >
+                  <Pin size={15} className="text-[#1a73e8]" />
+                  <span>Pinned</span>
+                </Link>
+                <Link
+                  to="/favorites"
+                  className="flex items-center gap-2 p-2.5 rounded-xl bg-[#f8f9fa] text-xs font-semibold text-[#202124]"
+                >
+                  <Heart size={15} className="text-[#ea4335]" />
+                  <span>Favorites</span>
+                </Link>
+                <Link
+                  to="/profile"
+                  className="flex items-center gap-2 p-2.5 rounded-xl bg-[#f8f9fa] text-xs font-semibold text-[#202124]"
+                >
+                  <User size={15} className="text-[#34a853]" />
+                  <span>Profile</span>
+                </Link>
+              </div>
+
+              <div className="pt-3">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-[#80868b] mb-2">
+                  Browse by Category
+                </div>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {CATEGORY_ITEMS.map((cat) => {
+                    const Icon = cat.icon;
+                    return (
+                      <Link
+                        key={cat.id}
+                        to={cat.to}
+                        className="flex items-center gap-2 p-2 rounded-lg text-xs font-medium text-[#202124] hover:bg-[#f1f3f4]"
+                      >
+                        <div className={`w-6 h-6 rounded flex items-center justify-center text-xs ${cat.color}`}>
+                          <Icon size={13} />
+                        </div>
+                        <span className="truncate">{cat.label}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </header>
 
       {/* ═══ Google-Style Command Palette Search Modal (Cmd+K) ═══ */}
       <AnimatePresence>
         {isSearchOpen && (
-          <div className="fixed inset-0 z-[100] flex items-start justify-center pt-16 sm:pt-24 px-4">
+          <div className="fixed inset-0 z-[100] flex items-start justify-center pt-12 sm:pt-24 px-3 sm:px-4">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
