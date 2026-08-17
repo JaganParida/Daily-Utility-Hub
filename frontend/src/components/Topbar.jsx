@@ -53,6 +53,7 @@ const Topbar = () => {
 
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedIndex, setSelectedIndex] = useState(0);
   const [isAppsMenuOpen, setIsAppsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
@@ -95,11 +96,18 @@ const Topbar = () => {
 
   useEffect(() => {
     if (isSearchOpen) {
+      setSelectedIndex(0);
       setTimeout(() => searchInputRef.current?.focus(), 50);
     } else {
       setSearchQuery("");
+      setSelectedIndex(0);
     }
   }, [isSearchOpen]);
+
+  // Reset selected index whenever search query changes
+  useEffect(() => {
+    setSelectedIndex(0);
+  }, [searchQuery]);
 
   // Close mobile nav on route change
   useEffect(() => {
@@ -108,7 +116,7 @@ const Topbar = () => {
     setIsUserMenuOpen(false);
   }, [location.pathname]);
 
-  // Filter tools for Command Palette search
+  // Filter tools for Command Palette search (deduplicated)
   const searchResults = searchQuery.trim() === "" 
     ? allTools.slice(0, 8) 
     : allTools.filter(t => 
@@ -116,6 +124,28 @@ const Topbar = () => {
         t.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
         t.category?.toLowerCase().includes(searchQuery.toLowerCase())
       ).slice(0, 10);
+
+  const handleSearchKeyDown = (e) => {
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      if (searchResults.length > 0) {
+        setSelectedIndex((prev) => (prev + 1) % searchResults.length);
+      }
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      if (searchResults.length > 0) {
+        setSelectedIndex((prev) => (prev - 1 + searchResults.length) % searchResults.length);
+      }
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      if (searchResults.length > 0 && searchResults[selectedIndex]) {
+        setIsSearchOpen(false);
+        navigate(searchResults[selectedIndex].to);
+      }
+    } else if (e.key === "Escape") {
+      setIsSearchOpen(false);
+    }
+  };
 
   return (
     <>
@@ -452,12 +482,13 @@ const Topbar = () => {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={handleSearchKeyDown}
                   placeholder="Search 90+ tools (e.g. PDF, Image, JSON, Regex, Vault)..."
                   className="w-full bg-transparent text-sm text-[#202124] placeholder-[#80868b] focus:outline-none"
                 />
                 <button
                   onClick={() => setIsSearchOpen(false)}
-                  className="px-2 py-0.5 rounded-md bg-[#e8eaed] text-[10px] font-mono text-[#5f6368] hover:bg-[#dadce0] hover:text-[#202124]"
+                  className="px-2 py-0.5 rounded-md bg-[#e8eaed] text-[10px] font-mono text-[#5f6368] hover:bg-[#dadce0] hover:text-[#202124] cursor-pointer"
                 >
                   ESC
                 </button>
@@ -466,8 +497,10 @@ const Topbar = () => {
               {/* Results List */}
               <div className="max-h-[380px] overflow-y-auto custom-scrollbar p-2 space-y-1">
                 {searchResults.length > 0 ? (
-                  searchResults.map((tool) => {
+                  searchResults.map((tool, index) => {
                     const ToolIcon = tool.icon || Zap;
+                    const isSelected = index === selectedIndex;
+
                     return (
                       <button
                         key={tool.to}
@@ -475,14 +508,25 @@ const Topbar = () => {
                           setIsSearchOpen(false);
                           navigate(tool.to);
                         }}
-                        className="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-[#f1f3f4] border border-transparent hover:border-[#dadce0] transition-all text-left group cursor-pointer"
+                        onMouseEnter={() => setSelectedIndex(index)}
+                        className={`w-full flex items-center justify-between p-2.5 rounded-xl transition-all text-left group cursor-pointer ${
+                          isSelected
+                            ? 'bg-[#e8f0fe] border border-[#d2e3fc] shadow-2xs'
+                            : 'hover:bg-[#f1f3f4] border border-transparent hover:border-[#dadce0]'
+                        }`}
                       >
                         <div className="flex items-center gap-3 min-w-0">
-                          <div className="w-8 h-8 rounded-lg bg-[#e8f0fe] text-[#1a73e8] group-hover:bg-[#1a73e8] group-hover:text-white flex items-center justify-center shrink-0 transition-colors shadow-2xs">
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors shadow-2xs ${
+                            isSelected
+                              ? 'bg-[#1a73e8] text-white'
+                              : 'bg-[#e8f0fe] text-[#1a73e8] group-hover:bg-[#1a73e8] group-hover:text-white'
+                          }`}>
                             <ToolIcon size={16} />
                           </div>
                           <div className="min-w-0">
-                            <p className="text-xs font-bold text-[#202124] group-hover:text-[#1a73e8] transition-colors truncate">
+                            <p className={`text-xs font-bold transition-colors truncate ${
+                              isSelected ? 'text-[#1a73e8]' : 'text-[#202124] group-hover:text-[#1a73e8]'
+                            }`}>
                               {tool.name}
                             </p>
                             <p className="text-[11px] text-[#5f6368] truncate mt-0.5">
@@ -491,10 +535,16 @@ const Topbar = () => {
                           </div>
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
-                          <span className="text-[10px] font-semibold text-[#5f6368] px-2 py-0.5 rounded-full bg-[#f1f3f4] border border-[#dadce0]">
+                          <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
+                            isSelected 
+                              ? 'bg-white text-[#1a73e8] border-[#d2e3fc]' 
+                              : 'bg-[#f1f3f4] text-[#5f6368] border-[#dadce0]'
+                          }`}>
                             {tool.category || "Utility"}
                           </span>
-                          <ArrowRight size={13} className="text-[#80868b] group-hover:text-[#1a73e8] group-hover:translate-x-0.5 transition-all" />
+                          <ArrowRight size={13} className={`transition-all ${
+                            isSelected ? 'text-[#1a73e8] translate-x-0.5' : 'text-[#80868b] group-hover:text-[#1a73e8] group-hover:translate-x-0.5'
+                          }`} />
                         </div>
                       </button>
                     );

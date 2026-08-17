@@ -113,4 +113,7 @@ export const toolCategories = {
   ]
 };
 
-export const allTools = Object.values(toolCategories).flat();
+// Flatten and deduplicate tools by unique URL path
+export const allTools = Array.from(
+  new Map(Object.values(toolCategories).flat().map(tool => [tool.to, tool])).values()
+);

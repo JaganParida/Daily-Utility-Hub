@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { 
   Search as SearchIcon, X, ArrowRight, Zap, Sparkles, 
   FileText, ImageIcon, Code2, Type, FileSpreadsheet, 
@@ -34,6 +34,7 @@ const POPULAR_SEARCHES = [
 ];
 
 const SearchPage = () => {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -107,6 +108,13 @@ const SearchPage = () => {
     );
   }, [searchQuery, activeCategory]);
 
+  const handleInputKeyDown = (e) => {
+    if (e.key === 'Enter' && filteredTools.length > 0) {
+      e.preventDefault();
+      navigate(filteredTools[0].to);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#f8f9fa] text-[#202124] pt-4 sm:pt-6 pb-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
       <div className="max-w-6xl mx-auto space-y-6 sm:space-y-8">
@@ -134,6 +142,7 @@ const SearchPage = () => {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={handleInputKeyDown}
               placeholder="Search tools by name, action (compress, merge, convert), or format..."
               className="w-full py-3.5 sm:py-4 text-xs sm:text-sm bg-transparent border-none text-[#202124] placeholder-[#80868b] focus:outline-none"
             />
