@@ -76,7 +76,7 @@ function BracesIcon(props) {
   );
 }
 
-// ─── CONVERSION ROUTING ENGINE ───
+// ─── CONVERSION ROUTING ENGINE (100% REAL PLATFORM TOOLS) ───
 const CONVERSIONS_MAP = {
   "PDF": [
     { target: "DOCX", toolName: "PDF to Word Converter", desc: "Convert PDF to editable Word with OCR & exact layout", to: "/tools/pdf-to-word", badge: "OCR Engine" },
@@ -106,11 +106,13 @@ const CONVERSIONS_MAP = {
     { target: "WEBP", toolName: "JPG to WebP Converter", desc: "Save up to 40% image file size", to: "/tools/image-converter", badge: "Recommended" },
     { target: "PDF", toolName: "JPG to PDF Converter", desc: "Bundle photos into a single PDF file", to: "/tools/image-to-pdf", badge: "Multi-Page" },
     { target: "TXT", toolName: "OCR Image to Text", desc: "Extract printed and written text", to: "/tools/image-to-text", badge: "OCR Engine" },
+    { target: "COMPRESS", toolName: "Image Compressor", desc: "Compress JPEG images losslessly", to: "/tools/image-compressor", badge: "Lossless" },
   ],
   "WEBP": [
     { target: "PNG", toolName: "WebP to PNG Converter", desc: "Convert WebP images to standard PNG", to: "/tools/image-converter", badge: "Standard" },
     { target: "JPG", toolName: "WebP to JPG Converter", desc: "Convert WebP to universal JPG", to: "/tools/image-converter", badge: "Universal" },
     { target: "PDF", toolName: "WebP to PDF Converter", desc: "Convert WebP files to document format", to: "/tools/image-to-pdf", badge: "Document" },
+    { target: "COMPRESS", toolName: "Image Compressor", desc: "Shrink WebP file sizes", to: "/tools/image-compressor", badge: "Lossless" },
   ],
   "JSON": [
     { target: "CSV", toolName: "JSON to CSV Converter", desc: "Transform nested JSON to tabular CSV", to: "/tools/sheet-converter", badge: "Tabular" },
@@ -141,15 +143,24 @@ const CONVERSIONS_MAP = {
   "ZIP": [
     { target: "UNZIP", toolName: "Zip Extractor & Viewer", desc: "Inspect and extract files inside browser", to: "/tools/zip-archiver", badge: "Client Wasm" },
     { target: "VAULT", toolName: "Encrypted File Vault", desc: "Lock files with military-grade AES-256", to: "/tools/file-vault", badge: "Military Grade" },
+  ],
+  "SVG": [
+    { target: "PNG", toolName: "SVG to PNG Converter", desc: "Render SVG vectors as high-res PNG images", to: "/tools/image-converter", badge: "Vector" },
+    { target: "WEBP", toolName: "SVG to WebP Converter", desc: "Export SVG vector graphics to WebP", to: "/tools/image-converter", badge: "Modern" },
+    { target: "PDF", toolName: "SVG to PDF Document", desc: "Compile vector drawings to PDF pages", to: "/tools/image-to-pdf", badge: "Print Ready" },
   ]
 };
 
-// ─── LIVE ANIMATED SIMULATION PRESETS ───
+// ─── LIVE ANIMATED SIMULATION PRESETS (100% REAL PLATFORM CONVERSIONS) ───
 const LIVE_TRANSFORMATION_DEMOS = [
-  { fromExt: "PDF", fromName: "contract_nda_2026.pdf", fromSize: "2.4 MB", engine: "OCR Layout Engine", toExt: "DOCX", toName: "contract_nda_2026.docx", toSize: "1.1 MB", tool: "/tools/pdf-to-word", speed: "0.04s" },
+  { fromExt: "PDF", fromName: "contract_nda_2026.pdf", fromSize: "2.4 MB", engine: "PDF to Word Converter", toExt: "DOCX", toName: "contract_nda_2026.docx", toSize: "1.1 MB", tool: "/tools/pdf-to-word", speed: "0.04s" },
   { fromExt: "PNG", fromName: "hero_banner_4k.png", fromSize: "8.2 MB", engine: "WebP Lossless Optimizer", toExt: "WEBP", toName: "hero_banner_4k.webp", toSize: "1.9 MB (-76%)", tool: "/tools/image-converter", speed: "0.02s" },
-  { fromExt: "JSON", fromName: "api_schema_v2.json", fromSize: "180 KB", engine: "TypeScript Generator", toExt: "TS", toName: "api_schema_v2.d.ts", toSize: "45 KB", tool: "/tools/type-converter", speed: "0.01s" },
-  { fromExt: "CSV", fromName: "financial_sales.csv", fromSize: "640 KB", engine: "SQLite Schema Exporter", toExt: "SQL", toName: "financial_sales.sql", toSize: "820 KB", tool: "/tools/sheet-converter", speed: "0.03s" },
+  { fromExt: "DOCX", fromName: "project_spec_v3.docx", fromSize: "1.5 MB", engine: "Word to PDF Compiler", toExt: "PDF", toName: "project_spec_v3.pdf", toSize: "890 KB", tool: "/tools/docx-converter", speed: "0.03s" },
+  { fromExt: "JSON", fromName: "api_schema_v2.json", fromSize: "180 KB", engine: "TypeScript Schema Generator", toExt: "TS", toName: "api_schema_v2.d.ts", toSize: "45 KB", tool: "/tools/type-converter", speed: "0.01s" },
+  { fromExt: "CSV", fromName: "financial_sales.csv", fromSize: "640 KB", engine: "CSV to JSON Converter", toExt: "JSON", toName: "financial_sales.json", toSize: "510 KB", tool: "/tools/sheet-converter", speed: "0.03s" },
+  { fromExt: "JPG", fromName: "camera_raw_shot.jpg", fromSize: "4.8 MB", engine: "Images to PDF Bundle", toExt: "PDF", toName: "camera_raw_shot.pdf", toSize: "3.9 MB", tool: "/tools/image-to-pdf", speed: "0.03s" },
+  { fromExt: "MP4", fromName: "lecture_recording.mp4", fromSize: "14 MB", engine: "Audio/Video Transcriber", toExt: "TXT", toName: "lecture_recording.txt", toSize: "28 KB", tool: "/tools/audio-video-transcriber", speed: "0.05s" },
+  { fromExt: "ZIP", fromName: "project_archive.zip", fromSize: "9.2 MB", engine: "Zip Extractor & Viewer", toExt: "FILES", toName: "extracted_folder/", toSize: "9.2 MB", tool: "/tools/zip-archiver", speed: "0.02s" }
 ];
 
 // ─── POPULAR 1-CLICK CONVERSIONS ───
@@ -755,7 +766,7 @@ output.save("converted_output.${toFormat.toLowerCase()}")`
               {/* Right: Convert Trigger CTA */}
               <button
                 onClick={handleLaunchConversion}
-                className="w-full sm:w-auto h-11 sm:h-12 px-6 rounded-xl sm:rounded-full bg-[#ea4335] hover:bg-[#d93025] text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all shadow-2xs active:scale-[0.98] cursor-pointer"
+                className="w-full sm:w-auto h-11 sm:h-12 px-6 rounded-xl sm:rounded-full bg-[#1a73e8] hover:bg-[#1557b0] text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all shadow-sm active:scale-[0.98] cursor-pointer"
               >
                 <span>Convert {fromFormat} to {toFormat}</span>
                 <ArrowRight size={15} />
