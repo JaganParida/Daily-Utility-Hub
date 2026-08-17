@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ChevronRight, ShieldCheck, Share2, Copy, Check, Pin, Heart, Sparkles, ArrowLeft } from 'lucide-react';
+import { ChevronRight, ShieldCheck, Share2, Check, Pin, Heart, Sparkles } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 
@@ -16,11 +16,38 @@ const ToolHeader = ({
   actions = null
 }) => {
   const location = useLocation();
-  const { togglePinnedTool, pinnedTools, toggleFavoriteTool, favoriteTools } = useAuth();
+  const { currentUser, togglePin, toggleFavorite } = useAuth();
   const [copiedLink, setCopiedLink] = useState(false);
 
-  const isPinned = pinnedTools?.includes(location.pathname);
-  const isFavorited = favoriteTools?.includes(location.pathname);
+  // Local storage state for instant response & guest fallback
+  const [localPinned, setLocalPinned] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('daily_utility_pinned_tools') || '[]');
+    } catch {
+      return [];
+    }
+  });
+
+  const [localFavorites, setLocalFavorites] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('daily_utility_favorite_tools') || '[]');
+    } catch {
+      return [];
+    }
+  });
+
+  // Sync state when currentUser loads
+  useEffect(() => {
+    if (currentUser?.pinnedTools) {
+      setLocalPinned(currentUser.pinnedTools);
+    }
+    if (currentUser?.favoriteTools) {
+      setLocalFavorites(currentUser.favoriteTools);
+    }
+  }, [currentUser]);
+
+  const isPinned = currentUser?.pinnedTools?.includes(location.pathname) || localPinned.includes(location.pathname);
+  const isFavorited = currentUser?.favoriteTools?.includes(location.pathname) || localFavorites.includes(location.pathname);
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(window.location.href);
@@ -29,18 +56,62 @@ const ToolHeader = ({
     setTimeout(() => setCopiedLink(false), 2000);
   };
 
-  const handleTogglePin = () => {
-    if (togglePinnedTool) {
-      togglePinnedTool(location.pathname);
-      toast.success(isPinned ? "Removed from pinned tools" : "Pinned to quick access!");
+  const handleTogglePin = async () => {
+    const nextState = !isPinned;
+
+    // 1. Optimistic Local State Update
+    setLocalPinned(prev => {
+      let updated;
+      if (prev.includes(location.pathname)) {
+        updated = prev.filter(p => p !== location.pathname);
+      } else {
+        updated = [...prev, location.pathname];
+      }
+      try {
+        localStorage.setItem('daily_utility_pinned_tools', JSON.stringify(updated));
+      } catch (_) {}
+      return updated;
+    });
+
+    // 2. Sync with Backend if logged in
+    if (togglePin && currentUser) {
+      try {
+        await togglePin(location.pathname);
+      } catch (err) {
+        console.error("Failed to sync pin with account", err);
+      }
     }
+
+    toast.success(nextState ? "Pinned to quick access!" : "Removed from pinned tools");
   };
 
-  const handleToggleFavorite = () => {
-    if (toggleFavoriteTool) {
-      toggleFavoriteTool(location.pathname);
-      toast.success(isFavorited ? "Removed from favorites" : "Added to your favorites!");
+  const handleToggleFavorite = async () => {
+    const nextState = !isFavorited;
+
+    // 1. Optimistic Local State Update
+    setLocalFavorites(prev => {
+      let updated;
+      if (prev.includes(location.pathname)) {
+        updated = prev.filter(p => p !== location.pathname);
+      } else {
+        updated = [...prev, location.pathname];
+      }
+      try {
+        localStorage.setItem('daily_utility_favorite_tools', JSON.stringify(updated));
+      } catch (_) {}
+      return updated;
+    });
+
+    // 2. Sync with Backend if logged in
+    if (toggleFavorite && currentUser) {
+      try {
+        await toggleFavorite(location.pathname);
+      } catch (err) {
+        console.error("Failed to sync favorite with account", err);
+      }
     }
+
+    toast.success(nextState ? "Added to your favorites!" : "Removed from favorites");
   };
 
   return (
@@ -107,38 +178,41 @@ const ToolHeader = ({
           {actions}
           
           <button
+            type="button"
             onClick={handleTogglePin}
-            title={isPinned ? "Unpin tool" : "Pin tool to topbar"}
-            className={`p-2 sm:px-3 sm:py-2 rounded-xl text-xs font-semibold border transition-all flex items-center gap-1.5 cursor-pointer ${
+            title={isPinned ? "Unpin tool" : "Pin tool to quick access"}
+            className={`p-2 sm:px-3 sm:py-2 rounded-xl text-xs font-semibold border transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs ${
               isPinned 
-                ? 'bg-[#e8f0fe] text-[#1a73e8] border-[#d2e3fc] shadow-2xs' 
+                ? 'bg-[#e8f0fe] text-[#1a73e8] border-[#d2e3fc] shadow-xs' 
                 : 'bg-white hover:bg-[#f8f9fa] text-[#5f6368] hover:text-[#202124] border-[#dadce0]'
             }`}
           >
-            <Pin size={14} className={isPinned ? "fill-current" : ""} />
-            <span className="hidden sm:inline">{isPinned ? "Pinned" : "Pin"}</span>
+            <Pin size={14} className={isPinned ? "fill-current text-[#1a73e8]" : "text-[#5f6368]"} />
+            <span className="hidden sm:inline font-bold">{isPinned ? "Pinned" : "Pin"}</span>
           </button>
 
           <button
+            type="button"
             onClick={handleToggleFavorite}
             title={isFavorited ? "Remove from favorites" : "Add to favorites"}
-            className={`p-2 sm:px-3 sm:py-2 rounded-xl text-xs font-semibold border transition-all flex items-center gap-1.5 cursor-pointer ${
+            className={`p-2 sm:px-3 sm:py-2 rounded-xl text-xs font-semibold border transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs ${
               isFavorited 
-                ? 'bg-[#fce8e6] text-[#ea4335] border-[#fad2cf] shadow-2xs' 
+                ? 'bg-[#fce8e6] text-[#ea4335] border-[#fad2cf] shadow-xs' 
                 : 'bg-white hover:bg-[#f8f9fa] text-[#5f6368] hover:text-[#202124] border-[#dadce0]'
             }`}
           >
-            <Heart size={14} className={isFavorited ? "fill-current" : ""} />
-            <span className="hidden sm:inline">{isFavorited ? "Favorited" : "Favorite"}</span>
+            <Heart size={14} className={isFavorited ? "fill-current text-[#ea4335]" : "text-[#5f6368]"} />
+            <span className="hidden sm:inline font-bold">{isFavorited ? "Favorite" : "Favorite"}</span>
           </button>
 
           <button
+            type="button"
             onClick={handleCopyLink}
             title="Copy direct tool link"
             className="p-2 sm:px-3 sm:py-2 rounded-xl text-xs font-semibold bg-white hover:bg-[#f8f9fa] text-[#5f6368] hover:text-[#202124] border border-[#dadce0] transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
           >
             {copiedLink ? <Check size={14} className="text-[#34a853]" /> : <Share2 size={14} />}
-            <span className="hidden sm:inline">{copiedLink ? "Copied" : "Share"}</span>
+            <span className="hidden sm:inline font-bold">{copiedLink ? "Copied" : "Share"}</span>
           </button>
         </div>
       </div>
