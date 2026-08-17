@@ -376,35 +376,41 @@ const Dashboard = () => {
   };
 
   const codeSnippets = {
-    js: `// 100% In-Browser WebAssembly File Conversion
-import { convertLocal } from '@utilityhub/engine';
+    js: `// ⚡ Real Working In-Browser / Node.js API Request
+const formData = new FormData();
+formData.append('pdf', document.querySelector('#fileInput').files[0]);
 
-const file = document.querySelector('#fileInput').files[0];
-
-// Zero Cloud Upload • Runs locally on CPU/GPU
-const result = await convertLocal({
-  file,
-  from: '${fromFormat.toLowerCase()}',
-  to: '${toFormat.toLowerCase()}',
-  quality: 0.95
+// Post to Daily Utility Hub API
+const response = await fetch('https://daily-utility-hub.onrender.com/api/pdf/convert-to-word', {
+  method: 'POST',
+  body: formData
 });
 
-// Instant Local Download
-result.download();`,
-    curl: `# CLI / Local Terminal Engine
-npx @utilityhub/cli convert \\
-  --input ./document.${fromFormat.toLowerCase()} \\
-  --to ${toFormat.toLowerCase()} \\
-  --offline-wasm`,
-    python: `# Python Local Engine Integration
-from utilityhub import LocalConverter
+const blob = await response.blob();
+const downloadUrl = URL.createObjectURL(blob);
 
-converter = LocalConverter(offline_mode=True)
-output = converter.convert(
-    input_file="my_file.${fromFormat.toLowerCase()}",
-    target_format="${toFormat.toLowerCase()}"
-)
-output.save("converted_output.${toFormat.toLowerCase()}")`
+// Trigger local download
+const a = document.createElement('a');
+a.href = downloadUrl;
+a.download = 'converted_output.${toFormat.toLowerCase()}';
+a.click();`,
+    curl: `# ⚡ Real Working Terminal / cURL Command
+curl -X POST "https://daily-utility-hub.onrender.com/api/pdf/convert-to-word" \\
+  -F "pdf=@./document.${fromFormat.toLowerCase()}" \\
+  --output "./converted_document.${toFormat.toLowerCase()}"`,
+    python: `# ⚡ Real Working Python Integration
+import requests
+
+url = "https://daily-utility-hub.onrender.com/api/pdf/convert-to-word"
+with open("document.${fromFormat.toLowerCase()}", "rb") as file_data:
+    response = requests.post(url, files={"pdf": file_data})
+
+if response.status_code == 200:
+    with open("converted_document.${toFormat.toLowerCase()}", "wb") as output_file:
+        output_file.write(response.content)
+    print("✅ Converted successfully to converted_document.${toFormat.toLowerCase()}")
+else:
+    print("❌ Conversion failed:", response.text)`
   };
 
   return (
@@ -948,13 +954,13 @@ output.save("converted_output.${toFormat.toLowerCase()}")`
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-3.5 mb-5">
               <div>
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#e8f0fe] border border-[#d2e3fc] text-[#1a73e8] text-[10px] font-bold uppercase tracking-wider mb-2">
-                  <Terminal size={12} /> Developer Ready
+                  <Terminal size={12} /> REST API & CLI Ready
                 </div>
                 <h3 className="text-lg sm:text-xl font-black text-[#202124] tracking-tight">
-                  Integrate Client-Side Utilities in Your Stack
+                  Integrate Daily Utility Hub in Your Stack
                 </h3>
                 <p className="text-xs text-[#5f6368] mt-1">
-                  Embed offline-first WebAssembly pipelines into your web applications or run via terminal.
+                  Automate document conversions, OCR, and media pipelines directly from JavaScript, Python, or cURL.
                 </p>
               </div>
 
@@ -966,7 +972,7 @@ output.save("converted_output.${toFormat.toLowerCase()}")`
                     apiTab === "js" ? "bg-white text-[#202124] shadow-2xs" : "text-[#5f6368] hover:text-[#202124]"
                   }`}
                 >
-                  JavaScript / Wasm
+                  JavaScript / Fetch
                 </button>
                 <button
                   onClick={() => setApiTab("curl")}
@@ -974,7 +980,7 @@ output.save("converted_output.${toFormat.toLowerCase()}")`
                     apiTab === "curl" ? "bg-white text-[#202124] shadow-2xs" : "text-[#5f6368] hover:text-[#202124]"
                   }`}
                 >
-                  CLI Terminal
+                  cURL / Terminal
                 </button>
                 <button
                   onClick={() => setApiTab("python")}
@@ -982,7 +988,7 @@ output.save("converted_output.${toFormat.toLowerCase()}")`
                     apiTab === "python" ? "bg-white text-[#202124] shadow-2xs" : "text-[#5f6368] hover:text-[#202124]"
                   }`}
                 >
-                  Python
+                  Python Requests
                 </button>
               </div>
             </div>
