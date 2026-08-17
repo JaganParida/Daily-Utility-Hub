@@ -4,7 +4,7 @@ import {
   Search as SearchIcon, X, ArrowRight, Zap, Sparkles, 
   FileText, ImageIcon, Code2, Type, FileSpreadsheet, 
   Table2, MonitorPlay, Lock, Calculator, Layers, BookOpen,
-  ChevronLeft, ChevronRight
+  ChevronLeft, ChevronRight, CornerDownLeft
 } from 'lucide-react';
 import { allTools, toolCategories } from '../data/toolCategories';
 
@@ -37,14 +37,28 @@ const SearchPage = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
 
   const inputRef = useRef(null);
+  const searchBoxRef = useRef(null);
   const scrollContainerRef = useRef(null);
 
   useEffect(() => {
     inputRef.current?.focus();
+  }, []);
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (searchBoxRef.current && !searchBoxRef.current.contains(e.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   // Check scroll positions for left/right arrow buttons
@@ -80,6 +94,7 @@ const SearchPage = () => {
 
   const handleCategorySelect = (category, event) => {
     setActiveCategory(category);
+    setSelectedIndex(0);
     // Smooth scroll the clicked button into view
     if (event?.currentTarget) {
       event.currentTarget.scrollIntoView({
@@ -108,10 +123,48 @@ const SearchPage = () => {
     );
   }, [searchQuery, activeCategory]);
 
+  // Autocomplete dropdown results
+  const dropdownResults = useMemo(() => {
+    if (!searchQuery.trim()) return [];
+    return filteredTools.slice(0, 6);
+  }, [searchQuery, filteredTools]);
+
+  // Reset selected index when query changes
+  useEffect(() => {
+    setSelectedIndex(0);
+    if (searchQuery.trim()) {
+      setIsDropdownOpen(true);
+    } else {
+      setIsDropdownOpen(false);
+    }
+  }, [searchQuery]);
+
+  // Keyboard navigation on input
   const handleInputKeyDown = (e) => {
-    if (e.key === 'Enter' && filteredTools.length > 0) {
+    const currentList = dropdownResults.length > 0 ? dropdownResults : filteredTools;
+    const totalCount = Math.min(currentList.length, 12);
+
+    if (e.key === 'ArrowDown') {
       e.preventDefault();
-      navigate(filteredTools[0].to);
+      if (totalCount > 0) {
+        setSelectedIndex((prev) => (prev + 1) % totalCount);
+        setIsDropdownOpen(true);
+      }
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (totalCount > 0) {
+        setSelectedIndex((prev) => (prev - 1 + totalCount) % totalCount);
+        setIsDropdownOpen(true);
+      }
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (currentList.length > 0 && currentList[selectedIndex]) {
+        setIsDropdownOpen(false);
+        navigate(currentList[selectedIndex].to);
+      }
+    } else if (e.key === 'Escape') {
+      setIsDropdownOpen(false);
+      setSearchQuery('');
     }
   };
 
@@ -133,15 +186,22 @@ const SearchPage = () => {
           </p>
         </div>
 
-        {/* Omnibox Search Bar */}
-        <div className="max-w-2xl mx-auto space-y-3">
-          <div className="relative bg-white border border-[#dadce0] focus-within:border-[#1a73e8] focus-within:ring-3 focus-within:ring-[#1a73e8]/15 rounded-2xl flex items-center px-4 sm:px-5 shadow-xs transition-all">
-            <SearchIcon size={18} className="text-[#5f6368] mr-3 shrink-0" />
+        {/* Omnibox Search Bar with Autocomplete Dropdown */}
+        <div ref={searchBoxRef} className="max-w-2xl mx-auto space-y-3 relative z-30">
+          <div className={`relative bg-white border transition-all duration-200 shadow-xs flex items-center px-4 sm:px-5 ${
+            isDropdownOpen && dropdownResults.length > 0
+              ? 'border-[#1a73e8] rounded-t-2xl border-b-transparent shadow-md'
+              : 'border-[#dadce0] focus-within:border-[#1a73e8] focus-within:ring-3 focus-within:ring-[#1a73e8]/15 rounded-2xl'
+          }`}>
+            <SearchIcon size={18} className="text-[#1a73e8] mr-3 shrink-0" />
             <input
               ref={inputRef}
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={() => {
+                if (searchQuery.trim()) setIsDropdownOpen(true);
+              }}
               onKeyDown={handleInputKeyDown}
               placeholder="Search tools by name, action (compress, merge, convert), or format..."
               className="w-full py-3.5 sm:py-4 text-xs sm:text-sm bg-transparent border-none text-[#202124] placeholder-[#80868b] focus:outline-none"
@@ -150,6 +210,7 @@ const SearchPage = () => {
               <button
                 onClick={() => {
                   setSearchQuery('');
+                  setIsDropdownOpen(false);
                   inputRef.current?.focus();
                 }}
                 className="p-1 rounded-full text-[#80868b] hover:text-[#202124] hover:bg-[#f1f3f4] transition-colors ml-2 cursor-pointer"
@@ -159,6 +220,70 @@ const SearchPage = () => {
               </button>
             )}
           </div>
+
+          {/* Autocomplete Dropdown Panel */}
+          {isDropdownOpen && dropdownResults.length > 0 && (
+            <div className="absolute top-full left-0 right-0 bg-white border border-[#1a73e8] border-t-0 rounded-b-2xl shadow-[0_12px_28px_rgba(60,64,67,0.18)] overflow-hidden z-40 p-2 space-y-1">
+              {dropdownResults.map((tool, idx) => {
+                const ToolIcon = tool.icon || Zap;
+                const isSelected = idx === selectedIndex;
+
+                return (
+                  <button
+                    key={tool.to}
+                    onClick={() => {
+                      setIsDropdownOpen(false);
+                      navigate(tool.to);
+                    }}
+                    onMouseEnter={() => setSelectedIndex(idx)}
+                    className={`w-full flex items-center justify-between p-2.5 rounded-xl transition-all text-left group cursor-pointer ${
+                      isSelected
+                        ? 'bg-[#e8f0fe] border border-[#d2e3fc] shadow-2xs'
+                        : 'hover:bg-[#f1f3f4] border border-transparent'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors shadow-2xs ${
+                        isSelected
+                          ? 'bg-[#1a73e8] text-white'
+                          : 'bg-[#e8f0fe] text-[#1a73e8] group-hover:bg-[#1a73e8] group-hover:text-white'
+                      }`}>
+                        <ToolIcon size={16} />
+                      </div>
+                      <div className="min-w-0">
+                        <p className={`text-xs font-bold transition-colors truncate ${
+                          isSelected ? 'text-[#1a73e8]' : 'text-[#202124] group-hover:text-[#1a73e8]'
+                        }`}>
+                          {tool.name}
+                        </p>
+                        <p className="text-[11px] text-[#5f6368] truncate mt-0.5">
+                          {tool.description}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
+                        isSelected 
+                          ? 'bg-white text-[#1a73e8] border-[#d2e3fc]' 
+                          : 'bg-[#f1f3f4] text-[#5f6368] border-[#dadce0]'
+                      }`}>
+                        {tool.category || "Utility"}
+                      </span>
+                      <CornerDownLeft size={13} className={`transition-all ${
+                        isSelected ? 'text-[#1a73e8] opacity-100' : 'text-[#80868b] opacity-0 group-hover:opacity-100'
+                      }`} />
+                    </div>
+                  </button>
+                );
+              })}
+
+              <div className="px-3 py-1.5 border-t border-[#f1f3f4] flex items-center justify-between text-[11px] text-[#80868b] bg-[#f8f9fa] -mx-2 -mb-2 rounded-b-xl">
+                <span>Navigate with <kbd className="font-mono bg-white px-1.5 py-0.5 rounded border border-[#dadce0]">↑</kbd> <kbd className="font-mono bg-white px-1.5 py-0.5 rounded border border-[#dadce0]">↓</kbd></span>
+                <span>Press <kbd className="font-mono bg-white px-1.5 py-0.5 rounded border border-[#dadce0]">Enter</kbd> to open</span>
+              </div>
+            </div>
+          )}
 
           {/* Suggested Quick Tags */}
           <div className="flex flex-wrap items-center justify-center gap-1.5 pt-1">
@@ -276,19 +401,28 @@ const SearchPage = () => {
 
           {filteredTools.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4">
-              {filteredTools.map((tool) => {
+              {filteredTools.map((tool, idx) => {
                 const ToolIcon = tool.icon || Zap;
+                const isSelected = (!isDropdownOpen && searchQuery.trim() !== '' && idx === selectedIndex);
 
                 return (
                   <Link
                     key={tool.to}
                     to={tool.to}
-                    className="group flex flex-col justify-between p-4 sm:p-5 bg-white border border-[#dadce0] hover:border-[#1a73e8] hover:shadow-[0_4px_18px_rgba(26,115,232,0.12)] transition-all duration-200 rounded-2xl shadow-2xs hover:-translate-y-0.5"
+                    className={`group flex flex-col justify-between p-4 sm:p-5 bg-white border transition-all duration-200 rounded-2xl shadow-2xs hover:-translate-y-0.5 ${
+                      isSelected 
+                        ? 'border-[#1a73e8] ring-2 ring-[#1a73e8]/20 shadow-md' 
+                        : 'border-[#dadce0] hover:border-[#1a73e8] hover:shadow-[0_4px_18px_rgba(26,115,232,0.12)]'
+                    }`}
                   >
                     <div>
                       {/* Card Header: Icon + Category Badge */}
                       <div className="flex items-center justify-between gap-2 mb-3">
-                        <div className="w-10 h-10 rounded-xl bg-[#e8f0fe] border border-[#d2e3fc] group-hover:bg-[#1a73e8] group-hover:text-white text-[#1a73e8] flex items-center justify-center transition-colors shrink-0 shadow-2xs">
+                        <div className={`w-10 h-10 rounded-xl border flex items-center justify-center transition-colors shrink-0 shadow-2xs ${
+                          isSelected
+                            ? 'bg-[#1a73e8] text-white border-[#1a73e8]'
+                            : 'bg-[#e8f0fe] border-[#d2e3fc] group-hover:bg-[#1a73e8] group-hover:text-white text-[#1a73e8]'
+                        }`}>
                           <ToolIcon size={20} />
                         </div>
                         <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-[#f1f3f4] text-[#5f6368] border border-[#dadce0]">
@@ -297,7 +431,9 @@ const SearchPage = () => {
                       </div>
 
                       {/* Title & Description */}
-                      <h3 className="text-sm sm:text-base font-bold text-[#202124] group-hover:text-[#1a73e8] transition-colors truncate">
+                      <h3 className={`text-sm sm:text-base font-bold transition-colors truncate ${
+                        isSelected ? 'text-[#1a73e8]' : 'text-[#202124] group-hover:text-[#1a73e8]'
+                      }`}>
                         {tool.name}
                       </h3>
                       <p className="text-xs text-[#5f6368] line-clamp-2 mt-1 leading-relaxed">
