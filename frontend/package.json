@@ -28,6 +28,7 @@
     "cronstrue": "^3.24.0",
     "crypto-js": "^4.2.0",
     "diff": "^9.0.0",
+    "docx": "^9.7.1",
     "dompurify": "^3.4.12",
     "firebase": "^12.15.0",
     "framer-motion": "^12.42.1",

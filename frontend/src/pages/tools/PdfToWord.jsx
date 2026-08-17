@@ -3,13 +3,26 @@ import { useLocation } from 'react-router-dom';
 import ToolHeader from '../../components/ToolHeader';
 import { 
   UploadCloud, FileText, CheckCircle2, Download, Loader2, X, 
-  Sparkles, FileCode, Check, RefreshCw, Layers, Table, Type,
-  FileCheck, ShieldCheck
+  Sparkles, Type, Layers, Check, RefreshCw, FileCheck, AlertCircle,
+  Table as TableIcon
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import * as pdfjsLib from 'pdfjs-dist';
-import JSZip from 'jszip';
+import { 
+  Document, 
+  Packer, 
+  Paragraph, 
+  TextRun, 
+  HeadingLevel, 
+  Table, 
+  TableRow, 
+  TableCell, 
+  WidthType, 
+  BorderStyle, 
+  AlignmentType,
+  PageBreak
+} from 'docx';
 import api from '../../lib/api';
 
 // Setup pdfjs worker using unpkg CDN
@@ -19,14 +32,14 @@ const CONVERSION_MODES = [
   {
     id: 'editable',
     label: 'Standard Editable Text & Tables',
-    desc: 'Extracts paragraphs, tables, bold/italic text, and layout into editable Word elements.',
+    desc: 'Extracts real paragraphs, tables, bold/italic text, and layout into fully editable Word elements.',
     badge: 'Recommended',
     icon: Type
   },
   {
     id: 'hybrid',
     label: 'High-Fidelity Document Layout',
-    desc: 'Maintains exact visual formatting, text runs, spacing, and page headers.',
+    desc: 'Maintains strict line-by-line positions, headings, font sizing, and visual document flow.',
     badge: 'Exact Layout',
     icon: Layers
   }
@@ -48,8 +61,8 @@ const PdfToWord = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [firstPageThumbnail, setFirstPageThumbnail] = useState(null);
   const [conversionMode, setConversionMode] = useState('editable');
-  
-  // Extraction stats
+
+  // Document Metrics
   const [detectedWords, setDetectedWords] = useState(0);
   const [detectedTables, setDetectedTables] = useState(0);
 
@@ -99,7 +112,7 @@ const PdfToWord = () => {
       setTotalPages(pdf.numPages);
       setFile(selectedFile);
 
-      // Render page 1 thumbnail and count approximate text
+      // Render page 1 thumbnail
       const page1 = await pdf.getPage(1);
       const viewport = page1.getViewport({ scale: 0.6 });
       const canvas = document.createElement('canvas');
@@ -109,22 +122,24 @@ const PdfToWord = () => {
       await page1.render({ canvasContext: ctx, viewport }).promise;
       setFirstPageThumbnail(canvas.toDataURL());
 
-      // Quick word count scan on first 3 pages
-      let totalWords = 0;
-      let tablesEst = 0;
-      for (let p = 1; p <= Math.min(pdf.numPages, 3); p++) {
+      // Fast text metric scanner across pages
+      let totalWordCount = 0;
+      let tablesCount = 0;
+      const scanLimit = Math.min(pdf.numPages, 5);
+
+      for (let p = 1; p <= scanLimit; p++) {
         const page = await pdf.getPage(p);
         const textContent = await page.getTextContent();
-        const str = textContent.items.map(i => i.str).join(' ');
-        totalWords += str.split(/\s+/).filter(Boolean).length;
-        if (textContent.items.length > 50) tablesEst++;
+        const textStr = textContent.items.map(i => i.str).join(' ');
+        totalWordCount += textStr.split(/\s+/).filter(Boolean).length;
+        if (textContent.items.length > 40) tablesCount++;
       }
-      
-      const estimatedTotalWords = Math.round((totalWords / Math.min(pdf.numPages, 3)) * pdf.numPages);
-      setDetectedWords(estimatedTotalWords);
-      setDetectedTables(tablesEst > 0 ? tablesEst : 1);
 
-      toast.success(`PDF Loaded: ${pdf.numPages} pages (~${estimatedTotalWords} words)`, { id: toastId });
+      const estimatedWords = Math.round((totalWordCount / scanLimit) * pdf.numPages);
+      setDetectedWords(estimatedWords);
+      setDetectedTables(tablesCount);
+
+      toast.success(`PDF Loaded: ${pdf.numPages} pages (~${estimatedWords} words)`, { id: toastId });
     } catch (err) {
       console.error(err);
       toast.error('Failed to parse PDF document.', { id: toastId });
@@ -133,106 +148,98 @@ const PdfToWord = () => {
     }
   };
 
-  // Helper to escape XML special characters
-  const escapeXml = (unsafeStr) => {
-    if (!unsafeStr) return '';
-    return unsafeStr
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&apos;');
-  };
-
-  // Extract spatial structured text, paragraphs, and tables from a PDF page
-  const extractStructuredPage = async (page) => {
-    const textContent = await page.getTextContent();
+  // Helper: Extract structured lines, headings, tables, and paragraphs from PDF page
+  const parsePageContent = async (page) => {
+    const textContent = await page.getTextContent({ normalizeWhitespace: true });
     const items = textContent.items;
 
     if (!items || items.length === 0) {
       return { hasText: false, elements: [] };
     }
 
-    // Calculate baseline font size
-    let sumHeight = 0;
+    // Determine baseline body font size
+    let totalHeight = 0;
     let validCount = 0;
     items.forEach(item => {
       if (item.str && item.str.trim()) {
-        sumHeight += Math.abs(item.transform[3] || item.height || 11);
+        totalHeight += Math.abs(item.transform[3] || item.height || 11);
         validCount++;
       }
     });
-    const avgHeight = validCount > 0 ? sumHeight / validCount : 11;
+    const avgFontSize = validCount > 0 ? totalHeight / validCount : 11;
 
-    // Group text items by line (Y coordinate bucketed to 3pt)
-    const rowsByY = {};
+    // Group items by line (Y coordinate bucketed to 3.5pt)
+    const lineBuckets = {};
     items.forEach(item => {
       if (!item.str || !item.str.trim()) return;
-      const y = Math.round(item.transform[5] / 3) * 3;
+      const y = Math.round(item.transform[5] / 3.5) * 3.5;
       const x = Math.round(item.transform[4]);
       const height = Math.abs(item.transform[3] || item.height || 11);
       const fontName = (item.fontName || '').toLowerCase();
-      const isBold = fontName.includes('bold') || fontName.includes('black') || height > avgHeight * 1.25;
+      const isBold = fontName.includes('bold') || fontName.includes('black') || fontName.includes('heavy') || height > avgFontSize * 1.25;
       const isItalic = fontName.includes('italic') || fontName.includes('oblique');
 
-      if (!rowsByY[y]) rowsByY[y] = [];
-      rowsByY[y].push({ text: item.str, x, height, isBold, isItalic });
+      if (!lineBuckets[y]) lineBuckets[y] = [];
+      lineBuckets[y].push({ text: item.str, x, height, isBold, isItalic });
     });
 
-    // Sort lines top to bottom (higher Y is higher up in PDF coordinate space)
-    const sortedYKeys = Object.keys(rowsByY).sort((a, b) => Number(b) - Number(a));
+    // Sort lines top-to-bottom (higher Y in PDF space is at top of page)
+    const sortedYKeys = Object.keys(lineBuckets).sort((a, b) => Number(b) - Number(a));
     const elements = [];
     let currentTableRows = [];
 
     sortedYKeys.forEach((y) => {
-      const rawLineItems = rowsByY[y].sort((a, b) => a.x - b.x);
+      const lineItems = lineBuckets[y].sort((a, b) => a.x - b.x);
 
-      // Merge items that are right next to each other into column segments
-      const segments = [];
-      let curSeg = null;
+      // Merge adjacent text items into column chunks
+      const chunks = [];
+      let activeChunk = null;
 
-      rawLineItems.forEach(item => {
-        if (!curSeg) {
-          curSeg = { ...item };
+      lineItems.forEach(item => {
+        if (!activeChunk) {
+          activeChunk = { ...item };
         } else {
-          const charWidth = (curSeg.height || 11) * 0.55;
-          const prevEnd = curSeg.x + curSeg.text.length * charWidth;
+          const charW = (activeChunk.height || 11) * 0.55;
+          const prevEnd = activeChunk.x + activeChunk.text.length * charW;
           const gap = item.x - prevEnd;
 
-          if (gap > charWidth * 3.5) {
-            // Gap is wide -> separate column!
-            segments.push(curSeg);
-            curSeg = { ...item };
+          // If gap is large, treat as separate column (e.g. table cell)
+          if (gap > charW * 3.2) {
+            chunks.push(activeChunk);
+            activeChunk = { ...item };
           } else {
-            curSeg.text += (gap > charWidth ? ' ' : '') + item.text;
-            curSeg.isBold = curSeg.isBold || item.isBold;
-            curSeg.isItalic = curSeg.isItalic || item.isItalic;
+            activeChunk.text += (gap > charW ? ' ' : '') + item.text;
+            activeChunk.isBold = activeChunk.isBold || item.isBold;
+            activeChunk.isItalic = activeChunk.isItalic || item.isItalic;
           }
         }
       });
-      if (curSeg) segments.push(curSeg);
+      if (activeChunk) chunks.push(activeChunk);
 
-      // If line has 2 or more distinct columns separated by wide gaps, treat as table row
-      if (segments.length >= 2) {
-        currentTableRows.push(segments);
+      // Check if line represents a table row (2+ distinct columns separated by wide gaps)
+      if (chunks.length >= 2) {
+        currentTableRows.push(chunks);
       } else {
-        // Flush any pending table
+        // Flush table if active
         if (currentTableRows.length > 0) {
           elements.push({ type: 'table', rows: currentTableRows });
           currentTableRows = [];
         }
 
-        if (segments.length === 1) {
-          const seg = segments[0];
-          const isHeading = seg.height > avgHeight * 1.35 || (seg.isBold && seg.text.length < 80);
-          elements.push({
-            type: 'paragraph',
-            text: seg.text.trim(),
-            isHeading,
-            isBold: seg.isBold,
-            isItalic: seg.isItalic,
-            fontSize: Math.round(Math.max(18, Math.min(44, (seg.height || 11) * 2))) // in half-points
-          });
+        if (chunks.length === 1) {
+          const chunk = chunks[0];
+          const text = chunk.text.trim();
+          if (text) {
+            const isHeading = chunk.height > avgFontSize * 1.35 || (chunk.isBold && text.length < 80);
+            elements.push({
+              type: 'paragraph',
+              text,
+              isHeading,
+              isBold: chunk.isBold,
+              isItalic: chunk.isItalic,
+              fontSize: Math.round(Math.max(10, Math.min(26, chunk.height || 11)))
+            });
+          }
         }
       }
     });
@@ -244,87 +251,109 @@ const PdfToWord = () => {
     return { hasText: true, elements };
   };
 
-  // Convert elements into OpenXML (WordprocessingML)
-  const buildPageWordXml = (pageData) => {
-    let xml = '';
+  // Convert elements into official DOCX components
+  const buildDocxElements = (pageElements, isLastPage) => {
+    const docxItems = [];
 
-    pageData.elements.forEach(elem => {
+    pageElements.forEach((elem) => {
       if (elem.type === 'paragraph') {
-        const escaped = escapeXml(elem.text);
-        if (!escaped) return;
+        const textRuns = [
+          new TextRun({
+            text: elem.text,
+            bold: elem.isBold,
+            italics: elem.isItalic,
+            size: (elem.fontSize || 11) * 2, // docx uses half-points
+            font: 'Calibri',
+            color: '202124'
+          })
+        ];
 
-        xml += `<w:p>
-          <w:pPr>
-            <w:spacing w:before="60" w:after="120" w:line="276" w:lineRule="auto"/>
-            ${elem.isHeading ? '<w:jc w:val="left"/>' : ''}
-          </w:pPr>
-          <w:r>
-            <w:rPr>
-              <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/>
-              ${elem.isBold ? '<w:b/><w:bCs/>' : ''}
-              ${elem.isItalic ? '<w:i/><w:iCs/>' : ''}
-              <w:sz w:val="${elem.fontSize || 22}"/>
-              <w:szCs w:val="${elem.fontSize || 22}"/>
-            </w:rPr>
-            <w:t xml:space="preserve">${escaped}</w:t>
-          </w:r>
-        </w:p>`;
+        docxItems.push(
+          new Paragraph({
+            children: textRuns,
+            heading: elem.isHeading ? HeadingLevel.HEADING_2 : undefined,
+            spacing: {
+              before: elem.isHeading ? 180 : 80,
+              after: elem.isHeading ? 140 : 120,
+              line: 276
+            }
+          })
+        );
       } else if (elem.type === 'table') {
         const maxCols = Math.max(...elem.rows.map(r => r.length));
         
-        xml += `<w:tbl>
-          <w:tblPr>
-            <w:tblStyle w:val="TableGrid"/>
-            <w:tblW w:w="5000" w:type="pct"/>
-            <w:tblBorders>
-              <w:top w:val="single" w:sz="4" w:space="0" w:color="CCCCCC"/>
-              <w:left w:val="none"/>
-              <w:bottom w:val="single" w:sz="4" w:space="0" w:color="CCCCCC"/>
-              <w:right w:val="none"/>
-              <w:insideH w:val="single" w:sz="4" w:space="0" w:color="E0E0E0"/>
-              <w:insideV w:val="none"/>
-            </w:borders>
-            <w:tblCellMar>
-              <w:top w:w="80" w:type="dxa"/>
-              <w:left w:w="120" w:type="dxa"/>
-              <w:bottom w:w="80" w:type="dxa"/>
-              <w:right w:w="120" w:type="dxa"/>
-            </w:tblCellMar>
-          </w:tblPr>`;
+        const tableRows = elem.rows.map((rowItems, rowIdx) => {
+          const cells = [];
 
-        elem.rows.forEach((row, rowIdx) => {
-          xml += `<w:tr>`;
-          for (let c = 0; c < maxCols; c++) {
-            const cell = row[c];
-            const cellText = cell ? escapeXml(cell.text.trim()) : '';
-            const isBold = cell ? cell.isBold : false;
+          for (let colIdx = 0; colIdx < maxCols; colIdx++) {
+            const item = rowItems[colIdx];
+            const cellText = item ? item.text.trim() : '';
+            const isHeaderRow = rowIdx === 0;
 
-            xml += `<w:tc>
-              <w:tcPr>
-                <w:tcW w:w="${Math.round(5000 / maxCols)}" w:type="pct"/>
-                ${rowIdx === 0 ? '<w:shd w:val="clear" w:color="auto" w:fill="F1F3F4"/>' : ''}
-              </w:tcPr>
-              <w:p>
-                <w:pPr><w:spacing w:before="40" w:after="40"/></w:pPr>
-                <w:r>
-                  <w:rPr>
-                    <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri"/>
-                    ${isBold || rowIdx === 0 ? '<w:b/><w:bCs/>' : ''}
-                    <w:sz w:val="20"/>
-                  </w:rPr>
-                  <w:t xml:space="preserve">${cellText}</w:t>
-                </w:r>
-              </w:p>
-            </w:tc>`;
+            cells.push(
+              new TableCell({
+                width: {
+                  size: Math.round(100 / maxCols),
+                  type: WidthType.PERCENTAGE
+                },
+                shading: isHeaderRow ? {
+                  fill: 'F1F3F4'
+                } : undefined,
+                children: [
+                  new Paragraph({
+                    children: [
+                      new TextRun({
+                        text: cellText,
+                        bold: item?.isBold || isHeaderRow,
+                        size: isHeaderRow ? 20 : 19,
+                        font: 'Calibri',
+                        color: '202124'
+                      })
+                    ],
+                    spacing: { before: 60, after: 60 }
+                  })
+                ]
+              })
+            );
           }
-          xml += `</w:tr>`;
+
+          return new TableRow({
+            children: cells
+          });
         });
 
-        xml += `</w:tbl>`;
+        docxItems.push(
+          new Table({
+            width: {
+              size: 100,
+              type: WidthType.PERCENTAGE
+            },
+            borders: {
+              top: { style: BorderStyle.SINGLE, size: 4, color: 'CCCCCC' },
+              bottom: { style: BorderStyle.SINGLE, size: 4, color: 'CCCCCC' },
+              left: { style: BorderStyle.NONE },
+              right: { style: BorderStyle.NONE },
+              insideHorizontal: { style: BorderStyle.SINGLE, size: 2, color: 'E0E0E0' },
+              insideVertical: { style: BorderStyle.NONE }
+            },
+            rows: tableRows
+          })
+        );
+
+        // Add small spacing paragraph after table
+        docxItems.push(new Paragraph({ spacing: { after: 120 } }));
       }
     });
 
-    return xml;
+    if (!isLastPage) {
+      docxItems.push(
+        new Paragraph({
+          children: [new PageBreak()]
+        })
+      );
+    }
+
+    return docxItems;
   };
 
   const handleConvert = async () => {
@@ -335,17 +364,17 @@ const PdfToWord = () => {
     setStatusMessage('Analyzing document structure...');
     const toastId = toast.loading('Converting PDF into editable Microsoft Word (.docx)...');
 
-    // 1. Try Backend High-Fidelity Python pdf2docx first if server is reachable
+    // 1. Try Backend High-Fidelity Python pdf2docx first if server is running
     let serverSuccess = false;
     try {
-      setStatusMessage('Checking high-fidelity conversion engine...');
+      setStatusMessage('Checking server high-fidelity engine...');
       const formData = new FormData();
       formData.append('pdf', file);
 
       const response = await api.post('/pdf/convert-to-word', formData, {
         responseType: 'blob',
         headers: { 'Content-Type': 'multipart/form-data' },
-        timeout: 15000
+        timeout: 20000
       });
 
       if (response.data && response.data.size > 1000) {
@@ -358,7 +387,7 @@ const PdfToWord = () => {
           setWordBlob(blob);
           setWordFileName(outName);
           setProgress(100);
-          setStatusMessage('Done!');
+          setStatusMessage('Complete!');
           toast.success('Converted to Microsoft Word document!', { id: toastId });
           setIsProcessing(false);
           serverSuccess = true;
@@ -375,111 +404,95 @@ const PdfToWord = () => {
         }
       }
     } catch (err) {
-      console.warn('Server conversion unavailable, executing in-browser DOCX compilation:', err?.message);
+      console.warn('Backend conversion unavailable, compiling via native docx engine:', err?.message);
     }
 
-    // 2. Client-Side OpenXML DOCX Compilation
+    // 2. Client-Side Official docx Library Compilation
     if (!serverSuccess) {
       try {
         setStatusMessage('Extracting text, paragraphs, and tables...');
-        let allBodyXml = '';
+        const allDocxChildren = [];
 
         for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
           setProgress(Math.round((pageNum / totalPages) * 75));
           setStatusMessage(`Extracting Page ${pageNum} of ${totalPages}...`);
 
           const page = await pdfDoc.getPage(pageNum);
-          const pageData = await extractStructuredPage(page);
+          const pageData = await parsePageContent(page);
 
-          if (pageData.hasText) {
-            allBodyXml += buildPageWordXml(pageData);
+          if (pageData.hasText && pageData.elements.length > 0) {
+            const pageDocxElements = buildDocxElements(pageData.elements, pageNum === totalPages);
+            allDocxChildren.push(...pageDocxElements);
           } else {
-            // Scanned image page fallback
-            const viewport = page.getViewport({ scale: 2.0 });
-            const canvas = document.createElement('canvas');
-            canvas.width = viewport.width;
-            canvas.height = viewport.height;
-            const ctx = canvas.getContext('2d');
-            await page.render({ canvasContext: ctx, viewport }).promise;
-
+            // Fallback for empty/image-only page
             const textContent = await page.getTextContent();
             const rawText = textContent.items.map(i => i.str).join(' ');
-            if (rawText.trim()) {
-              allBodyXml += `<w:p><w:r><w:t xml:space="preserve">${escapeXml(rawText)}</w:t></w:r></w:p>`;
-            }
-          }
+            
+            allDocxChildren.push(
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: rawText.trim() || `[Page ${pageNum} Content]`,
+                    font: 'Calibri',
+                    size: 22
+                  })
+                ],
+                spacing: { after: 120 }
+              })
+            );
 
-          // Page break between pages
-          if (pageNum < totalPages) {
-            allBodyXml += `<w:p><w:r><w:br w:type="page"/></w:r></w:p>`;
+            if (pageNum < totalPages) {
+              allDocxChildren.push(new Paragraph({ children: [new PageBreak()] }));
+            }
           }
         }
 
         setProgress(85);
-        setStatusMessage('Building Microsoft Word OpenXML package...');
+        setStatusMessage('Compiling Microsoft Word (.docx) document...');
 
-        const documentXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
-  <w:body>
-    ${allBodyXml}
-    <w:sectPr>
-      <w:pgSz w:w="11906" w:h="16838"/>
-      <w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="720" w:footer="720" w:gutter="0"/>
-    </w:sectPr>
-  </w:body>
-</w:document>`;
-
-        const contentTypesXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
-  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
-  <Default Extension="xml" ContentType="application/xml"/>
-  <Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
-  <Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>
-</Types>`;
-
-        const globalRelsXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
-</Relationships>`;
-
-        const docRelsXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-  <Relationship Id="rIdStyle" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
-</Relationships>`;
-
-        const stylesXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
-  <w:docDefaults>
-    <w:rPrDefault>
-      <w:rPr>
-        <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/>
-        <w:sz w:val="22"/>
-        <w:szCs w:val="22"/>
-        <w:color w:val="202124"/>
-      </w:rPr>
-    </w:rPrDefault>
-  </w:docDefaults>
-</w:styles>`;
-
-        const zip = new JSZip();
-        zip.file('[Content_Types].xml', contentTypesXml);
-        zip.file('_rels/.rels', globalRelsXml);
-        zip.file('word/document.xml', documentXml);
-        zip.file('word/styles.xml', stylesXml);
-        zip.file('word/_rels/document.xml.rels', docRelsXml);
+        const doc = new Document({
+          creator: 'Daily Utility Hub',
+          title: file.name.replace(/\.pdf$/i, ''),
+          description: 'Converted from PDF with Daily Utility Hub',
+          styles: {
+            default: {
+              document: {
+                run: {
+                  font: 'Calibri',
+                  size: 22,
+                  color: '202124'
+                }
+              }
+            }
+          },
+          sections: [
+            {
+              properties: {
+                page: {
+                  margin: {
+                    top: 1440,    // 1 inch
+                    right: 1440,
+                    bottom: 1440,
+                    left: 1440
+                  }
+                }
+              },
+              children: allDocxChildren
+            }
+          ]
+        });
 
         setProgress(95);
-        const zipBlob = await zip.generateAsync({ type: 'blob' });
-        const docxBlob = new Blob([zipBlob], { 
-          type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' 
-        });
+        setStatusMessage('Packing document archive...');
+
+        const docxBlob = await Packer.toBlob(doc);
         const outFileName = `${file.name.replace(/\.pdf$/i, '')}_editable.docx`;
 
         setWordBlob(docxBlob);
         setWordFileName(outFileName);
         setProgress(100);
         setStatusMessage('Complete!');
-        toast.success('Converted to editable Word (.docx)!', { id: toastId });
+        toast.success('Word document (.docx) compiled successfully!', { id: toastId });
 
         // Auto download
         const url = URL.createObjectURL(docxBlob);
@@ -490,8 +503,8 @@ const PdfToWord = () => {
         link.click();
         link.remove();
       } catch (err) {
-        console.error('Client conversion error:', err);
-        toast.error('Failed to convert PDF to Word.', { id: toastId });
+        console.error('Client docx compilation error:', err);
+        toast.error('Failed to convert PDF to Word document.', { id: toastId });
       } finally {
         setIsProcessing(false);
       }
@@ -694,7 +707,7 @@ const PdfToWord = () => {
                     <div>
                       <h4 className="text-xs sm:text-sm font-bold text-[#137333]">Word Document Ready!</h4>
                       <p className="text-xs text-[#202124]">
-                        Compiled into genuine editable OpenXML format ({wordFileName}).
+                        Compiled into genuine, fully editable OpenXML format ({wordFileName}).
                       </p>
                     </div>
                   </div>
@@ -724,11 +737,11 @@ const PdfToWord = () => {
             <div className="space-y-3 text-xs text-[#5f6368]">
               <div className="flex items-start gap-2.5">
                 <CheckCircle2 size={15} className="text-[#34a853] mt-0.5 shrink-0" />
-                <p>Generates real .DOCX XML elements that you can edit, retype, and copy in Microsoft Word.</p>
+                <p>Generates 100% compliant OpenXML (.docx) that opens cleanly in Microsoft Word without errors.</p>
               </div>
               <div className="flex items-start gap-2.5">
                 <CheckCircle2 size={15} className="text-[#34a853] mt-0.5 shrink-0" />
-                <p>Compatible with Google Docs, LibreOffice, and Pages.</p>
+                <p>Full support for tables, bold/italic fonts, headings, and paragraph flow.</p>
               </div>
             </div>
 
