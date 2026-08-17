@@ -1,99 +1,117 @@
-import { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { Search as SearchIcon, X, ArrowRight, Zap, Shield, Sparkles, Command, Heart, Pin } from 'lucide-react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { 
+  Search as SearchIcon, X, ArrowRight, Zap, Sparkles, 
+  FileText, ImageIcon, Code2, Type, FileSpreadsheet, 
+  Table2, MonitorPlay, Lock, Calculator, Layers, BookOpen
+} from 'lucide-react';
 import { allTools, toolCategories } from '../data/toolCategories';
 
+const CATEGORY_ICONS = {
+  'All': Zap,
+  'PDF Tools': FileText,
+  'Image Tools': ImageIcon,
+  'Developer Tools': Code2,
+  'Text Tools': Type,
+  'Word & Docs Tools': FileSpreadsheet,
+  'Excel & Sheets Tools': Table2,
+  'PowerPoint & Slides Tools': MonitorPlay,
+  'Student & Docs': BookOpen,
+  'Finance & Productivity': Calculator,
+  'File & Storage Tools': Lock
+};
+
+const POPULAR_SEARCHES = [
+  { name: 'PDF to Word', to: '/tools/pdf-to-word' },
+  { name: 'JSON Formatter', to: '/tools/json-formatter' },
+  { name: 'Image Compressor', to: '/tools/image-compressor' },
+  { name: 'Merge PDF', to: '/tools/pdf-merge' },
+  { name: 'Split PDF', to: '/tools/pdf-split' },
+  { name: 'JWT Decoder', to: '/tools/jwt-decoder' },
+  { name: 'UUID Generator', to: '/tools/uuid-generator' },
+  { name: 'File Vault', to: '/tools/file-vault' }
+];
+
 const SearchPage = () => {
-  const { currentUser, toggleFavorite, togglePin } = useAuth();
-  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
-  const [filteredTools, setFilteredTools] = useState(allTools);
   const inputRef = useRef(null);
+  const scrollContainerRef = useRef(null);
 
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
 
-  useEffect(() => {
-    let results = allTools;
+  // Instant zero-lag synchronous memoized filter
+  const filteredTools = useMemo(() => {
+    let list = allTools;
 
     if (activeCategory !== 'All') {
-      results = toolCategories[activeCategory] || [];
+      list = toolCategories[activeCategory] || [];
     }
 
-    if (searchQuery.trim() !== '') {
-      const query = searchQuery.toLowerCase();
-      results = results.filter(
-        (tool) =>
-          tool.name.toLowerCase().includes(query) ||
-          tool.description.toLowerCase().includes(query) ||
-          tool.category?.toLowerCase().includes(query)
-      );
-    }
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return list;
 
-    setFilteredTools(results);
+    return list.filter((tool) =>
+      tool.name.toLowerCase().includes(query) ||
+      tool.description.toLowerCase().includes(query) ||
+      (tool.category && tool.category.toLowerCase().includes(query))
+    );
   }, [searchQuery, activeCategory]);
 
-  const popularSearches = [
-    { name: 'JSON Formatter', to: '/tools/json-formatter' },
-    { name: 'PDF to Word', to: '/tools/pdf-to-word' },
-    { name: 'Image Compressor', to: '/tools/image-compressor' },
-    { name: 'JWT Decoder', to: '/tools/jwt-decoder' },
-    { name: 'UUID Batch Gen', to: '/tools/uuid-generator' },
-    { name: 'File Vault', to: '/tools/file-vault' },
-  ];
-
   return (
-    <div className="min-h-screen bg-[#f8f9fa] text-[#202124] pt-8 pb-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-      <div className="max-w-6xl mx-auto relative z-10 space-y-8">
+    <div className="min-h-screen bg-[#f8f9fa] text-[#202124] pt-4 sm:pt-6 pb-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      <div className="max-w-6xl mx-auto space-y-6 sm:space-y-8">
         
-        {/* Header */}
-        <div className="text-center max-w-2xl mx-auto">
+        {/* Header Hero */}
+        <div className="text-center max-w-2xl mx-auto pt-2">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#e8f0fe] border border-[#d2e3fc] text-[#1a73e8] mb-3 shadow-2xs">
             <Sparkles size={13} />
-            <span className="text-[10px] font-bold uppercase tracking-wider">Command Directory</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider">All-in-One Utility Suite</span>
           </div>
-          <h1 className="text-3xl sm:text-5xl font-black text-[#202124] tracking-tight">
+          <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold text-[#202124] tracking-tight leading-tight">
             Explore All 90+ Tools
           </h1>
-          <p className="text-[#5f6368] text-xs sm:text-sm mt-2">
-            Instant search and category filtering across our complete client-side processing suite.
+          <p className="text-[#5f6368] text-xs sm:text-sm mt-2 max-w-md mx-auto leading-relaxed">
+            Fast, secure, 100% client-side file and developer utilities in your browser.
           </p>
         </div>
 
-        {/* Google-Style Omnibox Search Bar */}
+        {/* Omnibox Search Bar */}
         <div className="max-w-2xl mx-auto space-y-3">
-          <div className="relative bg-white border border-[#dadce0] focus-within:border-[#1a73e8] focus-within:ring-2 focus-within:ring-[#1a73e8]/20 rounded-full flex items-center px-5 shadow-xs transition-all">
-            <SearchIcon size={20} className="text-[#5f6368] mr-3 shrink-0" />
+          <div className="relative bg-white border border-[#dadce0] focus-within:border-[#1a73e8] focus-within:ring-3 focus-within:ring-[#1a73e8]/15 rounded-2xl flex items-center px-4 sm:px-5 shadow-xs transition-all">
+            <SearchIcon size={18} className="text-[#5f6368] mr-3 shrink-0" />
             <input
               ref={inputRef}
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by tool name, format (PDF, PNG, JSON), or action..."
-              className="w-full py-4 text-sm bg-transparent border-none text-[#202124] placeholder-[#80868b] focus:outline-none"
+              placeholder="Search tools by name, action (compress, merge, convert), or format..."
+              className="w-full py-3.5 sm:py-4 text-xs sm:text-sm bg-transparent border-none text-[#202124] placeholder-[#80868b] focus:outline-none"
             />
             {searchQuery && (
               <button
-                onClick={() => setSearchQuery('')}
+                onClick={() => {
+                  setSearchQuery('');
+                  inputRef.current?.focus();
+                }}
                 className="p-1 rounded-full text-[#80868b] hover:text-[#202124] hover:bg-[#f1f3f4] transition-colors ml-2 cursor-pointer"
+                title="Clear search"
               >
                 <X size={16} />
               </button>
             )}
           </div>
 
-          {/* Quick tags */}
-          <div className="flex flex-wrap items-center justify-center gap-2">
-            <span className="text-xs text-[#5f6368] font-medium mr-1">Suggested:</span>
-            {popularSearches.map((item) => (
+          {/* Suggested Quick Tags */}
+          <div className="flex flex-wrap items-center justify-center gap-1.5 pt-1">
+            <span className="text-[11px] text-[#5f6368] font-bold mr-1">Popular:</span>
+            {POPULAR_SEARCHES.map((item) => (
               <Link
                 key={item.name}
                 to={item.to}
-                className="text-xs px-3 py-1 rounded-full bg-white border border-[#dadce0] text-[#3c4043] hover:text-[#1a73e8] hover:border-[#1a73e8] transition-all font-medium shadow-2xs"
+                className="text-[11px] px-2.5 py-0.5 rounded-full bg-white border border-[#dadce0] text-[#3c4043] hover:text-[#1a73e8] hover:border-[#1a73e8] hover:bg-[#f8fbff] transition-all font-semibold shadow-2xs"
               >
                 {item.name}
               </Link>
@@ -101,99 +119,127 @@ const SearchPage = () => {
           </div>
         </div>
 
-        {/* Category Filter Pills */}
-        <div className="flex items-center justify-center gap-2 flex-wrap">
-          <button
-            onClick={() => setActiveCategory('All')}
-            className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
-              activeCategory === 'All'
-                ? 'bg-[#1a73e8] text-white shadow-xs'
-                : 'bg-white border border-[#dadce0] text-[#5f6368] hover:text-[#202124] hover:bg-[#f1f3f4]'
-            }`}
+        {/* Horizontal Category Filter Pills Bar (Fast & Smooth Scrolling) */}
+        <div className="w-full">
+          <div 
+            ref={scrollContainerRef}
+            className="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-2.5 pt-1 px-1 -mx-1"
           >
-            All Utilities ({allTools.length})
-          </button>
-          {Object.keys(toolCategories).map((category) => (
+            {/* All Utilities Pill */}
             <button
-              key={category}
-              onClick={() => setActiveCategory(category)}
-              className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                activeCategory === category
-                  ? 'bg-[#1a73e8] text-white shadow-xs'
-                  : 'bg-white border border-[#dadce0] text-[#5f6368] hover:text-[#202124] hover:bg-[#f1f3f4]'
+              onClick={() => setActiveCategory('All')}
+              className={`shrink-0 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer shadow-2xs ${
+                activeCategory === 'All'
+                  ? 'bg-[#1a73e8] text-white border border-[#1a73e8] shadow-xs'
+                  : 'bg-white border border-[#dadce0] text-[#5f6368] hover:text-[#202124] hover:bg-[#f8f9fa] hover:border-[#bdc1c6]'
               }`}
             >
-              {category} ({toolCategories[category].length})
+              <Zap size={13} className={activeCategory === 'All' ? 'text-white' : 'text-[#1a73e8]'} />
+              <span>All Utilities</span>
+              <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                activeCategory === 'All' ? 'bg-white/20 text-white' : 'bg-[#f1f3f4] text-[#5f6368]'
+              }`}>
+                {allTools.length}
+              </span>
             </button>
-          ))}
+
+            {/* Dynamic Category Pills */}
+            {Object.keys(toolCategories).map((category) => {
+              const Icon = CATEGORY_ICONS[category] || Layers;
+              const count = toolCategories[category].length;
+              const isSelected = activeCategory === category;
+
+              return (
+                <button
+                  key={category}
+                  onClick={() => setActiveCategory(category)}
+                  className={`shrink-0 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer shadow-2xs ${
+                    isSelected
+                      ? 'bg-[#1a73e8] text-white border border-[#1a73e8] shadow-xs'
+                      : 'bg-white border border-[#dadce0] text-[#5f6368] hover:text-[#202124] hover:bg-[#f8f9fa] hover:border-[#bdc1c6]'
+                  }`}
+                >
+                  <Icon size={13} className={isSelected ? 'text-white' : 'text-[#5f6368]'} />
+                  <span>{category}</span>
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                    isSelected ? 'bg-white/20 text-white' : 'bg-[#f1f3f4] text-[#5f6368]'
+                  }`}>
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
-        {/* Results Matrix */}
-        <div>
-          <div className="flex items-center justify-between mb-4 px-1">
+        {/* Results Matrix & Cards */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between px-1 border-b border-[#dadce0] pb-2">
             <span className="text-xs font-bold uppercase tracking-wider text-[#5f6368]">
-              Showing {filteredTools.length} {filteredTools.length === 1 ? 'utility' : 'utilities'}
+              {activeCategory === 'All' ? 'All Tools' : activeCategory} ({filteredTools.length})
             </span>
+
+            {searchQuery && (
+              <span className="text-xs text-[#5f6368]">
+                Filtered for "<span className="font-bold text-[#202124]">{searchQuery}</span>"
+              </span>
+            )}
           </div>
 
           {filteredTools.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              <AnimatePresence>
-                {filteredTools.map((tool, index) => {
-                  const ToolIcon = tool.icon || Zap;
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4">
+              {filteredTools.map((tool) => {
+                const ToolIcon = tool.icon || Zap;
 
-                  return (
-                    <motion.div
-                      key={tool.to}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      transition={{ duration: 0.15, delay: index * 0.02 }}
-                    >
-                      <Link
-                        to={tool.to}
-                        className="group flex flex-col justify-between p-4 bg-white border border-[#dadce0] hover:border-[#1a73e8] hover:shadow-[0_4px_16px_rgba(26,115,232,0.12)] transition-all rounded-2xl shadow-xs h-full"
-                      >
-                        <div>
-                          <div className="flex items-center justify-between gap-2 mb-3">
-                            <div className="w-10 h-10 rounded-xl bg-[#e8f0fe] group-hover:bg-[#1a73e8] group-hover:text-white text-[#1a73e8] flex items-center justify-center transition-colors shrink-0 shadow-2xs">
-                              <ToolIcon size={20} />
-                            </div>
-                            <span className="text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-[#f1f3f4] text-[#5f6368] border border-[#dadce0]">
-                              {tool.category || 'Utility'}
-                            </span>
-                          </div>
-                          <h3 className="text-sm font-bold text-[#202124] group-hover:text-[#1a73e8] transition-colors truncate">
-                            {tool.name}
-                          </h3>
-                          <p className="text-xs text-[#5f6368] line-clamp-2 mt-1 leading-relaxed">
-                            {tool.description}
-                          </p>
+                return (
+                  <Link
+                    key={tool.to}
+                    to={tool.to}
+                    className="group flex flex-col justify-between p-4 sm:p-5 bg-white border border-[#dadce0] hover:border-[#1a73e8] hover:shadow-[0_4px_18px_rgba(26,115,232,0.12)] transition-all duration-200 rounded-2xl shadow-2xs hover:-translate-y-0.5"
+                  >
+                    <div>
+                      {/* Card Header: Icon + Category Badge */}
+                      <div className="flex items-center justify-between gap-2 mb-3">
+                        <div className="w-10 h-10 rounded-xl bg-[#e8f0fe] border border-[#d2e3fc] group-hover:bg-[#1a73e8] group-hover:text-white text-[#1a73e8] flex items-center justify-center transition-colors shrink-0 shadow-2xs">
+                          <ToolIcon size={20} />
                         </div>
-                        
-                        <div className="flex items-center justify-between pt-4 mt-3 border-t border-[#dadce0] text-xs font-semibold text-[#5f6368] group-hover:text-[#1a73e8] transition-colors">
-                          <span>Launch Utility</span>
-                          <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-                        </div>
-                      </Link>
-                    </motion.div>
-                  );
-                })}
-              </AnimatePresence>
+                        <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-[#f1f3f4] text-[#5f6368] border border-[#dadce0]">
+                          {tool.category || 'Utility'}
+                        </span>
+                      </div>
+
+                      {/* Title & Description */}
+                      <h3 className="text-sm sm:text-base font-bold text-[#202124] group-hover:text-[#1a73e8] transition-colors truncate">
+                        {tool.name}
+                      </h3>
+                      <p className="text-xs text-[#5f6368] line-clamp-2 mt-1 leading-relaxed">
+                        {tool.description}
+                      </p>
+                    </div>
+
+                    {/* Footer Launch Action */}
+                    <div className="flex items-center justify-between pt-3.5 mt-3 border-t border-[#dadce0]/70 text-xs font-semibold text-[#5f6368] group-hover:text-[#1a73e8] transition-colors">
+                      <span className="font-bold">Open Tool</span>
+                      <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           ) : (
+            /* Empty State */
             <div className="text-center py-16 bg-white border border-[#dadce0] rounded-3xl p-8 shadow-xs">
               <SearchIcon size={40} className="mx-auto text-[#80868b] mb-3 opacity-60" />
               <h3 className="text-base font-bold text-[#202124]">No tools matching "{searchQuery}"</h3>
               <p className="text-xs text-[#5f6368] mt-1 max-w-sm mx-auto">
-                Try searching for general keywords like "pdf", "image", "json", "code", or "excel".
+                Try searching for general keywords like "pdf", "image", "json", "word", or "code".
               </p>
               <button
                 onClick={() => {
                   setSearchQuery('');
                   setActiveCategory('All');
                 }}
-                className="mt-4 px-5 py-2 bg-[#1a73e8] hover:bg-[#1557b0] text-white text-xs font-bold rounded-full transition-all shadow-xs cursor-pointer"
+                className="mt-4 btn-google-primary text-xs py-2 px-5 shadow-xs"
               >
                 Reset Search Filters
               </button>
