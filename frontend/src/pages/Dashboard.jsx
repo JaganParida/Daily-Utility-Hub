@@ -175,32 +175,6 @@ const POPULAR_CONVERSIONS = [
   { from: "AUDIO", to: "TEXT", name: "Audio Transcriber", desc: "Speech-to-text with timestamping", link: "/tools/audio-video-transcriber", icon: Music, color: "text-[#8e24aa] bg-[#f3e8fd]" },
 ];
 
-// ─── COMPLETE 90+ TOOLS DIRECTORY ───
-const ALL_DIRECTORY_TOOLS = [
-  { name: "PDF to Word Converter", category: "PDF", desc: "Convert PDF to editable Word (.docx) with OCR", to: "/tools/pdf-to-word", icon: FileText, color: "text-[#ea4335] bg-[#fce8e6]" },
-  { name: "Image Compressor", category: "Image", desc: "Compress PNG, JPEG & WEBP client-side", to: "/tools/image-compressor", icon: ImageIcon, color: "text-[#34a853] bg-[#e6f4ea]" },
-  { name: "Image Format Converter", category: "Image", desc: "Convert between PNG, JPEG, WEBP, and BMP", to: "/tools/image-converter", icon: ArrowRightLeft, color: "text-[#34a853] bg-[#e6f4ea]" },
-  { name: "PDF Compressor", category: "PDF", desc: "Intelligent compression reducing file size by up to 80%", to: "/tools/pdf-compressor", icon: FileText, color: "text-[#ea4335] bg-[#fce8e6]" },
-  { name: "JSON Formatter & Validator", category: "Developer", desc: "Format, validate, and minify JSON data instantly", to: "/tools/json-formatter", icon: Code2, color: "text-[#1a73e8] bg-[#e8f0fe]" },
-  { name: "JWT Token Decoder", category: "Developer", desc: "Decode and verify JSON Web Tokens client-side", to: "/tools/jwt-decoder", icon: Key, color: "text-[#fbbc04] bg-[#fef7e0]" },
-  { name: "UUID Batch Generator", category: "Developer", desc: "Generate secure v1, v4, and v7 UUIDs", to: "/tools/uuid-generator", icon: Code2, color: "text-[#1a73e8] bg-[#e8f0fe]" },
-  { name: "Spreadsheet Schema Converter", category: "Sheets", desc: "Convert CSV/Excel to formatted JSON, XML, or SQL", to: "/tools/sheet-converter", icon: Table2, color: "text-[#34a853] bg-[#e6f4ea]" },
-  { name: "Merge PDF Documents", category: "PDF", desc: "Combine multiple PDF documents into one securely", to: "/tools/pdf-merge", icon: FileText, color: "text-[#ea4335] bg-[#fce8e6]" },
-  { name: "Split PDF Pages", category: "PDF", desc: "Extract specific pages or page ranges from PDF", to: "/tools/pdf-split", icon: FileText, color: "text-[#ea4335] bg-[#fce8e6]" },
-  { name: "AI PDF to Markdown", category: "PDF", desc: "Convert complex PDF documents into structured Markdown", to: "/tools/ai-pdf-to-markdown", icon: Sparkles, color: "text-[#8e24aa] bg-[#f3e8fd]" },
-  { name: "Audio/Video Transcriber", category: "Media", desc: "Transcribe audio & video into subtitles & text", to: "/tools/audio-video-transcriber", icon: Music, color: "text-[#ea4335] bg-[#fce8e6]" },
-  { name: "Military-Grade File Vault", category: "Security", desc: "Encrypt any file with AES-256 client-side encryption", to: "/tools/file-vault", icon: Shield, color: "text-[#1a73e8] bg-[#e8f0fe]" },
-  { name: "HTML Live Sandbox", category: "Developer", desc: "Live preview and sandbox for HTML, CSS, and JS", to: "/tools/html-previewer", icon: Code2, color: "text-[#1a73e8] bg-[#e8f0fe]" },
-  { name: "Password Generator", category: "Security", desc: "Generate cryptographically secure passwords", to: "/tools/password-generator", icon: Lock, color: "text-[#34a853] bg-[#e6f4ea]" },
-  { name: "Hash Generator", category: "Developer", desc: "Compute MD5, SHA-256, and HMAC signatures", to: "/tools/hash-generator", icon: Key, color: "text-[#fbbc04] bg-[#fef7e0]" },
-  { name: "Code to Image Studio", category: "Developer", desc: "Render syntax highlighted code screenshots", to: "/tools/code-to-image", icon: ImageIcon, color: "text-[#1a73e8] bg-[#e8f0fe]" },
-  { name: "Word to PDF Converter", category: "Docs", desc: "Convert Word DOCX files to PDF documents", to: "/tools/docx-converter", icon: FileSpreadsheet, color: "text-[#1a73e8] bg-[#e8f0fe]" },
-  { name: "Regex Interactive Tester", category: "Developer", desc: "Test regular expressions with real-time match highlighting", to: "/tools/regex-tester", icon: Terminal, color: "text-[#34a853] bg-[#e6f4ea]" },
-  { name: "Image to Text OCR", category: "Image", desc: "Extract printed and handwritten text from images", to: "/tools/image-to-text", icon: Type, color: "text-[#34a853] bg-[#e6f4ea]" },
-];
-
-const CATEGORIES = ["All", "PDF", "Image", "Developer", "Sheets", "Docs", "Media", "Security"];
-
 const Dashboard = () => {
   const { currentUser, toggleFavorite, togglePin } = useAuth();
   const navigate = useNavigate();
@@ -229,9 +203,6 @@ const Dashboard = () => {
 
   const activeDemo = LIVE_TRANSFORMATION_DEMOS[demoIndex];
 
-  // ─── ACTIVE CATEGORY & SEARCH ───
-  const [activeCategory, setActiveCategory] = useState("All");
-  const [searchQuery, setSearchQuery] = useState("");
   const [apiTab, setApiTab] = useState("js");
   const [copiedCode, setCopiedCode] = useState(false);
 
@@ -356,17 +327,6 @@ const Dashboard = () => {
       processUploadedFile(dummyFile);
     }
   };
-
-  const filteredTools = useMemo(() => {
-    return ALL_DIRECTORY_TOOLS.filter(tool => {
-      const matchesCategory = activeCategory === "All" || tool.category === activeCategory;
-      const matchesQuery = !searchQuery.trim() || 
-        tool.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        tool.desc.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        tool.category.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesCategory && matchesQuery;
-    });
-  }, [activeCategory, searchQuery]);
 
   const copyCodeSnippet = (text) => {
     navigator.clipboard.writeText(text);
@@ -755,15 +715,13 @@ else:
                     </button>
                     <button
                       onClick={() => {
-                        setActiveCategory("All");
                         setIsSelectFileMenuOpen(false);
-                        const el = document.getElementById("all-tools-grid");
-                        el?.scrollIntoView({ behavior: "smooth" });
+                        navigate("/search");
                       }}
                       className="w-full px-3 py-2 text-xs font-semibold text-[#202124] hover:bg-[#f1f3f4] rounded-lg flex items-center gap-2 transition-colors cursor-pointer"
                     >
                       <Layers size={14} className="text-[#8e24aa]" />
-                      <span>Browse 90+ Tools</span>
+                      <span>Browse 90+ Tools Directory</span>
                     </button>
                   </div>
                 )}
@@ -1009,109 +967,27 @@ else:
 
 
         {/* ══════════════════════════════════════════════════════════════════
-            COMPLETE 90+ TOOLS EXPLORER & MATRIX
+            EXPLORE ALL 90+ UTILITIES DIRECTORY CTA
         ══════════════════════════════════════════════════════════════════ */}
-        <section id="all-tools-grid" className="w-full py-10 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto border-t border-[#dadce0]">
-          
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5">
-            <div>
-              <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-[#202124] tracking-tight">
-                All 90+ Utilities & Tools
-              </h2>
-              <p className="text-xs sm:text-sm text-[#5f6368] mt-1">
-                Browse our complete suite of offline-first document, developer, and media processors.
-              </p>
+        <section className="w-full py-12 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto border-t border-[#dadce0]">
+          <div className="bg-gradient-to-r from-[#e8f0fe] via-white to-[#e6f4ea] border border-[#d2e3fc] rounded-3xl p-6 sm:p-10 text-center shadow-xs flex flex-col items-center justify-center">
+            <div className="w-12 h-12 rounded-2xl bg-[#1a73e8] text-white flex items-center justify-center mb-3.5 shadow-md">
+              <Sparkles size={24} />
             </div>
-
-            {/* Quick Search */}
-            <div className="relative w-full md:w-72">
-              <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#5f6368]" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search 90+ tools..."
-                className="w-full pl-9 pr-4 py-2 bg-white border border-[#dadce0] rounded-full text-xs text-[#202124] placeholder-[#80868b] focus:outline-none focus:border-[#1a73e8] focus:ring-2 focus:ring-[#1a73e8]/20 shadow-2xs"
-              />
-            </div>
+            <h2 className="text-xl sm:text-3xl font-black text-[#202124] tracking-tight">
+              Explore All 90+ Utilities & Tools
+            </h2>
+            <p className="text-xs sm:text-sm text-[#5f6368] max-w-md mt-2 leading-relaxed">
+              Looking for specific converters, developer tools, or document processors? Browse our fast, dedicated catalog with smart category filters.
+            </p>
+            <Link
+              to="/search"
+              className="mt-5 btn-google-primary text-sm py-3 px-8 shadow-md inline-flex items-center gap-2"
+            >
+              <span>Explore 90+ Tools Directory</span>
+              <ArrowRight size={16} />
+            </Link>
           </div>
-
-          {/* Category Tabs */}
-          <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar pb-2.5 mb-5">
-            {CATEGORIES.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setActiveCategory(cat)}
-                className={`px-3.5 py-1 rounded-full text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
-                  activeCategory === cat
-                    ? "bg-[#1a73e8] text-white shadow-2xs"
-                    : "bg-white border border-[#dadce0] text-[#5f6368] hover:text-[#202124] hover:bg-[#f1f3f4]"
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-
-          {/* Tools Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5">
-            {filteredTools.map((tool) => {
-              const Icon = tool.icon || Zap;
-              const isFav = currentUser?.favoriteTools?.includes(tool.to);
-              const isPin = currentUser?.pinnedTools?.includes(tool.to);
-
-              return (
-                <div
-                  key={tool.name}
-                  className="p-4 bg-white border border-[#dadce0] hover:border-[#1a73e8] hover:shadow-[0_4px_16px_rgba(26,115,232,0.1)] rounded-2xl transition-all shadow-2xs flex flex-col justify-between group"
-                >
-                  <div>
-                    <div className="flex items-center justify-between mb-2.5">
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${tool.color}`}>
-                        <Icon size={16} />
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => toggleFavorite(tool.to)}
-                          className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                            isFav ? "text-[#ea4335] bg-[#fce8e6]" : "text-[#80868b] hover:text-[#ea4335] hover:bg-[#fce8e6]"
-                          }`}
-                          title="Favorite"
-                        >
-                          <Heart size={13} fill={isFav ? "currentColor" : "none"} />
-                        </button>
-                        <button
-                          onClick={() => togglePin(tool.to)}
-                          className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                            isPin ? "text-[#1a73e8] bg-[#e8f0fe]" : "text-[#80868b] hover:text-[#1a73e8] hover:bg-[#e8f0fe]"
-                          }`}
-                          title="Pin to workspace"
-                        >
-                          <Pin size={13} fill={isPin ? "currentColor" : "none"} />
-                        </button>
-                      </div>
-                    </div>
-
-                    <h3 className="font-bold text-xs sm:text-sm text-[#202124] group-hover:text-[#1a73e8] transition-colors">
-                      {tool.name}
-                    </h3>
-                    <p className="text-[11px] text-[#5f6368] mt-1 line-clamp-2 leading-relaxed">
-                      {tool.desc}
-                    </p>
-                  </div>
-
-                  <Link
-                    to={tool.to}
-                    className="mt-3.5 pt-2.5 border-t border-[#dadce0] flex items-center justify-between text-xs font-semibold text-[#5f6368] group-hover:text-[#1a73e8]"
-                  >
-                    <span>Launch Utility</span>
-                    <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />
-                  </Link>
-                </div>
-              );
-            })}
-          </div>
-
         </section>
 
       </div>
