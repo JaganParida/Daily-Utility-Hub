@@ -341,7 +341,7 @@ const formData = new FormData();
 formData.append('pdf', document.querySelector('#fileInput').files[0]);
 
 // Post to Daily Utility Hub API
-const response = await fetch('https://daily-utility-hub.onrender.com/api/pdf/convert-to-word', {
+const response = await fetch('https://daily-utility-hub-19zx.onrender.com/api/pdf/convert-to-word', {
   method: 'POST',
   body: formData
 });
@@ -355,13 +355,13 @@ a.href = downloadUrl;
 a.download = 'converted_output.${toFormat.toLowerCase()}';
 a.click();`,
     curl: `# ⚡ Real Working Terminal / cURL Command
-curl -X POST "https://daily-utility-hub.onrender.com/api/pdf/convert-to-word" \\
+curl -X POST "https://daily-utility-hub-19zx.onrender.com/api/pdf/convert-to-word" \\
   -F "pdf=@./document.${fromFormat.toLowerCase()}" \\
   --output "./converted_document.${toFormat.toLowerCase()}"`,
     python: `# ⚡ Real Working Python Integration
 import requests
 
-url = "https://daily-utility-hub.onrender.com/api/pdf/convert-to-word"
+url = "https://daily-utility-hub-19zx.onrender.com/api/pdf/convert-to-word"
 with open("document.${fromFormat.toLowerCase()}", "rb") as file_data:
     response = requests.post(url, files={"pdf": file_data})
 

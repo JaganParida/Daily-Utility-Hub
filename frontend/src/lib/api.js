@@ -19,7 +19,7 @@ const getBaseURL = () => {
   }
   
   // Default production backend URL on Render
-  return 'https://daily-utility-hub.onrender.com/api';
+  return 'https://daily-utility-hub-19zx.onrender.com/api';
 };
 
 const api = axios.create({

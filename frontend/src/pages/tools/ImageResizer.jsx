@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import ToolHeader from '../../components/ToolHeader';
-import { Maximize, Download, RefreshCw, Lock, Unlock, Settings2, Image as ImageIcon, Loader2, CheckCircle } from 'lucide-react';
+import { Expand, Download, RefreshCw, Lock, Unlock, Settings2, Image as ImageIcon, Loader2, CheckCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DropzoneComponent from '../../components/DropzoneComponent';
 import { toast } from 'react-hot-toast';
@@ -38,9 +38,20 @@ const ImageResizer = () => {
 
   const canvasRef = useRef(null);
 
+  // Cleanup object URL on unmount
+  useEffect(() => {
+    return () => {
+      if (image?.url) URL.revokeObjectURL(image.url);
+    };
+  }, [image]);
+
   const handleFilesAccepted = (files) => {
     const file = files[0];
     if (!file) return;
+
+    if (image?.url) {
+      URL.revokeObjectURL(image.url);
+    }
 
     const url = URL.createObjectURL(file);
     const img = new Image();
@@ -68,7 +79,7 @@ const ImageResizer = () => {
     setWidth(val);
     setActiveScale(null);
     setActivePreset(null);
-    if (maintainRatio && val > 0) {
+    if (maintainRatio && val > 0 && originalRatio > 0) {
       setHeight(Math.round(val / originalRatio));
     }
   };
@@ -78,7 +89,7 @@ const ImageResizer = () => {
     setHeight(val);
     setActiveScale(null);
     setActivePreset(null);
-    if (maintainRatio && val > 0) {
+    if (maintainRatio && val > 0 && originalRatio > 0) {
       setWidth(Math.round(val * originalRatio));
     }
   };
@@ -104,8 +115,8 @@ const ImageResizer = () => {
     setIsProcessing(true);
     setDownloadState('downloading');
     
-    // Artificial delay to allow UI to show processing animation smoothly
-    await new Promise(res => setTimeout(res, 1200));
+    // Smooth delay to allow UI to show processing animation
+    await new Promise(res => setTimeout(res, 800));
 
     try {
       const img = new Image();
@@ -119,11 +130,23 @@ const ImageResizer = () => {
       canvas.width = width;
       canvas.height = height;
       const ctx = canvas.getContext('2d');
+      ctx.imageSmoothingQuality = 'high';
       
-      // Draw resized image
-      const type = image.type === 'image/png' ? 'image/png' : (image.type === 'image/webp' ? 'image/webp' : 'image/jpeg');
+      // Determine output MIME type
+      let type = 'image/jpeg';
+      if (image.type === 'image/png' || (!image.type && (image.name || '').toLowerCase().endsWith('.png'))) {
+        type = 'image/png';
+      } else if (image.type === 'image/webp' || (!image.type && (image.name || '').toLowerCase().endsWith('.webp'))) {
+        type = 'image/webp';
+      }
       
       if (resizeMode === 'stretch') {
+        if (type === 'image/jpeg') {
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillRect(0, 0, width, height);
+        } else {
+          ctx.clearRect(0, 0, width, height);
+        }
         ctx.drawImage(img, 0, 0, width, height);
       } else if (resizeMode === 'contain') {
         const imgRatio = img.width / img.height;
@@ -168,21 +191,44 @@ const ImageResizer = () => {
         if (type === 'image/jpeg') {
           ctx.fillStyle = '#FFFFFF';
           ctx.fillRect(0, 0, width, height);
+        } else {
+          ctx.clearRect(0, 0, width, height);
         }
         
         ctx.drawImage(img, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, width, height);
       }
 
-      // Download
+      // Safe export with canvas.toBlob() to avoid memory crashes on large images
       const ext = type === 'image/png' ? 'png' : (type === 'image/webp' ? 'webp' : 'jpg');
-      const dataUrl = canvas.toDataURL(type, 1.0);
-      
-      const link = document.createElement('a');
-      link.href = dataUrl;
-      link.download = `resized_${width}x${height}_${image.name.replace(/\.[^/.]+$/, "")}.${ext}`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      const baseName = image.name.replace(/\.[^/.]+$/, "") || 'image';
+      const downloadFilename = `resized_${width}x${height}_${baseName}.${ext}`;
+
+      const blob = await new Promise((resolve) => {
+        if (canvas.toBlob) {
+          canvas.toBlob(resolve, type, type === 'image/png' ? undefined : 0.95);
+        } else {
+          resolve(null);
+        }
+      });
+
+      if (blob) {
+        const downloadUrl = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.download = downloadFilename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(() => URL.revokeObjectURL(downloadUrl), 1500);
+      } else {
+        const dataUrl = canvas.toDataURL(type, 0.95);
+        const link = document.createElement('a');
+        link.href = dataUrl;
+        link.download = downloadFilename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
       
       setDownloadState('downloaded');
       toast.success('Image resized and downloaded!');
@@ -197,10 +243,12 @@ const ImageResizer = () => {
   };
 
   const clear = () => {
-    if (image) URL.revokeObjectURL(image.url);
+    if (image?.url) URL.revokeObjectURL(image.url);
     setImage(null);
     setWidth(0);
     setHeight(0);
+    setActiveScale(null);
+    setActivePreset(null);
   };
 
   return (
