@@ -146,8 +146,9 @@ exports.getFileMetadata = async (req, res) => {
 
     // If it's a text/url/code share, read the content of the file from disk and return it
     if (fileEntry.shareType && fileEntry.shareType !== 'file') {
-      const filePath = path.join(uploadDir, fileEntry.filename);
-      if (fs.existsSync(filePath)) {
+      const resolvedUploadDir = path.resolve(uploadDir);
+      const filePath = path.resolve(uploadDir, path.basename(fileEntry.filename));
+      if (filePath.startsWith(resolvedUploadDir) && fs.existsSync(filePath)) {
         const content = await fs.promises.readFile(filePath, 'utf8');
         responseData.content = content;
       }
@@ -188,8 +189,14 @@ exports.downloadFile = async (req, res) => {
       return res.status(404).send('File physical bytes not found.');
     }
 
-    // Sanitize filename to prevent HTTP Response Splitting / Header Injection
-    const safeName = path.basename(fileEntry.originalName || 'download').replace(/[\r\n"']/g, '_');
+    // Sanitize filename: allow only alphanumeric, space, dot, underscore, dash
+    const safeName = path.basename(fileEntry.originalName || 'download').replace(/[^\w\.\-\s]/gi, '_');
+
+    // Anti-Execution and MIME-sniffing prevention headers
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Content-Security-Policy', "default-src 'none'; sandbox");
+    res.setHeader('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+
     res.download(filePath, safeName);
   } catch (err) {
     console.error('Download shared file error:', err);

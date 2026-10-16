@@ -24,10 +24,19 @@ const TempShareDownload = () => {
           setStatusText('Redirecting to secure URL...');
           let targetUrl = data.content;
           if (targetUrl && !/^https?:\/\//i.test(targetUrl)) {
-            targetUrl = 'http://' + targetUrl;
+            targetUrl = 'https://' + targetUrl;
           }
-          // Redirect instantly
-          window.location.replace(targetUrl);
+          try {
+            const parsed = new URL(targetUrl);
+            if (!['http:', 'https:'].includes(parsed.protocol)) {
+              throw new Error('Unsupported protocol');
+            }
+            // Redirect safely
+            window.location.replace(parsed.href);
+          } catch (urlErr) {
+            setError('Invalid or unsafe link destination.');
+            setLoading(false);
+          }
         } else {
           setStatusText('Starting your download...');
           // Trigger file download instantly

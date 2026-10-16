@@ -4,14 +4,14 @@ const multer = require('multer');
 const path = require('path');
 const crypto = require('crypto');
 const fs = require('fs');
+const os = require('os');
 
 const shareController = require('../controllers/shareController');
-const { protect, softProtect } = require('../middleware/authMiddleware');
-const { validateFileType } = require('../middleware/uploadMiddleware');
+const { softProtect } = require('../middleware/authMiddleware');
+const { validateFileType, fileFilter } = require('../middleware/uploadMiddleware');
 const { validate } = require('../middleware/validationMiddleware');
 const { shareUploadValidation, shareIdValidation } = require('../middleware/validationRules');
 const { publicRateLimiter, userRateLimiter } = require('../middleware/rateLimitMiddleware');
-const os = require('os');
 
 const tempUploadDir = (process.env.VERCEL || process.env.NODE_ENV === 'production')
   ? path.join(os.tmpdir(), 'share_temp')
@@ -25,26 +25,35 @@ if (!fs.existsSync(tempUploadDir)) {
   }
 }
 
-// Multer storage config
+// Multer storage config with randomized names
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, tempUploadDir);
   },
-
   filename: (req, file, cb) => {
-    const uniqueSuffix = crypto.randomBytes(12).toString('hex');
-    // Sanitize extension to alphanumeric only to prevent injection/traversal
-    const ext = path.extname(file.originalname).replace(/[^.a-zA-Z0-9]/g, '');
+    const uniqueSuffix = crypto.randomBytes(16).toString('hex');
+    const ext = path.extname(file.originalname).toLowerCase().replace(/[^.a-z0-9]/g, '');
     cb(null, `share_${uniqueSuffix}${ext}`);
   }
 });
 
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 50 * 1024 * 1024 } // 50MB max file size
+  fileFilter: fileFilter,
+  limits: { fileSize: 25 * 1024 * 1024 } // 25MB max file size
 });
 
-router.post('/upload', softProtect, userRateLimiter, upload.single('file'), validateFileType, shareUploadValidation, validate, shareController.uploadFile);
+router.post(
+  '/upload', 
+  softProtect, 
+  userRateLimiter, 
+  upload.single('file'), 
+  validateFileType, 
+  shareUploadValidation, 
+  validate, 
+  shareController.uploadFile
+);
+
 router.get('/metadata/:id', publicRateLimiter, shareIdValidation, validate, shareController.getFileMetadata);
 router.get('/download/:id', publicRateLimiter, shareIdValidation, validate, shareController.downloadFile);
 
