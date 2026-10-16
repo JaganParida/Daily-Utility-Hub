@@ -102,6 +102,9 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 // Routes
+const { sendOtp } = require('./controllers/authController');
+const { userRateLimiter } = require('./middleware/rateLimitMiddleware');
+app.post('/api/send-otp', userRateLimiter, sendOtp);
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/pdf', require('./routes/pdf'));
 app.use('/api/share', require('./routes/shareRoute'));

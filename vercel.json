@@ -1,16 +1,18 @@
 {
   "version": 2,
+  "buildCommand": "npm --workspace=frontend run build",
+  "outputDirectory": "frontend/dist",
   "rewrites": [
     {
-      "source": "/api/send-otp",
-      "destination": "/frontend/api/send-otp.js"
-    },
-    {
       "source": "/api/(.*)",
-      "destination": "/backend/api/index.js"
+      "destination": "/api/index.js"
     },
     {
-      "source": "/((?!.*\\.).*)",
+      "source": "/api",
+      "destination": "/api/index.js"
+    },
+    {
+      "source": "/((?!api/|.*\\.).*)",
       "destination": "/index.html"
     }
   ],

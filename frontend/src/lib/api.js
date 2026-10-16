@@ -1,13 +1,9 @@
 import axios from 'axios';
 
 const getBaseURL = () => {
-  if (import.meta.env.VITE_API_URL) {
-    return import.meta.env.VITE_API_URL;
-  }
-  
   const { protocol, hostname } = window.location;
-  
-  // If we are running locally (localhost, 127.0.0.1, or local IP address like 192.168.x.x)
+
+  // 1. Local development (localhost, 127.0.0.1, or local LAN IP)
   if (
     hostname === 'localhost' || 
     hostname === '127.0.0.1' || 
@@ -17,9 +13,16 @@ const getBaseURL = () => {
   ) {
     return `${protocol}//${hostname}:5000/api`;
   }
-  
-  // In production on Vercel:
-  // If backend is deployed on same domain or proxied via vercel.json rewrites, /api avoids CORS and cookie issues
+
+  // 2. Production on Vercel:
+  // Both frontend and backend are deployed together on Vercel.
+  // We use relative '/api' on the exact same domain to prevent all CORS and cookie issues.
+  // We explicitly ignore any obsolete or stale 'onrender.com' environment variables.
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (envUrl && !envUrl.includes('onrender.com') && !hostname.includes('vercel.app')) {
+    return envUrl.replace(/\/+$/, '');
+  }
+
   return '/api';
 };
 
