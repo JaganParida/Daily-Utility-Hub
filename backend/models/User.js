@@ -18,9 +18,18 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: [true, 'Please add a password'],
+      required: false,
       minlength: 6,
       select: false,
+    },
+    authProvider: {
+      type: String,
+      enum: ['local', 'google'],
+      default: 'local'
+    },
+    avatar: {
+      type: String,
+      default: ''
     },
     isEmailVerified: {
       type: Boolean,
@@ -74,7 +83,7 @@ userSchema.index({ 'activeSessions.token': 1 });
 
 // Encrypt password using bcrypt
 userSchema.pre('save', async function () {
-  if (!this.isModified('password')) {
+  if (!this.isModified('password') || !this.password) {
     return;
   }
 
@@ -84,6 +93,7 @@ userSchema.pre('save', async function () {
 
 // Match user entered password to hashed password in database
 userSchema.methods.matchPassword = async function (enteredPassword) {
+  if (!this.password) return false;
   return await bcrypt.compare(enteredPassword, this.password);
 };
 

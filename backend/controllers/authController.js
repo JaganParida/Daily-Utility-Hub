@@ -2,8 +2,9 @@ const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const jwksRsa = require('jwks-rsa');
 const crypto = require('crypto');
+const { sendOtpEmail } = require('../utils/mailer');
 
-// Setup Google Firebase JWKS signing key client
+// Setup Google Firebase JWKS signing key client (legacy fallback)
 const jwksClient = jwksRsa({
   jwksUri: 'https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com',
   cache: true,
@@ -18,7 +19,6 @@ function getKey(header, callback) {
   });
 }
 
-// Verification helper for Firebase RS256 JWT ID tokens
 const verifyFirebaseToken = (idToken) => {
   return new Promise((resolve, reject) => {
     jwt.verify(idToken, getKey, {
@@ -43,9 +43,287 @@ const getDeviceName = (userAgentString) => {
   return 'Web Browser';
 };
 
-// @desc    Verify Firebase ID token, sync user record in MongoDB, enforce 2-device session limit
-// @route   POST /api/auth/session
-// @access  Public
+// Unified session helper: manages active sessions (max 2 devices), sets HTTP-only cookie
+const createSessionResponse = async (user, req, res, isNewUser = false) => {
+  if (!user.activeSessions) user.activeSessions = [];
+  if (!user.pinnedTools) user.pinnedTools = [];
+  if (!user.recentHistory) user.recentHistory = [];
+  if (!user.favoriteTools) user.favoriteTools = [];
+
+  let sessionId = req.cookies.token;
+  let sessionExists = sessionId && user.activeSessions.some(s => s.token === sessionId);
+
+  if (!sessionExists) {
+    sessionId = crypto.randomBytes(32).toString('hex');
+    user.activeSessions.push({
+      token: sessionId,
+      deviceName: getDeviceName(req.headers['user-agent']),
+      lastActive: new Date()
+    });
+
+    // Enforce active session limit of 2 devices (FIFO)
+    if (user.activeSessions.length > 2) {
+      user.activeSessions = user.activeSessions.slice(user.activeSessions.length - 2);
+    }
+    await user.save();
+  } else {
+    await User.updateOne(
+      { _id: user._id, 'activeSessions.token': sessionId },
+      { $set: { 'activeSessions.$.lastActive': new Date() } }
+    );
+  }
+
+  const isProd = process.env.NODE_ENV === 'production';
+  const cookieOptions = {
+    expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    httpOnly: true,
+    secure: isProd,
+    sameSite: isProd ? 'none' : 'lax'
+  };
+
+  return res
+    .cookie('token', sessionId, cookieOptions)
+    .json({
+      success: true,
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      avatar: user.avatar || '',
+      authProvider: user.authProvider || 'local',
+      emailVerified: !!user.isEmailVerified,
+      isNewUser,
+      token: sessionId,
+      pinnedTools: user.pinnedTools || [],
+      favoriteTools: user.favoriteTools || [],
+      recentHistory: user.recentHistory || [],
+      activeSessions: user.activeSessions.map(s => ({
+        _id: s._id,
+        deviceName: s.deviceName,
+        lastActive: s.lastActive,
+        isCurrent: s.token === sessionId
+      }))
+    });
+};
+
+// =========================================================================
+// 1. SIGNUP: STEP 1 - SEND OTP VIA NODEMAILER (ZERO DATABASE WRITE)
+// =========================================================================
+exports.sendRegisterOtp = async (req, res) => {
+  try {
+    const { email, name } = req.body;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || typeof email !== 'string' || !emailRegex.test(email.trim())) {
+      return res.status(400).json({ message: 'A valid email address is required.' });
+    }
+
+    const cleanEmail = email.trim().toLowerCase();
+
+    // Check if user already exists in DB
+    const existingUser = await User.findOne({ email: cleanEmail });
+    if (existingUser) {
+      return res.status(409).json({ 
+        message: 'An account with this email address already exists. Please sign in instead.' 
+      });
+    }
+
+    // Generate secure 6-digit numeric OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const isProd = process.env.NODE_ENV === 'production' || !!process.env.VERCEL;
+
+    console.log(`[Signup OTP] Delivering code to: ${cleanEmail}`);
+
+    let emailSent = false;
+    try {
+      await sendOtpEmail(cleanEmail, otp);
+      emailSent = true;
+    } catch (err) {
+      console.error('[Signup OTP] SMTP error:', err.message);
+      if (!isProd) {
+        console.log(`[DEV MODE] The Signup OTP for ${cleanEmail} is: ${otp}`);
+      }
+    }
+
+    if (!emailSent && isProd) {
+      return res.status(500).json({ 
+        message: 'Failed to deliver verification code. Please check your email or try again later.' 
+      });
+    }
+
+    // Cryptographic hash of OTP inside signed token (valid for 5 mins)
+    const otpHash = crypto.createHash('sha256').update(otp).digest('hex');
+    const signupOtpToken = jwt.sign(
+      { email: cleanEmail, name: (name || '').trim(), otpHash },
+      process.env.JWT_SECRET || 'daily-utility-hub-auth-secret-key',
+      { expiresIn: '5m' }
+    );
+
+    // ZERO database record created here! MongoDB remains untouched.
+    res.json({
+      success: true,
+      signupOtpToken,
+      devOtp: (!isProd && !emailSent) ? otp : undefined,
+      message: 'Verification code sent to your email.'
+    });
+  } catch (error) {
+    console.error('sendRegisterOtp error:', error);
+    res.status(500).json({ message: 'Internal server error sending verification code.' });
+  }
+};
+
+// =========================================================================
+// 2. SIGNUP: STEP 2 - VERIFY OTP & CREATE USER IN MONGODB
+// =========================================================================
+exports.verifyRegisterOtpAndCreateUser = async (req, res) => {
+  try {
+    const { signupOtpToken, otp, password, name } = req.body;
+
+    if (!signupOtpToken || !otp) {
+      return res.status(400).json({ message: 'Verification token and OTP are required.' });
+    }
+
+    if (!password || password.length < 6) {
+      return res.status(400).json({ message: 'Password must be at least 6 characters.' });
+    }
+
+    // 1. Verify token
+    let decoded;
+    try {
+      decoded = jwt.verify(signupOtpToken, process.env.JWT_SECRET || 'daily-utility-hub-auth-secret-key');
+    } catch (err) {
+      return res.status(400).json({ message: 'Verification code has expired. Please request a new code.' });
+    }
+
+    // 2. Verify OTP hash
+    const inputHash = crypto.createHash('sha256').update(String(otp).trim()).digest('hex');
+    if (inputHash !== decoded.otpHash) {
+      return res.status(400).json({ message: 'Incorrect verification code. Please check and try again.' });
+    }
+
+    const cleanEmail = decoded.email.toLowerCase();
+
+    // 3. Double-check if account exists
+    const existingUser = await User.findOne({ email: cleanEmail });
+    if (existingUser) {
+      return res.status(409).json({ message: 'An account with this email already exists. Please sign in.' });
+    }
+
+    // 4. Create User in MongoDB (Password is automatically hashed by User model pre-save hook)
+    const user = await User.create({
+      name: (name || decoded.name || cleanEmail.split('@')[0]).trim(),
+      email: cleanEmail,
+      password: password,
+      isEmailVerified: true,
+      authProvider: 'local'
+    });
+
+    console.log(`[Account Created] Successfully registered verified user: ${cleanEmail}`);
+
+    return await createSessionResponse(user, req, res, true);
+  } catch (error) {
+    console.error('verifyRegisterOtpAndCreateUser error:', error);
+    res.status(500).json({ message: 'Failed to create account. Please try again.' });
+  }
+};
+
+// =========================================================================
+// 3. LOGIN: EMAIL & PASSWORD (VERIFIED DIRECTLY AGAINST MONGODB)
+// =========================================================================
+exports.loginWithPassword = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Email and password are required.' });
+    }
+
+    const cleanEmail = email.trim().toLowerCase();
+    const user = await User.findOne({ email: cleanEmail }).select('+password');
+
+    if (!user) {
+      if (req.logAuthAttempt) await req.logAuthAttempt(false);
+      return res.status(401).json({ message: 'Invalid email or password.' });
+    }
+
+    if (!user.password) {
+      return res.status(400).json({ 
+        message: 'This account was created with Google Sign-In. Please click "Continue with Google".' 
+      });
+    }
+
+    const isMatch = await user.matchPassword(password);
+    if (!isMatch) {
+      if (req.logAuthAttempt) await req.logAuthAttempt(false);
+      return res.status(401).json({ message: 'Invalid email or password.' });
+    }
+
+    if (req.logAuthAttempt) await req.logAuthAttempt(true);
+    return await createSessionResponse(user, req, res, false);
+  } catch (error) {
+    console.error('loginWithPassword error:', error);
+    res.status(500).json({ message: 'Internal server error during login.' });
+  }
+};
+
+// =========================================================================
+// 4. GOOGLE AUTH (GOOGLE CLOUD OAUTH 2.0 / GOOGLE IDENTITY SERVICES)
+// =========================================================================
+exports.googleAuth = async (req, res) => {
+  try {
+    const { credential } = req.body;
+    if (!credential) {
+      return res.status(400).json({ message: 'Google credential token is required.' });
+    }
+
+    // Verify credential directly against Google OAuth tokeninfo endpoint
+    const googleVerifyUrl = `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`;
+    const googleRes = await fetch(googleVerifyUrl);
+
+    if (!googleRes.ok) {
+      const errData = await googleRes.json().catch(() => ({}));
+      console.error('Google token verification failed:', errData);
+      return res.status(401).json({ message: 'Google token verification failed or expired.' });
+    }
+
+    const googlePayload = await googleRes.json();
+
+    if (googlePayload.iss !== 'accounts.google.com' && googlePayload.iss !== 'https://accounts.google.com') {
+      return res.status(401).json({ message: 'Invalid Google token issuer.' });
+    }
+
+    const email = googlePayload.email ? googlePayload.email.toLowerCase() : null;
+    if (!email) {
+      return res.status(400).json({ message: 'Unable to retrieve verified email from Google.' });
+    }
+
+    let user = await User.findOne({ email });
+    let isNewUser = false;
+
+    if (!user) {
+      user = await User.create({
+        name: googlePayload.name || googlePayload.given_name || email.split('@')[0],
+        email: email,
+        isEmailVerified: true,
+        authProvider: 'google',
+        avatar: googlePayload.picture || ''
+      });
+      isNewUser = true;
+      console.log(`[Google Auth] Created new user: ${email}`);
+    } else {
+      if (!user.avatar && googlePayload.picture) {
+        user.avatar = googlePayload.picture;
+        await user.save();
+      }
+    }
+
+    return await createSessionResponse(user, req, res, isNewUser);
+  } catch (error) {
+    console.error('googleAuth error:', error);
+    res.status(500).json({ message: 'Google authentication error.' });
+  }
+};
+
+// =========================================================================
+// 5. LEGACY SESSION SYNC (FALLBACK SUPPORT)
+// =========================================================================
 exports.syncSession = async (req, res) => {
   try {
     const { idToken, mode, name: registerName } = req.body;
@@ -63,154 +341,34 @@ exports.syncSession = async (req, res) => {
     }
 
     const { email, name } = decoded;
-
-    // 2. Query MongoDB by email
     let user = await User.findOne({ email });
     let isNewUser = false;
 
-    // Mode validation
-    if (mode === 'login') {
-      if (!user) {
-        if (req.logAuthAttempt) await req.logAuthAttempt(false);
-        return res.status(404).json({ message: 'No account associated with this email. Please register first.' });
-      }
-    } else if (mode === 'register') {
-      if (!user) {
-        // Create user record in MongoDB
-        user = await User.create({
-          name: registerName || name || email.split('@')[0],
-          email,
-          password: crypto.randomBytes(16).toString('hex'), // secure placeholder; auth managed by Firebase
-          isEmailVerified: true // They verified OTP *before* this step!
-        });
-        isNewUser = true;
-      }
-      // If user already exists, we allow them to pass and log them in seamlessly.
-    } else if (mode === 'google') {
-      if (!user) {
-        // If OTP token is not provided, this is the initial signup attempt.
-        // DO NOT create the user in MongoDB yet. Ask frontend to do OTP first.
-        if (!req.body.otpVerifiedToken) {
-          return res.json({ 
-            success: true,
-            isNewUser: true, 
-            email, 
-            emailVerified: false, 
-            requiresOtp: true 
-          });
-        }
-        
-        // OTP token provided, verify it before creating user
-        try {
-          const decoded = jwt.verify(req.body.otpVerifiedToken, process.env.JWT_SECRET || 'daily-utility-hub-auth-secret-key');
-          if (decoded.email !== email) {
-            return res.status(400).json({ message: 'OTP token email mismatch' });
-          }
-        } catch (err) {
-          return res.status(400).json({ message: 'Invalid or expired OTP token' });
-        }
-
-        // OTP verified successfully, now create the user in MongoDB
-        user = await User.create({
-          name: registerName || name || email.split('@')[0],
-          email,
-          password: crypto.randomBytes(16).toString('hex'),
-          isEmailVerified: true // They just verified it!
-        });
-        isNewUser = true;
-      }
-    } else if (mode === 'refresh') {
-      if (!user) {
-        if (req.logAuthAttempt) await req.logAuthAttempt(false);
-        return res.status(401).json({ message: 'Session expired or user deleted.' });
-      }
-    } else {
-      if (!user) {
-        if (req.logAuthAttempt) await req.logAuthAttempt(false);
-        return res.status(401).json({ message: 'Authentication required.' });
-      }
+    if (!user) {
+      user = await User.create({
+        name: registerName || name || email.split('@')[0],
+        email,
+        password: crypto.randomBytes(16).toString('hex'),
+        isEmailVerified: true
+      });
+      isNewUser = true;
     }
 
-    // Initialize arrays if they don't exist (protects legacy database users)
-    if (!user.activeSessions) user.activeSessions = [];
-    if (!user.pinnedTools) user.pinnedTools = [];
-    if (!user.recentHistory) user.recentHistory = [];
-
-    // 3. Manage local session identifier cookie
-    let sessionId = req.cookies.token;
-    let sessionExists = sessionId && user.activeSessions.some(s => s.token === sessionId);
-
-    if (!sessionExists) {
-      // Generate new session token
-      sessionId = crypto.randomBytes(32).toString('hex');
-      
-      // Add to user sessions
-      user.activeSessions.push({
-        token: sessionId,
-        deviceName: getDeviceName(req.headers['user-agent']),
-        lastActive: new Date()
-      });
-
-      // Enforce active session limit of 2 devices (FIFO)
-      if (user.activeSessions.length > 2) {
-        user.activeSessions = user.activeSessions.slice(user.activeSessions.length - 2);
-      }
-
-      await user.save();
-    } else {
-      // Update last active timestamp
-      await User.updateOne(
-        { _id: user._id, 'activeSessions.token': sessionId },
-        { $set: { 'activeSessions.$.lastActive': new Date() } }
-      );
-    }
-
-    // Set cookie
-    const isProd = process.env.NODE_ENV === 'production';
-    const options = {
-      expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-      httpOnly: true, // Safeguards against XSS extraction
-      secure: isProd, // Production HTTPS only
-      sameSite: isProd ? 'none' : 'lax' // Cross-domain cookie support in prod
-    };
-
-    if (req.logAuthAttempt) await req.logAuthAttempt(true);
-
-    res
-      .cookie('token', sessionId, options)
-      .json({
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        emailVerified: !!user.isEmailVerified,
-        isNewUser,
-        token: sessionId,
-        pinnedTools: user.pinnedTools || [],
-        favoriteTools: user.favoriteTools || [],
-        recentHistory: user.recentHistory || [],
-        activeSessions: user.activeSessions.map(s => ({
-          _id: s._id,
-          deviceName: s.deviceName,
-          lastActive: s.lastActive,
-          isCurrent: s.token === sessionId
-        }))
-      });
+    return await createSessionResponse(user, req, res, isNewUser);
   } catch (error) {
     console.error('Session synchronization error:', error);
-    if (req.logAuthAttempt) await req.logAuthAttempt(false);
     res.status(500).json({ message: 'Internal server error during session synchronization.' });
   }
 };
 
-// @desc    Logout user / clear session in database & cookie
-// @route   GET /api/auth/logout
-// @access  Public (graceful lookup)
+// =========================================================================
+// 6. LOGOUT
+// =========================================================================
 exports.logoutUser = async (req, res) => {
   try {
     const token = req.cookies.token || (req.headers.authorization && req.headers.authorization.split(' ')[1]);
     
     if (token) {
-      // Remove this specific session token from user active list
       await User.findOneAndUpdate(
         { 'activeSessions.token': token },
         { $pull: { activeSessions: { token } } }
@@ -230,20 +388,21 @@ exports.logoutUser = async (req, res) => {
   }
 };
 
-// @desc    Get user profile, sessions, history, and bookmarks
-// @route   GET /api/auth/profile
-// @access  Private
+// =========================================================================
+// 7. USER PROFILE & SETTINGS
+// =========================================================================
 exports.getUserProfile = async (req, res) => {
   try {
     if (!req.user) {
       return res.status(200).json(null);
     }
     
-    // Return profile & clean sessions metadata (strip secret tokens)
     res.json({
       _id: req.user._id,
       name: req.user.name,
       email: req.user.email,
+      avatar: req.user.avatar || '',
+      authProvider: req.user.authProvider || 'local',
       emailVerified: !!req.user.isEmailVerified,
       pinnedTools: req.user.pinnedTools || [],
       favoriteTools: req.user.favoriteTools || [],
@@ -261,9 +420,6 @@ exports.getUserProfile = async (req, res) => {
   }
 };
 
-// @desc    Update user profile name
-// @route   PUT /api/auth/profile
-// @access  Private
 exports.updateUserProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
@@ -271,20 +427,18 @@ exports.updateUserProfile = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    const { name } = req.body;
-    if (name) user.name = name;
+    const { name, avatar } = req.body;
+    if (name) user.name = name.trim();
+    if (avatar !== undefined) user.avatar = avatar;
 
     await user.save();
-    res.json({ success: true, name: user.name, email: user.email });
+    res.json({ success: true, name: user.name, email: user.email, avatar: user.avatar });
   } catch (error) {
     console.error('Update profile error:', error);
     res.status(500).json({ message: 'Internal server error updating user profile.' });
   }
 };
 
-// @desc    Revoke specific device session
-// @route   DELETE /api/auth/sessions/:sessionId
-// @access  Private
 exports.logoutSession = async (req, res) => {
   try {
     const { sessionId } = req.params;
@@ -293,7 +447,6 @@ exports.logoutSession = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Filter out the requested session
     user.activeSessions = (user.activeSessions || []).filter(s => s._id.toString() !== sessionId);
     await user.save();
 
@@ -304,26 +457,20 @@ exports.logoutSession = async (req, res) => {
   }
 };
 
-// @desc    Record visited tool in database history (max 20 items)
-// @route   POST /api/auth/analytics/visit
-// @access  Private
+// =========================================================================
+// 8. ANALYTICS & BOOKMARKS
+// =========================================================================
 exports.recordAnalyticsVisit = async (req, res) => {
   try {
     const { toolPath } = req.body;
-    if (!toolPath) {
-      return res.status(400).json({ message: 'Tool path required' });
-    }
+    if (!toolPath) return res.status(400).json({ message: 'Tool path required' });
 
     const user = await User.findById(req.user.id);
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
+    if (!user) return res.status(404).json({ message: 'User not found' });
 
-    // Reorder history so that latest visit goes to the top
     user.recentHistory = (user.recentHistory || []).filter(h => h.toolPath !== toolPath);
     user.recentHistory.unshift({ toolPath, visitedAt: new Date() });
 
-    // Strict limits: cap history list at 20 items to prevent MongoDB storage bloat
     if (user.recentHistory.length > 20) {
       user.recentHistory = user.recentHistory.slice(0, 20);
     }
@@ -336,26 +483,18 @@ exports.recordAnalyticsVisit = async (req, res) => {
   }
 };
 
-// @desc    Toggle a pinned tool in database bookmarks (max 12 items)
-// @route   POST /api/auth/analytics/pin
-// @access  Private
 exports.updateAnalyticsPin = async (req, res) => {
   try {
     const { toolPath } = req.body;
-    if (!toolPath) {
-      return res.status(400).json({ message: 'Tool path required' });
-    }
+    if (!toolPath) return res.status(400).json({ message: 'Tool path required' });
 
     const user = await User.findById(req.user.id);
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
+    if (!user) return res.status(404).json({ message: 'User not found' });
 
     const isPinned = (user.pinnedTools || []).includes(toolPath);
     if (isPinned) {
       user.pinnedTools = user.pinnedTools.filter(p => p !== toolPath);
     } else {
-      // Strict limits: cap pinned tools at 12 items
       if (user.pinnedTools.length >= 12) {
         return res.status(400).json({ message: 'Bookmark limit reached (maximum 12).' });
       }
@@ -370,20 +509,13 @@ exports.updateAnalyticsPin = async (req, res) => {
   }
 };
 
-// @desc    Toggle a favorite tool in database bookmarks (max 24 items)
-// @route   POST /api/auth/analytics/favorite
-// @access  Private
 exports.updateAnalyticsFavorite = async (req, res) => {
   try {
     const { toolPath } = req.body;
-    if (!toolPath) {
-      return res.status(400).json({ message: 'Tool path required' });
-    }
+    if (!toolPath) return res.status(400).json({ message: 'Tool path required' });
 
     const user = await User.findById(req.user.id);
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
+    if (!user) return res.status(404).json({ message: 'User not found' });
 
     const isFav = (user.favoriteTools || []).includes(toolPath);
     if (isFav) {
@@ -403,11 +535,9 @@ exports.updateAnalyticsFavorite = async (req, res) => {
   }
 };
 
-const { sendOtpEmail } = require('../utils/mailer');
-
-// @desc    Generate and send OTP email, return signed verification token
-// @route   POST /api/auth/otp/send
-// @access  Public
+// =========================================================================
+// 9. GENERAL OTP & EMAIL AVAILABILITY
+// =========================================================================
 exports.sendOtp = async (req, res) => {
   try {
     const { email } = req.body;
@@ -419,14 +549,11 @@ exports.sendOtp = async (req, res) => {
     const cleanEmail = email.trim().toLowerCase();
     const isProd = process.env.NODE_ENV === 'production' || !!process.env.VERCEL;
     
-    console.log(`[OTP] Generating OTP for: ${cleanEmail}`);
-    
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     
     let emailSent = false;
     try {
       await sendOtpEmail(cleanEmail, otp);
-      console.log(`[OTP] Email sent successfully to ${cleanEmail}`);
       emailSent = true;
     } catch (emailError) {
       console.error('[OTP] SMTP Error:', emailError.message);
@@ -462,13 +589,12 @@ exports.sendOtp = async (req, res) => {
   }
 };
 
-// @desc    Verify OTP code matches the signed token
-// @route   POST /api/auth/otp/verify
-// @access  Public
 exports.verifyOtp = async (req, res) => {
   try {
-    const { token, code } = req.body;
-    if (!token || !code || typeof token !== 'string' || typeof code !== 'string') {
+    const { token, code, otp: directOtp } = req.body;
+    const inputCode = String(code || directOtp || '').trim();
+
+    if (!token || !inputCode) {
       return res.status(400).json({ message: 'Verification token and code are required.' });
     }
 
@@ -479,53 +605,35 @@ exports.verifyOtp = async (req, res) => {
       return res.status(400).json({ message: 'Verification code has expired or is invalid.' });
     }
 
-    if (decoded.otp !== code.trim()) {
+    if (decoded.otp !== inputCode) {
       return res.status(400).json({ message: 'Invalid verification code.' });
     }
 
-    if (!req.body.skipDbUpdate) {
-      // For existing unverified accounts, update them to verified.
-      await User.updateOne({ email: decoded.email }, { $set: { isEmailVerified: true } });
-    }
-
-    res.json({ success: true });
+    res.json({ success: true, email: decoded.email });
   } catch (error) {
     console.error('Verify OTP error:', error);
     res.status(500).json({ message: 'Internal server error verifying OTP.' });
   }
 };
 
-// @desc    Check if an email exists in the database
-// @route   POST /api/auth/check-email
-// @access  Public
 exports.checkEmail = async (req, res) => {
   try {
     const { email } = req.body;
-    if (!email) {
-      return res.status(400).json({ message: 'Email address is required.' });
-    }
+    if (!email) return res.status(400).json({ message: 'Email address is required.' });
 
     const user = await User.findOne({ email: email.toLowerCase().trim() }).select('_id').lean();
-    if (!user) {
-      return res.status(404).json({ message: 'No account found with this email address.' });
-    }
+    if (!user) return res.status(404).json({ message: 'No account found with this email address.' });
 
     res.json({ success: true, message: 'Account exists.' });
   } catch (error) {
-    console.error('Check email error:', error);
     res.status(500).json({ message: 'Internal server error checking email.' });
   }
 };
 
-// @desc    Check if an email is available for registration (returns 409 if exists, 200 if available)
-// @route   POST /api/auth/check-email-availability
-// @access  Public
 exports.checkEmailAvailability = async (req, res) => {
   try {
     const { email } = req.body;
-    if (!email) {
-      return res.status(400).json({ message: 'Email address is required.' });
-    }
+    if (!email) return res.status(400).json({ message: 'Email address is required.' });
 
     const existingUser = await User.findOne({ email: email.toLowerCase().trim() }).select('_id').lean();
     if (existingUser) {
@@ -534,9 +642,6 @@ exports.checkEmailAvailability = async (req, res) => {
 
     res.json({ available: true, message: 'Email address is available.' });
   } catch (error) {
-    console.error('Check email availability error:', error);
-    // On unexpected DB failure, gracefully let registration proceed to OTP stage
     res.json({ available: true, message: 'Proceeding to verification.' });
   }
 };
-

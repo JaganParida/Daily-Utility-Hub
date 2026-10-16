@@ -1,45 +1,56 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { UserPlus, Loader2, ArrowLeft, Eye, EyeOff, ShieldCheck, RefreshCw, AlertCircle, Zap } from 'lucide-react';
+import { 
+  UserPlus, 
+  Loader2, 
+  ArrowLeft, 
+  Eye, 
+  EyeOff, 
+  ShieldCheck, 
+  Mail, 
+  Lock, 
+  User, 
+  CheckCircle2, 
+  RefreshCw,
+  Sparkles,
+  ArrowRight
+} from 'lucide-react';
 import PageTransition from '../../components/PageTransition';
+import GoogleAuthButton from '../../components/GoogleAuthButton';
 import { toast } from 'react-hot-toast';
-import api from '../../lib/api';
 
 const Register = () => {
-  const { signupWithEmail, loginWithGoogle, finalizeGoogleSignup } = useAuth();
+  const { sendSignupOtp, signupWithEmail } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
 
+  // Form State
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
-  
-  const [googleUser, setGoogleUser] = useState(null);
-  
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
-  // OTP Verification States
-  const [otpSent, setOtpSent] = useState(false);
-  const [otpValidationToken, setOtpValidationToken] = useState('');
-  const [otpInput, setOtpInput] = useState(['', '', '', '', '', '']);
-  const [resendTimer, setResendTimer] = useState(60);
-  const [expireTimer, setExpireTimer] = useState(180);
-  const [otpExpired, setOtpExpired] = useState(false);
+  // OTP State
+  const [step, setStep] = useState('details'); // 'details' | 'otp'
+  const [signupOtpToken, setSignupOtpToken] = useState('');
+  const [otp, setOtp] = useState(['', '', '', '', '', '']);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(60);
+  const [expireTimer, setExpireTimer] = useState(300); // 5 mins
+  const [isOtpExpired, setIsOtpExpired] = useState(false);
 
   const otpRefs = useRef([]);
 
+  // Timer countdowns for OTP
   useEffect(() => {
     let interval = null;
-    if (otpSent) {
+    if (step === 'otp') {
       interval = setInterval(() => {
-        setResendTimer((prev) => (prev > 0 ? prev - 1 : 0));
+        setResendCooldown((prev) => (prev > 0 ? prev - 1 : 0));
         setExpireTimer((prev) => {
           if (prev <= 1) {
-            setOtpExpired(true);
+            setIsOtpExpired(true);
             clearInterval(interval);
             return 0;
           }
@@ -48,69 +59,35 @@ const Register = () => {
       }, 1000);
     }
     return () => clearInterval(interval);
-  }, [otpSent]);
+  }, [step]);
 
-  const sendRealOtp = async (targetEmail) => {
-    try {
-      let token = null;
-      let devOtp = null;
+  // Password strength calculation
+  const getPasswordStrength = (pwd) => {
+    if (!pwd) return { score: 0, text: '', color: 'bg-slate-200' };
+    let score = 0;
+    if (pwd.length >= 6) score++;
+    if (pwd.length >= 8) score++;
+    if (/[A-Z]/.test(pwd)) score++;
+    if (/[0-9]/.test(pwd)) score++;
+    if (/[^A-Za-z0-9]/.test(pwd)) score++;
 
-      try {
-        const vercelRes = await fetch('/api/send-otp', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: targetEmail })
-        });
-        if (vercelRes.ok) {
-          const vercelData = await vercelRes.json();
-          if (vercelData.success && vercelData.token) {
-            token = vercelData.token;
-          }
-        }
-      } catch (vercelErr) {
-        console.warn('Vercel serverless OTP fallback...', vercelErr);
-      }
-
-      if (!token) {
-        const response = await api.post('/auth/otp/send', { email: targetEmail });
-        if (!response.data?.success || !response.data?.token) {
-          throw new Error(response.data?.message || 'Failed to send verification code');
-        }
-        token = response.data.token;
-        devOtp = response.data.devOtp;
-      }
-
-      setOtpValidationToken(token);
-      setOtpSent(true);
-      setResendTimer(60);
-      setExpireTimer(180);
-      setOtpExpired(false);
-      setOtpInput(['', '', '', '', '', '']);
-      
-      toast.success(`Verification code sent to ${targetEmail}`);
-      if (devOtp) {
-        toast(`[DEV MODE] OTP: ${devOtp}`, { icon: '🔑', duration: 8000 });
-      }
-    } catch (err) {
-      toast.error(err.response?.data?.message || err.message || 'Failed to send OTP. Please try again.');
-      throw err;
-    }
+    if (score <= 2) return { score: 1, text: 'Weak', color: 'bg-rose-500' };
+    if (score === 3) return { score: 2, text: 'Medium', color: 'bg-amber-500' };
+    if (score === 4) return { score: 3, text: 'Strong', color: 'bg-emerald-500' };
+    return { score: 4, text: 'Very Strong', color: 'bg-indigo-600' };
   };
 
-  useEffect(() => {
-    if (location.state?.email) {
-      setEmail(location.state.email);
-    }
-    if (location.state?.triggerGoogleOtp && location.state?.email) {
-      sendRealOtp(location.state.email);
-    }
-  }, [location.state]);
+  const strength = getPasswordStrength(password);
 
-  const handleInitialSubmit = async (e) => {
+  // Step 1: Send OTP to Email (MongoDB not touched yet)
+  const handleSendOtp = async (e) => {
     e.preventDefault();
 
+    if (!name.trim()) {
+      return toast.error('Please enter your full name.');
+    }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (!emailRegex.test(email.trim())) {
       return toast.error('Please enter a valid email address.');
     }
     if (!password || password.length < 6) {
@@ -119,337 +96,387 @@ const Register = () => {
 
     setIsSubmitting(true);
     try {
-      await api.post('/auth/check-email-availability', { email });
-      await sendRealOtp(email);
-    } catch (error) {
-      if (error.response?.status === 409) {
-        toast.error('An account already exists with this email address.');
+      const data = await sendSignupOtp(email.trim(), name.trim());
+      setSignupOtpToken(data.signupOtpToken);
+      setStep('otp');
+      setResendCooldown(60);
+      setExpireTimer(300);
+      setIsOtpExpired(false);
+      setOtp(['', '', '', '', '', '']);
+      toast.success(`Verification code sent to ${email}`);
+
+      if (data.devOtp) {
+        toast(`[DEV MODE] OTP: ${data.devOtp}`, { icon: '🔑', duration: 10000 });
       }
+
+      // Auto focus first OTP input box
+      setTimeout(() => {
+        otpRefs.current[0]?.focus();
+      }, 150);
+    } catch (err) {
+      // Handled in context toast
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleGoogleSubmit = async () => {
-    setIsGoogleLoading(true);
-    try {
-      const result = await loginWithGoogle();
-      if (result && (result.requiresOtp || result.isNewUser || result.isEmailVerified === false || result.emailVerified === false)) {
-        setGoogleUser(result);
-        setEmail(result.email);
-        setName(result.name || '');
-        await sendRealOtp(result.email);
-      } else if (result) {
-        toast.success('Account setup complete!');
-        navigate('/');
-      }
-    } catch (error) {
-      // Handled in context
-    } finally {
-      setIsGoogleLoading(false);
-    }
-  };
-
+  // Step 2: Verify OTP and Create User in DB
   const handleVerifyOtp = async (e) => {
     e.preventDefault();
-    const enteredOtp = otpInput.join('');
+    const enteredOtp = otp.join('').trim();
 
     if (enteredOtp.length !== 6) {
       return toast.error('Please enter the 6-digit verification code.');
     }
 
+    if (isOtpExpired) {
+      return toast.error('Verification code has expired. Please resend a new code.');
+    }
+
     setIsVerifying(true);
     try {
-      let isVerified = false;
+      await signupWithEmail({
+        signupOtpToken,
+        otp: enteredOtp,
+        password,
+        name: name.trim()
+      });
 
-      try {
-        const verifyRes = await fetch('/api/verify-otp', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email,
-            otp: enteredOtp,
-            token: otpValidationToken
-          })
-        });
-        if (verifyRes.ok) {
-          const verifyData = await verifyRes.json();
-          if (verifyData.success) {
-            isVerified = true;
-          }
-        }
-      } catch (vercelErr) {
-        console.warn('Vercel serverless verify fallback...', vercelErr);
-      }
-
-      if (!isVerified) {
-        const response = await api.post('/auth/otp/verify', {
-          email,
-          otp: enteredOtp,
-          token: otpValidationToken
-        });
-        if (!response.data?.success) {
-          throw new Error(response.data?.message || 'Invalid or expired OTP');
-        }
-      }
-
-      if (googleUser) {
-        await finalizeGoogleSignup(googleUser.email, googleUser.name, googleUser.googleId);
-        toast.success('Google account verified successfully!');
-      } else {
-        await signupWithEmail(email, password, name || email.split('@')[0]);
-        toast.success('Account created successfully!');
-      }
-      navigate('/');
+      navigate('/dashboard');
     } catch (err) {
-      toast.error(err.response?.data?.message || err.message || 'Invalid OTP code.');
+      // Handled in context toast
     } finally {
       setIsVerifying(false);
     }
   };
 
+  // Resend OTP
+  const handleResendOtp = async () => {
+    if (resendCooldown > 0) return;
+    try {
+      const data = await sendSignupOtp(email.trim(), name.trim());
+      setSignupOtpToken(data.signupOtpToken);
+      setResendCooldown(60);
+      setExpireTimer(300);
+      setIsOtpExpired(false);
+      setOtp(['', '', '', '', '', '']);
+      toast.success('New verification code sent!');
+      if (data.devOtp) {
+        toast(`[DEV MODE] OTP: ${data.devOtp}`, { icon: '🔑', duration: 10000 });
+      }
+      otpRefs.current[0]?.focus();
+    } catch (err) {}
+  };
+
+  // OTP Box inputs handler
   const handleOtpChange = (value, index) => {
     if (!/^\d*$/.test(value)) return;
-    const newOtp = [...otpInput];
+    const newOtp = [...otp];
     newOtp[index] = value.slice(-1);
-    setOtpInput(newOtp);
+    setOtp(newOtp);
 
     if (value && index < 5) {
       otpRefs.current[index + 1]?.focus();
     }
   };
 
-  const handleKeyDown = (e, index) => {
-    if (e.key === 'Backspace' && !otpInput[index] && index > 0) {
+  const handleOtpKeyDown = (e, index) => {
+    if (e.key === 'Backspace' && !otp[index] && index > 0) {
       otpRefs.current[index - 1]?.focus();
     }
   };
 
-  const handlePaste = (e) => {
+  const handleOtpPaste = (e) => {
     e.preventDefault();
     const pasteData = e.clipboardData.getData('text').trim();
-    if (!/^\d+$/.test(pasteData)) return;
-
-    const digits = pasteData.slice(0, 6).split('');
-    const newOtp = [...otpInput];
-    digits.forEach((digit, i) => {
-      newOtp[i] = digit;
-    });
-    setOtpInput(newOtp);
-    const nextIdx = Math.min(digits.length, 5);
-    otpRefs.current[nextIdx]?.focus();
+    if (/^\d{6}$/.test(pasteData)) {
+      const digits = pasteData.split('');
+      setOtp(digits);
+      otpRefs.current[5]?.focus();
+    }
   };
 
-  const handleResendOtp = () => {
-    if (resendTimer > 0) return;
-    sendRealOtp(email);
+  const formatTimer = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-[#08090d] text-[#f8fafc]">
-      {/* Left Column: Visual panel in Next-Gen Obsidian Dark */}
-      <div className="hidden md:flex md:w-[42%] bg-[#0c0e17] relative items-center justify-center p-12 overflow-hidden border-r border-[#1e2235]">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(99,102,241,0.15)_0%,transparent_60%)]" />
-        <div className="absolute top-[25%] left-[20%] w-80 h-80 bg-indigo-500/10 rounded-full blur-[120px]" />
-        
-        <div className="relative z-10 flex flex-col items-center max-w-sm text-center">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-cyan-400 flex items-center justify-center shadow-xl shadow-indigo-500/25 mb-8 text-white">
-            <Zap className="w-8 h-8" />
+    <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8 text-slate-800 antialiased selection:bg-indigo-500 selection:text-white relative overflow-hidden">
+      {/* Background Decorative Mesh Circles */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 bg-gradient-to-b from-indigo-100/60 via-slate-50/0 to-transparent pointer-events-none -z-10" />
+      <div className="absolute top-12 left-10 w-72 h-72 bg-indigo-200/30 rounded-full blur-3xl pointer-events-none -z-10" />
+      <div className="absolute bottom-12 right-10 w-80 h-80 bg-blue-200/30 rounded-full blur-3xl pointer-events-none -z-10" />
+
+      {/* Header Container */}
+      <div className="sm:mx-auto sm:w-full sm:max-w-md px-4">
+        <Link
+          to="/"
+          className="inline-flex items-center gap-2 text-xs font-semibold text-slate-500 hover:text-indigo-600 transition-colors mb-6 group"
+        >
+          <ArrowLeft size={16} className="transition-transform group-hover:-translate-x-1" />
+          Back to Utilities
+        </Link>
+
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-blue-500 flex items-center justify-center text-white shadow-md shadow-indigo-500/20">
+            <Sparkles className="w-5 h-5" />
           </div>
-          <h1 className="text-3xl font-black tracking-tight mb-3 text-white">
-            Create Free Account
-          </h1>
-          <p className="text-indigo-400 text-xs font-mono uppercase tracking-wider mb-5">
-            Zero Tracking • Zero Latency • 100% Free
-          </p>
-          <p className="text-slate-400 text-sm leading-relaxed font-medium">
-            Join thousands of developers using Daily Utility Hub to edit, convert, compress, and process documents directly on device.
+          <div>
+            <h1 className="text-xl font-bold text-slate-900 tracking-tight">
+              Daily Utility <span className="text-indigo-600">Hub</span>
+            </h1>
+            <p className="text-xs text-slate-500 font-medium">Free, Fast & Secure Tools</p>
+          </div>
+        </div>
+
+        <div className="mt-6">
+          <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">
+            {step === 'details' ? 'Create your account' : 'Verify your email'}
+          </h2>
+          <p className="text-sm text-slate-600 mt-1">
+            {step === 'details' 
+              ? 'Join free to pin favorite tools, sync settings, and monitor history.'
+              : `We sent a 6-digit verification code to ${email}`}
           </p>
         </div>
       </div>
 
-      {/* Right Column: Form panel */}
-      <PageTransition className="flex-1 flex flex-col justify-center items-center py-12 px-6 sm:px-12 lg:px-20 relative bg-[#08090d]">
-        <Link to="/" className="absolute top-6 left-6 flex items-center gap-2 text-slate-400 hover:text-white transition-colors font-bold text-xs bg-[#0f1118] border border-[#1e2235] hover:bg-[#141722] px-3.5 py-2 rounded-xl shadow-xs">
-          <ArrowLeft size={14} />
-          Back to Home
-        </Link>
-
-        <div className="w-full max-w-sm">
-          {!otpSent ? (
-            <>
-              {/* Form Header */}
-              <div className="mb-8">
-                <h2 className="text-3xl font-black text-white tracking-tight">
-                  Sign Up
-                </h2>
-                <p className="text-slate-400 text-sm mt-1.5 font-medium">
-                  Already have an account?{' '}
-                  <Link to="/login" className="text-indigo-400 font-bold hover:underline">
-                    Log in
-                  </Link>
-                </p>
+      {/* Card Form */}
+      <div className="mt-6 sm:mx-auto sm:w-full sm:max-w-md px-4">
+        <PageTransition className="bg-white py-8 px-6 sm:px-10 shadow-xl shadow-slate-200/60 border border-slate-200/80 rounded-2xl relative">
+          
+          {/* STEP 1: REGISTRATION DETAILS */}
+          {step === 'details' && (
+            <div className="space-y-6">
+              {/* Google Sign-In */}
+              <div>
+                <GoogleAuthButton 
+                  text="Sign up with Google" 
+                  onSuccess={() => navigate('/dashboard')}
+                />
               </div>
 
-              {/* Form controls */}
-              <form className="space-y-5" onSubmit={handleInitialSubmit}>
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-[11px] font-mono uppercase tracking-widest text-slate-400 ml-0.5 mb-1.5 block">Email Address</label>
-                    <input
-                      type="email" required
-                      className="appearance-none rounded-xl relative block w-full px-4 py-3 border border-[#1e2235] placeholder-slate-500 text-white bg-[#0f1118] focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-sm transition-all shadow-xs"
-                      placeholder="name@example.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      disabled={isSubmitting || isGoogleLoading}
-                    />
-                  </div>
+              <div className="relative flex items-center justify-center">
+                <div className="border-t border-slate-200 w-full" />
+                <span className="bg-white px-3 text-xs uppercase tracking-wider text-slate-400 font-semibold absolute">
+                  or with email
+                </span>
+              </div>
 
-                  <div>
-                    <label className="text-[11px] font-mono uppercase tracking-widest text-slate-400 ml-0.5 mb-1.5 block">Password</label>
-                    <div className="relative">
-                      <input
-                        type={showPassword ? "text" : "password"} required minLength="6"
-                        className="appearance-none rounded-xl relative block w-full px-4 py-3 pr-12 border border-[#1e2235] placeholder-slate-500 text-white bg-[#0f1118] focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-sm transition-all shadow-xs"
-                        placeholder="At least 6 characters"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        disabled={isSubmitting || isGoogleLoading}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
-                      >
-                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                      </button>
+              <form onSubmit={handleSendOtp} className="space-y-4">
+                {/* Name */}
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                    Full Name
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                      <User size={18} />
                     </div>
+                    <input
+                      type="text"
+                      required
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Alex Morgan"
+                      className="w-full pl-10 pr-4 py-2.5 bg-slate-50 hover:bg-slate-100/80 focus:bg-white text-slate-900 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all font-medium"
+                    />
                   </div>
                 </div>
 
+                {/* Email */}
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                    Email Address
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                      <Mail size={18} />
+                    </div>
+                    <input
+                      type="email"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="alex@company.com"
+                      className="w-full pl-10 pr-4 py-2.5 bg-slate-50 hover:bg-slate-100/80 focus:bg-white text-slate-900 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all font-medium"
+                    />
+                  </div>
+                </div>
+
+                {/* Password */}
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                    Password
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                      <Lock size={18} />
+                    </div>
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Minimum 6 characters"
+                      className="w-full pl-10 pr-11 py-2.5 bg-slate-50 hover:bg-slate-100/80 focus:bg-white text-slate-900 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all font-medium"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 transition-colors"
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+
+                  {/* Password Strength Indicator */}
+                  {password && (
+                    <div className="mt-2.5">
+                      <div className="flex gap-1.5 h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                        {[1, 2, 3, 4].map((level) => (
+                          <div
+                            key={level}
+                            className={`flex-1 h-full rounded-full transition-all duration-300 ${
+                              strength.score >= level ? strength.color : 'bg-transparent'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <div className="flex justify-between items-center text-[11px] mt-1 text-slate-500 font-medium">
+                        <span>Strength: {strength.text}</span>
+                        <span>{strength.score >= 3 ? '✓ Secure' : 'Min 6 characters'}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Security Guarantee Badge */}
+                <div className="p-3 bg-indigo-50/70 border border-indigo-100 rounded-xl flex items-start gap-2.5">
+                  <ShieldCheck className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
+                  <p className="text-xs text-indigo-900 leading-relaxed font-normal">
+                    We will send a 6-digit verification code to your email. Your account is only created once verified.
+                  </p>
+                </div>
+
+                {/* Submit Button */}
                 <button
                   type="submit"
-                  disabled={isSubmitting || isGoogleLoading}
-                  className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-white font-bold bg-indigo-600 hover:bg-indigo-500 focus:outline-none transition-all disabled:opacity-50 cursor-pointer shadow-lg shadow-indigo-600/30 text-xs uppercase font-mono tracking-wider active:scale-[0.98]"
+                  disabled={isSubmitting}
+                  className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-semibold text-sm rounded-xl shadow-md shadow-indigo-600/20 hover:shadow-indigo-600/30 transition-all flex items-center justify-center gap-2 disabled:opacity-60"
                 >
                   {isSubmitting ? (
-                    <Loader2 className="animate-spin" size={16} />
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Sending Verification Code...</span>
+                    </>
                   ) : (
                     <>
-                      <UserPlus size={16} />
-                      Create Free Account
+                      <span>Continue with Verification</span>
+                      <ArrowRight size={16} />
                     </>
                   )}
                 </button>
               </form>
+            </div>
+          )}
 
-              {/* Social Login */}
-              <div className="relative my-6">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-[#1e2235]"></div>
-                </div>
-                <div className="relative flex justify-center text-xs">
-                  <span className="px-3 bg-[#08090d] text-slate-500 text-[10px] uppercase font-mono tracking-widest font-bold">Or register with</span>
-                </div>
-              </div>
-
-              <button
-                onClick={handleGoogleSubmit}
-                disabled={isGoogleLoading || isSubmitting}
-                className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-[#1e2235] rounded-xl bg-[#0f1118] hover:bg-[#141722] text-white font-bold transition-all disabled:opacity-50 text-xs uppercase font-mono tracking-wider cursor-pointer shadow-xs active:scale-[0.98]"
-              >
-                {isGoogleLoading ? <Loader2 className="animate-spin" size={16} /> : (
-                  <svg width="16" height="16" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                  </svg>
-                )}
-                Continue with Google
-              </button>
-            </>
-          ) : (
-            /* OTP Verification Panel */
+          {/* STEP 2: OTP VERIFICATION */}
+          {step === 'otp' && (
             <div className="space-y-6">
-              <div>
-                <div className="w-12 h-12 rounded-2xl bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center mb-5 text-indigo-400 shadow-md">
-                  <ShieldCheck size={24} />
+              <div className="flex items-center justify-between p-3.5 bg-slate-50 border border-slate-200 rounded-xl">
+                <div>
+                  <p className="text-xs font-semibold text-slate-500">Verifying</p>
+                  <p className="text-sm font-bold text-slate-800">{email}</p>
                 </div>
-                <h2 className="text-3xl font-black text-white tracking-tight">
-                  Verify Email
-                </h2>
-                <p className="text-slate-400 text-sm mt-1.5 leading-relaxed font-medium">
-                  We've sent a 6-digit verification code to <span className="text-white font-bold">{email || 'your registered email'}</span>. Enter it below to activate your account.
-                </p>
+                <button
+                  type="button"
+                  onClick={() => setStep('details')}
+                  className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition-colors"
+                >
+                  Change Email
+                </button>
               </div>
 
               <form onSubmit={handleVerifyOtp} className="space-y-6">
-                <div className="flex gap-2 justify-between" onPaste={handlePaste}>
-                  {otpInput.map((digit, index) => (
-                    <input
-                      key={index}
-                      ref={(el) => (otpRefs.current[index] = el)}
-                      type="text"
-                      maxLength="1"
-                      value={digit}
-                      onChange={(e) => handleOtpChange(e.target.value, index)}
-                      onKeyDown={(e) => handleKeyDown(e, index)}
-                      disabled={otpExpired}
-                      className="w-12 h-14 text-center text-xl font-bold bg-[#0f1118] border border-[#1e2235] focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 text-white focus:outline-none rounded-xl transition-all font-mono shadow-xs"
-                    />
-                  ))}
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-3 text-center">
+                    Enter 6-Digit Code
+                  </label>
+                  <div className="flex justify-between gap-2" onPaste={handleOtpPaste}>
+                    {otp.map((digit, idx) => (
+                      <input
+                        key={idx}
+                        ref={(el) => (otpRefs.current[idx] = el)}
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={1}
+                        value={digit}
+                        onChange={(e) => handleOtpChange(e.target.value, idx)}
+                        onKeyDown={(e) => handleOtpKeyDown(e, idx)}
+                        className={`w-12 h-14 text-center text-xl font-bold rounded-xl border bg-slate-50 text-slate-900 transition-all focus:outline-none focus:bg-white ${
+                          digit 
+                            ? 'border-indigo-600 ring-2 ring-indigo-500/20' 
+                            : 'border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20'
+                        }`}
+                      />
+                    ))}
+                  </div>
                 </div>
 
-                {otpExpired ? (
-                  <div className="flex items-center gap-2 text-rose-400 bg-rose-500/10 border border-rose-500/30 px-3.5 py-2.5 rounded-xl text-xs font-semibold">
-                    <AlertCircle size={15} className="shrink-0" />
-                    <span>The verification code has expired. Please request a new one.</span>
+                {/* Expiration Timer & Resend */}
+                <div className="flex items-center justify-between text-xs font-medium">
+                  <div className="flex items-center gap-1.5 text-slate-500">
+                    <span>Code expires in:</span>
+                    <span className={`font-mono font-bold ${expireTimer < 60 ? 'text-rose-600' : 'text-slate-700'}`}>
+                      {formatTimer(expireTimer)}
+                    </span>
                   </div>
-                ) : (
-                  <div className="text-center text-slate-400 text-xs font-semibold">
-                    Code expires in: <span className="text-white font-bold font-mono">{Math.floor(expireTimer / 60)}:{(expireTimer % 60).toString().padStart(2, '0')}</span>
-                  </div>
-                )}
 
+                  <button
+                    type="button"
+                    onClick={handleResendOtp}
+                    disabled={resendCooldown > 0}
+                    className="text-indigo-600 hover:text-indigo-800 font-semibold disabled:text-slate-400 disabled:cursor-not-allowed flex items-center gap-1"
+                  >
+                    <RefreshCw size={12} className={resendCooldown > 0 ? '' : 'animate-pulse'} />
+                    {resendCooldown > 0 ? `Resend (${resendCooldown}s)` : 'Resend Code'}
+                  </button>
+                </div>
+
+                {/* Verify Button */}
                 <button
                   type="submit"
-                  disabled={otpExpired || otpInput.some((d) => d === '') || isVerifying}
-                  className="w-full py-3 px-4 flex items-center justify-center gap-2 rounded-xl text-white font-bold bg-indigo-600 hover:bg-indigo-500 focus:outline-none transition-all disabled:opacity-40 cursor-pointer text-xs uppercase font-mono tracking-wider shadow-lg shadow-indigo-600/30 active:scale-[0.98]"
+                  disabled={isVerifying || otp.join('').length !== 6 || isOtpExpired}
+                  className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-semibold text-sm rounded-xl shadow-md shadow-indigo-600/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   {isVerifying ? (
                     <>
-                      <Loader2 className="animate-spin" size={16} />
-                      Verifying...
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Verifying & Creating Account...</span>
                     </>
                   ) : (
-                    'Verify & Proceed'
+                    <>
+                      <CheckCircle2 size={16} />
+                      <span>Verify & Complete Registration</span>
+                    </>
                   )}
                 </button>
               </form>
-
-              <div className="pt-4 border-t border-[#1e2235] flex flex-col items-center gap-3">
-                <button
-                  onClick={handleResendOtp}
-                  disabled={resendTimer > 0}
-                  className="flex items-center gap-2 text-xs font-bold text-indigo-400 disabled:text-slate-500 transition-colors uppercase font-mono tracking-wider cursor-pointer"
-                >
-                  <RefreshCw size={13} className={resendTimer > 0 ? '' : 'animate-spin-slow'} />
-                  {resendTimer > 0 ? `Resend Code (${resendTimer}s)` : 'Resend Verification Code'}
-                </button>
-                
-                <button
-                  onClick={() => setOtpSent(false)}
-                  className="text-xs font-bold text-slate-400 hover:text-white transition-colors uppercase font-mono tracking-wider cursor-pointer"
-                >
-                  Change Email / Cancel
-                </button>
-              </div>
             </div>
           )}
-        </div>
-      </PageTransition>
+
+          {/* Bottom Link */}
+          <div className="mt-6 text-center text-xs text-slate-500">
+            Already have an account?{' '}
+            <Link to="/login" className="font-semibold text-indigo-600 hover:text-indigo-800 transition-colors">
+              Sign In
+            </Link>
+          </div>
+        </PageTransition>
+      </div>
     </div>
   );
 };

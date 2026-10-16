@@ -13,7 +13,10 @@ const rateLimit = require('express-rate-limit');
 const connectDB = require('./config/db');
 const setupCleanupJobs = require('./jobs/cleanup');
 
-// Load env vars
+const path = require('path');
+
+// Load env vars (checks backend/.env first, then root .env)
+dotenv.config({ path: path.join(__dirname, '.env') });
 dotenv.config();
 
 // Connect to database (uses cached serverless pool)
