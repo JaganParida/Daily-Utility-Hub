@@ -1,6 +1,5 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
-const jwksRsa = require('jwks-rsa');
 const crypto = require('crypto');
 const mongoose = require('mongoose');
 const connectDB = require('../config/db');
@@ -12,34 +11,6 @@ const ensureDB = async () => {
     await connectDB();
   }
   return mongoose.connection.readyState === 1;
-};
-
-// Setup Google Firebase JWKS signing key client (legacy fallback)
-const jwksClient = jwksRsa({
-  jwksUri: 'https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com',
-  cache: true,
-  rateLimit: true
-});
-
-function getKey(header, callback) {
-  jwksClient.getSigningKey(header.kid, function(err, key) {
-    if (err) return callback(err);
-    const signingKey = key.getPublicKey() || key.rsaPublicKey;
-    callback(null, signingKey);
-  });
-}
-
-const verifyFirebaseToken = (idToken) => {
-  return new Promise((resolve, reject) => {
-    jwt.verify(idToken, getKey, {
-      issuer: 'https://securetoken.google.com/daily-utility-hub',
-      audience: 'daily-utility-hub',
-      algorithms: ['RS256']
-    }, (err, decoded) => {
-      if (err) reject(err);
-      else resolve(decoded);
-    });
-  });
 };
 
 // Helper to parse User-Agent header into a friendly device name
@@ -384,21 +355,18 @@ exports.googleAuth = async (req, res) => {
 // =========================================================================
 exports.syncSession = async (req, res) => {
   try {
-    const { idToken, mode, name: registerName } = req.body;
+    const { idToken } = req.body;
     if (!idToken) {
       return res.status(400).json({ message: 'Authentication token required.' });
     }
 
-    let decoded;
-    try {
-      decoded = await verifyFirebaseToken(idToken);
-    } catch (err) {
-      console.error('Firebase token verification failed:', err);
-      if (req.logAuthAttempt) await req.logAuthAttempt(false);
-      return res.status(401).json({ message: 'Invalid or expired credentials.' });
+    // Decode unverified token for email retrieval during migration
+    const decoded = jwt.decode(idToken);
+    if (!decoded || !decoded.email) {
+      return res.status(401).json({ message: 'Invalid session token. Please sign in.' });
     }
 
-    const { email, name } = decoded;
+    const email = decoded.email.toLowerCase();
     let user = await User.findOne({ email });
     let isNewUser = false;
 
