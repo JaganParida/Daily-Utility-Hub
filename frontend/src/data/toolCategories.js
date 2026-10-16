@@ -42,6 +42,7 @@ export const toolCategories = {
     { name: 'AI Image to Markdown', description: 'Convert screenshots, UI mockups, and whiteboard drawings to clean Markdown/Code.', icon: ImageIcon, to: '/tools/ai-image-to-markdown', color: 'text-indigo-500 bg-indigo-500/10' },
     { name: 'AI PDF to Markdown', description: 'Parse PDF content and use AI to convert it to beautifully structured Markdown.', icon: FileText, to: '/tools/ai-pdf-to-markdown', color: 'text-rose-500 bg-rose-500/10' },
     { name: 'AI Code Playground', description: 'Optimize, refactor, generate unit tests, and JSDoc annotations with side-by-side diff.', icon: Code2, to: '/tools/ai-code-playground', color: 'text-teal-500 bg-teal-500/10' },
+    { name: 'Encoder / Decoder', description: 'Encode and decode Base64, Hex, URL, HTML entities, and binary strings.', icon: Code2, to: '/tools/encoder-decoder', color: 'text-indigo-500 bg-indigo-500/10' },
   ],
   'PDF Tools': [
     { name: 'Edit PDF', description: 'Draw, write text, highlight, and redact elements directly.', icon: FileText, to: '/tools/pdf-edit', color: 'text-red-500 bg-red-500/10' },
@@ -73,6 +74,7 @@ export const toolCategories = {
     { name: 'SIP Calculator', description: 'Estimate future values and compound growth on investments.', icon: TrendingUp, to: '/tools/sip-calculator', color: 'text-emerald-500 bg-emerald-500/10' },
     { name: 'GST Calculator', description: 'Calculate tax inclusive or exclusive prices and SGST/CGST splits.', icon: Percent, to: '/tools/gst-calculator', color: 'text-indigo-500 bg-indigo-500/10' },
     { name: 'Income Tax', description: 'Compare old vs new tax regimes and calculate taxable income liabilities.', icon: Landmark, to: '/tools/tax-calculator', color: 'text-amber-500 bg-amber-500/10' },
+    { name: 'Pomodoro Study Hub', description: 'Stay focused, manage tasks, and boost productivity with Pomodoro intervals.', icon: Timer, to: '/tools/pomodoro-hub', color: 'text-rose-500 bg-rose-500/10' },
   ],
   'File & Storage Tools': [
     { name: 'Temp File Share', description: 'Upload a file temporarily and share via secure links.', icon: FolderArchive, to: '/tools/temp-share', color: 'text-primary bg-primary/10' },
@@ -102,13 +104,14 @@ export const toolCategories = {
     { name: 'Amortization Planner', description: 'Calculate compounding payments and mortgage debt schedules.', icon: Landmark, to: '/tools/amortization-scheduler', color: 'text-cyan-500 bg-cyan-500/10' },
   ],
   'PowerPoint & Slides Tools': [
+    { name: 'PPTX Studio Workspace', description: 'Interactive suite for inspecting, converting, and presenting PowerPoint slides.', icon: Layers, to: '/tools/pptx-studio', color: 'text-purple-500 bg-purple-500/10' },
     { name: 'Markdown to Slides', description: 'Convert Markdown headings and bullets to slideshows.', icon: Layers, to: '/tools/md-to-slides', color: 'text-rose-500 bg-rose-500/10' },
     { name: 'HTML Slides Sandbox', description: 'Code and preview rich HTML animated presentation slides.', icon: Code2, to: '/tools/html-presentation', color: 'text-indigo-500 bg-indigo-500/10' },
-    { name: 'Speaker Notes Prompter', description: 'Read scrolling prompter notes from PPTX with pacing timers.', icon: Clock, to: '/tools/pptx-studio', color: 'text-amber-500 bg-amber-500/10' },
+    { name: 'Speaker Notes Prompter', description: 'Read scrolling prompter notes with pacing timers and slide sync.', icon: Clock, to: '/tools/prompter-timer', color: 'text-amber-500 bg-amber-500/10' },
     { name: 'PowerPoint to PDF/Image', description: 'Convert PowerPoint files to clean PDF pages and PNGs.', icon: FileText, to: '/tools/ppt-to-pdf', color: 'text-orange-500 bg-orange-500/10' },
-    { name: 'Projector Theme Swatches', description: 'Extract high-contrast presentation palettes from PPTX files.', icon: Palette, to: '/tools/pptx-studio', color: 'text-emerald-500 bg-emerald-500/10' },
-    { name: 'Voice Slides Remote', description: 'Navigate PPTX slides hands-free using voice command triggers.', icon: Volume2, to: '/tools/pptx-studio', color: 'text-blue-500 bg-blue-500/10' },
-    { name: 'Slide Canvas Whiteboard', description: 'Sketch visual presentation drafts and mockups directly over PPTX.', icon: Palette, to: '/tools/pptx-studio', color: 'text-pink-500 bg-pink-500/10' },
+    { name: 'Projector Theme Swatches', description: 'Calibrated high-contrast presentation palettes for digital projectors.', icon: Palette, to: '/tools/ppt-palette-generator', color: 'text-emerald-500 bg-emerald-500/10' },
+    { name: 'Voice Slides Remote', description: 'Navigate presentation slides hands-free using voice command triggers.', icon: Volume2, to: '/tools/presentation-remote', color: 'text-blue-500 bg-blue-500/10' },
+    { name: 'Slide Canvas Whiteboard', description: 'Sketch visual presentation drafts and mockups directly on an interactive canvas.', icon: Palette, to: '/tools/slide-mockup', color: 'text-pink-500 bg-pink-500/10' },
     { name: 'PPTX Metadata Stripper', description: 'Strip hidden author properties and modification logs.', icon: FileText, to: '/tools/pptx-metadata-editor', color: 'text-teal-500 bg-teal-500/10' },
   ]
 };

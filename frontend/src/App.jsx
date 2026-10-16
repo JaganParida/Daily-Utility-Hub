@@ -152,6 +152,10 @@ const HtmlPresentation = lazyWithRetry(() => import('./pages/tools/HtmlPresentat
 const PptToPdf = lazyWithRetry(() => import('./pages/tools/PptToPdf'));
 const PptxStudio = lazyWithRetry(() => import('./pages/tools/PptxStudio'));
 const PptxMetadataEditor = lazyWithRetry(() => import('./pages/tools/PptxMetadataEditor'));
+const PptPaletteGenerator = lazyWithRetry(() => import('./pages/tools/PptPaletteGenerator'));
+const PresentationRemote = lazyWithRetry(() => import('./pages/tools/PresentationRemote'));
+const PrompterTimer = lazyWithRetry(() => import('./pages/tools/PrompterTimer'));
+const SlideMockup = lazyWithRetry(() => import('./pages/tools/SlideMockup'));
 
 const ProtectedRoute = ({ children }) => {
   const { currentUser } = useAuth();
@@ -316,6 +320,10 @@ function AnimatedRoutes() {
             <Route path="/tools/ppt-to-pdf" element={<PptToPdf />} />
             <Route path="/tools/pptx-studio" element={<PptxStudio />} />
             <Route path="/tools/pptx-metadata-editor" element={<PptxMetadataEditor />} />
+            <Route path="/tools/ppt-palette-generator" element={<PptPaletteGenerator />} />
+            <Route path="/tools/presentation-remote" element={<PresentationRemote />} />
+            <Route path="/tools/prompter-timer" element={<PrompterTimer />} />
+            <Route path="/tools/slide-mockup" element={<SlideMockup />} />
           </Route>
         </Routes>
       </Suspense>

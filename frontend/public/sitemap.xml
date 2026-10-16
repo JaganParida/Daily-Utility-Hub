@@ -241,6 +241,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://daily-utility-hub-orpin.vercel.app/tools/encoder-decoder</loc>
+    <lastmod>2026-10-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://daily-utility-hub-orpin.vercel.app/tools/pdf-edit</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
@@ -391,6 +397,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://daily-utility-hub-orpin.vercel.app/tools/pomodoro-hub</loc>
+    <lastmod>2026-10-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://daily-utility-hub-orpin.vercel.app/tools/temp-share</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
@@ -511,6 +523,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://daily-utility-hub-orpin.vercel.app/tools/pptx-studio</loc>
+    <lastmod>2026-10-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://daily-utility-hub-orpin.vercel.app/tools/md-to-slides</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
@@ -523,13 +541,31 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://daily-utility-hub-orpin.vercel.app/tools/pptx-studio</loc>
+    <loc>https://daily-utility-hub-orpin.vercel.app/tools/prompter-timer</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://daily-utility-hub-orpin.vercel.app/tools/ppt-to-pdf</loc>
+    <lastmod>2026-10-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://daily-utility-hub-orpin.vercel.app/tools/ppt-palette-generator</loc>
+    <lastmod>2026-10-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://daily-utility-hub-orpin.vercel.app/tools/presentation-remote</loc>
+    <lastmod>2026-10-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://daily-utility-hub-orpin.vercel.app/tools/slide-mockup</loc>
     <lastmod>2026-10-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
