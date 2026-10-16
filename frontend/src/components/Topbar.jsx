@@ -47,7 +47,7 @@ const CATEGORY_ITEMS = [
 ];
 
 const Topbar = () => {
-  const { currentUser, logout } = useAuth();
+  const { currentUser, logout, openAuthModal } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -374,12 +374,13 @@ const Topbar = () => {
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <Link
-                  to="/login"
-                  className="px-4 py-1.5 rounded-lg bg-[#1a73e8] hover:bg-[#1557b0] text-white text-xs font-medium transition-all shadow-2xs active:scale-[0.98]"
+                <button
+                  type="button"
+                  onClick={() => openAuthModal('login')}
+                  className="px-4 py-1.5 rounded-lg bg-[#1a73e8] hover:bg-[#1557b0] text-white text-xs font-semibold transition-all shadow-2xs active:scale-[0.98] cursor-pointer"
                 >
                   Sign in
-                </Link>
+                </button>
               </div>
             )}
 
@@ -419,13 +420,27 @@ const Topbar = () => {
                   <Heart size={15} className="text-[#ea4335]" />
                   <span>Favorites</span>
                 </Link>
-                <Link
-                  to="/profile"
-                  className="flex items-center gap-2 p-2.5 rounded-xl bg-[#f8f9fa] text-xs font-semibold text-[#202124]"
-                >
-                  <User size={15} className="text-[#34a853]" />
-                  <span>Profile</span>
-                </Link>
+                {currentUser ? (
+                  <Link
+                    to="/profile"
+                    className="flex items-center gap-2 p-2.5 rounded-xl bg-[#f8f9fa] text-xs font-semibold text-[#202124]"
+                  >
+                    <User size={15} className="text-[#34a853]" />
+                    <span>Profile</span>
+                  </Link>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsMobileNavOpen(false);
+                      openAuthModal('login');
+                    }}
+                    className="flex items-center gap-2 p-2.5 rounded-xl bg-blue-50 text-xs font-semibold text-[#1a73e8] text-left cursor-pointer"
+                  >
+                    <User size={15} className="text-[#1a73e8]" />
+                    <span>Sign In</span>
+                  </button>
+                )}
               </div>
 
               <div className="pt-3">

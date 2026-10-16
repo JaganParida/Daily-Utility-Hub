@@ -11,7 +11,18 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authModalTab, setAuthModalTab] = useState('login'); // 'login' | 'register'
   const isMountedRef = useRef(true);
+
+  const openAuthModal = (tab = 'login') => {
+    setAuthModalTab(tab);
+    setIsAuthModalOpen(true);
+  };
+
+  const closeAuthModal = () => {
+    setIsAuthModalOpen(false);
+  };
 
   // Cleanup ref on unmount
   useEffect(() => {
@@ -208,6 +219,11 @@ export const AuthProvider = ({ children }) => {
   const value = {
     currentUser,
     loading,
+    isAuthModalOpen,
+    authModalTab,
+    setAuthModalTab,
+    openAuthModal,
+    closeAuthModal,
     sendSignupOtp,
     signupWithEmail,
     loginWithEmail,

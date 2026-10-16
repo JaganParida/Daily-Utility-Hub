@@ -11,7 +11,7 @@ import {
 import { useAuth } from "../context/AuthContext";
 
 const Footer = () => {
-  const { currentUser } = useAuth();
+  const { currentUser, openAuthModal } = useAuth();
 
   return (
     <footer className="w-full relative z-10 mt-auto bg-white border-t border-[#dadce0] overflow-hidden shrink-0">
@@ -196,18 +196,20 @@ const Footer = () => {
               </Link>
               {!currentUser ? (
                 <>
-                  <Link
-                    to="/login"
-                    className="text-xs text-[#5f6368] hover:text-[#1a73e8] transition-colors"
+                  <button
+                    type="button"
+                    onClick={() => openAuthModal('login')}
+                    className="text-xs text-[#5f6368] hover:text-[#1a73e8] transition-colors text-left cursor-pointer"
                   >
                     Sign In
-                  </Link>
-                  <Link
-                    to="/register"
-                    className="text-xs text-[#5f6368] hover:text-[#1a73e8] transition-colors"
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => openAuthModal('register')}
+                    className="text-xs text-[#5f6368] hover:text-[#1a73e8] transition-colors text-left cursor-pointer"
                   >
                     Register
-                  </Link>
+                  </button>
                 </>
               ) : (
                 <span className="text-[11px] font-semibold text-[#137333] flex items-center gap-1">

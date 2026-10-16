@@ -332,6 +332,7 @@ function AnimatedRoutes() {
 }
 
 import RouteTracker from './components/RouteTracker';
+import AuthModal from './components/AuthModal';
 
 function App() {
   return (
@@ -340,6 +341,7 @@ function App() {
         <Toaster position="top-right" toastOptions={{ duration: 4000, style: { background: 'var(--card)', color: 'var(--foreground)', border: '1px solid var(--border)' } }} />
         <RouteTracker />
         <AnimatedRoutes />
+        <AuthModal />
         <Analytics />
       </Router>
     </AuthProvider>
