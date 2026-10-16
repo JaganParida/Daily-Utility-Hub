@@ -9,7 +9,7 @@ const GoogleAuthButton = ({ text = 'Continue with Google', onSuccess, onError })
   const buttonRef = useRef(null);
 
   // Client ID from Google Cloud Console (can be configured via VITE_GOOGLE_CLIENT_ID)
-  const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '116515729571-jvht.apps.googleusercontent.com';
+  const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '116515729571-jdjhjaf1130bu8b87odrj2n3sioopa7v.apps.googleusercontent.com';
 
   useEffect(() => {
     let checkInterval = null;

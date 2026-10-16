@@ -3,10 +3,15 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 import fs from 'fs'
+import path from 'path'
+import { fileURLToPath } from 'url'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 // https://vite.dev/config/
 export default defineConfig({
   root: fs.realpathSync(process.cwd()),
+  envDir: path.resolve(__dirname, '../backend'),
   plugins: [
     react(), 
     tailwindcss(),
