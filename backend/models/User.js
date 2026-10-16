@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema(
   {
@@ -78,7 +78,6 @@ const userSchema = new mongoose.Schema(
 );
 
 // Compound and single field indexes for rapid O(1) serverless lookups (zero collection scans)
-userSchema.index({ email: 1 });
 userSchema.index({ 'activeSessions.token': 1 });
 
 // Encrypt password using bcrypt

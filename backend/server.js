@@ -19,14 +19,6 @@ const path = require('path');
 dotenv.config({ path: path.join(__dirname, '.env') });
 dotenv.config();
 
-// Connect to database (uses cached serverless pool)
-connectDB();
-
-// Initialize Cron Jobs only when running as persistent daemon, not in Vercel serverless
-if (!process.env.VERCEL) {
-  setupCleanupJobs();
-}
-
 const app = express();
 
 // Trust proxy for accurate client IP rate limiting behind reverse proxies (Render, Vercel, etc.)
@@ -135,8 +127,10 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 5000;
 
-// Only start standalone HTTP server when not in Vercel serverless environment
-if (!process.env.VERCEL && process.env.NODE_ENV !== 'test') {
+// Only start standalone HTTP server, DB connection, and cron jobs when run directly (not serverless)
+if (require.main === module) {
+  connectDB().catch(() => {});
+  setupCleanupJobs();
   app.listen(PORT, () => {
     console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
   });
