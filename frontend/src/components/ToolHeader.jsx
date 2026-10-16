@@ -82,7 +82,11 @@ const ToolHeader = ({
       }
     }
 
-    toast.success(nextState ? "Pinned to quick access!" : "Removed from pinned tools");
+    if (!currentUser && nextState) {
+      toast.success("Pinned to workspace! (Sign in to sync across all devices)", { icon: '📌' });
+    } else {
+      toast.success(nextState ? "Pinned to quick access!" : "Removed from pinned tools");
+    }
   };
 
   const handleToggleFavorite = async () => {
@@ -111,8 +115,13 @@ const ToolHeader = ({
       }
     }
 
-    toast.success(nextState ? "Added to your favorites!" : "Removed from favorites");
+    if (!currentUser && nextState) {
+      toast.success("Added to favorites! (Sign in to sync across all devices)", { icon: '❤️' });
+    } else {
+      toast.success(nextState ? "Added to your favorites!" : "Removed from favorites");
+    }
   };
+
 
   return (
     <div className="w-full mb-5 sm:mb-6">

@@ -1,6 +1,7 @@
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
 import { ArrowLeft } from 'lucide-react';
+import Lenis from 'lenis';
 import Topbar from './Topbar';
 import Footer from './Footer';
 import { toolCategories } from '../data/toolCategories';
@@ -9,6 +10,7 @@ const Layout = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const mainRef = useRef(null);
+  const lenisRef = useRef(null);
   
   const isDashboard = location.pathname === '/' || location.pathname === '/dashboard';
   const isTool = location.pathname.startsWith('/tools');
@@ -18,53 +20,108 @@ const Layout = () => {
   const [headerVisible, setHeaderVisible] = useState(true);
   const lastScrollY = useRef(0);
 
-  const handleScroll = (e) => {
-    const currentScrollTop = e.target.scrollTop;
-    
-    // Save scroll position if we are on the dashboard
-    if (isDashboard) {
-      sessionStorage.setItem('dashboardScroll', currentScrollTop);
-    }
-    
-    // Hide header on scroll down, show on scroll up (with a threshold)
-    if (currentScrollTop > 80) {
-      if (currentScrollTop > lastScrollY.current) {
-        setHeaderVisible(false);
+  // Initialize Lenis Smooth Scrolling Engine
+  useEffect(() => {
+    if (!mainRef.current) return;
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) return;
+
+    const lenis = new Lenis({
+      wrapper: mainRef.current,
+      content: mainRef.current.firstElementChild || mainRef.current,
+      duration: 0.95,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      orientation: 'vertical',
+      gestureOrientation: 'vertical',
+      smoothWheel: true,
+      wheelMultiplier: 1.1,
+      touchMultiplier: 1.4,
+      infinite: false,
+    });
+
+    lenisRef.current = lenis;
+
+    const onLenisScroll = ({ scroll }) => {
+      if (isDashboard) {
+        sessionStorage.setItem('dashboardScroll', scroll);
+      }
+
+      if (scroll > 80) {
+        if (scroll > lastScrollY.current) {
+          setHeaderVisible(false);
+        } else {
+          setHeaderVisible(true);
+        }
       } else {
         setHeaderVisible(true);
       }
+
+      setIsScrolled(scroll > 30);
+      lastScrollY.current = scroll;
+    };
+
+    lenis.on('scroll', onLenisScroll);
+
+    let rafId;
+    function raf(time) {
+      lenis.raf(time);
+      rafId = requestAnimationFrame(raf);
+    }
+    rafId = requestAnimationFrame(raf);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      lenis.destroy();
+      lenisRef.current = null;
+    };
+  }, [isDashboard]);
+
+  const handleNativeScroll = (e) => {
+    // Fallback if Lenis is disabled (e.g. reduced motion)
+    if (lenisRef.current) return;
+    const currentScrollTop = e.target.scrollTop;
+    if (isDashboard) {
+      sessionStorage.setItem('dashboardScroll', currentScrollTop);
+    }
+    if (currentScrollTop > 80) {
+      setHeaderVisible(currentScrollTop <= lastScrollY.current);
     } else {
       setHeaderVisible(true);
     }
-    
     setIsScrolled(currentScrollTop > 30);
     lastScrollY.current = currentScrollTop;
   };
 
   // Manage scroll restoration and routing effects
   useEffect(() => {
-    // Reset Topbar scroll state on route change
     setIsScrolled(false);
     
-    // Manage scroll positions
-    if (mainRef.current) {
+    if (lenisRef.current) {
       if (isDashboard) {
-        // Restore dashboard scroll
         const savedScroll = sessionStorage.getItem('dashboardScroll');
         if (savedScroll) {
-          // Slight delay to ensure content is painted
           setTimeout(() => {
-            if (mainRef.current) {
-              mainRef.current.scrollTop = parseInt(savedScroll, 10);
-            }
+            lenisRef.current?.scrollTo(parseInt(savedScroll, 10), { immediate: true });
+          }, 30);
+        }
+      } else if (isTool || isProfile) {
+        lenisRef.current?.scrollTo(0, { immediate: true });
+      }
+    } else if (mainRef.current) {
+      if (isDashboard) {
+        const savedScroll = sessionStorage.getItem('dashboardScroll');
+        if (savedScroll) {
+          setTimeout(() => {
+            if (mainRef.current) mainRef.current.scrollTop = parseInt(savedScroll, 10);
           }, 10);
         }
       } else if (isTool || isProfile) {
-        // Scroll to top when entering a new tool or profile
         mainRef.current.scrollTop = 0;
       }
     }
   }, [location.pathname, isDashboard, isTool, isProfile]);
+
 
   // Centralized SEO Metadata Manager
   useEffect(() => {
@@ -246,12 +303,13 @@ const Layout = () => {
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
         <Topbar isScrolled={isScrolled && isDashboard} headerVisible={headerVisible} />
 
-        <main ref={mainRef} onScroll={handleScroll} className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden flex flex-col relative z-10 scroll-smooth">
+        <main ref={mainRef} onScroll={handleNativeScroll} className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden flex flex-col relative z-10 scroll-smooth">
           <div className="w-full flex flex-col pb-20 md:pb-12 pt-0">
             <Outlet context={{ isScrolled, setIsScrolled }} />
           </div>
           {(!isTool) && <Footer />}
         </main>
+
       </div>
     </div>
   );

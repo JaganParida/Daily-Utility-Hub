@@ -21,7 +21,13 @@ const ensurePdf = (req, res, next) => {
   
   if (files.length > 0 && !allPdfs) {
     // Delete invalid uploads immediately
-    files.forEach(f => require('fs').unlinkSync(f.path));
+    files.forEach(f => {
+      try {
+        if (f && f.path && require('fs').existsSync(f.path)) {
+          require('fs').unlinkSync(f.path);
+        }
+      } catch (err) {}
+    });
     return res.status(400).json({ message: 'Only PDF files are allowed.' });
   }
   next();

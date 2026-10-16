@@ -3,10 +3,13 @@ import { motion } from 'framer-motion';
 import { Pin, ArrowRight } from 'lucide-react';
 import PageTransition from '../components/PageTransition';
 import { useAnalytics } from '../hooks/useAnalytics';
+import { useAuth } from '../context/AuthContext';
 import { allTools } from '../data/toolCategories';
+import { ToolGridSkeleton } from '../components/Skeleton';
 
 const PinnedTools = () => {
   const { pinnedTools, togglePin } = useAnalytics();
+  const { loading } = useAuth();
   
   const pinnedToolObjects = pinnedTools
     .map(path => allTools.find(t => t.to === path))
@@ -28,13 +31,17 @@ const PinnedTools = () => {
           </div>
           <div className="shrink-0 flex items-center gap-2">
             <span className="text-xs font-semibold bg-white border border-[#dadce0] px-3.5 py-1.5 rounded-full text-[#5f6368] shadow-2xs">
-              {pinnedToolObjects.length} / 8 Pinned
+              {pinnedToolObjects.length} / 12 Pinned
             </span>
           </div>
         </div>
 
         {/* Content */}
-        {pinnedToolObjects.length === 0 ? (
+        {loading ? (
+          <div className="py-4">
+            <ToolGridSkeleton count={8} />
+          </div>
+        ) : pinnedToolObjects.length === 0 ? (
           <motion.div 
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
             className="flex flex-col items-center justify-center py-20 bg-white border border-dashed border-[#dadce0] rounded-3xl shadow-xs text-center"
@@ -46,11 +53,12 @@ const PinnedTools = () => {
             <p className="text-[#5f6368] max-w-sm text-xs leading-relaxed">
               Explore the dashboard or search directory and click the Pin icon on any tool card to add it to this workspace.
             </p>
-            <Link to="/dashboard" className="mt-6 px-6 py-2.5 bg-[#1a73e8] text-white font-bold text-xs rounded-full shadow-xs hover:bg-[#1557b0] transition-all active:scale-95">
+            <Link to="/search" className="mt-6 px-6 py-2.5 bg-[#1a73e8] text-white font-bold text-xs rounded-full shadow-xs hover:bg-[#1557b0] transition-all active:scale-95">
               Browse Utilities
             </Link>
           </motion.div>
         ) : (
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {pinnedToolObjects.map((tool, index) => (
               <motion.div 

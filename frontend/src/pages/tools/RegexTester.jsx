@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
+import DOMPurify from 'dompurify';
 
 // Categorized regular expression library
 const REGEX_LIBRARY = [
@@ -376,7 +377,7 @@ const RegexTester = () => {
                       {highlightedText ? (
                         <div 
                           className="whitespace-pre-wrap break-all" 
-                          dangerouslySetInnerHTML={{ __html: highlightedText }}
+                          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(highlightedText) }}
                         />
                       ) : (
                         <span className="text-muted-foreground italic">Highlight view will appear here...</span>

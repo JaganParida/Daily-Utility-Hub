@@ -7,12 +7,14 @@ import {
 import PageTransition from "../components/PageTransition";
 import { useAuth } from "../context/AuthContext";
 import { allTools } from "../data/toolCategories";
+import { ToolGridSkeleton } from "../components/Skeleton";
 
 const FAVORITES_STORAGE_KEY = 'daily_utility_favorite_tools';
 const PINNED_STORAGE_KEY = 'daily_utility_pinned_tools';
 
 const Favorites = () => {
-  const { currentUser, toggleFavorite, togglePin } = useAuth();
+  const { currentUser, loading, toggleFavorite, togglePin } = useAuth();
+
 
   const [localFavorites, setLocalFavorites] = useState(() => {
     try {
@@ -140,8 +142,12 @@ const Favorites = () => {
             </div>
           </div>
 
-          {/* Empty State */}
-          {favoriteResolved.length === 0 ? (
+          {/* Loading or Empty State or Tool Grid */}
+          {loading ? (
+            <div className="py-4">
+              <ToolGridSkeleton count={8} />
+            </div>
+          ) : favoriteResolved.length === 0 ? (
             <motion.div
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
@@ -162,6 +168,7 @@ const Favorites = () => {
               </Link>
             </motion.div>
           ) : (
+
             /* Groups Deck */
             <div className="space-y-8">
               {Object.keys(favoriteGroups).map((catKey) => {

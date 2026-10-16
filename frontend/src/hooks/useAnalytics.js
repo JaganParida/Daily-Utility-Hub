@@ -71,12 +71,12 @@ export const useAnalytics = () => {
     if (currentUser) {
       try {
         await api.post('/auth/analytics/visit', { toolPath });
-        refreshUser();
+        // The endpoint already saved the visit; no need to trigger a second GET /auth/profile request
       } catch (err) {
-        console.error('Failed to sync history visit to backend:', err);
+        console.warn('Failed to sync history visit to backend:', err?.message);
       }
     }
-  }, [currentUser, refreshUser]);
+  }, [currentUser]);
 
   const togglePin = useCallback(async (toolPath) => {
     if (!toolPath) return;
@@ -101,13 +101,16 @@ export const useAnalytics = () => {
 
     if (currentUser) {
       try {
-        await api.post('/auth/analytics/pin', { toolPath });
-        refreshUser();
+        const response = await api.post('/auth/analytics/pin', { toolPath });
+        if (response.data?.pinnedTools) {
+          setPinnedTools(response.data.pinnedTools);
+        }
       } catch (err) {
-        console.error('Failed to sync toggle pin to backend:', err);
+        console.warn('Failed to sync toggle pin to backend:', err?.message);
       }
     }
-  }, [currentUser, refreshUser]);
+  }, [currentUser]);
+
 
   return {
     recentTools,

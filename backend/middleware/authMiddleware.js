@@ -11,13 +11,15 @@ const protect = async (req, res, next) => {
     token = req.headers.authorization.split(' ')[1];
   }
 
-  if (!token) {
+  // Strict token validation to prevent NoSQL injection or malformed input
+  if (!token || typeof token !== 'string' || token.length > 256 || !/^[a-zA-Z0-9_-]+$/.test(token)) {
     return res.status(401).json({ message: 'Not authorized, please log in.' });
   }
 
   try {
     // Look up user holding this active session token in the database
     const user = await User.findOne({ 'activeSessions.token': token });
+
 
     if (!user) {
       res.clearCookie('token', {

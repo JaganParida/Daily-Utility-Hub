@@ -1,21 +1,28 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const os = require('os');
 
-const dataDir = path.join(__dirname, '..', 'data');
+const isServerless = process.env.VERCEL || process.env.NODE_ENV === 'production';
+const dataDir = isServerless ? path.join(os.tmpdir(), 'share_data') : path.join(__dirname, '..', 'data');
 const dataFilePath = path.join(dataDir, 'shared_files.json');
-const uploadDir = path.join(__dirname, '..', 'uploads', 'temp');
+const uploadDir = isServerless ? path.join(os.tmpdir(), 'share_temp') : path.join(__dirname, '..', 'uploads', 'temp');
 
 // Ensure directories exist
-if (!fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir, { recursive: true });
+try {
+  if (!fs.existsSync(dataDir)) {
+    fs.mkdirSync(dataDir, { recursive: true });
+  }
+  if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+  }
+  if (!fs.existsSync(dataFilePath)) {
+    fs.writeFileSync(dataFilePath, JSON.stringify([]));
+  }
+} catch (dirErr) {
+  console.warn('ShareController directory initialization warning:', dirErr.message);
 }
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-if (!fs.existsSync(dataFilePath)) {
-  fs.writeFileSync(dataFilePath, JSON.stringify([]));
-}
+
 
 // Queue for serializing write operations to prevent race conditions
 let writeQueue = Promise.resolve();
@@ -169,17 +176,27 @@ exports.downloadFile = async (req, res) => {
       return res.status(410).send('This file has expired and is no longer available.');
     }
 
-    const filePath = path.join(uploadDir, fileEntry.filename);
+    const resolvedUploadDir = path.resolve(uploadDir);
+    const filePath = path.resolve(uploadDir, path.basename(fileEntry.filename));
+
+    // Path traversal verification
+    if (!filePath.startsWith(resolvedUploadDir)) {
+      return res.status(403).send('Forbidden: Path traversal attempt.');
+    }
+
     if (!fs.existsSync(filePath)) {
       return res.status(404).send('File physical bytes not found.');
     }
 
-    res.download(filePath, fileEntry.originalName);
+    // Sanitize filename to prevent HTTP Response Splitting / Header Injection
+    const safeName = path.basename(fileEntry.originalName || 'download').replace(/[\r\n"']/g, '_');
+    res.download(filePath, safeName);
   } catch (err) {
     console.error('Download shared file error:', err);
     return res.status(500).send('Internal server error.');
   }
 };
+
 
 // Cron/Cleanup scheduled routine to sweep expired files
 exports.runCleanup = async () => {

@@ -7,14 +7,23 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { email } = req.body;
-    if (!email) {
-      return res.status(400).json({ message: 'Email is required' });
+    const rawBody = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
+    const email = rawBody.email;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || typeof email !== 'string' || !emailRegex.test(email.trim())) {
+      return res.status(400).json({ message: 'A valid email address is required.' });
     }
+    const cleanEmail = email.trim().toLowerCase();
 
-    const user = process.env.SMTP_USER || 'jaganparida39064@gmail.com';
-    const pass = process.env.SMTP_PASS || 'oexrwsbocfdhbftx';
-    const jwtSecret = process.env.JWT_SECRET || 'fallback-secret';
+    const user = process.env.SMTP_USER;
+    const pass = process.env.SMTP_PASS;
+    const jwtSecret = process.env.JWT_SECRET || 'daily-utility-hub-auth-secret-key';
+
+    if (!user || !pass) {
+      return res.status(500).json({ 
+        message: 'SMTP environment variables are not configured in Vercel settings.' 
+      });
+    }
 
     // Configure Nodemailer for Gmail over IPv4/Port 465
     const transporter = nodemailer.createTransport({
@@ -23,6 +32,7 @@ export default async function handler(req, res) {
       secure: true,
       auth: { user, pass },
       connectionTimeout: 10000,
+
       greetingTimeout: 10000,
       socketTimeout: 15000,
       tls: {

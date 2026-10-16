@@ -3,6 +3,7 @@ import ToolHeader from '../../components/ToolHeader';
 import { Code2, Download, Copy, CheckCircle2, Eye } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { motion } from 'framer-motion';
+import DOMPurify from 'dompurify';
 
 const HtmlPresentation = () => {
   const defaultHtml = `<section style="padding: 40px; text-align: center; color: white; background: linear-gradient(135deg, #4f46e5, #6366f1); border-radius: 16px; min-height: 280px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
@@ -126,7 +127,7 @@ const HtmlPresentation = () => {
             <div className="flex-1 p-6 bg-neutral-900 overflow-y-auto custom-scrollbar flex justify-center items-center">
               <div 
                 className="w-full max-w-md aspect-[4/3] bg-[#0c101a] border border-white/5 rounded-2xl p-6 shadow-2xl overflow-y-auto custom-scrollbar flex justify-center items-center"
-                dangerouslySetInnerHTML={{ __html: code }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(code) }}
               />
             </div>
           </div>

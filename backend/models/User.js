@@ -68,6 +68,10 @@ const userSchema = new mongoose.Schema(
   }
 );
 
+// Compound and single field indexes for rapid O(1) serverless lookups (zero collection scans)
+userSchema.index({ email: 1 });
+userSchema.index({ 'activeSessions.token': 1 });
+
 // Encrypt password using bcrypt
 userSchema.pre('save', async function () {
   if (!this.isModified('password')) {
@@ -84,3 +88,4 @@ userSchema.methods.matchPassword = async function (enteredPassword) {
 };
 
 module.exports = mongoose.model('User', userSchema);
+

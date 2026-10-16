@@ -685,8 +685,9 @@ const HtmlPreviewer = () => {
                       key={previewKey}
                       title="html-preview"
                       className="border-none block"
-                      sandbox="allow-scripts allow-same-origin allow-forms allow-modals"
+                      sandbox="allow-scripts allow-forms allow-modals"
                       scrolling="yes"
+
                       style={
                         isDesktopOnLargeScreen
                           ? { width: '100%', height: '100%', overflow: 'auto' }

@@ -171,17 +171,15 @@ const GuestLockRoute = ({ children }) => {
   return children;
 };
 
-// Premium loader spinner shown while lazy routes are streaming
+import { ToolWorkspaceSkeleton } from './components/Skeleton';
+
+// Premium Skeleton Workspace shown while lazy chunks are streaming
 const PageLoader = () => (
-  <div className="min-h-screen w-full flex flex-col items-center justify-center bg-background">
-    <div className="flex flex-col items-center gap-4 animate-pulse">
-      <div className="w-14 h-14 bg-primary/10 rounded-2xl border border-primary/30 flex items-center justify-center shadow-lg">
-        <Loader2 className="animate-spin text-primary" size={28} />
-      </div>
-      <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mt-2">Loading Workspace...</p>
-    </div>
+  <div className="w-full min-h-[85vh] px-4 sm:px-6 md:px-8 py-6 max-w-7xl mx-auto">
+    <ToolWorkspaceSkeleton />
   </div>
 );
+
 
 function AnimatedRoutes() {
   const location = useLocation();

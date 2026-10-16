@@ -1,5 +1,8 @@
 node_modules
 .env
+.env.*
+.env.local
+*.local
 dist
 build
 tmp
@@ -8,3 +11,6 @@ frontend/dist
 .DS_Store
 backend/uploads/
 backend/data/
+.vercel
+logs
+*.log

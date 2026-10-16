@@ -103,10 +103,11 @@ const HtmlSandbox = () => {
       srcDoc={srcDoc}
       title="sandboxed-preview"
       className="w-screen h-screen border-none block"
-      sandbox="allow-scripts allow-same-origin allow-forms allow-modals"
+      sandbox="allow-scripts allow-forms allow-modals"
       scrolling="yes"
       style={{ width: '100vw', height: '100vh', border: 'none', background: '#ffffff' }}
     />
+
   );
 };
 

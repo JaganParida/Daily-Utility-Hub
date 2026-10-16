@@ -12,11 +12,15 @@ let transporter;
 const getTransporter = async () => {
   if (transporter) return transporter;
 
-  const user = process.env.SMTP_USER || 'jaganparida39064@gmail.com';
-  const pass = process.env.SMTP_PASS || 'oexrwsbocfdhbftx';
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASS;
   const host = process.env.SMTP_HOST;
   const port = process.env.SMTP_PORT || 587;
   const service = process.env.SMTP_SERVICE || 'gmail';
+
+  if (!user || !pass) {
+    throw new Error('SMTP credentials are not configured in environment variables.');
+  }
 
   if (host) {
     transporter = nodemailer.createTransport({
@@ -40,7 +44,7 @@ const getTransporter = async () => {
         rejectUnauthorized: false
       }
     });
-    console.log(`Using Gmail SMTP service for emails (${user}).`);
+    console.log(`Using Gmail SMTP service for emails.`);
   }
 
   return transporter;
@@ -50,11 +54,12 @@ const sendOtpEmail = async (email, otp) => {
   try {
     const activeTransporter = await getTransporter();
     
-    const fromEmail = process.env.SMTP_USER || 'jaganparida39064@gmail.com';
+    const fromEmail = process.env.SMTP_USER || 'no-reply@dailyutilityhub.com';
     const info = await activeTransporter.sendMail({
       from: `"Daily Utility Hub" <${fromEmail}>`,
       to: email,
       subject: 'Your Verification Code - Daily Utility Hub',
+
       text: `Your 6-digit verification OTP code is: ${otp}. It will expire in 3 minutes.`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;">

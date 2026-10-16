@@ -11,11 +11,18 @@ const { validateFileType } = require('../middleware/uploadMiddleware');
 const { validate } = require('../middleware/validationMiddleware');
 const { shareUploadValidation, shareIdValidation } = require('../middleware/validationRules');
 const { publicRateLimiter, userRateLimiter } = require('../middleware/rateLimitMiddleware');
+const os = require('os');
 
-const tempUploadDir = path.join(__dirname, '..', 'uploads', 'temp');
+const tempUploadDir = (process.env.VERCEL || process.env.NODE_ENV === 'production')
+  ? path.join(os.tmpdir(), 'share_temp')
+  : path.join(__dirname, '..', 'uploads', 'temp');
 
 if (!fs.existsSync(tempUploadDir)) {
-  fs.mkdirSync(tempUploadDir, { recursive: true });
+  try {
+    fs.mkdirSync(tempUploadDir, { recursive: true });
+  } catch (err) {
+    console.warn('Could not create temp share upload dir:', err.message);
+  }
 }
 
 // Multer storage config
@@ -23,6 +30,7 @@ const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, tempUploadDir);
   },
+
   filename: (req, file, cb) => {
     const uniqueSuffix = crypto.randomBytes(12).toString('hex');
     // Sanitize extension to alphanumeric only to prevent injection/traversal

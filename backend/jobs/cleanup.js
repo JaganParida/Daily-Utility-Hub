@@ -2,12 +2,18 @@ const cron = require('node-cron');
 const fs = require('fs');
 const path = require('path');
 
+const os = require('os');
+
 const setupCleanupJobs = () => {
-  const uploadDir = path.join(__dirname, '../tmp/uploads');
+  const uploadDir = (process.env.VERCEL || process.env.NODE_ENV === 'production')
+    ? path.join(os.tmpdir(), 'daily_utility_uploads')
+    : path.join(__dirname, '../tmp/uploads');
 
   // Ensure dir exists so cron doesn't fail
   if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
+    try {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    } catch (err) {}
   }
 
   // Run every 5 minutes

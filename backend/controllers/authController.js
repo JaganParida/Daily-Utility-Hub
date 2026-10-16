@@ -102,7 +102,7 @@ exports.syncSession = async (req, res) => {
         
         // OTP token provided, verify it before creating user
         try {
-          const decoded = jwt.verify(req.body.otpVerifiedToken, process.env.JWT_SECRET || 'fallback-secret');
+          const decoded = jwt.verify(req.body.otpVerifiedToken, process.env.JWT_SECRET || 'daily-utility-hub-auth-secret-key');
           if (decoded.email !== email) {
             return res.status(400).json({ message: 'OTP token email mismatch' });
           }
@@ -411,38 +411,47 @@ const { sendOtpEmail } = require('../utils/mailer');
 exports.sendOtp = async (req, res) => {
   try {
     const { email } = req.body;
-    if (!email) {
-      return res.status(400).json({ message: 'Email address is required.' });
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || typeof email !== 'string' || !emailRegex.test(email.trim())) {
+      return res.status(400).json({ message: 'A valid email address is required.' });
     }
 
-    console.log(`[OTP] Generating OTP for: ${email}`);
-    console.log(`[OTP] SMTP_USER configured: ${!!process.env.SMTP_USER}, SMTP_PASS configured: ${!!process.env.SMTP_PASS}`);
+    const cleanEmail = email.trim().toLowerCase();
+    const isProd = process.env.NODE_ENV === 'production' || !!process.env.VERCEL;
+    
+    console.log(`[OTP] Generating OTP for: ${cleanEmail}`);
     
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     
     let emailSent = false;
     try {
-      console.log(`[OTP] Sending email via nodemailer...`);
-      await sendOtpEmail(email, otp);
-      console.log(`[OTP] Email sent successfully to ${email}`);
+      await sendOtpEmail(cleanEmail, otp);
+      console.log(`[OTP] Email sent successfully to ${cleanEmail}`);
       emailSent = true;
     } catch (emailError) {
-      console.error('[OTP] SMTP Error (Likely blocked by hosting provider):', emailError.message);
-      console.log(`[OTP] Fallback DEV MODE: The OTP for ${email} is: ${otp}`);
-      // Continue anyway so the user isn't blocked from registering.
+      console.error('[OTP] SMTP Error:', emailError.message);
+      if (!isProd) {
+        console.log(`[OTP] Fallback DEV MODE: The OTP for ${cleanEmail} is: ${otp}`);
+      }
+    }
+
+    if (!emailSent && isProd) {
+      return res.status(500).json({ 
+        message: 'Failed to send OTP verification email. Please check your email address or try again later.' 
+      });
     }
 
     const otpToken = jwt.sign(
-      { email, otp }, 
-      process.env.JWT_SECRET || 'fallback-secret', 
+      { email: cleanEmail, otp }, 
+      process.env.JWT_SECRET || 'daily-utility-hub-auth-secret-key', 
       { expiresIn: '3m' }
     );
 
     res.json({ 
       success: true, 
       token: otpToken, 
-      devOtp: !emailSent ? otp : undefined,
-      message: !emailSent ? 'Email blocked by hosting provider. Check console for OTP.' : 'OTP sent successfully.'
+      devOtp: (!isProd && !emailSent) ? otp : undefined,
+      message: emailSent ? 'OTP sent successfully.' : 'Email delivery failed. OTP is available in dev console.'
     });
   } catch (error) {
     console.error('[OTP] Send OTP FAILED:', error.message || error);
@@ -459,18 +468,18 @@ exports.sendOtp = async (req, res) => {
 exports.verifyOtp = async (req, res) => {
   try {
     const { token, code } = req.body;
-    if (!token || !code) {
+    if (!token || !code || typeof token !== 'string' || typeof code !== 'string') {
       return res.status(400).json({ message: 'Verification token and code are required.' });
     }
 
     let decoded;
     try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret');
+      decoded = jwt.verify(token, process.env.JWT_SECRET || 'daily-utility-hub-auth-secret-key');
     } catch (err) {
       return res.status(400).json({ message: 'Verification code has expired or is invalid.' });
     }
 
-    if (decoded.otp !== code) {
+    if (decoded.otp !== code.trim()) {
       return res.status(400).json({ message: 'Invalid verification code.' });
     }
 
@@ -496,7 +505,7 @@ exports.checkEmail = async (req, res) => {
       return res.status(400).json({ message: 'Email address is required.' });
     }
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: email.toLowerCase().trim() }).select('_id').lean();
     if (!user) {
       return res.status(404).json({ message: 'No account found with this email address.' });
     }
@@ -507,3 +516,27 @@ exports.checkEmail = async (req, res) => {
     res.status(500).json({ message: 'Internal server error checking email.' });
   }
 };
+
+// @desc    Check if an email is available for registration (returns 409 if exists, 200 if available)
+// @route   POST /api/auth/check-email-availability
+// @access  Public
+exports.checkEmailAvailability = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ message: 'Email address is required.' });
+    }
+
+    const existingUser = await User.findOne({ email: email.toLowerCase().trim() }).select('_id').lean();
+    if (existingUser) {
+      return res.status(409).json({ available: false, message: 'An account already exists with this email address.' });
+    }
+
+    res.json({ available: true, message: 'Email address is available.' });
+  } catch (error) {
+    console.error('Check email availability error:', error);
+    // On unexpected DB failure, gracefully let registration proceed to OTP stage
+    res.json({ available: true, message: 'Proceeding to verification.' });
+  }
+};
+

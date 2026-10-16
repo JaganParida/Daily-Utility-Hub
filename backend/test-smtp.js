@@ -1,13 +1,20 @@
 const nodemailer = require('nodemailer');
+require('dotenv').config();
 
 async function testSMTP() {
-  const user = 'jaganparida39064@gmail.com';
-  const pass = 'oexrwsbocfdhbftx';
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASS;
+
+  if (!user || !pass) {
+    console.error('SMTP Error: SMTP_USER and SMTP_PASS environment variables must be configured.');
+    return;
+  }
 
   const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: { user, pass }
   });
+
 
   try {
     console.log('Verifying connection...');

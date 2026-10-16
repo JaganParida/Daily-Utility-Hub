@@ -4,7 +4,8 @@ const AuthAttempt = require('../models/AuthAttempt');
 
 // 1. Custom Auth Rate Limiter with Exponential Backoff
 const authRateLimiter = async (req, res, next) => {
-  const ip = req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+  const forwarded = req.headers['x-forwarded-for'];
+  const ip = req.ip || (typeof forwarded === 'string' ? forwarded.split(',')[0].trim() : null) || req.socket.remoteAddress || '127.0.0.1';
   const { idToken } = req.body;
   let email = null;
 

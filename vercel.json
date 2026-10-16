@@ -1,8 +1,32 @@
 {
+  "version": 2,
   "rewrites": [
+    {
+      "source": "/api/send-otp",
+      "destination": "/frontend/api/send-otp.js"
+    },
+    {
+      "source": "/api/(.*)",
+      "destination": "/backend/api/index.js"
+    },
     {
       "source": "/((?!.*\\.).*)",
       "destination": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Cross-Origin-Opener-Policy",
+          "value": "same-origin-allow-popups"
+        },
+        {
+          "key": "Cross-Origin-Embedder-Policy",
+          "value": "unsafe-none"
+        }
+      ]
     }
   ]
 }

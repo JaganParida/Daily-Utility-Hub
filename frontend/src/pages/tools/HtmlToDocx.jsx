@@ -3,6 +3,7 @@ import ToolHeader from '../../components/ToolHeader';
 import { Code2, Download, Copy, CheckCircle2, Eye, FileText } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { motion } from 'framer-motion';
+import DOMPurify from 'dompurify';
 
 const HtmlToDocx = () => {
   const [sourceCode, setSourceCode] = useState(`<h1>Project Charter</h1>\n<p>This is a formal project document template generated in <strong>Daily Utility Hub</strong>.</p>\n<h2>1. Scope & Deliverables</h2>\n<ul>\n  <li>Client-side converters.</li>\n  <li>Responsive workspace pages.</li>\n</ul>\n<h2>2. Timelines</h2>\n<p>Project milestones are set for immediate master deployments.</p>`);
@@ -123,7 +124,7 @@ const HtmlToDocx = () => {
               <div className="w-full max-w-md aspect-[1/1.4] bg-white text-slate-800 shadow-xl rounded-sm border border-slate-200 relative shrink-0">
                 <div 
                   className="absolute inset-0 p-8 overflow-y-auto custom-scrollbar prose prose-slate max-w-none text-xs"
-                  dangerouslySetInnerHTML={{ __html: sourceCode }}
+                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(sourceCode) }}
                 />
               </div>
             </div>

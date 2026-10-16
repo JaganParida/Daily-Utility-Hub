@@ -3,10 +3,13 @@ import { motion } from 'framer-motion';
 import { Clock, ArrowRight, Pin } from 'lucide-react';
 import PageTransition from '../components/PageTransition';
 import { useAnalytics } from '../hooks/useAnalytics';
+import { useAuth } from '../context/AuthContext';
 import { allTools } from '../data/toolCategories';
+import { ToolGridSkeleton } from '../components/Skeleton';
 
 const RecentTools = () => {
   const { recentTools, pinnedTools, togglePin } = useAnalytics();
+  const { loading } = useAuth();
   
   const recentToolObjects = recentTools
     .map(path => allTools.find(t => t.to === path))
@@ -35,7 +38,11 @@ const RecentTools = () => {
         </div>
 
         {/* Content */}
-        {recentToolObjects.length === 0 ? (
+        {loading ? (
+          <div className="py-4">
+            <ToolGridSkeleton count={8} />
+          </div>
+        ) : recentToolObjects.length === 0 ? (
           <motion.div 
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
             className="flex flex-col items-center justify-center py-20 bg-white border border-dashed border-[#dadce0] rounded-3xl shadow-xs text-center"
@@ -47,11 +54,12 @@ const RecentTools = () => {
             <p className="text-[#5f6368] max-w-sm text-xs leading-relaxed">
               Your recently opened utilities will automatically populate here as you run operations.
             </p>
-            <Link to="/dashboard" className="mt-6 px-6 py-2.5 bg-[#1a73e8] text-white font-bold text-xs rounded-full shadow-xs hover:bg-[#1557b0] transition-all active:scale-95">
+            <Link to="/search" className="mt-6 px-6 py-2.5 bg-[#1a73e8] text-white font-bold text-xs rounded-full shadow-xs hover:bg-[#1557b0] transition-all active:scale-95">
               Explore Utilities
             </Link>
           </motion.div>
         ) : (
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {recentToolObjects.map((tool, index) => {
               const isPinned = pinnedTools.includes(tool.to);

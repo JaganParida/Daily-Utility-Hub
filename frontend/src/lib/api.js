@@ -18,13 +18,16 @@ const getBaseURL = () => {
     return `${protocol}//${hostname}:5000/api`;
   }
   
-  // Default production backend URL on Render
-  return 'https://daily-utility-hub-19zx.onrender.com/api';
+  // In production on Vercel:
+  // If backend is deployed on same domain or proxied via vercel.json rewrites, /api avoids CORS and cookie issues
+  return '/api';
 };
 
 const api = axios.create({
   baseURL: getBaseURL(),
-  withCredentials: true // Extremely important for cookie-based session management
+  withCredentials: true, // Extremely important for cookie-based session management
+  timeout: 30000 // 30s timeout to prevent hanging on cold starts
 });
+
 
 export default api;
