@@ -2,7 +2,17 @@ const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const jwksRsa = require('jwks-rsa');
 const crypto = require('crypto');
+const mongoose = require('mongoose');
+const connectDB = require('../config/db');
 const { sendOtpEmail } = require('../utils/mailer');
+
+// Helper to ensure MongoDB is connected before DB operations
+const ensureDB = async () => {
+  if (mongoose.connection.readyState !== 1) {
+    await connectDB();
+  }
+  return mongoose.connection.readyState === 1;
+};
 
 // Setup Google Firebase JWKS signing key client (legacy fallback)
 const jwksClient = jwksRsa({
@@ -118,6 +128,13 @@ exports.sendRegisterOtp = async (req, res) => {
 
     const cleanEmail = email.trim().toLowerCase();
 
+    // Ensure DB connection is ready
+    if (!(await ensureDB())) {
+      return res.status(503).json({ 
+        message: 'Database connection unavailable. Please check MongoDB Atlas IP whitelist (0.0.0.0/0).' 
+      });
+    }
+
     // Check if user already exists in DB
     const existingUser = await User.findOne({ email: cleanEmail });
     if (existingUser) {
@@ -166,7 +183,12 @@ exports.sendRegisterOtp = async (req, res) => {
     });
   } catch (error) {
     console.error('sendRegisterOtp error:', error);
-    res.status(500).json({ message: 'Internal server error sending verification code.' });
+    const isConnErr = error.name === 'MongooseServerSelectionError' || error.message?.includes('buffering timed out');
+    res.status(isConnErr ? 503 : 500).json({ 
+      message: isConnErr 
+        ? 'Database connection timed out. Please check MongoDB Atlas IP whitelist (0.0.0.0/0).' 
+        : 'Internal server error sending verification code.' 
+    });
   }
 };
 
@@ -201,6 +223,13 @@ exports.verifyRegisterOtpAndCreateUser = async (req, res) => {
 
     const cleanEmail = decoded.email.toLowerCase();
 
+    // Ensure DB is ready
+    if (!(await ensureDB())) {
+      return res.status(503).json({ 
+        message: 'Database connection unavailable. Please check MongoDB Atlas IP whitelist (0.0.0.0/0).' 
+      });
+    }
+
     // 3. Double-check if account exists
     const existingUser = await User.findOne({ email: cleanEmail });
     if (existingUser) {
@@ -221,7 +250,12 @@ exports.verifyRegisterOtpAndCreateUser = async (req, res) => {
     return await createSessionResponse(user, req, res, true);
   } catch (error) {
     console.error('verifyRegisterOtpAndCreateUser error:', error);
-    res.status(500).json({ message: 'Failed to create account. Please try again.' });
+    const isConnErr = error.name === 'MongooseServerSelectionError' || error.message?.includes('buffering timed out');
+    res.status(isConnErr ? 503 : 500).json({ 
+      message: isConnErr 
+        ? 'Database connection timed out. Please check MongoDB Atlas IP whitelist (0.0.0.0/0).' 
+        : 'Failed to create account. Please try again.' 
+    });
   }
 };
 
@@ -233,6 +267,13 @@ exports.loginWithPassword = async (req, res) => {
     const { email, password } = req.body;
     if (!email || !password) {
       return res.status(400).json({ message: 'Email and password are required.' });
+    }
+
+    // Ensure DB is ready
+    if (!(await ensureDB())) {
+      return res.status(503).json({ 
+        message: 'Database connection unavailable. Please check MongoDB Atlas IP whitelist (0.0.0.0/0).' 
+      });
     }
 
     const cleanEmail = email.trim().toLowerCase();
@@ -259,7 +300,12 @@ exports.loginWithPassword = async (req, res) => {
     return await createSessionResponse(user, req, res, false);
   } catch (error) {
     console.error('loginWithPassword error:', error);
-    res.status(500).json({ message: 'Internal server error during login.' });
+    const isConnErr = error.name === 'MongooseServerSelectionError' || error.message?.includes('buffering timed out');
+    res.status(isConnErr ? 503 : 500).json({ 
+      message: isConnErr 
+        ? 'Database connection timed out. Please check MongoDB Atlas IP whitelist (0.0.0.0/0).' 
+        : 'Internal server error during login.' 
+    });
   }
 };
 
@@ -271,6 +317,13 @@ exports.googleAuth = async (req, res) => {
     const { credential } = req.body;
     if (!credential) {
       return res.status(400).json({ message: 'Google credential token is required.' });
+    }
+
+    // Ensure DB connection is ready
+    if (!(await ensureDB())) {
+      return res.status(503).json({ 
+        message: 'Database connection unavailable. Please check MongoDB Atlas IP whitelist (0.0.0.0/0).' 
+      });
     }
 
     // Verify credential directly against Google OAuth tokeninfo endpoint
@@ -317,7 +370,12 @@ exports.googleAuth = async (req, res) => {
     return await createSessionResponse(user, req, res, isNewUser);
   } catch (error) {
     console.error('googleAuth error:', error);
-    res.status(500).json({ message: 'Google authentication error.' });
+    const isConnErr = error.name === 'MongooseServerSelectionError' || error.message?.includes('buffering timed out') || error.message?.includes('whitelist');
+    res.status(isConnErr ? 503 : 500).json({ 
+      message: isConnErr 
+        ? 'Database connection timed out. Please check MongoDB Atlas IP whitelist (0.0.0.0/0).' 
+        : (error.message || 'Google authentication error.') 
+    });
   }
 };
 

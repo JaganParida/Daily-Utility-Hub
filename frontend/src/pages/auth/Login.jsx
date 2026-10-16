@@ -172,7 +172,7 @@ const Login = () => {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full py-2.5 px-4 bg-[#1a73e8] hover:bg-[#1557b0] text-white font-semibold text-sm rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 disabled:opacity-60 cursor-pointer active:scale-[0.99] mt-2"
+                className="w-full py-2.5 px-4 bg-slate-900 hover:bg-black text-white font-semibold text-sm rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 disabled:opacity-60 cursor-pointer active:scale-[0.99] mt-2"
               >
                 {isSubmitting ? (
                   <>
@@ -191,7 +191,7 @@ const Login = () => {
             {/* Bottom Links */}
             <div className="pt-2 text-center text-xs text-slate-500">
               Don't have an account?{' '}
-              <Link to="/register" className="font-bold text-[#1a73e8] hover:underline">
+              <Link to="/register" className="font-semibold text-slate-900 hover:underline">
                 Create account
               </Link>
             </div>

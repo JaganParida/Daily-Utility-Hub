@@ -11,24 +11,41 @@ const GoogleAuthButton = ({ text = 'Continue with Google', onSuccess, onError })
   // Client ID from Google Cloud Console (can be configured via VITE_GOOGLE_CLIENT_ID)
   const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '116515729571-jdjhjaf1130bu8b87odrj2n3sioopa7v.apps.googleusercontent.com';
 
+  // Keep callback reference updated
+  useEffect(() => {
+    window.__gsi_active_callback = handleCredentialResponse;
+  });
+
   useEffect(() => {
     let checkInterval = null;
 
     const setupGoogleButton = () => {
       if (window.google?.accounts?.id && buttonRef.current) {
         try {
-          window.google.accounts.id.initialize({
-            client_id: clientId,
-            callback: handleCredentialResponse,
-            auto_select: false,
-            cancel_on_tap_outside: true
-          });
+          // Initialize once globally to prevent [GSI_LOGGER] multiple initialize warnings
+          if (!window.__gsi_initialized_clientId || window.__gsi_initialized_clientId !== clientId) {
+            window.google.accounts.id.initialize({
+              client_id: clientId,
+              callback: (response) => {
+                if (window.__gsi_active_callback) {
+                  window.__gsi_active_callback(response);
+                }
+              },
+              auto_select: false,
+              cancel_on_tap_outside: true
+            });
+            window.__gsi_initialized_clientId = clientId;
+          }
 
-          // Render official Google button into our container
+          // Clear previous renders if any
+          buttonRef.current.innerHTML = '';
+
+          // Render official Google button into container with valid numeric width (e.g. 340px)
+          const targetWidth = Math.min(Math.max(buttonRef.current.offsetWidth || 340, 240), 380);
           window.google.accounts.id.renderButton(buttonRef.current, {
             theme: 'outline',
             size: 'large',
-            width: '100%',
+            width: targetWidth,
             shape: 'rectangular',
             logo_alignment: 'left',
             text: 'continue_with'

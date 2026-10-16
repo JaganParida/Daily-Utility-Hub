@@ -253,85 +253,94 @@ const AuthModal = () => {
     <AnimatePresence>
       {isAuthModalOpen && (
         <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
-          {/* Backdrop */}
+          {/* Full Page Dark Frosted Backdrop Cover */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={closeAuthModal}
-            className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"
+            className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm transition-opacity cursor-pointer"
           />
 
           {/* Modal Container */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.94, y: 15 }}
+            initial={{ opacity: 0, scale: 0.95, y: 12 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.94, y: 15 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 320 }}
-            className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-200/80 p-6 sm:p-8 z-10 my-auto text-slate-800 antialiased"
+            exit={{ opacity: 0, scale: 0.95, y: 12 }}
+            transition={{ type: 'spring', damping: 26, stiffness: 340 }}
+            className="relative w-full max-w-[430px] bg-white rounded-3xl shadow-2xl border border-slate-200 p-6 sm:p-8 z-10 my-auto text-slate-900 antialiased"
           >
             {/* Close Button */}
             <button
               onClick={closeAuthModal}
-              className="absolute top-5 right-5 p-2 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+              className="absolute top-5 right-5 p-2 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
               aria-label="Close"
             >
               <X size={18} />
             </button>
 
-            {/* Brand Header with Signature Zap Logo */}
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-xl bg-[#1a73e8] flex items-center justify-center text-white shadow-md shadow-blue-500/20 shrink-0">
-                <Zap size={20} className="fill-white" />
+            {/* Clean Professional Executive Header */}
+            <div className="flex items-start gap-3.5 mb-6">
+              <div className="w-11 h-11 rounded-2xl bg-slate-900 text-white flex items-center justify-center shadow-sm shrink-0">
+                <ShieldCheck size={22} className="text-white" strokeWidth={2} />
               </div>
-              <div>
-                <h2 className="text-lg font-bold text-slate-900 tracking-tight flex items-center gap-1.5">
-                  Utility<span className="text-[#1a73e8]">Hub</span>
-                  <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
-                    100% Free
-                  </span>
+              <div className="pt-0.5">
+                <h2 className="text-lg font-bold text-slate-900 tracking-tight">
+                  {activeTab === 'login' 
+                    ? 'Welcome back' 
+                    : regStep === 'otp' 
+                      ? 'Verify your email' 
+                      : 'Create an account'}
                 </h2>
-                <p className="text-xs text-slate-500 font-medium">Fast, Offline-First Developer Suite</p>
+                <p className="text-xs text-slate-500 font-medium mt-0.5">
+                  {activeTab === 'login'
+                    ? 'Sign in to access your utilities and workspace.'
+                    : regStep === 'otp'
+                      ? 'Enter the 6-digit verification code sent to you.'
+                      : 'Join Daily Utility Hub with private local tools.'}
+                </p>
               </div>
             </div>
 
-            {/* Segmented Tab Switcher */}
-            <div className="grid grid-cols-2 p-1 bg-slate-100 rounded-xl mb-6">
-              <button
-                type="button"
-                onClick={() => {
-                  setActiveTab('login');
-                  setRegStep('details');
-                  setAuthModalTab('login');
-                }}
-                className={`py-2 text-xs font-bold rounded-lg transition-all ${
-                  activeTab === 'login'
-                    ? 'bg-white text-slate-900 shadow-xs'
-                    : 'text-slate-500 hover:text-slate-800'
-                }`}
-              >
-                Sign In
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setActiveTab('register');
-                  setRegStep('details');
-                  setAuthModalTab('register');
-                }}
-                className={`py-2 text-xs font-bold rounded-lg transition-all ${
-                  activeTab === 'register'
-                    ? 'bg-white text-slate-900 shadow-xs'
-                    : 'text-slate-500 hover:text-slate-800'
-                }`}
-              >
-                Create Account
-              </button>
-            </div>
+            {/* Segmented Tab Switcher (Only when not in OTP step) */}
+            {!(activeTab === 'register' && regStep === 'otp') && (
+              <div className="grid grid-cols-2 p-1 bg-slate-100 rounded-xl mb-6">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveTab('login');
+                    setRegStep('details');
+                    setAuthModalTab('login');
+                  }}
+                  className={`py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                    activeTab === 'login'
+                      ? 'bg-white text-slate-900 shadow-xs'
+                      : 'text-slate-500 hover:text-slate-800'
+                  }`}
+                >
+                  Sign In
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveTab('register');
+                    setRegStep('details');
+                    setAuthModalTab('register');
+                  }}
+                  className={`py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                    activeTab === 'register'
+                      ? 'bg-white text-slate-900 shadow-xs'
+                      : 'text-slate-500 hover:text-slate-800'
+                  }`}
+                >
+                  Create Account
+                </button>
+              </div>
+            )}
 
             {/* ══════════════ TAB 1: SIGN IN ══════════════ */}
             {activeTab === 'login' && (
-              <div className="space-y-5">
+              <div className="space-y-4">
                 <div>
                   <GoogleAuthButton 
                     text="Continue with Google"
@@ -339,17 +348,17 @@ const AuthModal = () => {
                   />
                 </div>
 
-                <div className="relative flex items-center justify-center">
+                <div className="relative flex items-center justify-center my-4">
                   <div className="border-t border-slate-200 w-full" />
                   <span className="bg-white px-3 text-[11px] uppercase tracking-wider text-slate-400 font-semibold absolute">
-                    or with email
+                    or continue with email
                   </span>
                 </div>
 
-                <form onSubmit={handleLoginSubmit} className="space-y-4">
+                <form onSubmit={handleLoginSubmit} className="space-y-3.5">
                   {/* Email */}
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                    <label className="block text-xs font-semibold text-slate-700 tracking-tight mb-1.5">
                       Email Address
                     </label>
                     <div className="relative">
@@ -362,16 +371,18 @@ const AuthModal = () => {
                         value={loginEmail}
                         onChange={(e) => setLoginEmail(e.target.value)}
                         placeholder="alex@company.com"
-                        className="w-full pl-10 pr-4 py-2.5 bg-slate-50 hover:bg-slate-100/70 focus:bg-white text-slate-900 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#1a73e8] focus:border-[#1a73e8] transition-all font-medium"
+                        className="w-full pl-10 pr-4 py-2.5 bg-slate-50 hover:bg-slate-100/60 focus:bg-white text-slate-900 text-sm rounded-xl border border-slate-200 focus:outline-none focus:border-slate-900 focus:ring-1 focus:ring-slate-900 transition-all font-medium"
                       />
                     </div>
                   </div>
 
                   {/* Password */}
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-                      Password
-                    </label>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="block text-xs font-semibold text-slate-700 tracking-tight">
+                        Password
+                      </label>
+                    </div>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                         <Lock size={16} />
@@ -381,13 +392,13 @@ const AuthModal = () => {
                         required
                         value={loginPassword}
                         onChange={(e) => setLoginPassword(e.target.value)}
-                        placeholder="Enter password"
-                        className="w-full pl-10 pr-10 py-2.5 bg-slate-50 hover:bg-slate-100/70 focus:bg-white text-slate-900 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#1a73e8] focus:border-[#1a73e8] transition-all font-medium"
+                        placeholder="Enter your password"
+                        className="w-full pl-10 pr-10 py-2.5 bg-slate-50 hover:bg-slate-100/60 focus:bg-white text-slate-900 text-sm rounded-xl border border-slate-200 focus:outline-none focus:border-slate-900 focus:ring-1 focus:ring-slate-900 transition-all font-medium"
                       />
                       <button
                         type="button"
                         onClick={() => setShowLoginPassword(!showLoginPassword)}
-                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 transition-colors"
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
                       >
                         {showLoginPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                       </button>
@@ -398,7 +409,7 @@ const AuthModal = () => {
                   <button
                     type="submit"
                     disabled={isLoggingIn}
-                    className="w-full py-2.5 px-4 bg-[#1a73e8] hover:bg-[#1557b0] text-white font-semibold text-sm rounded-xl shadow-md shadow-blue-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-60 cursor-pointer active:scale-[0.99] mt-2"
+                    className="w-full py-2.5 px-4 bg-slate-900 hover:bg-black text-white font-semibold text-sm rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 disabled:opacity-60 cursor-pointer active:scale-[0.99] mt-3"
                   >
                     {isLoggingIn ? (
                       <>
@@ -414,7 +425,7 @@ const AuthModal = () => {
                   </button>
                 </form>
 
-                <p className="text-center text-xs text-slate-500 pt-1">
+                <p className="text-center text-xs text-slate-500 pt-2">
                   Don't have an account?{' '}
                   <button
                     type="button"
@@ -422,7 +433,7 @@ const AuthModal = () => {
                       setActiveTab('register');
                       setRegStep('details');
                     }}
-                    className="font-bold text-[#1a73e8] hover:underline"
+                    className="font-semibold text-slate-900 hover:underline cursor-pointer"
                   >
                     Create Free Account
                   </button>
@@ -432,7 +443,7 @@ const AuthModal = () => {
 
             {/* ══════════════ TAB 2: CREATE ACCOUNT ══════════════ */}
             {activeTab === 'register' && regStep === 'details' && (
-              <div className="space-y-5">
+              <div className="space-y-4">
                 <div>
                   <GoogleAuthButton 
                     text="Sign up with Google"
@@ -440,17 +451,17 @@ const AuthModal = () => {
                   />
                 </div>
 
-                <div className="relative flex items-center justify-center">
+                <div className="relative flex items-center justify-center my-4">
                   <div className="border-t border-slate-200 w-full" />
                   <span className="bg-white px-3 text-[11px] uppercase tracking-wider text-slate-400 font-semibold absolute">
-                    or with email
+                    or continue with email
                   </span>
                 </div>
 
                 <form onSubmit={handleSendRegisterOtp} className="space-y-3.5">
                   {/* Name */}
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                    <label className="block text-xs font-semibold text-slate-700 tracking-tight mb-1">
                       Full Name
                     </label>
                     <div className="relative">
@@ -463,14 +474,14 @@ const AuthModal = () => {
                         value={regName}
                         onChange={(e) => setRegName(e.target.value)}
                         placeholder="Alex Morgan"
-                        className="w-full pl-10 pr-4 py-2 bg-slate-50 hover:bg-slate-100/70 focus:bg-white text-slate-900 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#1a73e8] focus:border-[#1a73e8] transition-all font-medium"
+                        className="w-full pl-10 pr-4 py-2.5 bg-slate-50 hover:bg-slate-100/60 focus:bg-white text-slate-900 text-sm rounded-xl border border-slate-200 focus:outline-none focus:border-slate-900 focus:ring-1 focus:ring-slate-900 transition-all font-medium"
                       />
                     </div>
                   </div>
 
                   {/* Email */}
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                    <label className="block text-xs font-semibold text-slate-700 tracking-tight mb-1">
                       Email Address
                     </label>
                     <div className="relative">
@@ -483,15 +494,15 @@ const AuthModal = () => {
                         value={regEmail}
                         onChange={(e) => setRegEmail(e.target.value)}
                         placeholder="alex@company.com"
-                        className="w-full pl-10 pr-4 py-2 bg-slate-50 hover:bg-slate-100/70 focus:bg-white text-slate-900 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#1a73e8] focus:border-[#1a73e8] transition-all font-medium"
+                        className="w-full pl-10 pr-4 py-2.5 bg-slate-50 hover:bg-slate-100/60 focus:bg-white text-slate-900 text-sm rounded-xl border border-slate-200 focus:outline-none focus:border-slate-900 focus:ring-1 focus:ring-slate-900 transition-all font-medium"
                       />
                     </div>
                   </div>
 
                   {/* Password */}
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                      Password
+                    <label className="block text-xs font-semibold text-slate-700 tracking-tight mb-1">
+                      Create Password
                     </label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
@@ -502,13 +513,13 @@ const AuthModal = () => {
                         required
                         value={regPassword}
                         onChange={(e) => setRegPassword(e.target.value)}
-                        placeholder="Min 6 characters"
-                        className="w-full pl-10 pr-10 py-2 bg-slate-50 hover:bg-slate-100/70 focus:bg-white text-slate-900 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#1a73e8] focus:border-[#1a73e8] transition-all font-medium"
+                        placeholder="At least 6 characters"
+                        className="w-full pl-10 pr-10 py-2.5 bg-slate-50 hover:bg-slate-100/60 focus:bg-white text-slate-900 text-sm rounded-xl border border-slate-200 focus:outline-none focus:border-slate-900 focus:ring-1 focus:ring-slate-900 transition-all font-medium"
                       />
                       <button
                         type="button"
                         onClick={() => setShowRegPassword(!showRegPassword)}
-                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 transition-colors"
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
                       >
                         {showRegPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                       </button>
@@ -526,24 +537,24 @@ const AuthModal = () => {
                             />
                           ))}
                         </div>
-                        <div className="flex justify-between items-center text-[10px] mt-0.5 text-slate-500 font-medium">
+                        <div className="flex justify-between items-center text-[10px] mt-1 text-slate-500 font-medium">
                           <span>Strength: {strength.text}</span>
-                          <span>{strength.score >= 3 ? '✓ Secure' : 'Min 6 characters'}</span>
+                          <span>{strength.score >= 3 ? '✓ Strong' : 'Min 6 characters'}</span>
                         </div>
                       </div>
                     )}
                   </div>
 
-                  <div className="p-2.5 bg-blue-50/70 border border-blue-100 rounded-xl flex items-start gap-2 text-[11px] text-blue-900">
-                    <ShieldCheck className="w-3.5 h-3.5 text-[#1a73e8] shrink-0 mt-0.5" />
-                    <span>A 6-digit verification code will be sent to your email. Account is created only after verification.</span>
+                  <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex items-start gap-2 text-xs text-slate-600">
+                    <ShieldCheck className="w-4 h-4 text-slate-700 shrink-0 mt-0.5" />
+                    <span>A 6-digit OTP will be emailed to verify your address. Account is created only after verification.</span>
                   </div>
 
                   {/* Submit Button */}
                   <button
                     type="submit"
                     disabled={isSendingOtp}
-                    className="w-full py-2.5 px-4 bg-[#1a73e8] hover:bg-[#1557b0] text-white font-semibold text-sm rounded-xl shadow-md shadow-blue-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-60 cursor-pointer active:scale-[0.99]"
+                    className="w-full py-2.5 px-4 bg-slate-900 hover:bg-black text-white font-semibold text-sm rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 disabled:opacity-60 cursor-pointer active:scale-[0.99] mt-2"
                   >
                     {isSendingOtp ? (
                       <>
@@ -564,7 +575,7 @@ const AuthModal = () => {
                   <button
                     type="button"
                     onClick={() => setActiveTab('login')}
-                    className="font-bold text-[#1a73e8] hover:underline"
+                    className="font-semibold text-slate-900 hover:underline cursor-pointer"
                   >
                     Sign In
                   </button>
@@ -575,26 +586,26 @@ const AuthModal = () => {
             {/* ══════════════ TAB 2 (STEP 2): OTP VERIFICATION ══════════════ */}
             {activeTab === 'register' && regStep === 'otp' && (
               <div className="space-y-5">
-                <div className="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                <div className="flex items-center justify-between p-3.5 bg-slate-50 border border-slate-200 rounded-2xl">
                   <div>
-                    <p className="text-[10px] uppercase font-bold text-slate-400">Verifying Email</p>
-                    <p className="text-xs font-bold text-slate-800 truncate max-w-[210px]">{regEmail}</p>
+                    <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Verifying Email</p>
+                    <p className="text-xs font-bold text-slate-900 truncate max-w-[210px]">{regEmail}</p>
                   </div>
                   <button
                     type="button"
                     onClick={() => setRegStep('details')}
-                    className="text-xs font-semibold text-[#1a73e8] hover:underline"
+                    className="text-xs font-semibold text-slate-900 hover:underline cursor-pointer"
                   >
-                    Edit Email
+                    Change Email
                   </button>
                 </div>
 
                 <form onSubmit={handleVerifyOtp} className="space-y-5">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2.5 text-center">
-                      Enter 6-Digit Code
+                    <label className="block text-xs font-semibold text-slate-700 tracking-tight mb-3 text-center">
+                      Enter 6-Digit Verification Code
                     </label>
-                    <div className="flex justify-between gap-1.5" onPaste={handleOtpPaste}>
+                    <div className="flex justify-between gap-1.5 sm:gap-2" onPaste={handleOtpPaste}>
                       {otpDigits.map((digit, idx) => (
                         <input
                           key={idx}
@@ -605,10 +616,10 @@ const AuthModal = () => {
                           value={digit}
                           onChange={(e) => handleOtpChange(e.target.value, idx)}
                           onKeyDown={(e) => handleOtpKeyDown(e, idx)}
-                          className={`w-11 h-12 text-center text-lg font-bold rounded-xl border bg-slate-50 text-slate-900 transition-all focus:outline-none focus:bg-white ${
+                          className={`w-11 h-12 text-center text-lg font-bold font-mono rounded-xl border bg-slate-50 text-slate-900 transition-all focus:outline-none focus:bg-white ${
                             digit 
-                              ? 'border-[#1a73e8] ring-2 ring-blue-500/20' 
-                              : 'border-slate-200 focus:border-[#1a73e8] focus:ring-2 focus:ring-blue-500/20'
+                              ? 'border-slate-900 ring-2 ring-slate-900/10' 
+                              : 'border-slate-200 focus:border-slate-900 focus:ring-2 focus:ring-slate-900/10'
                           }`}
                         />
                       ))}
@@ -618,7 +629,7 @@ const AuthModal = () => {
                   <div className="flex items-center justify-between text-xs font-medium">
                     <div className="flex items-center gap-1.5 text-slate-500">
                       <span>Expires in:</span>
-                      <span className={`font-mono font-bold ${expireTimer < 60 ? 'text-rose-600' : 'text-slate-700'}`}>
+                      <span className={`font-mono font-bold ${expireTimer < 60 ? 'text-rose-600' : 'text-slate-800'}`}>
                         {formatTimer(expireTimer)}
                       </span>
                     </div>
@@ -627,9 +638,9 @@ const AuthModal = () => {
                       type="button"
                       onClick={handleResendOtp}
                       disabled={resendCooldown > 0}
-                      className="text-[#1a73e8] hover:underline font-semibold disabled:text-slate-400 disabled:no-underline flex items-center gap-1"
+                      className="text-slate-900 hover:underline font-semibold disabled:text-slate-400 disabled:no-underline flex items-center gap-1 cursor-pointer"
                     >
-                      <RefreshCw size={11} className={resendCooldown > 0 ? '' : 'animate-spin'} />
+                      <RefreshCw size={12} className={resendCooldown > 0 ? '' : 'animate-spin'} />
                       {resendCooldown > 0 ? `Resend (${resendCooldown}s)` : 'Resend Code'}
                     </button>
                   </div>
@@ -637,7 +648,7 @@ const AuthModal = () => {
                   <button
                     type="submit"
                     disabled={isVerifyingOtp || otpDigits.join('').length !== 6 || isOtpExpired}
-                    className="w-full py-2.5 px-4 bg-[#1a73e8] hover:bg-[#1557b0] text-white font-semibold text-sm rounded-xl shadow-md shadow-blue-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+                    className="w-full py-2.5 px-4 bg-slate-900 hover:bg-black text-white font-semibold text-sm rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
                   >
                     {isVerifyingOtp ? (
                       <>

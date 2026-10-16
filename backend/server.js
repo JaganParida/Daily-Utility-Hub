@@ -75,9 +75,9 @@ app.use(cors({
 }));
 
 
-// Set security headers (Allow cross-origin popups for Firebase Auth interaction)
+// Set security headers (Allow cross-origin popups and postMessage for Google Auth)
 app.use(helmet({
-  crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' },
+  crossOriginOpenerPolicy: false,
   crossOriginResourcePolicy: { policy: 'cross-origin' }
 }));
 

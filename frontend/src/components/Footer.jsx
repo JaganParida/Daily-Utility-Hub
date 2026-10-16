@@ -31,12 +31,13 @@ const Footer = () => {
           </div>
           <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 shrink-0 w-full md:w-auto mt-4 md:mt-0">
             {!currentUser && (
-              <Link
-                to="/register"
-                className="w-full sm:w-auto whitespace-nowrap h-11 px-6 rounded-full bg-[#1a73e8] hover:bg-[#1557b0] text-white font-bold text-sm flex items-center justify-center transition-all shadow-xs active:scale-[0.98]"
+              <button
+                type="button"
+                onClick={() => openAuthModal('register')}
+                className="w-full sm:w-auto whitespace-nowrap h-11 px-6 rounded-full bg-[#1a73e8] hover:bg-[#1557b0] text-white font-bold text-sm flex items-center justify-center transition-all shadow-xs active:scale-[0.98] cursor-pointer"
               >
                 Get Started Free
-              </Link>
+              </button>
             )}
             <Link
               to="/search"

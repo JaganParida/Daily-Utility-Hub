@@ -17,9 +17,19 @@ const protect = async (req, res, next) => {
   }
 
   try {
+    const mongoose = require('mongoose');
+    if (mongoose.connection.readyState !== 1) {
+      const connectDB = require('../config/db');
+      await connectDB();
+    }
+
+    if (mongoose.connection.readyState !== 1) {
+      console.warn('[protect] Database offline or connecting. Treating as guest session.');
+      return res.status(401).json({ message: 'Session temporarily unavailable.' });
+    }
+
     // Look up user holding this active session token in the database
     const user = await User.findOne({ 'activeSessions.token': token });
-
 
     if (!user) {
       res.clearCookie('token', {
@@ -36,8 +46,8 @@ const protect = async (req, res, next) => {
 
     next();
   } catch (error) {
-    console.error('Session verification error:', error);
-    return res.status(500).json({ message: 'Server authentication verification error.' });
+    console.error('Session verification error:', error.message);
+    return res.status(401).json({ message: 'Session verification expired or unavailable.' });
   }
 };
 

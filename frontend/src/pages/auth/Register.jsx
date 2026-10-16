@@ -367,7 +367,7 @@ const Register = () => {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full py-2.5 px-4 bg-[#1a73e8] hover:bg-[#1557b0] text-white font-semibold text-sm rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 disabled:opacity-60 cursor-pointer active:scale-[0.99] mt-2"
+                  className="w-full py-2.5 px-4 bg-slate-900 hover:bg-black text-white font-semibold text-sm rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 disabled:opacity-60 cursor-pointer active:scale-[0.99] mt-2"
                 >
                   {isSubmitting ? (
                     <>
@@ -385,7 +385,7 @@ const Register = () => {
 
               <div className="pt-2 text-center text-xs text-slate-500">
                 Already have an account?{' '}
-                <Link to="/login" className="font-bold text-[#1a73e8] hover:underline">
+                <Link to="/login" className="font-semibold text-slate-900 hover:underline">
                   Sign In
                 </Link>
               </div>
@@ -425,10 +425,10 @@ const Register = () => {
                         value={digit}
                         onChange={(e) => handleOtpChange(e.target.value, idx)}
                         onKeyDown={(e) => handleOtpKeyDown(e, idx)}
-                        className={`w-11 h-12 text-center text-lg font-bold rounded-xl border bg-slate-50/50 text-slate-900 transition-all focus:outline-none focus:bg-white ${
+                        className={`w-11 h-12 text-center text-lg font-bold font-mono rounded-xl border bg-slate-50 text-slate-900 transition-all focus:outline-none focus:bg-white ${
                           digit 
-                            ? 'border-[#1a73e8] ring-2 ring-blue-500/20' 
-                            : 'border-slate-200 focus:border-[#1a73e8] focus:ring-2 focus:ring-blue-500/20'
+                            ? 'border-slate-900 ring-2 ring-slate-900/10' 
+                            : 'border-slate-200 focus:border-slate-900 focus:ring-2 focus:ring-slate-900/10'
                         }`}
                       />
                     ))}
@@ -447,7 +447,7 @@ const Register = () => {
                     type="button"
                     onClick={handleResendOtp}
                     disabled={resendCooldown > 0}
-                    className="text-[#1a73e8] hover:underline font-semibold disabled:text-slate-400 disabled:no-underline flex items-center gap-1"
+                    className="text-slate-900 hover:underline font-semibold disabled:text-slate-400 disabled:no-underline flex items-center gap-1 cursor-pointer"
                   >
                     <RefreshCw size={11} className={resendCooldown > 0 ? '' : 'animate-spin'} />
                     {resendCooldown > 0 ? `Resend (${resendCooldown}s)` : 'Resend Code'}
@@ -457,7 +457,7 @@ const Register = () => {
                 <button
                   type="submit"
                   disabled={isVerifying || otp.join('').length !== 6 || isOtpExpired}
-                  className="w-full py-2.5 px-4 bg-[#1a73e8] hover:bg-[#1557b0] text-white font-semibold text-sm rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+                  className="w-full py-2.5 px-4 bg-slate-900 hover:bg-black text-white font-semibold text-sm rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
                 >
                   {isVerifying ? (
                     <>
