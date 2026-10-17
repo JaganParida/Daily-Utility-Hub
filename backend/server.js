@@ -1,6 +1,15 @@
 const express = require('express');
 const dns = require('dns');
 dns.setDefaultResultOrder('ipv4first'); // Force IPv4 first to resolve MongoDB Atlas DNS issues on Node 18+
+
+// Polyfill browser globals for libraries (like pdf-parse v2) in Node serverless
+if (typeof globalThis.DOMMatrix === 'undefined') {
+  globalThis.DOMMatrix = class DOMMatrix {
+    constructor() {
+      this.a = 1; this.b = 0; this.c = 0; this.d = 1; this.e = 0; this.f = 0;
+    }
+  };
+}
 const dotenv = require('dotenv');
 const cors = require('cors');
 const helmet = require('helmet');

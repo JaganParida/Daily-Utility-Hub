@@ -3,9 +3,16 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 
-// Ensure Web Crypto API is available on older Node environments
+// Ensure Web Crypto and DOMMatrix APIs are available in Node/Serverless environments
 if (!globalThis.crypto) {
   globalThis.crypto = crypto.webcrypto;
+}
+if (typeof globalThis.DOMMatrix === 'undefined') {
+  globalThis.DOMMatrix = class DOMMatrix {
+    constructor() {
+      this.a = 1; this.b = 0; this.c = 0; this.d = 1; this.e = 0; this.f = 0;
+    }
+  };
 }
 
 // Helper to clean up uploaded files
@@ -228,7 +235,19 @@ exports.watermarkPdf = async (req, res) => {
 
 const { encryptPDF } = require('@pdfsmaller/pdf-encrypt');
 const { decryptPDF } = require('@pdfsmaller/pdf-decrypt');
-const pdfParse = require('pdf-parse');
+
+// Safe deferred loader for pdf-parse
+let pdfParse = null;
+const getPdfParser = () => {
+  if (!pdfParse) {
+    try {
+      pdfParse = require('pdf-parse');
+    } catch (e) {
+      console.warn('pdf-parse deferred load warning:', e.message);
+    }
+  }
+  return pdfParse;
+};
 
 // Lock PDF (Encrypt)
 exports.lockPdf = async (req, res) => {
@@ -400,7 +419,11 @@ exports.extractText = async (req, res) => {
     const pdfBytes = fs.readFileSync(req.file.path);
     
     try {
-      const data = await pdfParse(pdfBytes);
+      const parser = getPdfParser();
+      if (!parser) {
+        throw new Error('PDF parsing engine is initializing.');
+      }
+      const data = await parser(pdfBytes);
       cleanupFiles([req.file]);
       
       res.json({ 
@@ -410,7 +433,7 @@ exports.extractText = async (req, res) => {
       });
     } catch (parseError) {
       cleanupFiles([req.file]);
-      res.status(500).json({ message: 'Failed to extract text. The PDF might be an image-only scan or encrypted.' });
+      res.status(500).json({ message: parseError.message || 'Failed to extract text. The PDF might be an image-only scan or encrypted.' });
     }
   } catch (error) {
     cleanupFiles(req.file ? [req.file] : []);
@@ -468,8 +491,11 @@ exports.inspectPdf = async (req, res) => {
     // In case pdf-lib couldn't read pages because of encryption, try pdf-parse
     if (isEncrypted && pageCount === 0) {
       try {
-        const data = await pdfParse(pdfBytes);
-        pageCount = data.numpages || 0;
+        const parser = getPdfParser();
+        if (parser) {
+          const data = await parser(pdfBytes);
+          pageCount = data.numpages || 0;
+        }
       } catch (e) {
         // fallback
       }
