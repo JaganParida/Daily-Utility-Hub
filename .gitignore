@@ -14,3 +14,4 @@ backend/data/
 .vercel
 logs
 *.log
+package-lock.json

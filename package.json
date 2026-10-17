@@ -34,5 +34,8 @@
     "pdf-lib": "^1.17.1",
     "pdf-parse": "^2.4.5",
     "xss-clean": "^0.1.4"
+  },
+  "optionalDependencies": {
+    "@rolldown/binding-linux-x64-gnu": "^1.1.3"
   }
 }
